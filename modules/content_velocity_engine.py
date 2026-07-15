@@ -15,6 +15,7 @@ log = logging.getLogger("ContentVelocity")
 
 ANTHROPIC_KEY   = os.getenv("ANTHROPIC_API_KEY", "")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+PUBLIC_SHOP_URL = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -22,7 +23,7 @@ _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT         = _TG_CHANNEL or ""
 
 PRODUCT_NAME    = os.getenv("DS24_PRODUCT_NAME", "AI Income Machine")
-PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
 PRODUCT_PRICE   = os.getenv("DS24_PRODUCT_PRICE", "€37")
 
 DATA_DIR    = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "content_velocity"
@@ -180,7 +181,7 @@ async def publish_shopify_blog(title: str, body_html: str) -> dict:
         article = result.get("article", {})
         article_id = article.get("id")
         handle = article.get("handle", "")
-        url = f"https://{SHOPIFY_DOMAIN}/blogs/news/{handle}" if handle else ""
+        url = f"{PUBLIC_SHOP_URL}/blogs/news/{handle}" if handle else ""
         log.info("Shopify blog published: %s → %s", title[:40], url)
         return {"ok": bool(article_id), "article_id": article_id, "url": url}
     except Exception as e:

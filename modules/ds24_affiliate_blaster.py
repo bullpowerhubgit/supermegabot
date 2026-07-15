@@ -19,11 +19,11 @@ AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "")
 
 # ─── Eigene Produkte (AIITEC) + Affiliate-Produkte (DS24, 2026-06-23) ──────────
-# WICHTIG: 668035 und 704677 sind UNSERE eigenen Produkte (100% Umsatz)!
+# WICHTIG: 669750 und 704677 sind UNSERE eigenen Produkte (100% Umsatz)!
 
 DS24_APPROVED_PRODUCTS = [
-    {"id": "668035", "seller": "aiitec",
-     "link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"),
+    {"id": "669750", "seller": "aiitec",
+     "link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"),
      "niche": "ai", "category": "Digital", "title": "AI Income Machine – 90-Day Blueprint",
      "own_product": True, "price": "37"},
     # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
@@ -208,7 +208,7 @@ async def blast_all_approved(delay: float = 5.0) -> dict:
         log.info("DS24 Blaster: Tageslimit %d erreicht", MAX_BLAST_PER_DAY)
         return {"ok": True, "blasted": 0, "reason": "daily_limit_reached"}
 
-    # Nur OWN products (668035, 704677) — keine fremden redir-Links
+    # Nur OWN products (669750, 704677) — keine fremden redir-Links
     own_products = [p for p in DS24_APPROVED_PRODUCTS if p.get("own_product")]
     blasted = 0
     failed = 0

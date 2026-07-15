@@ -4,7 +4,7 @@ Affiliate Recruiter — automatische Rekrutierung von DS24-Affiliates
 Findet Blogger, YouTuber, E-Commerce-Berater und sendet personalisierte
 Affiliate-Pitches. 30% Lifetime-Provision auf €49-299/Monat.
 
-Affiliate-Link: https://www.checkout-ds24.com/product/668035?affiliate=user37405262
+Affiliate-Link: https://www.checkout-ds24.com/product/669750?affiliate=user37405262
 """
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ log = logging.getLogger("AffiliateRecruiter")
 
 _DB_PATH = Path(__file__).parent.parent / "data" / "affiliate_recruiter.db"
 
-AFFILIATE_LINK = "https://www.checkout-ds24.com/product/668035?affiliate=user37405262"
+AFFILIATE_LINK = "https://www.checkout-ds24.com/product/669750?affiliate=user37405262"
 AFFILIATE_ID   = "user37405262"
 STRIPE_STARTER = "https://buy.stripe.com/7sYeVf53k5PQ7EA2Wq4F203"
 

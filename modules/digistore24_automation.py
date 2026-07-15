@@ -188,7 +188,7 @@ async def ping():
         return False
 
 
-async def setup_ipn(product_id: str = "668035") -> dict:
+async def setup_ipn(product_id: str = "669750") -> dict:
     """Return info about IPN setup — user must set this URL in DS24 manually."""
     ipn_url = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/") + "/api/digistore24/ipn"
     return {

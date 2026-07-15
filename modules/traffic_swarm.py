@@ -40,6 +40,7 @@ TG_CHAT         = _TG_CHANNEL or ""                        # no private spam
 SUPABASE_URL    = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY    = os.getenv("SUPABASE_SERVICE_KEY", "") or os.getenv("SUPABASE_ANON_KEY", "")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOPIFY_PUBLIC_DOMAIN = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SITE_URL        = os.getenv("SITE_URL", "https://supermegabot-production.up.railway.app")
@@ -490,7 +491,7 @@ async def inject_internal_links(blog_html: str, products: list[dict]) -> str:
         handle = product.get("handle", "")
         if not title or not handle or len(title) < 4:
             continue
-        product_url = f"https://{SHOPIFY_DOMAIN}/products/{handle}"
+        product_url = f"https://{SHOPIFY_PUBLIC_DOMAIN}/products/{handle}"
         link_tag = f'<a href="{product_url}" title="{title}">{title}</a>'
         # Only replace first occurrence, skip if already linked
         pattern = rf"(?<!href=\")(?<!title=\")(?<!</a>)\b({re.escape(title)})\b(?![^<]*?>)"

@@ -2,7 +2,7 @@
 DS24 Income Blaster — maximaler Affiliate-Traffic auf allen Kanälen
 ====================================================================
 4× täglich: Telegram + Facebook + LinkedIn → DS24 Provision
-Affiliate-Link: https://www.checkout-ds24.com/product/668035?affiliate=user37405262
+Affiliate-Link: https://www.checkout-ds24.com/product/669750?affiliate=user37405262
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 log = logging.getLogger("DS24Blaster")
 
-AFFILIATE_LINK = "https://www.checkout-ds24.com/product/668035?affiliate=user37405262"
+AFFILIATE_LINK = "https://www.checkout-ds24.com/product/669750?affiliate=user37405262"
 FB_PAGE_ID     = "1016738738178786"
 _DB = Path(__file__).parent.parent / "data" / "ds24_blaster.db"
 

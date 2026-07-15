@@ -35,6 +35,7 @@ MC_KEY          = os.getenv("MAILCHIMP_API_KEY", "")
 MC_LIST         = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
 MC_SERVER       = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+PUBLIC_SHOP_URL = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SENDGRID_KEY    = os.getenv("SENDGRID_API_KEY", "")
 SENDGRID_FROM   = os.getenv("SENDGRID_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
@@ -527,7 +528,7 @@ async def _post_linkedin(content: dict) -> bool:
     try:
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
-        text = f"{content['body'][:600]}\n\n{tags}\n\n👉 {content.get('url','https://supermegabot-production.up.railway.app')}".strip()
+        text = f"{content['body'][:600]}\n\n{tags}\n\n👉 {content.get('url','https://ineedit.com.co')}".strip()
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 "https://api.linkedin.com/v2/ugcPosts",
@@ -575,8 +576,12 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
 
     # ── QUALITY GATE Layer 2: AI-Score via PostGuard ─────────────────────────
     try:
-        from modules.post_guard import guard
+        from modules.post_guard import guard, check_urls
         post_text = content.get("body") or content.get("title") or ""
+        # URL explizit prüfen — KI-generierter body enthält die URL oft nicht
+        product_url = content.get("url", "")
+        if product_url and product_url not in post_text:
+            post_text = f"{post_text} {product_url}".strip()
         ok, reason = await guard.check("social", text=post_text)
         if not ok:
             log.warning("PostGuard BLOCKIERT: %s", reason)
@@ -643,13 +648,13 @@ async def auto_post_ds24_product() -> dict:
         if not products:
             content = await generate_product_post(
                 "AI Income Machine – 90-Day Blueprint", 37.0,
-                os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+                os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
             )
         else:
             p = products[0]
             name  = p.get("name", p.get("title", "AI Income Machine"))
             price = float(p.get("price", p.get("net_price", 37.0)) or 37.0)
-            url   = p.get("checkout_url") or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+            url   = p.get("checkout_url") or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
             content = await generate_product_post(name, price, url)
         return await post_to_all_channels(content)
     except Exception as exc:
@@ -677,7 +682,7 @@ async def auto_post_shopify_products(limit: int = 3) -> dict:
             name  = p.get("title", "Shopify Produkt")
             price = float((p.get("variants") or [{}])[0].get("price", 0) or 0)
             handle = p.get("handle", "")
-            url   = f"https://{SHOPIFY_DOMAIN}/products/{handle}" if handle else f"https://{SHOPIFY_DOMAIN}"
+            url   = f"{PUBLIC_SHOP_URL}/products/{handle}" if handle else PUBLIC_SHOP_URL
             content = await generate_product_post(name, price, url)
             results[name] = await post_to_all_channels(content)
             await asyncio.sleep(2)  # Rate limit pause

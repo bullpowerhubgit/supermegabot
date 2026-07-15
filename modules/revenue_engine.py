@@ -1,7 +1,7 @@
 """
 Revenue Engine — nur Aktionen die Geld bringen.
 
-Fokus: Eigene DS24-Produkte (668035 €37) → Traffic → Klaviyo → Kauf.
+Fokus: Eigene DS24-Produkte (669750 €37) → Traffic → Klaviyo → Kauf.
 Kein SEO-Spam, kein 19k-Produkt-Import, kein Vanity-Posting.
 """
 from __future__ import annotations
@@ -22,9 +22,9 @@ STATE_FILE = DATA_DIR / "revenue_engine.json"
 # 100% Erlös — eigene Produkte
 OWN_PRODUCTS: List[Dict[str, str]] = [
     {
-        "id": "668035",
+        "id": "669750",
         "name": "AI Income Machine – 90-Day Blueprint",
-        "url": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"),
+        "url": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"),
         "price": "€37",
         "niche": "ai",
     },

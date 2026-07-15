@@ -114,7 +114,7 @@ async def _haiku(prompt: str, max_tokens: int = 500) -> str:
             return result
     except Exception as e:
         logger.warning("ai_complete error: %s", e)
-    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
     _templates = [
         f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
         f"💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. {_ds24}",

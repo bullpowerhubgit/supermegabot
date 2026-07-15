@@ -42,6 +42,7 @@ NEXUS_DB   = DATA_DIR / "nexus.db"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOPIFY_PUBLIC_DOMAIN = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
 SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -425,7 +426,7 @@ NUR JSON zurückgeben:
 
         product_id = result.get("product", {}).get("id")
         product_title = result.get("product", {}).get("title", keyword)
-        product_url = f"https://{SHOPIFY_DOMAIN}/products/{result.get('product', {}).get('handle', '')}"
+        product_url = f"https://{SHOPIFY_PUBLIC_DOMAIN}/products/{result.get('product', {}).get('handle', '')}"
 
         log.info("NEXUS TREND_PRODUCT: %s → id=%s", keyword, product_id)
         return {"ok": bool(product_id), "product_id": product_id,
@@ -510,7 +511,7 @@ async def action_flash_sale(keyword: str) -> dict:
             if products:
                 p = products[0]
                 product_title = p["title"]
-                product_url = f"https://{SHOPIFY_DOMAIN}/products/{p.get('handle','')}"
+                product_url = f"https://{SHOPIFY_PUBLIC_DOMAIN}/products/{p.get('handle','')}"
 
         msg = (f"⚡ FLASH SALE — nur heute!\n\n{product_title}\n"
                f"20% RABATT mit Code: NEXUS20\n\n🛒 Jetzt kaufen: {product_url}")
@@ -553,11 +554,11 @@ Für Shopify Blog — keine Überschrift 1, nur Inhalt ab h2."""
                 result = await r.json()
 
         article = result.get("article", {})
-        article_url = f"https://{SHOPIFY_DOMAIN}/blogs/news/{article.get('handle', '')}"
+        article_url = f"https://{SHOPIFY_PUBLIC_DOMAIN}/blogs/news/{article.get('handle', '')}"
         # IndexNow ping
         async with aiohttp.ClientSession() as s:
             await s.post("https://api.indexnow.org/indexnow",
-                         json={"host": SHOPIFY_DOMAIN, "key": "bullpower2026indexnow",
+                         json={"host": SHOPIFY_PUBLIC_DOMAIN, "key": "bullpower2026indexnow",
                                "urlList": [article_url]},
                          timeout=aiohttp.ClientTimeout(total=5))
 
@@ -614,7 +615,7 @@ async def action_backlink_bomb(keyword: str) -> dict:
     """Backlink-Bomb: Submits Shop-URL zu 100+ Directories."""
     try:
         from modules.backlink_bomber import run_backlink_bomber
-        shop_url = f"https://{SHOPIFY_DOMAIN}" if SHOPIFY_DOMAIN else ""
+        shop_url = f"https://{SHOPIFY_PUBLIC_DOMAIN}"
         if not shop_url:
             return {"ok": False, "error": "no shopify domain"}
         result = await run_backlink_bomber([shop_url])
@@ -652,7 +653,7 @@ async def action_price_cut(keyword: str) -> dict:
                     updated += 1
         from modules.brutus_core import fire
         await fire(f"🔥 PREIS-AKTION: 15% Rabatt auf Top-Produkte!",
-                   f"Jetzt zuschlagen — Angebot gilt nur heute!\n🛒 Shop: https://{SHOPIFY_DOMAIN}",
+                   f"Jetzt zuschlagen — Angebot gilt nur heute!\n🛒 Shop: https://{SHOPIFY_PUBLIC_DOMAIN}",
                    channels=["telegram", "twitter", "slack", "whatsapp", "discord"])
         return {"ok": updated > 0, "variants_updated": updated}
     except Exception as e:
@@ -664,7 +665,7 @@ async def action_upsell_push(keyword: str) -> dict:
     try:
         from modules.brutus_core import fire
         ds24_link = os.getenv("DS24_AFFILIATE_LINK",
-                               os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"))
+                               os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"))
         msg = (f"🎯 Exklusiv für unsere Kunden: {keyword}\n\n"
                f"Upgrade auf Premium — automatisierter Umsatz ohne Aufwand.\n"
                f"Begrenzte Plätze: {ds24_link}")

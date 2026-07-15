@@ -5,6 +5,15 @@ Runs all periodic tasks: Digistore24 sync, Mailchimp sync,
 Shopify sync, GitHub backup, Trading reports, System health alerts.
 """
 
+# DS24 Guardian MUSS als erstes importiert werden — validiert + heilt DS24_AFFILIATE_LINK
+try:
+    import sys, os as _os
+    sys.path.insert(0, _os.path.dirname(_os.path.dirname(__file__)))
+    from modules.ds24_link_guardian import validate_and_heal as _ds24_heal
+    _ds24_heal()
+except Exception as _e:
+    import logging; logging.getLogger(__name__).warning(f"DS24Guardian import failed: {_e}")
+
 import asyncio
 import json
 import logging
@@ -168,11 +177,11 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
         pass
     # Template-Fallback wenn ai_complete leer ist
     templates = [
-        "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://autopilot-store-suite-fmbka.myshopify.com",
-        "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://autopilot-store-suite-fmbka.myshopify.com",
-        "🤖 Vollautomatisches E-Commerce Business: Produkte importieren, Texte schreiben, Traffic generieren — alles automatisch! https://autopilot-store-suite-fmbka.myshopify.com",
-        "📈 Shopify Automation macht deinen Shop 24/7 profitabel. AI Income Machine auf DS24: https://autopilot-store-suite-fmbka.myshopify.com",
-        "🎯 Digitale Produkte verkaufen leicht gemacht: DS24 Affiliate + BRUTUS Traffic = passive Einnahmen! https://autopilot-store-suite-fmbka.myshopify.com",
+        "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://ineedit.com.co",
+        "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://ineedit.com.co",
+        "🤖 Vollautomatisches E-Commerce Business: Produkte importieren, Texte schreiben, Traffic generieren — alles automatisch! https://ineedit.com.co",
+        "📈 Shopify Automation macht deinen Shop 24/7 profitabel. AI Income Machine auf DS24: https://ineedit.com.co",
+        "🎯 Digitale Produkte verkaufen leicht gemacht: DS24 Affiliate + BRUTUS Traffic = passive Einnahmen! https://ineedit.com.co",
     ]
     import random as _rnd
     return _rnd.choice(templates)
@@ -1292,19 +1301,19 @@ async def task_shopify_blog_auto() -> str:
     shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
     if not shopify_domain or not shopify_token:
         return "Shopify nicht konfiguriert"
-    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
     blog_gid = f"gid://shopify/Blog/{os.getenv('SHOPIFY_BLOG_ID', '127011258755')}"
     templates = [
         ("KI-Passiveinkommen 2026: So baust du es auf",
-         f"<h2>KI-Passiveinkommen 2026</h2><p>Mit KI-Tools baust du heute ein vollautomatisches Business auf.</p><ul><li><strong>Shopify Auto-Import:</strong> Trending-Produkte täglich importiert</li><li><strong>Affiliate:</strong> Provisionen automatisch ausgezahlt</li><li><strong>Content:</strong> BRUTUS bespielt 6+ Kanäle täglich</li></ul><p><a href='{_dest}'>Jetzt bei autopilot-store-suite-fmbka.myshopify.com shoppen →</a></p>"),
+         f"<h2>KI-Passiveinkommen 2026</h2><p>Mit KI-Tools baust du heute ein vollautomatisches Business auf.</p><ul><li><strong>Shopify Auto-Import:</strong> Trending-Produkte täglich importiert</li><li><strong>Affiliate:</strong> Provisionen automatisch ausgezahlt</li><li><strong>Content:</strong> BRUTUS bespielt 6+ Kanäle täglich</li></ul><p><a href='{_dest}'>Jetzt bei ineedit.com.co shoppen →</a></p>"),
         ("5 Shopify-Automatisierungen 2026 die Umsatz verdoppeln",
-         f"<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='{_dest}'>Zu autopilot-store-suite-fmbka.myshopify.com →</a></p>"),
+         f"<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='{_dest}'>Zu ineedit.com.co →</a></p>"),
         ("Dropshipping mit KI 2026: Der komplette Guide",
-         f"<h2>KI-Dropshipping 2026</h2><p>Trends automatisch erkennen, Produkte importieren, Marketing auf Autopilot.</p><ul><li>AliExpress + Amazon Trending täglich</li><li>Shopify Auto-Import + Beschreibung</li><li>10+ Kanäle vollautomatisch bespielt</li></ul><p><a href='{_dest}'>Bestseller bei autopilot-store-suite-fmbka.myshopify.com →</a></p>"),
+         f"<h2>KI-Dropshipping 2026</h2><p>Trends automatisch erkennen, Produkte importieren, Marketing auf Autopilot.</p><ul><li>AliExpress + Amazon Trending täglich</li><li>Shopify Auto-Import + Beschreibung</li><li>10+ Kanäle vollautomatisch bespielt</li></ul><p><a href='{_dest}'>Bestseller bei ineedit.com.co →</a></p>"),
         ("Smart Home Gadgets 2026: Die besten Deals",
          f"<h2>Smart Home 2026</h2><p>Die beliebtesten Smart Home Gadgets für dein Zuhause — Bestpreise garantiert.</p><ul><li>Smart Beleuchtung</li><li>Sprachassistenten & Hubs</li><li>Sicherheitskameras</li><li>Automatische Steckdosen</li></ul><p><a href='{_dest}'>Alle Smart Home Deals →</a></p>"),
         ("Top 10 Fitness Gadgets für zuhause 2026",
-         f"<h2>Fitness Gadgets 2026</h2><p>Diese 10 Gadgets transformieren dein Home-Workout und bringen echte Ergebnisse.</p><ul><li>Resistance Bands Set</li><li>Smart Waagen</li><li>Massage-Pistolen</li><li>LED Sprungseile</li></ul><p><a href='{_dest}'>Alle Fitness-Deals bei autopilot-store-suite-fmbka.myshopify.com →</a></p>"),
+         f"<h2>Fitness Gadgets 2026</h2><p>Diese 10 Gadgets transformieren dein Home-Workout und bringen echte Ergebnisse.</p><ul><li>Resistance Bands Set</li><li>Smart Waagen</li><li>Massage-Pistolen</li><li>LED Sprungseile</li></ul><p><a href='{_dest}'>Alle Fitness-Deals bei ineedit.com.co →</a></p>"),
     ]
     topic_title, template_body = random.choice(templates)
     final_body = template_body
@@ -1536,7 +1545,7 @@ async def task_mailchimp_auto_campaign() -> str:
 <li>✅ Step-by-step Anleitung für Anfänger</li>
 </ul>
 <p style='text-align:center;margin:30px 0'>
-<a href='{os.getenv("DS24_AFFILIATE_LINK",os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"))}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
+<a href='{os.getenv("DS24_AFFILIATE_LINK",os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"))}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
 🛒 Jetzt für nur €37 starten →
 </a>
 </p>
@@ -1740,6 +1749,7 @@ async def task_pinterest_auto_post() -> str:
         board_id = boards["boards"][0]["id"]
         token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        public_domain = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
         if not token or not domain:
             return "Shopify nicht konfiguriert"
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
@@ -1754,7 +1764,7 @@ async def task_pinterest_auto_post() -> str:
         p = random.choice(prods_with_img)
         img = p["images"][0]["src"]
         title = p.get("title", "Produkt")
-        url = f"https://{domain}/products/{p.get('handle','')}"
+        url = f"https://{public_domain}/products/{p.get('handle','')}"
         result = await pin.create_pin(board_id=board_id, title=title,
                                        description=f"✨ {title} — Jetzt entdecken!", media_url=img, link=url)
         ok = result.get("ok", False)
@@ -1805,7 +1815,7 @@ async def task_instagram_auto_post() -> str:
             try:
                 from modules.ai_client import ai_complete
                 from modules.brutus_core import fire
-                _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+                _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
                 ig_text = await ai_complete(
                     f"Schreibe einen Instagram-Caption auf Deutsch für ein KI-Business Produkt. "
                     f"Kurz, viral, 5 Hashtags. Link: {_ds24}", max_tokens=200)
@@ -1868,7 +1878,7 @@ async def task_linkedin_auto_post() -> str:
         anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
         if not linkedin_token:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
-        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         li_prompt = (f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
                      f"Max 1200 Zeichen. Erwähne am Ende: {_ds24} (AI Income Machine €37). Nur Text, kein JSON.")
         try:
@@ -1916,7 +1926,7 @@ async def task_youtube_auto_post() -> str:
             title=title,
             description=(
                 f"{title}\n\n"
-                f"👉 {os.getenv('DS24_AFFILIATE_LINK', 'https://www.checkout-ds24.com/product/668035')}\n\n"
+                f"👉 {os.getenv('DS24_AFFILIATE_LINK', 'https://www.checkout-ds24.com/product/669750')}\n\n"
                 "#KI #PassivesEinkommen #OnlineBusiness"
             ),
             tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
@@ -2836,7 +2846,7 @@ async def task_discord_blast() -> str:
     try:
         from modules.brutus_core import _discord
         import aiohttp
-        msg = "🤖 SuperMegaBot | Shop: https://autopilot-store-suite-fmbka.myshopify.com | Code HEUTE20 = 20% Rabatt!"
+        msg = "🤖 SuperMegaBot | Shop: https://ineedit.com.co | Code HEUTE20 = 20% Rabatt!"
         async with aiohttp.ClientSession() as sess:
             ok = await _discord(msg, sess)
         return f"Discord: {'ok' if ok else 'no credentials'}"
@@ -3544,7 +3554,7 @@ async def task_brutus_printify() -> str:
 async def task_brutus_dropshipping() -> str:
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         r = await brutus_blast_for_tool("Dropshipping", link,
             ["Dropshipping 2026", "AliExpress Shopify", "online shop automatisch befüllen"])
         return f"BRUTUS Dropshipping: {r.get('channels_hit', r.get('posts_sent', 0))} posts"
@@ -3558,7 +3568,7 @@ async def task_brutus_ds24() -> str:
         link = (
             os.getenv("DS24_AFFILIATE_LINK")
             or os.getenv("AIITEC_AFFILIATE_URL")
-            or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+            or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         )
         r = await brutus_blast_for_tool("Digistore24", link,
             ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
@@ -3586,7 +3596,7 @@ async def task_klaviyo_daily_campaign() -> str:
     try:
         import random
         from modules.super_revenue_blitz import send_klaviyo_campaign
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         subjects = [
             "🔥 Vollautomatisch Geld verdienen — so geht's",
             "💡 KI macht Geld während du schläfst",
@@ -3623,7 +3633,7 @@ async def task_mailing_promo_blitz() -> str:
     try:
         import asyncio, random
         from modules.super_revenue_blitz import send_klaviyo_campaign, send_mailchimp_campaign, _tg_send, _linkedin_post
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         subjects = [
             "💰 Heute: Vollautomatisches Online-Business starten",
             "🤖 KI verdient für dich — ohne tägliche Arbeit",
@@ -4084,7 +4094,7 @@ async def task_youtube_script_generator() -> str:
             "Passives Einkommen Blueprint — Von 0 auf 5000€/Monat",
         ]
         topic = random.choice(topics)
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         prompt = (
             f"Erstelle ein YouTube-Video-Skript zum Thema: '{topic}'\n"
             f"Länge: 3-5 Minuten (500-700 Wörter). Struktur: Hook, Problem, Lösung, CTA.\n"
@@ -4108,7 +4118,7 @@ async def task_whatsapp_daily_blast() -> str:
     """Daily WhatsApp promo blast to all configured recipients."""
     try:
         from modules.whatsapp_automation import send_whatsapp_blast
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
         msg = f"🚀 BullPower Hub: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
         r = await send_whatsapp_blast(msg)
         return f"WhatsApp blast: sent={r.get('sent',0)}, failed={r.get('failed',0)}"
@@ -4160,7 +4170,7 @@ async def task_twilio_morning_brief() -> str:
             f"🛒 Shopify Orders: {orders_today}\n"
             f"🤖 149 Automatisierungen laufen\n"
             f"🔥 DS24 Affiliate aktiv\n\n"
-            f"👉 DS24: https://autopilot-store-suite-fmbka.myshopify.com\n"
+            f"👉 DS24: https://ineedit.com.co\n"
             f"📊 Dashboard: https://supermegabot-production.up.railway.app"
         )
         ok = await _twilio_send(to, msg)
@@ -4218,7 +4228,7 @@ async def task_twilio_ds24_report() -> str:
             f"✅ DS24 Affiliate aktiv\n"
             f"✅ Shopify Automation läuft\n"
             f"✅ 149 Tasks registriert\n\n"
-            f"🔗 Affiliate: https://autopilot-store-suite-fmbka.myshopify.com"
+            f"🔗 Affiliate: https://ineedit.com.co"
         )
         ok = await _twilio_send(to, msg)
         return f"DS24 SMS: {'sent ✅' if ok else 'failed ❌'}"
@@ -4604,7 +4614,7 @@ async def task_semrush_competitor_spy() -> str:
     try:
         from modules.semrush_client import domain_competitors, domain_organic_keywords
         import os
-        own = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+        own = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
         competitors = await domain_competitors(own, limit=3)
         all_kws = []
         for comp in competitors[:2]:
@@ -4744,7 +4754,7 @@ async def task_printify_sync() -> str:
 # ── Mega BRUTUS Rotation — alle Plattformen im 1h Zyklus ─────────────────────
 
 _MEGA_BRUTUS_PLATFORMS = [
-    ("Digistore24 Affiliate",    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"),
+    ("Digistore24 Affiliate",    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"),
      ["DS24 Affiliate 2026", "digitale Produkte verdienen", "passives Einkommen"]),
     ("Shopify Automation",        "",
      ["Shopify Dropshipping 2026", "Shopify Automation AI", "eigener Online-Shop"]),
@@ -4758,21 +4768,21 @@ _MEGA_BRUTUS_PLATFORMS = [
      ["eBay Schnäppchen 2026", "eBay Dropshipping", "eBay Affiliate verdienen"]),
     ("Klaviyo Email Marketing",   "",
      ["Email Marketing Automation", "Klaviyo E-Commerce", "Newsletter Geld verdienen"]),
-    ("TikTok Viral Produkte",     "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("TikTok Viral Produkte",     "https://ineedit.com.co",
      ["TikTok viral Produkte 2026", "TikTok Shop Bestseller", "TikTok Dropshipping"]),
-    ("Side Hustle Deutschland",   "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Side Hustle Deutschland",   "https://ineedit.com.co",
      ["Side Hustle Deutschland 2026", "Nebenverdienst online", "zweites Einkommen"]),
-    ("Passives Einkommen KI",     "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Passives Einkommen KI",     "https://ineedit.com.co",
      ["Passives Einkommen KI 2026", "Geld verdienen im Schlaf", "KI Business starten"]),
-    ("Geld verdienen Österreich", "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Geld verdienen Österreich", "https://ineedit.com.co",
      ["Geld verdienen Österreich", "Online Business Wien", "E-Commerce Austria"]),
-    ("Schweiz Online Business",   "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Schweiz Online Business",   "https://ineedit.com.co",
      ["Online Business Schweiz", "Geld verdienen Zürich", "Dropshipping Schweiz"]),
-    ("Shopify Anfänger Guide",    "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Shopify Anfänger Guide",    "https://ineedit.com.co",
      ["Shopify Anfänger 2026", "Online Shop erstellen", "ersten Shop starten"]),
-    ("Amazon FBA Alternative",    "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Amazon FBA Alternative",    "https://ineedit.com.co",
      ["Amazon FBA Alternative 2026", "ohne FBA verkaufen", "eigener Shop statt Amazon"]),
-    ("Print on Demand Gewinn",    "https://autopilot-store-suite-fmbka.myshopify.com",
+    ("Print on Demand Gewinn",    "https://ineedit.com.co",
      ["Print on Demand Gewinn", "POD Marge optimieren", "Printful Printify Vergleich"]),
 ]
 
@@ -4786,7 +4796,7 @@ async def task_mega_brutus_rotation() -> str:
         if "Shopify" in platform and shop:
             url = f"https://{shop}"
         else:
-            url = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+            url = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
     try:
         r = await brutus_blast_for_tool(platform, url, keywords)
         ch = r.get("channels_hit", r.get("posts_sent", 0))

@@ -17,6 +17,7 @@ log = logging.getLogger("SEODominator")
 
 ANTHROPIC       = os.getenv("ANTHROPIC_API_KEY", "")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOPIFY_PUBLIC_DOMAIN = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -151,7 +152,7 @@ async def generate_schema_markup(product: dict) -> dict:
             "price": price,
             "priceCurrency": "EUR",
             "availability": "https://schema.org/InStock",
-            "url": f"https://{SHOPIFY_DOMAIN}/products/{product.get('handle', '')}",
+            "url": f"https://{SHOPIFY_PUBLIC_DOMAIN}/products/{product.get('handle', '')}",
         },
     }
     if image_url:
@@ -297,7 +298,7 @@ async def submit_shopify_sitemap_everywhere() -> dict:
 
     # 2. Fetch product URLs for IndexNow
     products = await get_shopify_products_for_seo(limit=100)
-    product_urls = [f"https://{SHOPIFY_DOMAIN}/products/{p['handle']}" for p in products if p.get("handle")]
+    product_urls = [f"https://{SHOPIFY_PUBLIC_DOMAIN}/products/{p['handle']}" for p in products if p.get("handle")]
 
     # 3. IndexNow submit (Bing + Yandex + Seznam)
     if product_urls:
