@@ -309,7 +309,7 @@ Max 150 Wörter."""
             "attributes": {
                 "name": name[:100],
                 "audiences": {
-                    "included": [{"type": "list", "id": LIST_ID}],
+                    "included": [LIST_ID],
                     "excluded": [],
                 },
                 "send_strategy": {"method": "immediate"},

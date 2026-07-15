@@ -217,7 +217,7 @@ async def create_and_send_campaign(
             "attributes": {
                 "name": name,
                 "audiences": {
-                    "included": [{"type": "list", "id": list_id}],
+                    "included": [list_id],
                     "excluded": [],
                 },
                 "send_strategy": {"method": "immediate"},
