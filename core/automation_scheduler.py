@@ -7590,7 +7590,8 @@ TASKS = [
     # ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────
     ("shopify_daily_healer",   task_shopify_daily_healer,   86400, 600),   # 24h — Inventory+Desc+Preis auto-heilen
     ("shopify_full_autonomy",  task_shopify_full_autonomy,  21600, 1620),  # 6h  — SEO+Collections+Restock+Titel
-    ("shopify_mass_creator",   task_shopify_mass_creator,   43200, 1660),  # 12h — Massenimport alle Quellen
+    # shopify_mass_creator DEAKTIVIERT — erstellt Fake-Produkte (vendor=SuperMegaBot, keine echten Lieferanten)
+    # ("shopify_mass_creator",   task_shopify_mass_creator,   43200, 1660),
     ("autonomous_pipeline",    task_autonomous_pipeline,    21600, 1700),  # 6h  — Quelle→Shopify vollautomatisch
     ("auto_sorter",            task_auto_sorter,            14400, 1740),  # 4h  — Shopify Collections auto-sort
     ("gmc_fixer",              task_gmc_product_fixer,      21600, 1780),  # 6h  — Google Merchant Fehler fixen
