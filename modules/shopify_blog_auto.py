@@ -136,23 +136,9 @@ async def _generate_article(keyword: str) -> dict:
     except Exception as e:
         log.warning("ai_complete Fehler: %s", e)
 
-    # Fallback template
-    body = f"""<h2>{keyword} — Was du wissen musst</h2>
-<p>T-Shirts sind mehr als nur Kleidung — sie sind ein Statement. In diesem Artikel zeigen wir dir alles über <strong>{keyword}</strong> und wie du das perfekte Stück für dich oder als Geschenk findest.</p>
-<h2>Warum ist das Thema {keyword.split()[0]} T-Shirt so beliebt?</h2>
-<p>Individuell gestaltete T-Shirts liegen voll im Trend. Sie ermöglichen es, Persönlichkeit auszudrücken, ohne ein Wort sagen zu müssen. Besonders personalisierte Designs mit Sprüchen oder Motiven kommen super an.</p>
-<h2>So findest du das richtige T-Shirt</h2>
-<ul>
-<li>Achte auf hochwertige Baumwolle (mindestens 180g/m²)</li>
-<li>Wähle einen Spruch der wirklich zu dir oder der beschenkten Person passt</li>
-<li>Größentabelle beachten — Schnitte variieren stark</li>
-<li>Waschbeständigkeit des Drucks prüfen</li>
-</ul>
-<h2>Jetzt stöbern</h2>
-<p>Schau dir unsere riesige Auswahl an — von motivierenden Sprüchen bis hin zu witzigen Designs ist für jeden Geschmack etwas dabei.</p>
-<p><a href="{STORE_URL}" target="_blank" rel="noopener"><strong>→ Jetzt T-Shirts entdecken bei I Need It!</strong></a></p>"""
-
-    return {"title": title, "body_html": body, "tags": keyword, "slug": slug}
+    # AI-Fehler: Artikel NICHT mit falschem Nischen-Content publizieren
+    log.warning("ai_complete lieferte keinen Inhalt für '%s' — Artikel wird übersprungen.", keyword)
+    return None
 
 
 async def publish_one_article() -> dict:
@@ -174,6 +160,11 @@ async def publish_one_article() -> dict:
             return {"ok": False, "reason": "Blog konnte nicht erstellt/gefunden werden — write_content Scope fehlt?"}
 
         article = await _generate_article(keyword)
+        if article is None:
+            # AI-Fehler: Thema überspringen, beim nächsten Lauf wird nächstes Thema gewählt
+            published.add(keyword)
+            _save_published(published)
+            return {"ok": False, "reason": f"KI-Inhalt konnte nicht generiert werden für: {keyword}"}
         base = f"https://{SHOP_DOMAIN}/admin/api/{API_VERSION}"
         headers = {"X-Shopify-Access-Token": SHOP_TOKEN, "Content-Type": "application/json"}
 

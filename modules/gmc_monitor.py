@@ -1,6 +1,7 @@
 """
 Google Merchant Center Status Monitor
-Uses Shopify data (live) + GMC placeholder data (TODO: add GMC OAuth).
+Uses Shopify data (live) + GMC data via Service Account OAuth when
+GMC_SERVICE_ACCOUNT_JSON is set, otherwise falls back to configured defaults.
 Merchant ID: 5813214419 (shopify.com / Google Shopping)
 """
 
