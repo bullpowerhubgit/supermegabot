@@ -7207,18 +7207,13 @@ async def task_trust_conversion() -> str:
 
 
 async def task_outreach_blast_morning() -> str:
-    """Outreach Blast Morgen (08:00): Reset + Research + 333 Emails."""
+    """Outreach Blast Morgen (08:00): Mini-Research + 333 Emails."""
     try:
-        from modules.mass_outreach_1000 import _db, init_db, run_smart_batch
-        init_db()
-        with _db() as conn:
-            new_leads = conn.execute("SELECT COUNT(*) FROM leads WHERE status='new'").fetchone()[0]
-        if new_leads < 50:
-            from modules.mass_outreach_1000 import run_research
-            await run_research(session_limit=500)
+        from modules.mass_outreach_1000 import run_smart_batch
         result = await run_smart_batch(batch_size=333)
         sent = result.get("sent", 0)
-        return f"OutreachMorgen: {sent} Emails gesendet (leads_new={new_leads})"
+        new_leads = result.get("new_leads", 0)
+        return f"OutreachMorgen: {sent} Emails gesendet, {new_leads} neue Leads"
     except Exception as e:
         return f"OutreachMorgen Fehler: {e}"
 
@@ -7744,7 +7739,8 @@ TASKS = [
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
     ("shopify_collection_pub",  task_shopify_collection_publisher, 21600, 58),  # 6h — auto-publish unpublished smart collections
-    ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),  # 30min — 300 archivierte → active bis fertig
+    # shopify_bulk_activate DEAKTIVIERT — würde bereinigte CJ-Produkte re-aktivieren
+    # ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),
     ("klaviyo_welcome_subs",    task_klaviyo_welcome_new_subs, 3600,   75),  # 1h — Welcome-Email + Code an neue Subscriber
     ("shopify_title_de",        task_shopify_title_germanizer, 1800,  62),   # 30min — 50 englische Titel → Deutsch
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
