@@ -199,8 +199,13 @@ def _imap_scan_account(acc) -> List[dict]:
                     if candidates:
                         failed_addr = candidates[0]
 
-                # Als gelesen markieren
+                # Als gelesen markieren + in Gmail-Papierkorb verschieben (hält Postfach sauber)
                 mail.store(uid, "+FLAGS", "\\Seen")
+                try:
+                    mail.copy(uid, "[Gmail]/Trash")
+                    mail.store(uid, "+FLAGS", "\\Deleted")
+                except Exception:
+                    pass
 
                 if failed_addr and "@" in failed_addr:
                     bounces.append({
@@ -226,6 +231,7 @@ def _imap_scan_account(acc) -> List[dict]:
             except Exception as e:
                 log.debug("Fehler bei UID %s: %s", uid, e)
 
+        mail.expunge()  # Papierkorb endgültig leeren
         mail.logout()
     except Exception as e:
         log.warning("IMAP-Fehler bei %s: %s", getattr(acc, "email", "?"), e)

@@ -21,8 +21,28 @@ async def send_email(to_email: str, subject: str, html_body: str, from_email: st
     ok, via = ga_send(to_email, subject, "", html=html_body)
     if ok:
         log.info("SMTP email sent to %s via %s — subject: %s", to_email, via, subject)
+        # Nach dem Senden: Adresse als "gesendet" registrieren (Duplikat-Schutz)
+        try:
+            from modules.email_guard import register_sent
+            register_sent(to_email, subject, html_body)
+        except Exception:
+            pass
+        # Verzögert (5 Sek.) Bounce-Scan anstoßen — prüft ob Delivery erfolgreich
+        import asyncio
+        asyncio.ensure_future(_delayed_bounce_check(to_email))
         return {"ok": True, "to": to_email, "subject": subject, "from": via or from_email}
     return {"ok": False, "error": "alle Gmail-Konten fehlgeschlagen oder nicht konfiguriert"}
+
+
+async def _delayed_bounce_check(to_email: str) -> None:
+    """Prüft 30s nach dem Senden ob eine Bounce-Email eingetroffen ist."""
+    import asyncio
+    await asyncio.sleep(30)
+    try:
+        from modules.bounce_watcher import run_bounce_watcher
+        await run_bounce_watcher()
+    except Exception:
+        pass
 
 
 async def get_status() -> dict:
