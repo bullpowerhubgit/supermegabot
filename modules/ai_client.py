@@ -687,11 +687,23 @@ async def _ai_complete_inner(
                             _cb_success("Anthropic")
                             return text
                     if r.status in (400, 402, 529):
-                        log.warning("Anthropic: Kein Guthaben (%s) — 1h deaktiviert", r.status)
-                        # Länger deaktivieren wenn Guthaben leer
-                        if "Anthropic" not in _CB:
-                            _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
-                        _CB["Anthropic"]["until"] = time.time() + 3600
+                        body = await r.json(content_type=None)
+                        is_credit = "credit balance" in str(body).lower() or "too low" in str(body).lower()
+                        if is_credit:
+                            log.warning("Anthropic: CREDITS LEER — 24h deaktiviert. Bitte auf console.anthropic.com aufladen!")
+                            asyncio.ensure_future(_tg_send(
+                                "🚨 ANTHROPIC CREDITS LEER!\n"
+                                "Alle AI-Anfragen laufen über Groq/OpenRouter/OpenAI.\n"
+                                "Bitte auf console.anthropic.com Guthaben aufladen."
+                            ))
+                            if "Anthropic" not in _CB:
+                                _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                            _CB["Anthropic"]["until"] = time.time() + 86400  # 24h statt 1h
+                        else:
+                            log.warning("Anthropic: Fehler %s — 1h deaktiviert", r.status)
+                            if "Anthropic" not in _CB:
+                                _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                            _CB["Anthropic"]["until"] = time.time() + 3600
                     elif r.status in (401, 403):
                         log.warning("Anthropic: Key ungültig (%s)", r.status)
                         _cb_fail("Anthropic")
