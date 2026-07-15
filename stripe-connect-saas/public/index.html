@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ineedit.com.co — Stripe Connect Platform</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #635bff;
+    --accent-hover: #7b74ff;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --text: #e8e8f0;
+    --muted: #8888a0;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; }
+
+  nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .nav-brand { font-weight: 700; font-size: 16px; color: var(--text); }
+  .nav-brand span { color: var(--accent); }
+  .nav-links { display: flex; gap: 8px; }
+  .nav-tab {
+    padding: 6px 14px; border-radius: 6px; cursor: pointer;
+    border: none; background: transparent; color: var(--muted);
+    font-size: 14px; font-weight: 500; transition: all .15s;
+  }
+  .nav-tab:hover { background: var(--surface2); color: var(--text); }
+  .nav-tab.active { background: var(--accent); color: white; }
+
+  .main { max-width: 900px; margin: 0 auto; padding: 32px 20px; }
+
+  .hero { margin-bottom: 32px; }
+  .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .hero p { color: var(--muted); font-size: 15px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .card h2 { font-size: 17px; font-weight: 600; margin-bottom: 16px; }
+  .card-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 180px; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .05em; }
+  .field input, .field select {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 12px; color: var(--text);
+    font-size: 14px; outline: none; transition: border .15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+
+  .btn {
+    padding: 9px 18px; border-radius: 7px; border: none;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: all .15s; white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-ghost { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(239,68,68,.15); color: var(--danger); border: 1px solid rgba(239,68,68,.3); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  }
+  .badge-green { background: rgba(34,197,94,.15); color: var(--success); }
+  .badge-yellow { background: rgba(245,158,11,.15); color: var(--warning); }
+  .badge-red { background: rgba(239,68,68,.15); color: var(--danger); }
+  .badge-purple { background: rgba(99,91,255,.15); color: var(--accent); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 700; }
+  .stat-value.green { color: var(--success); }
+  .stat-value.purple { color: var(--accent); }
+
+  .account-list { display: flex; flex-direction: column; gap: 10px; }
+  .account-item {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    flex-wrap: wrap;
+  }
+  .account-info { flex: 1; min-width: 0; }
+  .account-id { font-size: 11px; color: var(--muted); font-family: monospace; }
+  .account-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .account-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .product-card {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+  }
+  .product-name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .product-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+  .product-price { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; padding: 12px 18px; font-size: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    animation: slideIn .2s ease;
+    max-width: 360px;
+  }
+  .toast.success { border-left: 3px solid var(--success); }
+  .toast.error { border-left: 3px solid var(--danger); }
+  @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .empty { text-align: center; padding: 40px; color: var(--muted); }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+  .loading { color: var(--muted); font-size: 14px; text-align: center; padding: 20px; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useCallback, createContext, useContext } = React;
+
+// ── API Helper ────────────────────────────────────────────────────────────────
+const api = async (path, opts = {}) => {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+};
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function Toast({ msg, type, onClose }) {
+  useEffect(() => { const t = setTimeout(onClose, 4000); return () => clearTimeout(t); }, []);
+  if (!msg) return null;
+  return <div className={`toast ${type}`}>{type === 'success' ? '✅ ' : '❌ '}{msg}</div>;
+}
+
+function useToast() {
+  const [toast, setToast] = useState(null);
+  const show = (msg, type = 'success') => setToast({ msg, type });
+  const ToastEl = toast ? <Toast {...toast} onClose={() => setToast(null)} /> : null;
+  return { show, ToastEl };
+}
+
+// ── Platform Dashboard ────────────────────────────────────────────────────────
+function PlatformDashboard() {
+  const [accounts, setAccounts] = useState([]);
+  const [revenue, setRevenue] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const { show, ToastEl } = useToast();
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const [acc, rev] = await Promise.all([
+        api('/api/accounts'),
+        api('/api/platform/revenue'),
+      ]);
+      setAccounts(acc.accounts);
+      setRevenue(rev);
+    } catch (e) { show(e.message, 'error'); }
+    setLoading(false);
+  };
+  useEffect(() => { load(); }, []);
+
+  const createAccount = async () => {
+    try {
+      const data = await api('/api/account', { method: 'POST', body: {} });
+      show(`Konto erstellt: ${data.accountId}`);
+      load();
+    } catch (e) { show(e.message, 'error'); }
+  };
+
+  const startOnboarding = async (accountId) => {
+    try {
+      const data = await api('/api/account-link', { method: 'POST', body: { accountId } });
+      window.open(data.url, '_blank');
+    } catch (e) { show(e.message, 'error'); }
+  };
+
+  const active = accounts.filter(a => a.chargesEnabled).length;
+
+  return (
+    <div>
+      <div className="stat-grid">
+        <div className="stat">
+          <div className="stat-label">Verbundene Konten</div>
+          <div className="stat-value purple">{accounts.length}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">Aktiv (Zahlungen frei)</div>
+          <div className="stat-value green">{active}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">Platform-Einnahmen</div>
+          <div className="stat-value green">€{revenue?.total_eur || '0.00'}</div>
+        </div>
+        <div className="stat">
+          <div className="stat-label">Platform-Fee</div>
+          <div className="stat-value purple">{window.PLATFORM_FEE || 10}%</div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
+          <h2 style={{marginBottom:0}}>Verbundene Konten</h2>
+          <div style={{display:'flex',gap:8}}>
+            <button className="btn btn-ghost" onClick={load}>⟳ Aktualisieren</button>
+            <button className="btn btn-primary" onClick={createAccount}>+ Konto erstellen</button>
+          </div>
+        </div>
+        {loading ? <div className="loading">Lade...</div> : accounts.length === 0 ? (
+          <div className="empty">
+            <div className="empty-icon">🏦</div>
+            <div>Noch keine verbundenen Konten</div>
+            <div style={{fontSize:13,marginTop:6}}>Klicke "+ Konto erstellen" um zu starten</div>
+          </div>
+        ) : (
+          <div className="account-list">
+            {accounts.map(a => (
+              <div className="account-item" key={a.id}>
+                <div className="account-info">
+                  <div className="account-name">{a.businessName || a.email || 'Unbenannt'}</div>
+                  <div className="account-id">{a.id} · {a.country}</div>
+                </div>
+                <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>
+                  {a.chargesEnabled
+                    ? <span className="badge badge-green">✓ Aktiv</span>
+                    : a.detailsSubmitted
+                      ? <span className="badge badge-yellow">⏳ Prüfung</span>
+                      : <span className="badge badge-red">Onboarding</span>}
+                  {!a.detailsSubmitted && (
+                    <button className="btn btn-primary" style={{fontSize:12,padding:'5px 12px'}}
+                      onClick={() => startOnboarding(a.id)}>
+                      Onboarding starten
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {revenue?.fees?.length > 0 && (
+        <div className="card">
+          <h2>Letzte Platform-Fees</h2>
+          <div style={{overflowX:'auto'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:13}}>
+              <thead>
+                <tr style={{color:'var(--muted)'}}>
+                  <th style={{textAlign:'left',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>ID</th>
+                  <th style={{textAlign:'right',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>Betrag</th>
+                  <th style={{textAlign:'right',padding:'6px 0',borderBottom:'1px solid var(--border)'}}>Datum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenue.fees.slice(0, 10).map(f => (
+                  <tr key={f.id}>
+                    <td style={{padding:'6px 0',fontFamily:'monospace',fontSize:11}}>{f.id}</td>
+                    <td style={{textAlign:'right',padding:'6px 0',color:'var(--success)',fontWeight:600}}>
+                      €{(f.amount/100).toFixed(2)}
+                    </td>
+                    <td style={{textAlign:'right',padding:'6px 0',color:'var(--muted)'}}>
+                      {new Date(f.created*1000).toLocaleDateString('de')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+      {ToastEl}
+    </div>
+  );
+}
+
+// ── Account Onboarding ────────────────────────────────────────────────────────
+function OnboardingPanel() {
+  const [accountId, setAccountId] = useState('');
+  const [status, setStatus] = useState(null);
+  const [newProduct, setNewProduct] = useState({ productName: '', productDescription: '', productPrice: 1000 });
+  const [products, setProducts] = useState([]);
+  const { show, ToastEl } = useToast();
+
+  const checkStatus = async () => {
+    if (!accountId.trim()) return;
+    try {
+      const s = await api(`/api/account/${accountId.trim()}/status`);
+      setStatus(s);
+      if (s.chargesEnabled) loadProducts();
+    } catch (e) { show(e.message, 'error'); }
+  };
+
+  const loadProducts = async () => {
+    try {
+      const data = await api(`/api/products/${accountId.trim()}`);
+      setProducts(data.products);
+    } catch (e) {}
+  };
+
+  const createProduct = async () => {
+    try {
+      const data = await api('/api/create-product', {
+        method: 'POST',
+        body: { accountId: accountId.trim(), ...newProduct },
+      });
+      show(`Produkt erstellt: ${data.productName} — €${(data.amount/100).toFixed(2)}`);
+      setNewProduct({ productName: '', productDescription: '', productPrice: 1000 });
+      loadProducts();
+    } catch (e) { show(e.message, 'error'); }
+  };
+
+  const checkout = async (priceId, productName) => {
+    try {
+      const data = await api('/api/create-checkout-session', {
+        method: 'POST',
+        body: { accountId: accountId.trim(), priceId, productName },
+      });
+      window.open(data.url, '_blank');
+    } catch (e) { show(e.message, 'error'); }
+  };
+
+  return (
+    <div>
+      <div className="card">
+        <h2>Konto prüfen</h2>
+        <div className="card-row">
+          <div className="field" style={{flex:2}}>
+            <label>Connected Account ID</label>
+            <input placeholder="acct_..." value={accountId} onChange={e => setAccountId(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && checkStatus()} />
+          </div>
+          <div style={{paddingTop:22}}>
+            <button className="btn btn-primary" onClick={checkStatus}>Status prüfen</button>
+          </div>
+        </div>
+
+        {status && (
+          <div style={{marginTop:16,display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}>
+            <span className={`badge ${status.chargesEnabled ? 'badge-green' : 'badge-yellow'}`}>
+              Zahlungen: {status.chargesEnabled ? '✓ Frei' : '⏳ Gesperrt'}
+            </span>
+            <span className={`badge ${status.detailsSubmitted ? 'badge-green' : 'badge-red'}`}>
+              Onboarding: {status.detailsSubmitted ? '✓ Abgeschlossen' : '⚠ Ausstehend'}
+            </span>
+            <span className={`badge ${status.payoutsEnabled ? 'badge-green' : 'badge-yellow'}`}>
+              Auszahlungen: {status.payoutsEnabled ? '✓ Frei' : '⏳ Gesperrt'}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {status?.chargesEnabled && (
+        <>
+          <div className="card">
+            <h2>Neues Produkt erstellen</h2>
+            <div className="card-row">
+              <div className="field" style={{flex:2}}>
+                <label>Produktname</label>
+                <input placeholder="z.B. Smart Home Paket" value={newProduct.productName}
+                  onChange={e => setNewProduct({...newProduct, productName: e.target.value})} />
+              </div>
+              <div className="field" style={{flex:2}}>
+                <label>Beschreibung</label>
+                <input placeholder="Kurze Beschreibung" value={newProduct.productDescription}
+                  onChange={e => setNewProduct({...newProduct, productDescription: e.target.value})} />
+              </div>
+              <div className="field">
+                <label>Preis (Cent)</label>
+                <input type="number" value={newProduct.productPrice}
+                  onChange={e => setNewProduct({...newProduct, productPrice: parseInt(e.target.value)})} />
+              </div>
+              <div style={{paddingTop:22}}>
+                <button className="btn btn-primary" onClick={createProduct}
+                  disabled={!newProduct.productName || !newProduct.productPrice}>
+                  Erstellen
+                </button>
+              </div>
+            </div>
+            <p style={{fontSize:12,color:'var(--muted)',marginTop:8}}>
+              Preis in Cent eingeben: 1000 = €10,00 · 4900 = €49,00
+            </p>
+          </div>
+
+          {products.length > 0 && (
+            <div className="card">
+              <h2>Produkte ({products.length})</h2>
+              <div className="product-grid">
+                {products.map(p => (
+                  <div className="product-card" key={p.id}>
+                    <div className="product-name">{p.name}</div>
+                    {p.description && <div className="product-desc">{p.description}</div>}
+                    {p.price && (
+                      <div className="product-price">
+                        €{(p.price.unit_amount/100).toFixed(2)}
+                      </div>
+                    )}
+                    {p.price && (
+                      <button className="btn btn-primary" style={{width:'100%',fontSize:13}}
+                        onClick={() => checkout(p.price.id, p.name)}>
+                        Checkout testen
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+      {ToastEl}
+    </div>
+  );
+}
+
+// ── Webhook Anleitung ─────────────────────────────────────────────────────────
+function WebhookGuide() {
+  return (
+    <div>
+      <div className="card">
+        <h2>Stripe Webhook einrichten</h2>
+        <ol style={{paddingLeft:20,lineHeight:2,color:'var(--muted)',fontSize:14}}>
+          <li>Stripe Dashboard öffnen: <a href="https://dashboard.stripe.com/workbench/webhooks" target="_blank">Workbench → Webhooks</a></li>
+          <li>Endpoint URL: <code style={{background:'var(--surface2)',padding:'2px 6px',borderRadius:4,color:'var(--text)'}}>https://DEIN-SERVICE.up.railway.app/webhook</code></li>
+          <li>Events: <code style={{background:'var(--surface2)',padding:'2px 6px',borderRadius:4,color:'var(--text)'}}>account.updated, checkout.session.completed, payment_intent.succeeded</code></li>
+          <li>Signing Secret kopieren → in Railway ENV als <code style={{background:'var(--surface2)',padding:'2px 6px',borderRadius:4,color:'var(--text)'}}>STRIPE_WEBHOOK_SECRET</code> setzen</li>
+        </ol>
+      </div>
+      <div className="card">
+        <h2>Railway Deployment</h2>
+        <div style={{fontSize:14,lineHeight:1.8,color:'var(--muted)'}}>
+          <p style={{marginBottom:12}}>Dieser Service ist Railway-ready. ENV-Variablen setzen:</p>
+          {[
+            ['STRIPE_SECRET_KEY', 'sk_test_... (Sandbox) oder sk_live_... (Produktion)'],
+            ['STRIPE_PUBLISHABLE_KEY', 'pk_test_... oder pk_live_...'],
+            ['STRIPE_WEBHOOK_SECRET', 'whsec_... (aus Workbench)'],
+            ['PLATFORM_FEE_PERCENT', '10 (= 10% Platform-Fee)'],
+            ['APP_URL', 'https://dein-service.up.railway.app'],
+          ].map(([k, v]) => (
+            <div key={k} style={{display:'flex',gap:12,marginBottom:8,flexWrap:'wrap'}}>
+              <code style={{background:'var(--surface2)',padding:'3px 8px',borderRadius:4,color:'var(--accent)',minWidth:220}}>{k}</code>
+              <span style={{fontSize:13}}>{v}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="card">
+        <h2>Test-Karten (Sandbox)</h2>
+        <div className="product-grid">
+          {[
+            { card: '4242 4242 4242 4242', label: '✅ Zahlung erfolgreich', cls: 'badge-green' },
+            { card: '4000 0025 0000 3155', label: '🔐 3DS-Authentifizierung', cls: 'badge-yellow' },
+            { card: '4000 0000 0000 9995', label: '❌ Zahlung abgelehnt', cls: 'badge-red' },
+          ].map(({ card, label, cls }) => (
+            <div className="product-card" key={card}>
+              <div className={`badge ${cls}`} style={{marginBottom:8}}>{label}</div>
+              <code style={{fontSize:15,letterSpacing:2,color:'var(--text)'}}>{card}</code>
+              <div style={{fontSize:11,color:'var(--muted)',marginTop:6}}>CVC: beliebig · Datum: beliebig (Zukunft)</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App Root ──────────────────────────────────────────────────────────────────
+const TABS = [
+  { id: 'platform', label: '📊 Platform' },
+  { id: 'onboarding', label: '🏦 Konten & Produkte' },
+  { id: 'webhook', label: '⚙️ Setup' },
+];
+
+function App() {
+  const [tab, setTab] = useState('platform');
+
+  // Onboarding-Rückkehr aus Stripe URL erkennen
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('accountId') && window.location.pathname.includes('return')) {
+      setTab('onboarding');
+    }
+  }, []);
+
+  return (
+    <>
+      <nav>
+        <div className="nav-brand">ineedit<span>.connect</span></div>
+        <div className="nav-links">
+          {TABS.map(t => (
+            <button key={t.id} className={`nav-tab ${tab === t.id ? 'active' : ''}`}
+              onClick={() => setTab(t.id)}>{t.label}</button>
+          ))}
+        </div>
+      </nav>
+      <div className="main">
+        <div className="hero">
+          <h1>Stripe Connect Platform</h1>
+          <p>Multi-Vendor Zahlungsplattform — ineedit.com.co / AIITEC SaaS</p>
+        </div>
+        {tab === 'platform' && <PlatformDashboard />}
+        {tab === 'onboarding' && <OnboardingPanel />}
+        {tab === 'webhook' && <WebhookGuide />}
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
