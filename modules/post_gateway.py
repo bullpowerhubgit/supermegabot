@@ -113,7 +113,8 @@ _ERRORS = re.compile(
 _SECRET = re.compile(
     r'\bsk_live_[A-Za-z0-9]{24,}|\bsk_test_[A-Za-z0-9]{24,}'
     r'|\bANTH[A-Za-z0-9_-]{30,}|\bAIza[A-Za-z0-9_-]{35,}'
-    r'|(?i)api[_\s]?key\s*[=:]\s*\S{10,}'
+    r'|api[_\s]?key\s*[=:]\s*\S{10,}',
+    re.IGNORECASE
 )
 _PLATFORM_LIMITS = {
     "facebook":  (20, 63000, 30),
