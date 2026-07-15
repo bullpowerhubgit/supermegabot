@@ -53,33 +53,52 @@ KAUFSIGNALE erkennen: "interessant", "klingt gut", "ja gerne", "wie viel", "best
 
 
 async def _ai_response(call_sid: str, user_text: str) -> str:
-    """Generiert Sofia-Antwort via Claude Haiku."""
+    """Generiert Sofia-Antwort: Groq (primär) → Claude (Fallback) → Default."""
     conv = _conversations.setdefault(call_sid, {"history": [], "buy_signal": False, "product": None})
     conv["history"].append({"role": "user", "content": user_text})
 
-    messages = conv["history"][-10:]  # max 10 turns
+    messages = [{"role": "system", "content": SOFIA_SYSTEM}] + conv["history"][-10:]
 
-    try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 150,
-                    "system": SOFIA_SYSTEM,
-                    "messages": messages,
-                },
-            ) as r:
-                data = await r.json()
-                reply = data.get("content", [{}])[0].get("text", "Entschuldigung, können Sie das wiederholen?")
-    except Exception as e:
-        log.warning("Sofia AI: %s", e)
-        reply = "Entschuldigung, einen Moment bitte."
+    # 1. Groq (llama-3.1-8b-instant — schnell, kostenlos)
+    groq_key = os.getenv("GROQ_API_KEY")
+    if groq_key:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=6)) as s:
+                async with s.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    json={"model": "llama-3.1-8b-instant", "max_tokens": 120, "messages": messages},
+                ) as r:
+                    data = await r.json()
+            reply = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+            if reply:
+                conv["history"].append({"role": "assistant", "content": reply})
+                return reply.strip()
+        except Exception as e:
+            log.warning("Sofia Groq: %s", e)
+
+    # 2. Claude Haiku (Fallback)
+    anthropic_key = ANTHROPIC_KEY
+    if anthropic_key:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 120,
+                          "system": SOFIA_SYSTEM,
+                          "messages": [m for m in conv["history"][-8:] if m["role"] != "system"]},
+                ) as r:
+                    data = await r.json()
+            reply = (data.get("content") or [{"text": ""}])[0].get("text", "").strip()
+            if reply:
+                conv["history"].append({"role": "assistant", "content": reply})
+                return reply
+        except Exception as e:
+            log.warning("Sofia Claude: %s", e)
+
+    reply = "Entschuldigung, einen Moment bitte."
 
     # Kaufsignal detektieren
     if "[KAUFSIGNAL]" in reply or "[SMS_SENDEN]" in reply:
