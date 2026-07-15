@@ -1,22 +1,29 @@
 # SuperMegaBot — CURRENT STATUS
 **Stand: 2026-07-15 ~17:30 CEST**
 
-## ✅ GMC Feed Registrierung — ABGESCHLOSSEN (2026-07-15)
+## ✅ Session 2026-07-15 Abend — GMC + Twilio + RAILWAY_TOKEN
 
-**Google Merchant Center Account:** 5734366162
-**Feed:** PRODUCTS SOURCE 18
-**URL:** `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
-- ✅ Als Scheduled Fetch (täglich 00:00 Uhr) registriert
-- ✅ 250 Produkte verarbeitet, 66 neue Produkte in GMC aufgenommen
-- ✅ Deutschland als Zielland (+ 99 weitere, nicht kritisch)
-- ✅ Feed-Code: `google_shopping_feed.py` — `g:content_language=de` + `g:target_country=DE` hinzugefügt
-- ⚠️ Sprache in GMC-UI zeigt noch "English" (ℹ-Icon, kein Edit-Pencil sichtbar) — Feed-Items haben jetzt aber korrekte `de`-Tags
-- ⚠️ Schedule: 00:00 Uhr (nicht 06:00 wie gewollt — optional änderbar)
+### Erledigte Aufgaben:
 
-**Noch offen:**
-- [ ] Twilio Webhooks: Voice=`/api/phone/incoming`, SMS=`/api/sms/incoming` für +17625685298
-- [ ] GitHub Actions RAILWAY_TOKEN erneuern (abgelaufen)
-- [ ] WhatsApp Token erneuern (abgelaufen)
+1. ✅ **GMC Feed registriert** — PRODUCTS SOURCE 18 in Merchant Center 5734366162
+   - URL: `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
+   - Scheduled Fetch: täglich, 250 Produkte verarbeitet, 66 neue aufgenommen
+   - Zielland: Deutschland (+ 99 weitere — nicht kritisch)
+   - GMC-UI zeigt Sprache noch als "English" (kein Edit-Pencil in UI sichtbar)
+   - Feed-Code korrigiert: `g:content_language=de` + `g:target_country=DE` pro Item
+
+2. ✅ **Twilio Webhooks gesetzt** (+17625685298)
+   - Voice: `https://supermegabot-production.up.railway.app/api/phone/incoming` ✅
+   - SMS: `https://supermegabot-production.up.railway.app/api/sms/incoming` ✅ (war bereits korrekt)
+
+3. ✅ **GitHub Actions RAILWAY_TOKEN erneuert** — gesetzt am 2026-07-15T18:14:06Z
+
+4. ✅ **WhatsApp Token** — tatsächlich noch GÜLTIG (gibt "SuperMegaBotSystem" zurück) — kein Handlungsbedarf
+
+### Noch offen (optionale Verbesserungen):
+- [ ] GMC Feed-Schedule: 00:00 Uhr → 06:00 Uhr Europe/Berlin (optional)
+- [ ] GMC Sprache in UI: "English" → "German" (Feed-Items haben jetzt de-Tags, UI-Änderung nur optional)
+- [ ] GMC Länder eingrenzen: Deutschland + 99 weitere → nur Deutschland (optional)
 
 ---
 
