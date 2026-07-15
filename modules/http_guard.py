@@ -312,13 +312,9 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
     if method.upper() == "POST" and "api.telegram.org" in url and "sendMessage" in url:
         allowed = await _tg_rate_check()
         if not allowed:
-            # Silently drop — kein Exception, kein Crash, nur verwerfen
-            # Gibt einen gefakten 200-Response zurück damit rufende Module nicht crashen
             log.debug("TelegramGuard: DROP %s (rate limit)", url[:80])
-            raise ClientResponseError(
-                request_info=None, history=(), status=429,
-                message="TelegramGuard: rate limited (1 msg/3s)"
-            )
+            # Nutze aiohttp.ClientError — hat funktionierenden __str__()
+            raise aiohttp.ClientError("TelegramGuard: rate limited (1 msg/3s)")
 
     content_type = _classify_url(url, method)
 
