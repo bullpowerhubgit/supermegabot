@@ -34,6 +34,7 @@ ALIASES: List[Tuple[str, str, int]] = [
 ]
 
 _rr_idx = 0
+_GMAIL_DAILY_EXHAUSTED: set = set()  # Session-persistentes Set für 550-5.4.5-Accounts
 
 
 def _load_secrets() -> Dict[str, str]:
@@ -230,13 +231,33 @@ def send_email(
         return False, ""
 
     for acc in pool:
+        if acc.email in _GMAIL_DAILY_EXHAUSTED:
+            continue
         try:
             msg = _build_message(acc, to_email, subject, body, html=html)
             _smtp_send(acc, msg, to_email)
             log.info("SMTP → %s via %s", to_email, acc.email)
             return True, acc.email
+        except smtplib.SMTPDataError as e:
+            if e.smtp_code == 550 and b"5.4.5" in (e.smtp_error or b""):
+                _GMAIL_DAILY_EXHAUSTED.add(acc.email)
+                log.warning("SMTP %s Tageslimit — für heute deaktiviert", acc.email)
+            else:
+                log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
+        except smtplib.SMTPRecipientsRefused as e:
+            codes = {str(v[0]) for v in e.recipients.values()}
+            if "550" in codes:
+                _GMAIL_DAILY_EXHAUSTED.add(acc.email)
+                log.warning("SMTP %s Tageslimit (Recipients) — für heute deaktiviert", acc.email)
+            else:
+                log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
         except Exception as e:
-            log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
+            err_str = str(e)
+            if "5.4.5" in err_str or "Daily user sending limit" in err_str:
+                _GMAIL_DAILY_EXHAUSTED.add(acc.email)
+                log.warning("SMTP %s Tageslimit — für heute deaktiviert", acc.email)
+            else:
+                log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
     return False, ""
 
 

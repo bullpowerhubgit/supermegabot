@@ -614,7 +614,8 @@ async def ai_complete(
                         if text:
                             _cb_success("OpenAI")
                             return text
-                    if r.status == 429:
+                        # leere 200-Antwort → kein _cb_fail
+                    elif r.status == 429:
                         log.debug("OpenAI: Rate-Limit — 120s Pause")
                         _cb_rate_limit("OpenAI", 120)
                     elif r.status in (401, 403):
@@ -642,6 +643,8 @@ async def ai_complete(
                             if text:
                                 _cb_success("Perplexity")
                                 return text
+                        elif r.status == 429:
+                            _cb_rate_limit("Perplexity", 90)
                         elif r.status in (401, 403, 402):
                             _cb_fail("Perplexity")
                         else:
