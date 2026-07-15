@@ -432,6 +432,17 @@ async def post_to_all(
     if not message:
         message = await _ai_caption(topic or "Smart Home E-Commerce Automatisierung")
 
+    # ── PostGuard: Qualitätsprüfung vor jedem Post ────────────────────────
+    try:
+        from modules.post_guard import guard
+        ok, reason = await guard.check("social", text=message, link=link or SHOP_URL)
+        if not ok:
+            log.warning("PostGuard BLOCKIERT: %s", reason)
+            await _tg(f"🚫 <b>PostGuard blockiert Post</b>\nGrund: {reason}\n\nText: <i>{message[:200]}</i>")
+            return {"ok": False, "blocked": True, "reason": reason}
+    except ImportError:
+        log.warning("PostGuard nicht verfügbar — Post ohne Check")
+
     active = platforms or ["facebook"]
     if image_url and "instagram" not in active:
         active.append("instagram")
