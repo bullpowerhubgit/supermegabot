@@ -248,6 +248,11 @@ def _get_smtp_sent_today_ere(account_name: str) -> int:
 
 def _smtp_send(acc: Dict, to_email: str, subject: str, html_body: str, text_body: str = "") -> bool:
     """Send one email via SMTP. Returns True on success."""
+    from modules.email_guard import validate_email
+    ok_g, errs = validate_email(subject, html_body, to_email)
+    if not ok_g:
+        log.warning("EmailGuard BLOCK in _smtp_send: %s", errs)
+        return False
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -734,10 +739,15 @@ async def _generate_personalized_email(lead: Dict) -> Tuple[str, str]:
     source  = lead.get("source", "")
 
     prompt = (
-        f"Du bist E-Mail-Texter für den deutschen Online-Shop ineedit.com.co (Smart Home, Solar, Gadgets).\n"
+        f"Du bist E-Mail-Texter für den deutschen Online-Shop ineedit.com.co (Smart Home, Solar, Gadgets, KI-Tools).\n"
         f"Schreibe eine kurze, authentische Betreffzeile (max 65 Zeichen) und einen Intro-Absatz (2-3 Sätze, max 120 Wörter) "
         f"für diese Person:\n"
         f"Name: {name}\nFirma: {company or '—'}\nInteressen/Nische: {niche}\nQuelle: {source}\n\n"
+        f"VERBOTEN (NIEMALS verwenden):\n"
+        f"- Phrasen wie 'Du nutzt nur X% deines Potenzials', 'Die meisten Menschen nutzen weniger als...'\n"
+        f"- Life-Coach- oder Finanz-Motivations-Content\n"
+        f"- Fake-Garantien, übertriebene Versprechen\n"
+        f"- Placeholder-Text wie [NAME], [LINK], TODO, undefined\n\n"
         f"Format (nur JSON, keine Erklärung):\n"
         f'{{ "subject": "...", "intro": "..." }}'
     )
