@@ -1,0 +1,26 @@
+name: Verify All Servers
+
+on:
+  push:
+    paths:
+      - 'modules/**'
+      - 'dashboard/server.py'
+      - 'aiitec_server.py'
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install aiohttp python-dotenv 2>/dev/null || true
+      - name: Alle Module
+        run: |
+          for f in modules/*.py; do python3 -m py_compile "$f" || exit 1; done
+          echo "✅ $(ls modules/*.py | wc -l) Module OK"
+      - name: MegaDash
+        run: python3 -m py_compile dashboard/server.py && echo "✅ MegaDash"
+      - name: AIITEC Server
+        run: python3 -m py_compile aiitec_server.py && echo "✅ AIITEC"
