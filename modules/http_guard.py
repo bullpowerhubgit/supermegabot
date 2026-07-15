@@ -108,47 +108,174 @@ def _classify_url(url: str, method: str) -> Optional[str]:
 
 
 def _extract_text(url: str, content_type: str, kwargs: dict) -> str:
-    """Versucht den Post-Text aus den Request-Parametern zu extrahieren."""
-    # JSON Body
+    """
+    Extrahiert den Post-Text aus Request-Parametern.
+    Unterstützt: Facebook/IG, Twitter, LinkedIn, TikTok, Pinterest,
+                 SendGrid, Klaviyo, Mailchimp, Twilio, Shopify.
+    """
+    import re as _re
+
+    def _clean(s):
+        if not isinstance(s, str):
+            return ""
+        # HTML-Tags entfernen für Lesbarkeit
+        s = _re.sub(r"<[^>]{1,200}>", " ", s)
+        s = _re.sub(r"\s+", " ", s).strip()
+        return s[:1000]
+
+    def _first_nonempty(*vals):
+        for v in vals:
+            if isinstance(v, str) and len(v.strip()) > 10:
+                return _clean(v)
+        return ""
+
     body = kwargs.get("json") or {}
+    data = kwargs.get("data") or {}
+
     if isinstance(body, dict):
-        # Social: message, text, status, body, content
-        for key in ("message", "text", "status", "body", "content", "caption",
-                    "title", "subject", "description", "commentary"):
-            val = body.get(key) or ""
-            if val and isinstance(val, str) and len(val) > 5:
-                return val
-        # SendGrid
-        if "content" in body and isinstance(body["content"], list):
-            for c in body["content"]:
-                if c.get("value"):
-                    return c["value"][:500]
-        # Shopify product
+        # ── Facebook / Instagram ──────────────────────────────────────────────
+        t = _first_nonempty(body.get("message"), body.get("caption"), body.get("description"))
+        if t: return t
+
+        # ── Twitter ──────────────────────────────────────────────────────────
+        t = _first_nonempty(body.get("text"), body.get("status"))
+        if t: return t
+
+        # ── LinkedIn ─────────────────────────────────────────────────────────
+        if "specificContent" in body:
+            sc = body["specificContent"]
+            share = sc.get("com.linkedin.ugc.ShareContent", {})
+            text_obj = share.get("shareCommentary", {})
+            t = _first_nonempty(text_obj.get("text"))
+            if t: return t
+        if "commentary" in body:
+            t = _first_nonempty(body.get("commentary"))
+            if t: return t
+        # LinkedIn ugcPosts format
+        if "author" in body and "lifecycleState" in body:
+            media = body.get("specificContent", {}).get("com.linkedin.ugc.ShareContent", {})
+            t = _first_nonempty(media.get("shareCommentary", {}).get("text"))
+            if t: return t
+
+        # ── TikTok ───────────────────────────────────────────────────────────
+        post_info = body.get("post_info", {})
+        t = _first_nonempty(post_info.get("title"), post_info.get("description"))
+        if t: return t
+
+        # ── Pinterest ────────────────────────────────────────────────────────
+        t = _first_nonempty(body.get("note"), body.get("title"), body.get("description"))
+        if t: return t
+
+        # ── SendGrid ─────────────────────────────────────────────────────────
+        if "personalizations" in body or "from" in body:
+            subject = body.get("subject", "")
+            content_list = body.get("content", [])
+            content_text = " ".join(c.get("value", "") for c in content_list if isinstance(c, dict))
+            t = _first_nonempty(subject + " " + content_text)
+            if t: return t
+
+        # ── Klaviyo ──────────────────────────────────────────────────────────
+        if "data" in body and isinstance(body["data"], dict):
+            attrs = body["data"].get("attributes", {})
+            t = _first_nonempty(
+                attrs.get("name"), attrs.get("subject"),
+                str(attrs.get("send_options", {}))
+            )
+            if t: return t
+        # Klaviyo track
+        if "event" in body:
+            t = _first_nonempty(
+                body.get("event"),
+                str(body.get("properties", {}))[:200]
+            )
+            if t: return t
+
+        # ── Mailchimp ─────────────────────────────────────────────────────────
+        if "settings" in body:
+            s = body["settings"]
+            t = _first_nonempty(s.get("subject_line"), s.get("title"))
+            if t: return t
+        if "message" in body and isinstance(body["message"], dict):
+            msg = body["message"]
+            t = _first_nonempty(msg.get("subject"), msg.get("text"), msg.get("html"))
+            if t: return t
+
+        # ── Shopify product ───────────────────────────────────────────────────
         if "product" in body:
             p = body["product"]
-            return f"{p.get('title','')}: {p.get('body_html','')}"[:500]
+            title = p.get("title", "")
+            desc = _re.sub(r"<[^>]+>", " ", p.get("body_html", ""))
+            t = _first_nonempty(f"{title} {desc}")
+            if t: return t
 
-    # Form data (data=)
-    data = kwargs.get("data") or {}
+        # ── Generic fallback keys ─────────────────────────────────────────────
+        for key in ("body", "content", "html", "text_body", "post_text"):
+            t = _first_nonempty(body.get(key))
+            if t: return t
+
+    # ── Form data (Twilio SMS, etc.) ──────────────────────────────────────────
     if isinstance(data, dict):
-        for key in ("Body", "text", "message", "body", "content"):
+        for key in ("Body", "body", "text", "message", "content", "Message"):
             val = data.get(key) or ""
-            if val and isinstance(val, str):
-                return val
+            t = _first_nonempty(val)
+            if t: return t
 
-    return url  # Fallback: URL als Text wenn nichts gefunden
+    return url  # Fallback: URL → wird als "Extraktion fehlgeschlagen" behandelt
+
+
+def _url_to_platform(url: str) -> str:
+    """Extrahiert den Plattform-Namen aus der URL."""
+    if "facebook.com" in url or "fb.com" in url:
+        return "facebook"
+    if "instagram.com" in url:
+        return "instagram"
+    if "twitter.com" in url or "x.com" in url:
+        return "twitter"
+    if "linkedin.com" in url:
+        return "linkedin"
+    if "tiktok" in url:
+        return "tiktok"
+    if "pinterest.com" in url:
+        return "pinterest"
+    if "sendgrid.com" in url:
+        return "sendgrid"
+    if "klaviyo.com" in url:
+        return "klaviyo"
+    if "mailchimp.com" in url:
+        return "mailchimp"
+    if "twilio.com" in url:
+        return "sms"
+    if "myshopify.com" in url:
+        return "shopify"
+    if "telegram.org" in url:
+        return "telegram"
+    return "unknown"
 
 
 async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool, str]:
-    """Führt den PostGuard-Check durch. Gibt (allowed, reason) zurück."""
+    """Führt den 5-Layer PostValidator-Check durch. Gibt (allowed, reason) zurück.
+    FAIL-SAFE: Bei jedem Fehler → BLOCKIEREN (nie durchlassen!)
+    """
+    text = _extract_text(url, content_type, kwargs)
+
+    # Wenn Text nur URL ist (Extraktion fehlgeschlagen) → blockieren
+    if text == url or len(text.strip()) < 15:
+        log.warning("HttpGuard: Text-Extraktion fehlgeschlagen für %s — BLOCK", url[:60])
+        return False, "text_extraktion_fehlgeschlagen"
+
     try:
-        from modules.post_guard import guard
-        text = _extract_text(url, content_type, kwargs)
-        ok, reason = await guard.check(content_type, text=text)
+        from modules.post_validator import validate_post
+        platform = _url_to_platform(url)
+        ok, layer, reason = await validate_post(
+            text=text,
+            platform=platform,
+            content_type=content_type,
+        )
         return ok, reason
     except Exception as e:
-        log.debug("HttpGuard PostGuard-Fehler: %s", e)
-        return True, "guard_unavailable"  # Bei Guard-Fehler: durchlassen
+        # KRITISCH: Bei Guard-Fehler NIEMALS durchlassen
+        log.error("HttpGuard PostValidator-Fehler: %s — BLOCK (fail-safe)", e)
+        return False, f"validator_error_blocked: {e}"
 
 
 # ── aiohttp Monkey-Patch ──────────────────────────────────────────────────────

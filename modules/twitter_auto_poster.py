@@ -101,6 +101,13 @@ async def generate_tweet(topic: str, product: str = "AI Income Machine") -> str 
 
 async def post_tweet(text: str) -> dict:
     """Post a tweet via Twitter API v2 with OAuth 1.0a."""
+    try:
+        from modules.post_guard import validate_and_log
+        if not await validate_and_log(text, platform="twitter"):
+            return {"ok": False, "blocked": True, "reason": "PostGuard: Qualitätsprüfung nicht bestanden"}
+    except Exception:
+        pass
+
     if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
         return {"ok": False, "error": "Twitter OAuth 1.0a credentials not set (need API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)"}
 
