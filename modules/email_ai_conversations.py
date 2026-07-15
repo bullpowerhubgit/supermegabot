@@ -162,25 +162,27 @@ Du antwortest auf eingehende Business-Emails auf Deutsch — lebhaft, menschlich
 
 Stil:
 - Persönlich und warm, nie roboterhaft
-- Kurz und prägnant (max 150 Wörter)
+- Kurz und prägnant (max 120 Wörter)
 - Immer mit konkretem nächsten Schritt
 - Begeistert aber nicht übertrieben
-- Schreibe wie ein Mensch, nicht wie Marketing-Text
+- Schreibe wie ein echter Mensch — NICHT wie Marketing-Text
+- KEINE Platzhalter wie [Name], [Produkt], {variable} verwenden
 
 Produkte:
-- Starter €49/Monat: 1 Shop, Grundfunktionen
-- Pro €99/Monat: 3 Shops, alle KI-Features
-- Enterprise €299/Monat: Unlimited, White-Label
-- 14 Tage KOSTENLOS testen (kein Credit-Card nötig)
+- Starter €49/Monat: 1 Shop, Grundfunktionen, KI-Automatisierung
+- Pro €99/Monat: 3 Shops, alle KI-Features, Priorität-Support
+- Enterprise €299/Monat: Unlimited Shops, White-Label, dedizierter Account Manager
+- 14 Tage KOSTENLOS testen (keine Kreditkarte nötig)
 
-Demo: https://bullpower-hub.vercel.app
-Kalender: https://cal.com/aiitec
-Stripe Starter: https://buy.stripe.com/starter
+Kauf-Links:
+- Starter: https://buy.stripe.com/plink_1Ti4nuRJECiV6vSmFVom8L5E
+- Pro: https://buy.stripe.com/plink_1Ti4nvRJECiV6vSmFHKXWjbz
+- Enterprise: https://buy.stripe.com/plink_1Ti4nwRJECiV6vSmgL2lZ7uk
+- Demo buchen: https://cal.com/aiitec
 
-Signatur immer:
-Rudolf Sarkany | AiiteC
-Automatisierung die wirklich funktioniert
-https://bullpower-hub.vercel.app
+Signatur IMMER am Ende (genauso):
+Mit freundlichen Grüßen,
+Rudolf Sarkany | AiiteC – KI-Automatisierung für E-Commerce
 """
 
 INTENT_PROMPTS = {
@@ -236,15 +238,50 @@ INTENT_PROMPTS = {
         "Bestätige die Buchung und freue dich auf das Gespräch."
     ),
     "general": (
-        "Allgemeine Antwort auf eine unklare Email. "
-        "Sei freundlich, frage kurz was der Interessent konkret sucht, "
-        "erwähne die kostenlose Demo als nächsten Schritt."
+        "Allgemeine/persönliche Antwort auf eine Email die keinem klaren Intent entspricht. "
+        "Lies den Email-Inhalt sorgfältig und antworte PASSEND auf die konkrete Frage oder Situation. "
+        "Sei menschlich, persönlich, hilfreich. "
+        "Falls es sich um eine rein persönliche Email handelt (kein Verkaufsgespräch nötig), "
+        "antworte entsprechend freundlich ohne Sales-Pitch. "
+        "Erwähne die kostenlose Demo nur wenn es thematisch passt."
     ),
 }
 
+_REPLY_PLACEHOLDER_RE = re.compile(
+    r'\[(?:Name|Produkt|Link|URL|Firma|Company|INSERT|PLATZHALTER)[^\]]*\]'
+    r'|\{[a-z_]+\}(?!\d)'      # unersetztes {variable}
+    r'|\{\{[^}]+\}\}'          # unersetztes {{variable}}
+    r'|als\s+ki[- ]sprachmodell'
+    r'|ich\s+bin\s+(eine\s+)?ki\b',
+    re.IGNORECASE,
+)
+_FAKE_URL_RE = re.compile(
+    r'example\.com|yoursite|buy\.stripe\.com/starter\b|'
+    r'bullpower-hub\.vercel\.app|localhost|127\.0\.0\.1',
+    re.IGNORECASE,
+)
+
+
+def _validate_email_reply(text: str) -> tuple[bool, str]:
+    """Prüft ob eine generierte Email-Antwort sendbar ist."""
+    if not text or len(text.strip()) < 40:
+        return False, "zu kurz"
+    if len(text) > 3000:
+        return False, "zu lang"
+    m = _REPLY_PLACEHOLDER_RE.search(text)
+    if m:
+        return False, f"Platzhalter gefunden: {m.group()!r}"
+    m = _FAKE_URL_RE.search(text)
+    if m:
+        return False, f"Ungültige URL: {m.group()!r}"
+    if text.count("{") > 2 or text.count("[") > 3:
+        return False, "zu viele unbearbeitete Klammern"
+    return True, ""
+
+
 async def generate_reply(incoming_email: str, company: str,
                           intent: str, thread_history: str = "") -> str:
-    """Claude generiert lebhafte, personalisierte Antwort."""
+    """Claude generiert lebhafte, personalisierte Antwort — mit Qualitätsprüfung."""
     from modules.ai_client import ai_complete
     intent_instruction = INTENT_PROMPTS.get(intent, INTENT_PROMPTS["general"])
     ctx = f"\nKonversationsverlauf:\n{thread_history}\n" if thread_history else ""
@@ -253,17 +290,28 @@ async def generate_reply(incoming_email: str, company: str,
         f"---\n{incoming_email[:1000]}\n---\n"
         f"{ctx}\n"
         f"Erkannter Intent: {intent}\n\n"
-        f"Aufgabe: {intent_instruction}"
+        f"Aufgabe: {intent_instruction}\n\n"
+        f"WICHTIG: Keine Platzhalter wie [Name] oder {{variable}} verwenden. "
+        f"Verwende echte Links aus dem System-Prompt. Endet immer mit der Signatur."
     )
-    text = await ai_complete(prompt, system=KONVERSATIONS_SYSTEM, max_tokens=300)
-    if text:
-        return text.strip()
+    for attempt in range(2):
+        text = await ai_complete(prompt, system=KONVERSATIONS_SYSTEM, max_tokens=350)
+        if text:
+            text = text.strip()
+            ok, reason = _validate_email_reply(text)
+            if ok:
+                return text
+            log.warning("Email-Reply Qualitätsfehler (Versuch %d): %s", attempt + 1, reason)
+
+    # Sicheres Fallback-Template
+    cal_link = "https://cal.com/aiitec"
     return (
-        f"Vielen Dank für Ihre Antwort!\n\n"
-        f"Gerne helfe ich weiter. Hier ist der Link zur kostenlosen Demo:\n"
-        f"{STRIPE_LINKS['demo']}\n\n"
-        f"Bei Fragen stehe ich jederzeit zur Verfügung.\n\n"
-        f"Beste Grüße\nRudolf Sarkany | AiiteC"
+        f"Vielen Dank für Ihre Nachricht!\n\n"
+        f"Ich freue mich über Ihr Interesse und melde mich in Kürze persönlich bei Ihnen.\n\n"
+        f"Falls Sie sofort starten möchten, buchen Sie hier direkt einen 15-Minuten-Call:\n"
+        f"{cal_link}\n\n"
+        f"Mit freundlichen Grüßen,\n"
+        f"Rudolf Sarkany | AiiteC – KI-Automatisierung für E-Commerce"
     )
 
 # ── Gmail IMAP Reader ─────────────────────────────────────────────────────────
@@ -492,6 +540,14 @@ async def process_all_inboxes(since_hours: int = 1) -> Dict:
             # Antwort generieren
             ai_reply = await generate_reply(body, company, intent, thread_history)
 
+            # Finale Qualitätsprüfung vor dem Senden
+            reply_ok, reply_err = _validate_email_reply(ai_reply)
+            if not reply_ok:
+                log.error("Email-Reply BLOCKIERT [%s]: %s | Reply: %s...",
+                          from_email, reply_err, ai_reply[:80])
+                await _tg_notify_block(from_email, company, intent, reply_err)
+                continue
+
             # Unsubscribe verarbeiten
             if intent == "unsubscribe":
                 unsubscribes += 1
@@ -578,6 +634,26 @@ async def _tg_notify(from_email: str, company: str,
             )
     except Exception:
         pass
+
+async def _tg_notify_block(from_email: str, company: str, intent: str, reason: str) -> None:
+    """Telegram-Alert wenn Email-Antwort blockiert wird."""
+    msg = (
+        f"⛔ <b>Email-Antwort BLOCKIERT</b>\n"
+        f"Von: <b>{company}</b> ({from_email})\n"
+        f"Intent: <b>{intent}</b>\n"
+        f"Grund: <code>{reason}</code>\n\n"
+        f"<i>Bitte manuell beantworten!</i>"
+    )
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{TG_TOKEN()}/sendMessage",
+                json={"chat_id": TG_CHAT(), "text": msg, "parse_mode": "HTML"},
+                timeout=aiohttp.ClientTimeout(total=8)
+            )
+    except Exception:
+        pass
+
 
 # ── Stats ─────────────────────────────────────────────────────────────────────
 def get_stats() -> Dict:
