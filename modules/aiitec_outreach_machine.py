@@ -155,6 +155,25 @@ FOLLOWUP_DAYS_2   = 7
 # Vollautonomer Multi-Run: 4x täglich (Maximum)
 DAILY_RUNS        = [(7, 0), (10, 0), (14, 0), (18, 0)]  # 4 Läufe/Tag
 
+# Stripe Payment Links — direkt in jede Email
+_STRIPE_STARTER    = os.getenv("STRIPE_LINK_STARTER",    "https://buy.stripe.com/plink_1Ti4nuRJECiV6vSmFVom8L5E")
+_STRIPE_PRO        = os.getenv("STRIPE_LINK_PRO",        "https://buy.stripe.com/plink_1Ti4nvRJECiV6vSmFHKXWjbz")
+_STRIPE_ENTERPRISE = os.getenv("STRIPE_LINK_ENTERPRISE", "https://buy.stripe.com/plink_1Ti4nwRJECiV6vSmgL2lZ7uk")
+
+_TRACK_PAYMENT = {
+    "A": (_STRIPE_STARTER,    "Lead Agent €500/Mo starten →"),
+    "B": (_STRIPE_PRO,        "Compliance Wächter €1.500/Mo starten →"),
+    "C": (_STRIPE_ENTERPRISE, "Intelligence Suite €2.000/Mo starten →"),
+}
+
+# Hot-Lead-Erkennung
+_HOT_KEYWORDS = (
+    "interessiert", "interesse", "demo", "termin", "angebot", "preis",
+    "kosten", "kaufen", "buchen", "jetzt", "sofort", "wann", "wie viel",
+    "anfragen", "ja", "yes", "proceed", "machen wir", "klingt gut",
+    "call", "meeting", "gespräch", "weiter",
+)
+
 # ── Produkte ──────────────────────────────────────────────────────────────────
 
 PRODUCTS = {
@@ -1193,6 +1212,16 @@ def _personalize(company: dict, stage: int) -> tuple[str, str]:
     }
     subject = tpl["subject"].format(**ctx)
     body    = tpl["body"].format(**ctx)
+
+    # Payment Link ans Ende jeder Email
+    pay_url, pay_label = _TRACK_PAYMENT.get(track, _TRACK_PAYMENT["A"])
+    body += (
+        f"\n\n──────────────────────────\n"
+        f"👉 {pay_label}\n"
+        f"{pay_url}\n"
+        f"(Monatlich kündbar · keine Mindestlaufzeit)\n"
+        f"──────────────────────────"
+    )
     return subject, body
 
 # ── Outreach Loop ─────────────────────────────────────────────────────────────
@@ -1312,6 +1341,25 @@ async def _tg(text: str) -> None:
             )
     except Exception as e:
         log.warning("Telegram: %s", e)
+
+async def _hot_lead_alarm(from_email: str, subject: str, body: str, track: str = "A") -> None:
+    """Sofort-Alarm wenn Kaufsignal erkannt."""
+    pay_url, pay_label = _TRACK_PAYMENT.get(track, _TRACK_PAYMENT["A"])
+    msg = (
+        f"🔥 *HOT LEAD — Kaufsignal!*\n\n"
+        f"📧 Von: `{from_email}`\n"
+        f"💬 Betreff: {subject[:60]}\n"
+        f"📝 Nachricht: {body[:250]}\n\n"
+        f"💳 *{pay_label}*\n{pay_url}\n\n"
+        f"⚡ Jetzt anrufen oder direkt zurückschreiben!"
+    )
+    await _tg(msg)
+
+
+def _is_hot_lead(text: str) -> bool:
+    lower = text.lower()
+    return any(kw in lower for kw in _HOT_KEYWORDS)
+
 
 async def _report(stats: dict) -> None:
     total = stats["sent"] + stats["followup"]
