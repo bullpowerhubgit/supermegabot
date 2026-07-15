@@ -388,18 +388,76 @@ async def _get_shopify_top_products(limit: int = 4) -> List[Dict]:
 
 # ── Daily revenue email ───────────────────────────────────────────────────────
 
+async def _blast_mailchimp_campaign(subject: str, html: str) -> Dict:
+    """Sendet Campaign an AIITEC Mailchimp-Liste (bc5c7887cf)."""
+    import base64 as _b64
+    mc_key = os.getenv("MAILCHIMP_API_KEY", "")
+    if not mc_key:
+        return {"ok": False, "error": "no MAILCHIMP_API_KEY"}
+    dc      = mc_key.split("-")[-1] if "-" in mc_key else "us5"
+    list_id = os.getenv("MAILCHIMP_LIST_ID", "bc5c7887cf")
+    from_email = os.getenv("MAILCHIMP_FROM_EMAIL", "rudolfsarkany1984@gmail.com")
+    from_name  = os.getenv("BREVO_FROM_NAME", "ineedit Smart Home")
+    auth = _b64.b64encode(f"anystring:{mc_key}".encode()).decode()
+    headers = {"Authorization": f"Basic {auth}", "Content-Type": "application/json"}
+    base = f"https://{dc}.api.mailchimp.com/3.0"
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+            # Kampagne erstellen
+            async with s.post(f"{base}/campaigns", headers=headers, json={
+                "type": "regular",
+                "recipients": {"list_id": list_id},
+                "settings": {
+                    "subject_line": subject,
+                    "from_name": from_name,
+                    "reply_to": from_email,
+                },
+            }) as r:
+                camp = await r.json()
+                camp_id = camp.get("id", "")
+                if not camp_id:
+                    log.warning("Mailchimp campaign create failed: %s", camp)
+                    return {"ok": False, "error": "campaign create failed"}
+
+            # Content setzen
+            async with s.put(f"{base}/campaigns/{camp_id}/content",
+                             headers=headers, json={"html": html}) as r:
+                if r.status not in (200, 204):
+                    err = await r.text()
+                    log.warning("Mailchimp content set failed: %s", err[:200])
+                    return {"ok": False, "error": "content set failed"}
+
+            # Senden
+            async with s.post(f"{base}/campaigns/{camp_id}/actions/send",
+                              headers=headers) as r:
+                if r.status in (200, 204):
+                    log.info("Mailchimp Campaign ✅ gesendet: %s", camp_id)
+                    return {"ok": True, "campaign_id": camp_id, "via": "mailchimp"}
+                err = await r.text()
+                log.warning("Mailchimp send failed %s: %s", r.status, err[:200])
+                return {"ok": False, "error": err[:200]}
+    except Exception as e:
+        log.warning("Mailchimp campaign: %s", e)
+        return {"ok": False, "error": str(e)}
+
+
 async def run_daily_revenue_email() -> Dict:
     """
     Main daily cycle:
     1. Fetch top 4 Shopify products
     2. Build dark-theme revenue email
-    3. Blast to all Klaviyo profiles via SendGrid
+    3. Blast via Mailchimp → Klaviyo → SendGrid
     """
-    if not SG_KEY:
-        return {"ok": False, "error": "no SENDGRID_API_KEY"}
-
     products = await _get_shopify_top_products(limit=4)
     subject, html = build_revenue_email_html(products)
+
+    # Mailchimp Campaign (primär — verifizierter Sender, keine IP-Probleme)
+    mc_result = await _blast_mailchimp_campaign(subject, html)
+    if mc_result.get("ok"):
+        log.info("Daily email via Mailchimp ✅")
+        return {"ok": True, "subject": subject, "products_used": len(products), "blast": mc_result}
+
+    # Fallback: Klaviyo-Einzelversand
     result = await blast_klaviyo_list(subject, html)
 
     log.info("Daily revenue email: %s", result)
