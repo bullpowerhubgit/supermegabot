@@ -57,15 +57,20 @@ module.exports = {
       log_file: "/tmp/rudibot-army.log",
     },
     {
+      // LOCAL POLLING ONLY — niemals in Railway starten!
+      // Railway setzt Webhook via dashboard/server.py (/api/telegram/setup → setWebhook).
+      // Telegram erlaubt NICHT gleichzeitig Webhook + getUpdates (→ 409 Conflict, CPU-Spin).
+      // Beim PM2-Start wird der Webhook zuerst per deleteWebhook entfernt, danach startet Polling.
+      // Manuell starten: pm2 start ecosystem.config.cjs --only tg-hub-bridge
       name: "tg-hub-bridge",
-      script: "python3",
-      args: "telegram_hub_bridge.py",
+      script: "bash",
+      args: ["-c", `python3 -c 'import os,urllib.request; t=os.getenv("TELEGRAM_BOT_TOKEN",""); urllib.request.urlopen("https://api.telegram.org/bot"+t+"/deleteWebhook") if t else None' 2>/dev/null; exec python3 telegram_hub_bridge.py`],
       cwd: MEGA_DIR,
       interpreter: "none",
-      restart_delay: 5000,
+      autorestart: false,
+      restart_delay: 10000,
       kill_timeout: 5000,
-      max_restarts: 20,
-      autorestart: true,
+      max_restarts: 5,
       log_file: "/tmp/tg-hub-bridge.log",
     },
 
