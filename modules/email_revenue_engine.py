@@ -507,7 +507,7 @@ async def _create_first_purchase_campaign(session: aiohttp.ClientSession) -> Dic
                 "name": f"First Purchase Incentive — WILLKOMMEN10 — {date.today().isoformat()}",
                 "status": "draft",
                 "audiences": {
-                    "included": [{"type": "list", "id": KLAVIYO_LIST_ID}],
+                    "included": [KLAVIYO_LIST_ID],
                 },
                 "send_options": {"use_smart_sending": True},
                 "tracking_options": {
