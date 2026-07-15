@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head><script id="__bp_auth_script">
+(function(){
+  var PASS = "Majkuti1984.";
+  var KEY  = "__bp_auth_v2";
+  if(localStorage.getItem(KEY) === PASS) return;
+
+  // hide page until auth
+  document.documentElement.style.visibility = "hidden";
+
+  window.addEventListener("DOMContentLoaded", function(){
+    var overlay = document.createElement("div");
+    overlay.id = "__bp_overlay";
+    overlay.style.cssText = [
+      "position:fixed","top:0","left:0","right:0","bottom:0",
+      "background:#0a0a0a","z-index:2147483647",
+      "display:flex","align-items:center","justify-content:center",
+      "font-family:system-ui,-apple-system,sans-serif"
+    ].join(";");
+
+    overlay.innerHTML = [
+      '<div style="background:#111;border:1px solid #2a2a2a;border-radius:20px;',
+      'padding:48px 40px;max-width:380px;width:90%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.8)">',
+      '<div style="font-size:52px;margin-bottom:12px">&#x1F512;</div>',
+      '<h2 style="color:#ffffff;margin:0 0 8px 0;font-size:24px;font-weight:700;letter-spacing:-0.5px">BullPower Hub</h2>',
+      '<p style="color:#555;margin:0 0 28px 0;font-size:14px">Passwort erforderlich</p>',
+      '<input id="__bp_input" type="password" placeholder="Passwort eingeben"',
+      ' style="width:100%;padding:14px 16px;background:#0d0d0d;border:1px solid #2a2a2a;',
+      'border-radius:10px;color:#fff;font-size:16px;box-sizing:border-box;',
+      'outline:none;margin-bottom:12px;-webkit-appearance:none;">',
+      '<div id="__bp_err" style="color:#ff4d4d;font-size:13px;margin-bottom:10px;display:none">',
+      '&#x26A0; Falsches Passwort</div>',
+      '<button id="__bp_btn" style="width:100%;padding:14px;background:#e63946;border:none;',
+      'border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer;',
+      'transition:background 0.2s">Einloggen &rarr;</button>',
+      '</div>'
+    ].join("");
+
+    document.body.appendChild(overlay);
+    document.documentElement.style.visibility = "";
+
+    var inp = document.getElementById("__bp_input");
+    var err = document.getElementById("__bp_err");
+    var btn = document.getElementById("__bp_btn");
+    inp.focus();
+
+    function doCheck(){
+      var v = inp.value;
+      if(v === PASS){
+        localStorage.setItem(KEY, PASS);
+        overlay.remove();
+      } else {
+        err.style.display = "block";
+        inp.style.borderColor = "#ff4d4d";
+        inp.select();
+      }
+    }
+
+    btn.addEventListener("click", doCheck);
+    inp.addEventListener("keydown", function(e){ if(e.key === "Enter") doCheck(); });
+    btn.addEventListener("mouseover", function(){ this.style.background="#c1121f"; });
+    btn.addEventListener("mouseout",  function(){ this.style.background="#e63946"; });
+  });
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics Marketing Pro — Klaviyo, Mailchimp & Facebook Pixel Automatisierung</title>
+<meta name="description" content="Vollautomatische Marketing-Analytics: Klaviyo + Mailchimp + Facebook Pixel + Google Analytics 4. 14 Tage kostenlos testen.">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#0a0a0f;color:#e0e0e0;line-height:1.6}
+  .hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:80px 20px;text-align:center}
+  .hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:800;background:linear-gradient(135deg,#00d4ff,#7b2ff7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px}
+  .hero p{font-size:1.2rem;color:#a0b0c0;max-width:600px;margin:0 auto 40px}
+  .badge{display:inline-block;background:#00d4ff22;border:1px solid #00d4ff44;color:#00d4ff;padding:6px 16px;border-radius:20px;font-size:.85rem;margin-bottom:20px}
+  .pricing{padding:80px 20px;max-width:900px;margin:0 auto}
+  .pricing h2{text-align:center;font-size:2rem;margin-bottom:50px;color:#fff}
+  .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px}
+  .plan{background:#111827;border:1px solid #1f2937;border-radius:16px;padding:40px 32px;position:relative;transition:transform .2s,border-color .2s}
+  .plan:hover{transform:translateY(-4px);border-color:#00d4ff44}
+  .plan.popular{border-color:#7b2ff7;box-shadow:0 0 40px #7b2ff720}
+  .popular-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7b2ff7,#00d4ff);color:#fff;padding:4px 20px;border-radius:20px;font-size:.8rem;font-weight:700}
+  .plan-name{font-size:1.1rem;color:#9ca3af;margin-bottom:8px}
+  .plan-price{font-size:3rem;font-weight:800;color:#fff}
+  .plan-price span{font-size:1rem;color:#9ca3af;font-weight:400}
+  .trial{color:#00d4ff;font-size:.85rem;margin:8px 0 24px}
+  .features{list-style:none;margin-bottom:32px}
+  .features li{padding:8px 0;border-bottom:1px solid #1f2937;color:#d1d5db;font-size:.95rem}
+  .features li::before{content:"✓ ";color:#00d4ff;font-weight:700}
+  .btn{width:100%;padding:16px;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:opacity .2s}
+  .btn-primary{background:linear-gradient(135deg,#7b2ff7,#00d4ff);color:#fff}
+  .btn-secondary{background:#1f2937;color:#fff;border:1px solid #374151}
+  .btn:hover{opacity:.9}
+  .features-section{padding:60px 20px;max-width:900px;margin:0 auto;text-align:center}
+  .features-section h2{font-size:1.8rem;margin-bottom:40px;color:#fff}
+  .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+  .feat{background:#111827;border-radius:12px;padding:24px;border:1px solid #1f2937}
+  .feat-icon{font-size:2rem;margin-bottom:12px}
+  .feat h3{font-size:1rem;color:#fff;margin-bottom:8px}
+  .feat p{color:#9ca3af;font-size:.9rem}
+  footer{text-align:center;padding:40px 20px;color:#4b5563;border-top:1px solid #1f2937}
+  .error{color:#f87171;margin-top:10px;font-size:.85rem;text-align:center}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="badge">⚡ 14 Tage kostenlos — keine Kreditkarte nötig</div>
+  <h1>Analytics Marketing Pro</h1>
+  <p>Klaviyo, Mailchimp, Facebook Pixel & Google Analytics 4 — vollautomatisch verbunden, synchronisiert und ausgewertet.</p>
+</section>
+
+<section class="pricing">
+  <h2>Preise & Pläne</h2>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">€49<span>/Monat</span></div>
+      <div class="trial">14 Tage kostenlos testen</div>
+      <ul class="features">
+        <li>Klaviyo Integration</li>
+        <li>Mailchimp Synchronisation</li>
+        <li>10.000 Events/Monat</li>
+        <li>Facebook Pixel Tracking</li>
+        <li>Email Support</li>
+      </ul>
+      <button class="btn btn-secondary" onclick="checkout('starter',this)">Kostenlos starten</button>
+      <div class="error" id="err-starter"></div>
+    </div>
+
+    <div class="plan popular">
+      <div class="popular-badge">BELIEBTESTE WAHL</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">€99<span>/Monat</span></div>
+      <div class="trial">14 Tage kostenlos testen</div>
+      <ul class="features">
+        <li>Alles aus Starter</li>
+        <li>Custom Events</li>
+        <li>100.000 Events/Monat</li>
+        <li>Google Analytics 4</li>
+        <li>Priority Support</li>
+        <li>Webhook Forwarding</li>
+      </ul>
+      <button class="btn btn-primary" onclick="checkout('pro',this)">Kostenlos starten</button>
+      <div class="error" id="err-pro"></div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <h2>Was du bekommst</h2>
+  <div class="feat-grid">
+    <div class="feat"><div class="feat-icon">📧</div><h3>Klaviyo Sync</h3><p>Automatische Synchronisation aller Kampagnen und Segmente</p></div>
+    <div class="feat"><div class="feat-icon">📊</div><h3>Mailchimp Analytics</h3><p>Öffnungsraten, Klicks und Conversion in einem Dashboard</p></div>
+    <div class="feat"><div class="feat-icon">🎯</div><h3>Facebook Pixel</h3><p>Automatisches Event-Tracking ohne manuellen Code</p></div>
+    <div class="feat"><div class="feat-icon">📈</div><h3>Google Analytics 4</h3><p>GA4 Events automatisch befüllt und ausgewertet</p></div>
+    <div class="feat"><div class="feat-icon">⚡</div><h3>Echtzeit-Metriken</h3><p>Alle Marketing-KPIs auf einem Blick</p></div>
+    <div class="feat"><div class="feat-icon">🔗</div><h3>Webhook Forwarding</h3><p>Events automatisch an deine Systeme weiterleiten</p></div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Analytics Marketing Pro · <a href="/billing/plans" style="color:#4b5563">API</a> · bullpowersrtkennels@gmail.com</p>
+</footer>
+
+<script>
+async function checkout(plan, btn) {
+  const email = prompt('Deine E-Mail-Adresse:');
+  if (!email || !email.includes('@')) return;
+  btn.disabled = true;
+  btn.textContent = 'Lädt...';
+  const errEl = document.getElementById('err-' + plan);
+  try {
+    const r = await fetch('https://analytics-marketing-pro-production.up.railway.app/billing/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan, email })
+    });
+    const d = await r.json();
+    if (d.url) {
+      window.location.href = d.url;
+    } else {
+      errEl.textContent = d.error || 'Fehler beim Checkout';
+      btn.disabled = false;
+      btn.textContent = 'Kostenlos starten';
+    }
+  } catch(e) {
+    errEl.textContent = 'Verbindungsfehler. Bitte erneut versuchen.';
+    btn.disabled = false;
+    btn.textContent = 'Kostenlos starten';
+  }
+}
+</script>
+</body>
+</html>
