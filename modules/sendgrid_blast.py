@@ -157,9 +157,41 @@ def build_welcome_html(first_name: str) -> Tuple[str, str]:
 
 # ── Core send ─────────────────────────────────────────────────────────────────
 
+async def _send_brevo_rest(to_email: str, to_name: str, subject: str, html: str,
+                           from_email: Optional[str] = None) -> bool:
+    """Brevo REST API — primärer Sender."""
+    key = os.getenv("BREVO_API_KEY", "")
+    if not key:
+        return False
+    sender_email = from_email or os.getenv("BREVO_FROM_EMAIL", SG_FROM_EMAIL)
+    sender_name  = os.getenv("BREVO_FROM_NAME", SG_FROM_NAME)
+    payload = {
+        "sender":      {"name": sender_name, "email": sender_email},
+        "to":          [{"email": to_email, "name": to_name or ""}],
+        "subject":     subject,
+        "htmlContent": html,
+    }
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": key, "Content-Type": "application/json"},
+                json=payload,
+            ) as r:
+                if r.status in (200, 201):
+                    log.info("Brevo REST ✅ → %s", to_email)
+                    return True
+                body = await r.text()
+                log.warning("Brevo REST %s %s: %s", r.status, to_email, body[:200])
+                return False
+    except Exception as e:
+        log.warning("Brevo REST error %s: %s", to_email, e)
+        return False
+
+
 async def _send_brevo_smtp(to_email: str, to_name: str, subject: str, html: str,
                            from_email: Optional[str] = None) -> bool:
-    """Brevo SMTP — primärer Sender (SendGrid hat 0 Credits)."""
+    """Brevo SMTP — Fallback wenn REST nicht verfügbar."""
     smtp_user = os.getenv("BREVO_SMTP_USER", "")
     smtp_pass = os.getenv("BREVO_SMTP_PASS", "")
     if not smtp_user or not smtp_pass:
@@ -187,13 +219,17 @@ async def _send_brevo_smtp(to_email: str, to_name: str, subject: str, html: str,
 
 async def send_single(to_email: str, to_name: str, subject: str, html: str,
                       from_email: Optional[str] = None) -> Dict:
-    """Send via Brevo SMTP (primär) → SendGrid (fallback)."""
+    """Send via Brevo REST (primär) → Brevo SMTP → SendGrid (fallback)."""
     if not to_email or "@" not in to_email:
         return {"ok": False, "error": "invalid to_email"}
 
-    # Brevo SMTP zuerst
+    # Brevo REST zuerst (kein IP-Problem mit SMTP)
+    if await _send_brevo_rest(to_email, to_name, subject, html, from_email):
+        return {"ok": True, "to": to_email, "via": "brevo_rest"}
+
+    # Brevo SMTP Fallback
     if await _send_brevo_smtp(to_email, to_name, subject, html, from_email):
-        return {"ok": True, "to": to_email, "via": "brevo"}
+        return {"ok": True, "to": to_email, "via": "brevo_smtp"}
 
     # SendGrid Fallback
     if not SG_KEY:
