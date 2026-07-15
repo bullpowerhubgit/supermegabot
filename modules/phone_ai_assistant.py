@@ -98,61 +98,48 @@ PRODUCT_CONTEXTS: Dict[str, str] = {
     "general": (
         _SOFIA_BASE +
         "\nProdukt-Kontext: AIITEC KI-Automatisierungslösungen für Unternehmen.\n"
-        "Produkte: SuperMegaBot Starter (€49/Mo), Pro (€99/Mo), Enterprise (€299/Mo).\n"
-        "Wir helfen KMUs, mit KI Zeit zu sparen, Umsatz zu steigern und Prozesse zu automatisieren.\n"
+        "Produkte & Preise:\n"
+        "  • Starter €49/Monat — bis 500 Produkte, Shopify-Automatisierung\n"
+        "  • Pro €99/Monat — bis 5.000 Produkte + KI-Marketing\n"
+        "  • Enterprise €299/Monat — unbegrenzt + White-Label\n"
         "USPs: Sofort einsatzbereit, keine technischen Kenntnisse nötig, "
-        "messbare Ergebnisse in 30 Tagen, persönlicher Support, Geld-zurück-Garantie 14 Tage.\n"
-        "Nächster Schritt: Bestelllink per SMS schicken oder Demo vereinbaren."
+        "messbare Ergebnisse in 30 Tagen, Geld-zurück-Garantie 14 Tage.\n"
+        "Stripe-Links (nach Produktwahl per SMS schicken):\n"
+        "  starter → STRIPE_LINK_STARTER | pro → STRIPE_LINK_PRO | enterprise → STRIPE_LINK_ENTERPRISE\n"
+        "Nächster Schritt: Bestelllink direkt per SMS schicken!"
     ),
     "shopify": (
-        _MAX_BASE +
-        "\nProdukt-Kontext: BullPower Shopify Automatisierungs-SaaS\n"
-        "Wir automatisieren den kompletten Shopify-Betrieb: Produktpflege, Bestellverarbeitung, "
-        "Kundensegmentierung, Preisoptimierung und Marketing — alles KI-gesteuert.\n"
-        "Preise: Starter €49/Monat (bis 500 Produkte), Pro €99/Monat (bis 5.000 Produkte), "
-        "Enterprise €299/Monat (unbegrenzt + White-Label).\n"
-        "Typische Kundenergebnisse: 60% weniger manueller Aufwand, +25% Conversion Rate, "
-        "3x mehr Produkte im Sortiment ohne mehr Arbeit.\n"
-        "USP: Als einzige Lösung verbindet BullPower KI-Produkterstellung, "
-        "automatisches SEO und Preisoptimierung in einem System.\n"
-        "Nächster Schritt: 14-Tage-Gratis-Test starten."
+        _SOFIA_BASE +
+        "\nProdukt-Kontext: AIITEC Shopify-Automatisierung\n"
+        "Wir automatisieren den kompletten Shopify-Betrieb: Produktpflege, "
+        "Preisoptimierung und Marketing — alles KI-gesteuert.\n"
+        "Preise: Starter €49/Mo | Pro €99/Mo | Enterprise €299/Mo\n"
+        "Typische Ergebnisse: 60% weniger Aufwand, +25% Conversion Rate.\n"
+        "Nächster Schritt: Bestelllink per SMS schicken."
     ),
     "digistore": (
-        _MAX_BASE +
-        "\nProdukt-Kontext: BullPower DigiStore24 Optimierungs-Suite\n"
-        "Wir maximieren die Einnahmen von DigiStore24-Vendoren und Affiliates durch "
-        "KI-optimierte Produktbeschreibungen, automatische Affiliate-Akquise und "
-        "datengesteuerte Umsatzprognosen.\n"
-        "Typische Ergebnisse: +40% Conversion Rate, 3x mehr aktive Affiliates, "
-        "automatisches Tracking und Optimierung in Echtzeit.\n"
-        "Für wen: DigiStore24-Vendor mit mindestens einem digitalen Produkt, "
-        "der mehr Umsatz will ohne mehr Arbeit.\n"
-        "Nächster Schritt: Kostenlose Analyse des bestehenden DigiStore24-Accounts."
+        _SOFIA_BASE +
+        "\nProdukt-Kontext: AIITEC DigiStore24 Optimierung\n"
+        "Wir maximieren DS24-Einnahmen: KI-Texte, Affiliate-Akquise, Umsatzprognosen.\n"
+        "Ergebnisse: +40% Conversion, 3x mehr Affiliates automatisch.\n"
+        "Einstieg ab €49/Monat — ROI meist in Woche 1 erreicht.\n"
+        "Nächster Schritt: Bestelllink per SMS schicken."
     ),
     "ai_tools": (
-        _MAX_BASE +
-        "\nProdukt-Kontext: BullPower KI-API-Zugang\n"
-        "Wir bieten KI-API-Zugänge zu Claude, GPT-4o und Gemini — gebündelt, "
-        "abgerechnet und mit eigenem Billing-System für Weiterverkauf.\n"
-        "Perfekt für: Agenturen, SaaS-Entwickler und Tech-Unternehmen die KI-Features "
-        "einbauen wollen ohne selbst bei Anthropic/OpenAI zu integrieren.\n"
-        "Preisstufen: Micro (€29/Mo, 100k Tokens), Standard (€99/Mo, 1M Tokens), "
-        "Pro (€299/Mo, 10M Tokens) — alles ohne Einzelabrechnung.\n"
-        "USP: Einheitliche API, ein Vertrag, eine Rechnung — egal ob Claude oder GPT-4o.\n"
-        "Nächster Schritt: API-Key für 7 Tage kostenlos testen."
+        _SOFIA_BASE +
+        "\nProdukt-Kontext: AIITEC KI-API-Zugang\n"
+        "Claude, GPT-4o und Gemini — eine API, ein Vertrag, eine Rechnung.\n"
+        "Preise: Micro €29/Mo | Standard €99/Mo | Pro €299/Mo\n"
+        "7 Tage kostenlos testen — dann per SMS den Link schicken.\n"
+        "Nächster Schritt: Bestelllink per SMS schicken."
     ),
     "telegram": (
-        _MAX_BASE +
-        "\nProdukt-Kontext: BullPower Telegram Subscription-Bot\n"
-        "Wir bauen und betreiben Telegram-Bots mit Abo-Modell für Influencer, "
-        "Communities und Content-Creator — komplett automatisiert.\n"
-        "Der Bot übernimmt: Zahlungsabwicklung (Stripe/PayPal), Mitglieder-Management, "
-        "Premium-Content-Verteilung, automatische Kündigung und Mahnungen.\n"
-        "Typische Creator verdienen: €500-5.000/Monat passiv mit 100-1.000 Abonnenten.\n"
-        "Preise: Setup ab €299 einmalig, dann 5% Revenue-Share (kein Monatsabo).\n"
-        "USP: Einzige Lösung mit vollautomatischer Aboverwaltung und "
-        "eingebautem Anti-Churn-System.\n"
-        "Nächster Schritt: Kostenlosen Setup-Call vereinbaren."
+        _SOFIA_BASE +
+        "\nProdukt-Kontext: AIITEC Telegram Abo-Bot\n"
+        "Vollautomatischer Abo-Bot: Stripe-Zahlung, Mitglieder, Premium-Content.\n"
+        "Creator verdienen €500-5.000/Mo passiv mit 100-1.000 Abonnenten.\n"
+        "Setup ab €299 einmalig, dann 5% Revenue-Share.\n"
+        "Nächster Schritt: Bestelllink per SMS schicken."
     ),
 }
 
@@ -170,16 +157,18 @@ def init_db() -> None:
     with _db() as conn:
         conn.executescript("""
         CREATE TABLE IF NOT EXISTS calls (
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            call_sid     TEXT UNIQUE,
-            direction    TEXT DEFAULT 'inbound',
-            to_number    TEXT DEFAULT '',
-            from_number  TEXT DEFAULT '',
-            product_id   TEXT DEFAULT 'general',
-            status       TEXT DEFAULT 'initiated',
-            started_at   TEXT DEFAULT (datetime('now')),
-            ended_at     TEXT,
-            duration_sec INTEGER DEFAULT 0
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            call_sid      TEXT UNIQUE,
+            direction     TEXT DEFAULT 'inbound',
+            to_number     TEXT DEFAULT '',
+            from_number   TEXT DEFAULT '',
+            product_id    TEXT DEFAULT 'general',
+            status        TEXT DEFAULT 'initiated',
+            started_at    TEXT DEFAULT (datetime('now')),
+            ended_at      TEXT,
+            duration_sec  INTEGER DEFAULT 0,
+            transcript    TEXT DEFAULT '',
+            buying_signal INTEGER DEFAULT 0
         );
         CREATE TABLE IF NOT EXISTS appointments (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -319,12 +308,14 @@ class PhoneAIBridge:
         product_id: str,
         ws_client: web.WebSocketResponse,
     ) -> None:
-        self.call_sid   = call_sid
-        self.product_id = product_id
-        self.ws_twilio  = ws_client  # aiohttp WebSocketResponse (Server-Seite)
-        self.stream_sid = ""
-        self._started   = datetime.now(timezone.utc)
-        self._done      = asyncio.Event()
+        self.call_sid      = call_sid
+        self.product_id    = product_id
+        self.ws_twilio     = ws_client
+        self.stream_sid    = ""
+        self._started      = datetime.now(timezone.utc)
+        self._done         = asyncio.Event()
+        self._transcript   : List[str] = []   # "Kunde: ..." / "Sofia: ..."
+        self.buying_signal = False             # 🔥 gesetzt wenn Kaufbereitschaft erkannt
 
     # ── Session-Konfiguration für OpenAI ──────────────────────────────────────
     def _build_session_config(self) -> Dict[str, Any]:
@@ -340,7 +331,7 @@ class PhoneAIBridge:
                 },
                 "input_audio_format":  "pcm16",
                 "output_audio_format": "pcm16",
-                "voice": "alloy",
+                "voice": "shimmer",
                 "instructions": prompt,
                 "modalities": ["text", "audio"],
                 "temperature": 0.8,
@@ -411,7 +402,17 @@ class PhoneAIBridge:
             log.error("[%s] Bridge-Fehler: %s", self.call_sid, e)
         finally:
             self._done.set()
-            log.info("[%s] Bridge beendet", self.call_sid)
+            # Transkript + Kaufsignal in DB speichern
+            try:
+                full_transcript = "\n".join(self._transcript)
+                with _db() as conn:
+                    conn.execute(
+                        "UPDATE calls SET transcript=?, buying_signal=? WHERE call_sid=?",
+                        (full_transcript, 1 if self.buying_signal else 0, self.call_sid),
+                    )
+            except Exception:
+                pass
+            log.info("[%s] Bridge beendet (Kaufsignal: %s)", self.call_sid, self.buying_signal)
 
     # ── Twilio → OpenAI (Audio weitersenden) ──────────────────────────────────
     async def _twilio_to_openai(self, openai_ws: Any) -> None:
@@ -526,11 +527,23 @@ class PhoneAIBridge:
                         transcript = data.get("transcript", "")
                         if transcript:
                             log.info("[%s] Kunde: %s", self.call_sid, transcript)
+                            self._transcript.append(f"Kunde: {transcript}")
+                            _BUY_SIGNALS = [
+                                "wie viel kostet", "preis", "bestell", "kaufen", "link",
+                                "schicken sie", "schick mir", "nehme ich", "machen wir",
+                                "einverstanden", "klingt gut", "interessiert mich",
+                                "wann kann", "wie schnell", "starten wir", "ja gerne",
+                            ]
+                            low = transcript.lower()
+                            if any(s in low for s in _BUY_SIGNALS):
+                                self.buying_signal = True
+                                log.info("[%s] 🔥 KAUFSIGNAL erkannt!", self.call_sid)
 
                     elif event_type == "response.text.done":
                         text = data.get("text", "")
                         if text:
-                            log.info("[%s] Max: %s", self.call_sid, text[:120])
+                            log.info("[%s] Sofia: %s", self.call_sid, text[:120])
+                            self._transcript.append(f"Sofia: {text}")
 
                     elif event_type == "error":
                         err = data.get("error", {})
@@ -703,11 +716,41 @@ async def handle_phone_status(request: web.Request) -> web.Response:
             log.warning("Status-Update Fehler: %s", e)
 
         if status == "completed":
-            _active_bridges.pop(call_sid, None)
+            bridge = _active_bridges.pop(call_sid, None)
+            buy_sig    = getattr(bridge, "buying_signal", False) if bridge else False
+            transcript = "\n".join(getattr(bridge, "_transcript", [])) if bridge else ""
+            from_num   = ""
+            prod_id    = "general"
+            try:
+                with _db() as conn:
+                    row = conn.execute(
+                        "SELECT from_number, product_id FROM calls WHERE call_sid=?", (call_sid,)
+                    ).fetchone()
+                    if row:
+                        from_num = row["from_number"]
+                        prod_id  = row["product_id"] or "general"
+            except Exception:
+                pass
+
             asyncio.create_task(_notify_telegram(call_sid, duration, status))
             if duration >= 30:
                 asyncio.create_task(_send_sms_payment_link(call_sid, duration))
-            log.info("Anruf beendet: %s (Dauer: %ds)", call_sid, duration)
+
+            # Multi-Agenten-Cascade starten
+            try:
+                from modules.sofia_agent_hub import trigger_post_call_cascade
+                asyncio.create_task(trigger_post_call_cascade(
+                    call_sid      = call_sid,
+                    duration      = duration,
+                    buying_signal = buy_sig,
+                    transcript    = transcript,
+                    from_number   = from_num,
+                    product_id    = prod_id,
+                ))
+            except Exception as e:
+                log.warning("Sofia Hub import Fehler: %s", e)
+
+            log.info("Anruf beendet: %s (Dauer: %ds, Kaufsignal: %s)", call_sid, duration, buy_sig)
 
     return web.Response(text="OK")
 
@@ -910,21 +953,16 @@ async def _send_sms_payment_link(call_sid: str, duration: int) -> None:
         to_number  = row["from_number"]
         product_id = row["product_id"] or "general"
 
-        # Passenden Stripe-Link aus DB holen (oder Fallback)
-        try:
-            import sqlite3 as _sqlite3
-            link_db = _BASE / "data" / "payment_links.db"
-            if link_db.exists():
-                with _sqlite3.connect(str(link_db)) as lc:
-                    lc.row_factory = _sqlite3.Row
-                    link_row = lc.execute(
-                        "SELECT link_url FROM payment_links ORDER BY RANDOM() LIMIT 1"
-                    ).fetchone()
-                    pay_url = link_row["link_url"] if link_row else "https://aiitec.de"
-            else:
-                pay_url = "https://aiitec.de"
-        except Exception:
-            pay_url = "https://aiitec.de"
+        # Stripe-Link aus .env — je nach Produkt
+        _LINK_MAP = {
+            "shopify":    "STRIPE_LINK_STARTER",
+            "digistore":  "STRIPE_PAYMENT_LINK_DS24_BASIC",
+            "ai_tools":   "STRIPE_LINK_PRO",
+            "telegram":   "STRIPE_PAYMENT_LINK_AUTOMATON_SUITE",
+            "general":    "STRIPE_LINK_STARTER",
+        }
+        env_key = _LINK_MAP.get(product_id, "STRIPE_LINK_STARTER")
+        pay_url = os.getenv(env_key) or os.getenv("STRIPE_LINK_STARTER") or "https://aiitec.de"
 
         body = (
             f"Hallo! Hier ist Sofia von AIITEC. "
