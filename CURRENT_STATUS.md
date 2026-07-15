@@ -1,279 +1,109 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 ~17:30 CEST**
-
-## ✅ Session 2026-07-15 Abend — GMC + Twilio + RAILWAY_TOKEN
-
-### Erledigte Aufgaben:
-
-1. ✅ **GMC Feed registriert** — PRODUCTS SOURCE 18 in Merchant Center 5734366162
-   - URL: `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
-   - Scheduled Fetch: täglich, 250 Produkte verarbeitet, 66 neue aufgenommen
-   - Zielland: Deutschland (+ 99 weitere — nicht kritisch)
-   - GMC-UI zeigt Sprache noch als "English" (kein Edit-Pencil in UI sichtbar)
-   - Feed-Code korrigiert: `g:content_language=de` + `g:target_country=DE` pro Item
-
-2. ✅ **Twilio Webhooks gesetzt** (+17625685298)
-   - Voice: `https://supermegabot-production.up.railway.app/api/phone/incoming` ✅
-   - SMS: `https://supermegabot-production.up.railway.app/api/sms/incoming` ✅ (war bereits korrekt)
-
-3. ✅ **GitHub Actions RAILWAY_TOKEN erneuert** — gesetzt am 2026-07-15T18:14:06Z
-
-4. ✅ **WhatsApp Token** — tatsächlich noch GÜLTIG (gibt "SuperMegaBotSystem" zurück) — kein Handlungsbedarf
-
-### Noch offen (optionale Verbesserungen):
-- [ ] GMC Feed-Schedule: 00:00 Uhr → 06:00 Uhr Europe/Berlin (optional)
-- [ ] GMC Sprache in UI: "English" → "German" (Feed-Items haben jetzt de-Tags, UI-Änderung nur optional)
-- [ ] GMC Länder eingrenzen: Deutschland + 99 weitere → nur Deutschland (optional)
-
----
-
-## ✅ v46 — HttpGuard + OpenClaw/Ollama + PostGuard + Connection Pool + MegaDash UI
-
-### Deployed: Letzter Commit 8a3c4c0e (Perplexity/OpenAI/Gmail fixes)
-
-**Neue Module (diese Session, bereits committed):**
-1. ✅ **modules/http_guard.py** — Monkey-patcht `aiohttp.ClientSession._request` → fängt ALLE Social/Email/SMS/Shopify-POSTs ab bevor sie rausgehen
-2. ✅ **modules/post_guard.py** — 3-Layer Gate: Regel-Check → Groq AI Score (1-10) → Telegram-Approval (5min Timeout)
-3. ✅ **modules/ollama_manager.py** — Full Ollama Management API (pull/delete/chat/stream/status)
-4. ✅ **modules/connection_pool.py** — Globaler TCP-Pool (200 Connections, 30/Host, Keepalive 60s)
-5. ✅ **modules/open_claw.py** — Response-Cache (LRU 256, 10min TTL) + `ai_or_claw()` Lokal→Cloud Fallback
-6. ✅ **dashboard/megadash.html** — Ollama/OpenClaw Panel mit Live-Status, Chat, Model-Pull-UI
-7. ✅ **dashboard/server.py** — 8 neue `/api/ollama/*` Routen + HttpGuard Activation + ConnectionPool Cleanup
-
-**Telegram Bot:**
-- `@DudiRudibot` (Token: `8600739487:AAHk_...Jt0O8`) ✅ — neues Token bestätigt
-- `@RudiCludiBot` (Token: `8320990321:AAHUfd...C9Fc`) ✅ — Backup Bot
-
-**Railway Env-Vars (alle gesetzt):**
-- `TELEGRAM_BOT_TOKEN` ✅, `TELEGRAM_BOT_TOKEN_RUDICLONE` ✅, `TELEGRAM_BOT_TOKEN_2` ✅
-- `GEMINI_API_KEY` ✅, `GROQ_API_KEY` ✅, `ANTHROPIC_API_KEY` ✅
-- `KLAVIYO_API_KEY` ✅, `WHATSAPP_TOKEN` ⚠️ (abgelaufen, neu generieren!)
-
-**System Health:**
-- Railway: ✅ `{"status":"ok","circuits_open":[]}` — uptime laufend
-- Syntax: ✅ 0 Fehler über alle .py Dateien
-- Telegram @DudiRudibot: ✅ verifiziert
-- Ollama (lokal): ✅ `llama3.2:latest` online
-- Groq auf Railway: ✅ configured (lokal Cloudflare-Block, auf Server OK)
-
----
-
-## ✅ v45 — APIHunt CB-Fix + Gmail Tageslimit-Fix + Klaviyo Format + VaCYq3 Key
-
-### Deployed: Railway Redeploy mit neuen Env Vars (nach Commit e4b11e14)
-
-**Fixes diese Session (2026-07-15):**
-
-1. ✅ **modules/ai_client.py** — `_CB_THRESHOLD 3→5`, neue `_cb_rate_limit()` Funktion:
-   - Groq 429 → `_cb_rate_limit("Groq", 90)` statt `_cb_fail("Groq")` — zählt NICHT gegen CB-Threshold
-   - DeepSeek 402 → sofort 1h Block ohne Threshold-Increment
-   - OpenAI 429 → `_cb_rate_limit("OpenAI", 120)`
-   - Gemini 400/401/403 → sofort 1h Block (`gemini_hard_fail`-Flag statt `gemini_ok`-Bug)
-   - **Root cause behoben**: `ALLE Provider ausgefallen!` trat auf weil Groq 429s den CB öffneten
-
-2. ✅ **modules/mass_outreach_1000.py** — Gmail 550 5.4.5 Endlos-Retry-Fix:
-   - `_GMAIL_DAILY_EXHAUSTED: set` — Session-persistentes Set erschöpfter Accounts
-   - `_send_via_gmail()` gibt jetzt `"daily_limit"|"ok"|"auth_fail"|"error"` zurück
-   - Bei `daily_limit` → `_account_sends[daily_key] = PER_ACCOUNT` → Account heute übersprungen
-
-3. ✅ **Klaviyo Format-Fix** (3 Dateien) — `"included": [list_id]` statt `[{"type":"list","id":list_id}]`:
-   - modules/klaviyo_automation.py (Zeile 220)
-   - modules/email_revenue_engine.py (Zeile 510)
-   - modules/klaviyo_mass_campaigns.py (Zeile 312)
-
-4. ✅ **Klaviyo PRIMARY KEY** — `pk_VaCYq3_cf5a87a914f94f3f6ad6b12de8b8876722` in Railway + .env gesetzt
-   - `KLAVIYO_LIST_ID=Xwxq6V` (E-Mail-Liste im VaCYq3/AiiteC Account)
-   - HTTP 201 Profil-Import getestet ✅
-
-**Health nach Session:** `circuits_open: []` ✅ | Status ok ✅
-
----
-
-## ✅ v44 — OpenClaw/Ollama überall + ConnectionPool + anthropic_compat
-
-### Deployed: 57ccf389 (via GitHub Actions)
-
-**Fixes diese Session (2026-07-15):**
-1. ✅ **modules/anthropic_compat.py** — Drop-in Shim: `from modules.anthropic_compat import Anthropic` statt direktem Anthropic SDK — routet durch ai_client.py → Fallback-Kette aktiv
-2. ✅ **modules/connection_pool.py** — Globaler aiohttp TCP-Pool (200 Connections, 30/Host, Keepalive 60s) — alle Module teilen dieselben TCP-Verbindungen
-3. ✅ **open_claw.py** — Response-Cache (LRU 256 Einträge, 10 min TTL) + nutzt connection_pool.py + ai_or_claw() Fallback
-4. ✅ **free_api_hunter.py** — Ollama als Provider #1 vor Groq eingetragen (lokal, kostenlos, kein Rate-Limit)
-5. ✅ **agent_teams.py, reply_monitor.py, dashboard/server.py** — Anthropic SDK → anthropic_compat (Fallback-Kette)
-6. ✅ **sofia_voice_agent.py, mass_outreach_1000.py** — Direkte Groq/Anthropic-Calls → ai_complete()
-7. ✅ **server.py** — connection_pool.close_pool() beim Shutdown (sauberes TCP-Teardown)
-
-**Aktuelle KI-Kette (überall gleich):**
-```
-OpenClaw (Ollama lokal, kostenlos) 
-  → Groq (llama-3.1-8b, schnell) 
-  → DeepSeek → OpenRouter → Gemini → Anthropic → OpenAI → Perplexity
-```
-
-**Health:** `/health` ✅ ok | uptime 62s | circuits_open: []
-
----
-
-## ✅ v43 — CRITICAL FIX: asyncio.run() + Meta Ads Live + Feed Clean
-
-### Deployed: 6a635392 (via railway up, ~00:20 CEST)
-
-**Fixes diese Session (2026-07-15):**
-1. ✅ **CRITICAL**: `asyncio.run(_main())` war innerhalb `handle_revenue_summary()` — Server startete nie (rc=0 sofort). Verschoben zu `if __name__ == '__main__':` am Dateiende.
-2. ✅ meta_ads.py: `activate_campaign()` + `activate_all_campaigns()` — alle 10 Kampagnen AKTIV, €20/Tag Budget gesetzt
-3. ✅ google_shopping_feed.py: JSON-LD aus Beschreibungen entfernt, `ineedit.com.co` URLs, saubere Feeds bestätigt
-4. ✅ phone_ai_assistant.py: SMS-Webhook `/api/sms/incoming` hinzugefügt (92feb83d)
-5. ✅ gmc_feed_submitter.py: GMC Feed Auto-Submitter via Service Account JWT (1e16c8a2)
-6. ✅ bullpower_revenue_engine.py: Shopify GET Requests mit explicit 60s Timeout
-
-**Health:** `/health` ✅ ok | uptime ~250s nach letztem Deploy
-
-## ✅ v42 — CRASH FIX: UnboundLocalError handle_mega_status
-
-### Deployed: d63d5e6b (via railway up, ~22:00 CEST)
-
-**Fixes diese Session:**
-1. ✅ server.py: `handle_mega_status` lokale Funktion in `create_app()` umbenannt zu `handle_mega_command_status` — verhindert Python-Scoping-Crash beim Startup
-2. ✅ email_ai_conversations.py: System/Notification-Emails blockiert (github, stripe, noreply etc.)
-3. ✅ gmail_accounts.py: nikolestimi@gmail.com + rudolf.sarkany@aitec.de entfernt
-4. ✅ Railway MCP + Skill installiert — `railway.app` Infrastruktur jetzt über MCP verwaltbar
-
-**Health:** `/health` ✅ | `/api/mega-status` ✅ | uptime fresh
-
----
-
-## ✅ v41 — DESKTOP ICON + START-SCRIPT FERTIG
-
-### Deployed: a2862ccf (23:05 CEST)
-
-**Fixes diese Session:**
-1. ✅ start_supermegabot.sh: macOS-kompatibles .env-Laden (`set -a` + `source` statt `xargs -d '\n'`)
-2. ✅ start_supermegabot.sh: Railway Timeout 10→20s (Railway antwortet manchmal langsamer)
-3. ✅ start_supermegabot.sh: Alle 10 Income-Triggers parallel (statt seriell — 10x schneller, Laufzeit ~25s)
-4. ✅ start_supermegabot.sh: `${KEY:-}` defaults — kein "unbound variable" mehr
-5. ✅ Desktop App Launcher: absoluter `cd` Pfad gefixt → funktioniert aus beliebigem Verzeichnis
-
-**Ein-Klick Desktop Start:**
-- Doppelklick `~/Desktop/SuperMegaBot.app`
-- Öffnet Terminal → startet alles in ~25s
-- Git push + Railway health + alle Revenue-Streams + Browser öffnet sich
-
----
-
-## ✅ v41 — KLEINIGKEITEN FIXES + DISTRIBUTED LOCK ERWEITERUNG
-
-**Stand: 2026-07-14 (Session v41)**
-
-**Fixes (1a3c0ffc):**
-1. ✅ email_outreach_bulk.py: `run_outreach()` mit `acquire_lock` (TTL 90min) — kein Duplikat-Outreach mehr bei parallelen Agenten
-2. ✅ abandoned_cart_emails.py: `run_cart_recovery_cycle()` mit `acquire_lock` (TTL 20min)
-3. ✅ ds24_webhook.py: `_log_to_supabase()` nutzt `upsert+dedup_hash` — kein Doppelkauf-Eintrag bei Webhook-Retry
-4. ✅ autonomous_engine.py: `SUPERMEGABOT_INTERNAL_URL` statt hardcoded localhost
-5. ✅ revenue_watchdog.py: `SUPERMEGABOT_INTERNAL_URL` statt hardcoded localhost
-6. ✅ brutus_traffic_engine.py: Falschen Docstring (IWIN→AiiteC) korrigiert
-
----
-
-## ✅ v40 — MEGA COMMAND CENTER + CONVERSION OPTIMIZER
-
-**Stand: 2026-07-14 (Session)**
-
-**Neue Module:**
-1. ✅ modules/shopify_webhook_registrar.py — Auto-registriert Shopify Webhooks (checkout, order)
-2. ✅ modules/conversion_optimizer.py — Behebt 0% Conversion: Fix Beschreibungen + aktiviert beste Produkte
-3. ✅ modules/mega_health_checker.py — Prüft alle Plattformen stündlich, Telegram-Alert bei Fehler
-4. ✅ dashboard/server.py: /api/mega-status — Zentraler Status aller Systeme
-5. ✅ automation_scheduler.py: 3 neue Tasks (webhook_registration daily, conversion_optimizer 6h, mega_health_check 1h)
-6. ✅ Claude Code Doctor: 41 Plugins deaktiviert, MCP_DOCKER disabled
-
-**Nächste Schritte (manuell):**
-- Meta Ads Kampagne in Meta Ads Manager aktivieren + Budget setzen
-- Google Merchant Center: /feed/google-shopping.xml einreichen
-- GitHub Actions RAILWAY_TOKEN erneuern
-
----
-
-## ✅ v39 — EMAIL-FILTER + ACCOUNT-CLEANUP
-
-### Deployed: 6648e5cd (22:00 CEST)
-
-**Fixes diese Session:**
-1. ✅ email_ai_conversations.py: System/Notification-Domains + noreply-Prefixes blockiert (github, stripe, shopify, sendgrid etc.)
-2. ✅ gmail_accounts.py: nikolestimi@gmail.com (#2) + rudolf.sarkany@aitec.de (#6) entfernt (inaktiv)
-
-**v38 Fixes (21:00 CEST):**
-1. ✅ Gmail SMTP → SendGrid: `full_revenue_expansion.py` alle async callers auf `await _send_sendgrid()`
-2. ✅ Demo-Emails gefiltert: @klaviyo-demo.com, @example.com, @test-ds24.com werden überall blockiert
-3. ✅ SEO ContentFactory timeout: batch_size 5→2 (verhindert Railway 300s-Timeout)
-4. ✅ Meta Ads: `sync_campaigns_from_api()` lädt 8 Kampagnen von API (überlebt Redeploys)
-5. ✅ Email Sequence: `enroll()` filtert test/demo Domains
-
----
-
-## 📊 TASK-STATUS (letzte Prüfung 19:03 UTC)
-
-| Task | Status | Ergebnis |
-|------|--------|---------|
-| meta_ads | ✅ | 8 Kampagnen von API synced |
-| seo_kw_discover | ✅ | läuft (AI call ~2min) |
-| seo_content_factory | ✅ | 2 Artikel/2h (24/Tag) |
-| pinterest_traffic | ✅ | läuft (Shopify→Pinterest) |
-| sendgrid_daily | ✅ | läuft (echte Adressen only) |
-| viral_traffic | ✅ | started (Google Trends→Reddit/Medium/LinkedIn) |
-| revenue_report | ✅ | läuft |
-| revenue_watchdog | ✅ | €4.02 heute |
-
----
-
-## ⚠️ OFFENE PUNKTE (manuell erforderlich)
-
-### 1. WhatsApp Access Token erneuern (WICHTIG!)
-- Aktueller `WHATSAPP_TOKEN` in Railway ist **abgelaufen** (Error 467: User logged out)
-- **Schritte:**
-  1. business.facebook.com → System Users → "Conversions API System User"
-  2. "Generate new token" → App: `1994952984446870` (AIITEC WA App)
-  3. Permissions: `whatsapp_business_messaging` + `whatsapp_business_management`
-  4. Token kopieren → Railway Variable `WHATSAPP_ACCESS_TOKEN` setzen
-- Betroffene Module: `whatsapp_automation.py`, `whatsapp_abandoned_cart.py`, `brutus_core.py`
-
-### 2. Twilio Console Webhook-URL setzen (manuell)
-- Voice: `https://supermegabot-production.up.railway.app/api/phone/incoming`
-- SMS: `https://supermegabot-production.up.railway.app/api/sms/incoming`
-- Wo: Twilio Console → Phone Numbers → +17625685298 → Voice/Messaging
-
-### 3. Google Merchant Center Feed einreichen (manuell)
-- URL: `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
-- Wo: merchants.google.com → Feeds → Neue Datenquelle
-
-### 4. GitHub Actions RAILWAY_TOKEN abgelaufen (manuell)
-- **Workaround**: `railway up --detach --service supermegabot` (lokal, funktioniert)
-- **Fix**: Neues Token unter railway.com → Project Settings → Tokens → GitHub Secret `RAILWAY_TOKEN` updaten
-
-### Gemini API Quota (temporär, kein Handlungsbedarf)
-- Key `AQ.Ab8RN6KL5Y2D...` ist valid (kein 401), nur Free-Tier Quota erreicht
-- 8 andere Provider als Fallback aktiv
-
-### Anthropic API Credits erschöpft (kein Handlungsbedarf)
-- OpenRouter (Gemma) als Fallback aktiv
-- SEO-Artikel werden generiert (langsamere Modelle)
-
----
-
-## 🏗️ ARCHITEKTUR OVERVIEW
-
-- **344 Scheduler-Tasks** registriert
-- **Email**: SendGrid (SMTP deaktiviert), Klaviyo API für Blasts
-- **Traffic**: Pinterest (10 Pins/2h), Reddit, Medium, LinkedIn, TikTok Ads, Meta Ads
-- **SEO**: 24 Artikel/Tag → Shopify Blog + Supabase (keyword-persistent)
-- **Revenue**: Shopify + DS24 + Stripe payment links
-
----
-
-## 🔑 FEHLENDE PASSWÖRTER / CREDENTIALS
-Alle gesetzt in `.env` — keine fehlenden Credentials.
-
----
-
-## NÄCHSTER SCHRITT (Session-Start)
-1. `curl -s https://supermegabot-production.up.railway.app/health`
-2. Prüfen ob Tasks laufen: Railway Logs
-3. GitHub Actions RAILWAY_TOKEN erneuern (optional, manuell)
+**Stand: 2026-07-09 — VOLLAUTOMATISIERUNG KOMPLETT**
+
+## 🚀 124 TASKS — VOLLAUTONOME MONEY MACHINE
+
+### Revenue-Streams (19 Tasks)
+| Modul | Intervall |
+|-------|-----------|
+| DS24 Autonomy Cycle | 6h |
+| DS24 Auto-Fill | 4h |
+| DS24 Product Creator | 12h |
+| DS24 Marketplace Auto | 8h |
+| DS24 Funnel Automation | 6h |
+| DS24 Traffic Engine | 3h |
+| DS24 Affiliate Blast | 6h |
+| Stripe Auto-Billing | 6h |
+| Revenue Auto-Payout | 24h |
+| Revenue Maximizer | 4h |
+| Revenue Mega-Tracker | 8h |
+| Conversion Engine | 6h |
+| Dynamic Pricing | 4h |
+| Product Bundle Engine | 12h |
+| Product Generator | 8h |
+| Money Machine | 4h |
+| Revenue Fast Track | 6h |
+| Super Revenue Blitz | 8h |
+| Gumroad Cycle | 12h |
+
+### Shopify (13 Tasks)
+Shopify Full Autonomy, Mass Creator, Auto-Fill, SEO Auto, SEO Blog, Autonomous Pipeline, Auto-Sorter, GMC Meta, GMC Fixer, Fix Tags, Cleanup Collections, Printify Auto-Fulfill, Product Hub
+
+### E-Mail & CRM (8 Tasks)
+Email Blast Engine, Email Sequence Engine, Mailchimp Autonomy, Mailchimp Dragon 1000, Mailchimp Mass, Klaviyo Autonomy, Klaviyo Mass, Customer Export
+
+### Traffic & SEO (18 Tasks)
+Traffic Mega Engine, Traffic Swarm, Traffic Mega V2, Traffic Blitz, SEO Mega Engine, SEO Traffic Blitz, Ultra SEO Arsenal, Omega Traffic, Viral Traffic Machine, Mass Content Blaster, Content Velocity, Free Syndication, SEO Dominator, Backlink Bomber, Viral Window Scan, Viral Promo, Content Hub, Mega Auto-Poster
+
+### Social Media (13 Tasks)
+Twitter Cookie Refresh, Twitter Auto-Poster, Instagram Pipeline, YouTube Autonomy, TikTok Cycle, TikTok Trends, Discord, Reddit Monetized, Reddit Cookie Refresh, Pinterest, Multiplatform, Hashnode, Dev.to
+
+### Marketplace (14 Tasks)
+Amazon Affiliate, Amazon Cycle, eBay Auto-Fill, eBay Cycle, eBay Blast, eBay Arbitrage, AliExpress Import, AliExpress Cycle, Alibaba Import, Daily Trend Upload, Marketplace Poster, Printful Autonomy, Printify Autonomy, Abandoned Cart Recovery
+
+### Freelance (6 Tasks)
+Fiverr Cycle, Fiverr Scraper, Fiverr SEO Promoter, Upwork Cycle, Upwork Job Scraper, Upwork Proposal Auto
+
+### B2B Leads (7 Tasks)
+Handelsregister Radar (tägl.), ZVG Radar (tägl.), AI Act Scanner (tägl.), B2B Pipeline, B2B Intent Radar, Insolvenz Radar, Insolvenz Autopost
+
+### Wachstum & Optimierung (6 Tasks)
+Growth Engine, Growth Hacker, Auto Funnel, CRO Engine, Geheimwaffe Intel, Reply Monitor
+
+### System (9 Tasks)
+Outreach Autonomous, Stripe Monitor, Shopify Orders Alert, System Health, Twilio SMS, Vorsprung Intelligence, Demand Oracle, GitHub Backup, Social Scheduler
+
+### Self-Improvement (3 Tasks)
+Quantum Self-Improver, Quantum Self-Repair, Auto Token Refresher
+
+## ✅ API-CREDENTIALS (alle gültig — Stand 2026-07-09 v2)
+- ✅ FACEBOOK_PAGE_TOKEN_AIITEC: permanent, Page 1016738738178786
+- ✅ FACEBOOK_IG_ACCESS_TOKEN: bis 2026-09-06 (@aaiitecc)
+- ✅ Twitter Cookie-Auth: tägl. auto-refresh
+- ✅ Reddit Cookie-Auth: tägl. auto-refresh (token_v2 ✅)
+- ✅ LINKEDIN_ACCESS_TOKEN: gültig
+- ✅ TELEGRAM_BOT_TOKEN: gültig
+- ✅ ANTHROPIC_API_KEY: gültig
+- ✅ GMAIL aiitecbuuss: rqcd uzim npsl odgw ✅
+- ✅ GMAIL bullpowersrtkennels: dufx vggm xsix lrkp ✅
+- ✅ Railway: bezahlt
+- ✅ Printify: 'you need' Shop ID 27975583 (User-Agent Fix — Cloudflare bypass)
+- ✅ Klaviyo: AIITEC aktiv
+- ⚠️ Mailchimp: alle Keys abgelaufen → neu holen auf mailchimp.com/account/api
+
+## ⏳ OFFENE PUNKTE
+1. Instagram Token: Erneuerung vor 2026-09-06
+2. Facebook Groups: Meta App Review ausstehend
+3. Meta Ad: "Wird bearbeitet" → auf "Aktiv" warten → ROAS prüfen
+4. Reddit Contributor Program: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
+5. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
+
+## 🔄 SHOPIFY FULL AUTONOMY — LÄUFT (09.07.2026 16:26)
+Script: `shopify_full_autonomy_continue.py` (PID 39137)
+Log: `/tmp/shopify_autonomy.log`
+- Task 1: Inventory Policy Fix — alle "deny + qty≤0" Varianten → "continue"
+- Task 2: Description Fill — template-basierte SEO-Beschreibungen für leerere Produkte
+- Task 3: Preisfix — Produkte unter €1 auf €9.99 setzen
+- Task 4: CTA Tags — "cta-jetzt-kaufen" + "verfuegbar" ergänzen
+→ Telegram-Bericht kommt automatisch wenn fertig
+
+## 🔧 SYSTEM
+- Railway: https://supermegabot-production.up.railway.app/health ✅
+- Lokal: server.py + automation_scheduler.py + outreach_autonomous.py laufen
+- Scheduler: **50 Tasks** live (alle 100% ok)
+- Syntax: 219 Python-Dateien — 0 Fehler
+
+## 💳 STRIPE SAAS — ALLE LIVE (Stand 2026-07-09 14:25 UTC)
+| Service | URL | Status | Checkout |
+|---------|-----|--------|----------|
+| steuercockpit | https://steuercockpit-production.up.railway.app | ✅ Online | POST /api/checkout {"plan":"monthly"/"lifetime","email":"x"} |
+| icomeauto | https://icomeauto-production.up.railway.app | ✅ Online | POST /api/checkout {"plan":"starter"/"pro","email":"x"} |
+| shopify-acquisition | https://shopify-acquisition-production.up.railway.app | ✅ Online (neu deployed) | POST /billing/checkout {"plan":"starter","email":"x","store_domain":"x.myshopify.com"} |
+| supermegabot | https://supermegabot-production.up.railway.app | ✅ Online | – |
+- ✅ Alle 3 SaaS generieren echte Stripe Checkout-Links (cs_live_...)
+- ✅ Stripe Key (sk_live_...00ITk9VMQb) valid + in ALLEN Services gesetzt
+- ✅ Stripe Webhooks konfiguriert (whsec_... in Railway, Stripe Dashboard we_1Tr...)
+  - steuercockpit → /api/webhook → we_1TrIGlRJECiV6vSmG1zAzVcb
+  - icomeauto → /api/webhook → we_1TrIGPRJECiV6vSmzLCZaMiy
+  - shopify-acquisition → /billing/webhook → we_1TrIGPRJECiV6vSm5lUchaIe
+- shopify-acquisition Fix: fehlende SHOPIFY_STORE_DOMAIN, SUPABASE_URL, STRIPE_SECRET_KEY gesetzt → redeploy ✅
