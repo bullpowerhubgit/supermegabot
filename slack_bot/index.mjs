@@ -14,19 +14,18 @@ try {
 import { App } from '@slack/bolt';
 
 const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN || '';
-const SLACK_APP_TOKEN = process.env.SLACK_APP_TOKEN
-  || 'xoxe-1-My0xLTk2ODk5MDU3MzA2MjgtMTEzNTkzMDM5MjgzODUtMTEzNTc0NjU0Nzg0MTgtMjIyZDdlYmUyN2M2NTE0ZmNkNDEyMjBmODJhYjU1YTM2YjY5NTIwMmNjN2I3MTY3YTVhZWNhNDY3ZWYxZDExMw';
+const SLACK_APP_TOKEN = process.env.SLACK_APP_TOKEN || '';
 
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5cmplY2t6YWNqYWF6a3B2bmprIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDEzMzY0NywiZXhwIjoyMDg1NzA5NjQ3fQ.M1Z3VT4npwsagE47cpRWuOeaJTAItNX0QRLGbJU8PUM';
-const SB_URL = 'https://qyrjeckzacjaazkpvnjk.supabase.co';
+const SB_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const SB_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SB_HEADERS = {
   apikey: SB_KEY,
   Authorization: `Bearer ${SB_KEY}`,
   'Accept-Profile': 'public',
 };
 
-const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718';
-const TG_CHAT  = process.env.TELEGRAM_CHAT_ID   || '5088771245';
+const TG_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+const TG_CHAT  = process.env.TELEGRAM_CHAT_ID   || '';
 
 async function sbGet(path) {
   const r = await fetch(`${SB_URL}/rest/v1/${path}`, { headers: SB_HEADERS });
