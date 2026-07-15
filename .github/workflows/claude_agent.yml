@@ -1,0 +1,73 @@
+name: Claude Autonomous Agent
+
+on:
+  schedule:
+    # Täglich 06:00 Uhr Europe/Berlin (= 04:00 UTC)
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'Spezifische Aufgabe (leer = Standard-Maintenance)'
+        required: false
+        default: ''
+
+jobs:
+  claude-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Python setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Claude CLI
+        run: |
+          curl -fsSL https://claude.ai/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Syntax-Check alle Python-Dateien
+        run: |
+          ERRORS=0
+          for f in modules/*.py core/*.py dashboard/*.py; do
+            python3 -m py_compile "$f" 2>&1 || ERRORS=$((ERRORS+1))
+          done
+          echo "Syntax-Fehler: $ERRORS"
+          echo "SYNTAX_ERRORS=$ERRORS" >> $GITHUB_ENV
+
+      - name: Railway Health-Check
+        run: |
+          STATUS=$(curl -s https://supermegabot-production.up.railway.app/health | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('status','unknown'))" 2>/dev/null || echo "unreachable")
+          echo "Railway Status: $STATUS"
+          echo "RAILWAY_STATUS=$STATUS" >> $GITHUB_ENV
+
+      - name: Claude Agent ausführen
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TASK="${{ github.event.inputs.task }}"
+          if [ -z "$TASK" ]; then
+            TASK="Standard-Maintenance: Prüfe CURRENT_STATUS.md auf offene Punkte, prüfe Syntax-Fehler (aktuell: $SYNTAX_ERRORS), Railway-Status: $RAILWAY_STATUS. Repariere autonom was möglich ist und erstelle einen kurzen Bericht."
+          fi
+
+          echo "$TASK" | claude \
+            --bare \
+            --dangerously-skip-permissions \
+            --permission-mode bypassPermissions \
+            -p \
+            2>&1 | tee agent_report.txt
+
+      - name: Report als Artifact speichern
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: claude-agent-report-${{ github.run_number }}
+          path: agent_report.txt
+          retention-days: 14
