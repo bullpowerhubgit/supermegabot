@@ -1350,11 +1350,12 @@ mutation CreateArticle($article: ArticleCreateInput!) {
 
 
 async def task_shopify_seo_auto() -> str:
-    """AI-optimiert Shopify Produkt-Beschreibungen (15 Stück alle 12h)."""
+    """AI-optimiert Shopify Produkt-Beschreibungen — 100/Batch, alle 2h, Cursor-Pagination durch alle 10k."""
     try:
         from modules.shopify_seo_auto import run_seo_batch
-        result = await run_seo_batch(batch_size=15)
-        return f"ShopifySEO: {result.get('updated',0)} Produkte optimiert, {result.get('failed',0)} Fehler"
+        result = await run_seo_batch(batch_size=100)
+        total = result.get("total_done", 0)
+        return f"ShopifySEO: {result.get('updated',0)} Produkte optimiert, {result.get('failed',0)} Fehler | Gesamt: {total}"
     except Exception as e:
         return f"ShopifySEO Fehler: {e}"
 
@@ -7748,15 +7749,24 @@ TASKS = [
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
+    # ── SEO MAXIMUM — alle Kanäle voll aufdrehen ────────────────────────────
+    ("mega_seo_cycle",       task_mega_seo_cycle,       10800, 195),  # 3h — MegaSEO: Artikel + IndexNow + RSS + Schema
+    ("full_seo_blast",       task_full_seo_blast,       10800, 165),  # 3h — FullSEO: Sitemap + Keywords + Channels
+    ("traffic_mega_cycle",   task_traffic_mega_cycle,   10800, 170),  # 3h — TrafficMegaV2: 6 Kanäle parallel
+    ("traffic_maximizer",    task_traffic_maximizer,     7200, 175),  # 2h — TrafficMaximizer: multi-platform blast
+    ("content_velocity",     task_content_velocity,      7200, 185),  # 2h — Content Velocity Engine
+    ("brutus_shopify",       task_brutus_shopify,       14400, 190),  # 4h — BRUTUS Shopify: 10+ Kanäle Marketing
+    ("brutus_ds24",          task_brutus_ds24,          14400, 192),  # 4h — BRUTUS DS24: Affiliate auf alle Kanäle
     # ── Marketplace Auto-Poster ───────────────────────────────────────────────
     ("marketplace_poster",   task_marketplace_poster,    10800, 200),  # 3h — eBay+Amazon+AliExpress+Shop
     # ── Email Marketing ───────────────────────────────────────────────────────
+    ("email_blast_daily",    task_email_blast_daily,    86400, 420),  # 24h — Klaviyo+Mailchimp Blast 1x täglich
     ("streetwear_email",     task_streetwear_email,    259200, 600),  # 3 Tage — Mailchimp+Klaviyo neue Produkte
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
     ("klaviyo_mass",         task_klaviyo_mass_daily,   86400, 500),  # täglich — Klaviyo Mass Campaigns
     ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # täglich — Mailchimp Mass Campaigns
     # ── Content Loop Engine (Smart Home SEO → alle Kanäle gratis) ───────────
-    ("content_loop_engine",  task_content_loop_engine, 28800, 600),  # 8h  — SEO-Artikel + IndexNow + Telegram + LinkedIn
+    ("content_loop_engine",  task_content_loop_engine, 21600, 600),  # 6h → 8h war zu langsam: SEO-Artikel + IndexNow + TG + LI
     # shopify_seo_blog (T-Shirt) deaktiviert — ersetzt durch content_loop_engine (Smart Home)
     # ── Backup ───────────────────────────────────────────────────────────────
     ("youtube_autopilot",    task_youtube_autopilot,    86400, 920),  # täglich — Produkt-Video erstellen + YouTube-Upload
@@ -7990,7 +8000,7 @@ TASKS = [
     ("email_check",             task_email_check,              300,    31),  # 5 min — IMAP poll + AI classify + auto-reply
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
-    ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
+    ("shopify_seo_auto",        task_shopify_seo_auto,        7200,   380),  # 2h — AI SEO 100 Produkte/Batch → 1200/Tag
     ("shopify_collection_pub",  task_shopify_collection_publisher, 21600, 58),  # 6h — auto-publish unpublished smart collections
     # shopify_bulk_activate DEAKTIVIERT — würde bereinigte CJ-Produkte re-aktivieren
     # ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),
