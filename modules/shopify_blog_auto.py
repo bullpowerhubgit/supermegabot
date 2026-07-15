@@ -14,14 +14,13 @@ from datetime import datetime
 from pathlib import Path
 
 import aiohttp
+from modules.ai_client import ai_complete
 
 log = logging.getLogger("ShopifyBlogAuto")
 
-SHOP_DOMAIN   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_TOKEN    = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-API_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-GEMINI_KEY    = os.getenv("GEMINI_API_KEY", "")
+SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOP_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 STATE_FILE = DATA_DIR / "shopify_blog_published.json"
@@ -124,51 +123,18 @@ async def _generate_article(keyword: str) -> dict:
     title = f"{keyword} — Tipps & Trends 2026"
     slug = keyword.lower().replace(" ", "-").replace("ä","ae").replace("ö","oe").replace("ü","ue")[:60]
 
-    if ANTHROPIC_KEY:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                             "Content-Type": "application/json"},
-                    json={
-                        "model": "claude-haiku-4-5-20251001",
-                        "max_tokens": 900,
-                        "messages": [{"role": "user", "content":
-                            f"Schreibe einen deutschen SEO-Blogartikel (600 Wörter) über '{keyword}'. "
-                            f"Format: HTML mit h2/h3/p/ul Tags. Keine Markdown-Syntax. "
-                            f"Natürlicher Ton, praktische Tipps, am Ende ein CTA zu {STORE_URL}. "
-                            f"Nur HTML-Body-Inhalt, kein head/body-Tag."
-                        }]
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30)
-                ) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        body = data["content"][0]["text"].strip()
-                        return {"title": title, "body_html": body, "tags": keyword, "slug": slug}
-        except Exception as e:
-            log.warning("Claude API Fehler: %s", e)
-
-    if GEMINI_KEY:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}",
-                    json={"contents": [{"parts": [{"text":
-                        f"Schreibe einen deutschen SEO-Blogartikel (600 Wörter) über '{keyword}'. "
-                        f"Format: HTML mit h2/h3/p/ul Tags. Keine Markdown-Syntax. "
-                        f"Natürlicher Ton, praktische Tipps, am Ende CTA zu {STORE_URL}. "
-                        f"Nur HTML-Body-Inhalt."
-                    }]}]},
-                    timeout=aiohttp.ClientTimeout(total=30)
-                ) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        body = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-                        return {"title": title, "body_html": body, "tags": keyword, "slug": slug}
-        except Exception as e:
-            log.warning("Gemini API Fehler: %s", e)
+    try:
+        prompt = (
+            f"Schreibe einen deutschen SEO-Blogartikel (600 Wörter) über '{keyword}'. "
+            f"Format: HTML mit h2/h3/p/ul Tags. Keine Markdown-Syntax. "
+            f"Natürlicher Ton, praktische Tipps, am Ende ein CTA zu {STORE_URL}. "
+            f"Nur HTML-Body-Inhalt, kein head/body-Tag."
+        )
+        body = await ai_complete(prompt, max_tokens=900)
+        if body:
+            return {"title": title, "body_html": body.strip(), "tags": keyword, "slug": slug}
+    except Exception as e:
+        log.warning("ai_complete Fehler: %s", e)
 
     # Fallback template
     body = f"""<h2>{keyword} — Was du wissen musst</h2>

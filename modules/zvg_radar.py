@@ -58,7 +58,6 @@ def _load_env():
 
 _load_env()
 
-def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _gmail_user() -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
 def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
 def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
@@ -251,8 +250,7 @@ def _score(entry: Dict) -> int:
 # ── AI Analyse ────────────────────────────────────────────────────────────────
 
 async def enrich_with_ai(entry: Dict) -> str:
-    if not _anthropic():
-        return f"{entry['objekt_typ']} in {entry['bundesland']} — Termin: {entry.get('termin_datum','?')} | Verkehrswert: {entry.get('verkehrswert','?')}"
+    from modules.ai_client import ai_complete
     prompt = f"""Zwangsversteigerung in Deutschland.
 Objekt: {entry['objekt_typ']} in {entry['objekt_adresse']}
 Gericht: {entry['gericht']} | Az: {entry['aktenzeichen']}
@@ -260,21 +258,9 @@ Verkehrswert: {entry.get('verkehrswert','unbekannt')} | Termin: {entry.get('term
 
 Schreibe 1 Satz (max 50 Wörter) auf Deutsch: Warum ist das für Investoren/Banken/Anwälte interessant?
 Nur den Satz, kein JSON."""
-    try:
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False),
-                                         timeout=aiohttp.ClientTimeout(total=10)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 100,
-                      "messages": [{"role": "user", "content": prompt}]}
-            ) as r:
-                if r.status == 200:
-                    d = await r.json()
-                    return d.get("content", [{}])[0].get("text", "").strip()
-    except Exception:
-        pass
+    text = await ai_complete(prompt, system="", max_tokens=100)
+    if text:
+        return text.strip()
     return f"{entry['objekt_typ']} — Verkehrswert {entry.get('verkehrswert','?')}, Termin {entry.get('termin_datum','?')}"
 
 

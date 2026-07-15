@@ -31,20 +31,20 @@ from typing import Any
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("ConversionOptimizer")
 
 # ── Config ─────────────────────────────────────────────────────────────────────
-SHOP_DOMAIN   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_TOKEN    = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-API_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")
+SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOP_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
+TG_TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TG_CHAT     = os.getenv("TELEGRAM_CHAT_ID", "")
 
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 STATE_FILE = DATA_DIR / "conversion_optimizer_state.json"
 
-HAIKU_MODEL    = "claude-haiku-4-5-20251001"
 LOW_STOCK_THRESHOLD = 10
 
 
@@ -172,36 +172,6 @@ async def _tg_notify(msg: str) -> None:
             )
     except Exception:
         pass
-
-
-async def _claude_haiku(prompt: str, max_tokens: int = 512) -> str:
-    """Ruft Claude Haiku für Textgenerierung auf."""
-    if not ANTHROPIC_KEY:
-        return ""
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": HAIKU_MODEL,
-                    "max_tokens": max_tokens,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                if r.status != 200:
-                    log.warning("Anthropic API HTTP %s", r.status)
-                    return ""
-                data = await r.json(content_type=None)
-                return data.get("content", [{}])[0].get("text", "").strip()
-    except Exception as e:
-        log.error("Claude Haiku error: %s", e)
-        return ""
 
 
 # ── 1. check_shop_settings ─────────────────────────────────────────────────────
@@ -468,10 +438,6 @@ async def fix_product_descriptions(batch_size: int = 20) -> dict:
             ptype = product.get("product_type", "")
             tags  = product.get("tags", "")
 
-            if not ANTHROPIC_KEY:
-                skipped += 1
-                continue
-
             prompt = (
                 f"Schreibe eine professionelle, verkaufsfördernde Produktbeschreibung auf Deutsch "
                 f"für folgendes Produkt (150-200 Wörter, HTML mit <p> und <ul> Tags):\n\n"
@@ -483,7 +449,7 @@ async def fix_product_descriptions(batch_size: int = 20) -> dict:
                 f"Professionell, klar, überzeugend."
             )
 
-            description = await _claude_haiku(prompt, max_tokens=600)
+            description = await ai_complete(prompt, max_tokens=600)
 
             if not description or len(description) < 80:
                 errors += 1
@@ -993,5 +959,4 @@ async def get_status() -> dict:
         "module": "Shopify Conversion Optimizer",
         "shop":   SHOP_DOMAIN or "not configured",
         "last_optimization": state.get("last_optimization"),
-        "anthropic_configured": bool(ANTHROPIC_KEY),
     }

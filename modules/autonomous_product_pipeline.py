@@ -17,10 +17,11 @@ from typing import Optional
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("AutoProductPipeline")
 
 # ─── Credentials ──────────────────────────────────────────────────────────────
-ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 SHOP           = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOK    = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
@@ -46,32 +47,11 @@ TREND_NICHES = [
 ]
 
 
-# ─── AI Helper ────────────────────────────────────────────────────────────────
-async def _ai(prompt: str, max_tokens: int = 400) -> str:
-    if not ANTHROPIC_KEY:
-        return ""
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=25),
-            ) as r:
-                d = await r.json(content_type=None)
-        return (d.get("content") or [{"text": ""}])[0].get("text", "").strip()
-    except Exception as e:
-        log.warning("AI error: %s", e)
-        return ""
-
-
 # ─── Trend Detection ──────────────────────────────────────────────────────────
 async def _detect_trend() -> dict:
     """Picks one trend niche and AI-generates fresh product idea."""
     niche_label, keywords = random.choice(TREND_NICHES)
-    idea = await _ai(
+    idea = await ai_complete(
         f"Erfinde eine konkrete Produktidee (Digital-Produkt oder Print-on-Demand) "
         f"für die Nische '{niche_label}'. "
         f"Antworte NUR als JSON: "
@@ -105,7 +85,7 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
     """Creates a digital product on Shopify, returns product URL."""
     if not SHOP or not SHOPIFY_TOK:
         return None
-    description = await _ai(
+    description = await ai_complete(
         f"Schreibe eine überzeugende HTML-Produktbeschreibung (max 200 Wörter) auf Deutsch "
         f"für: '{idea['title']}'. Tagline: {idea['tagline']}. "
         f"Zielgruppe: {idea.get('target', 'Unternehmer')}. SEO-optimiert. Kein Markdown.",
@@ -151,7 +131,7 @@ async def _create_gumroad_product(idea: dict) -> Optional[str]:
     if not GUMROAD_TOKEN:
         log.info("Gumroad: no token — skipping")
         return None
-    description = await _ai(
+    description = await ai_complete(
         f"Produktbeschreibung (120 Wörter, Deutsch) für Gumroad-Produkt: '{idea['title']}'. "
         f"Kurz, knapp, Vorteile betonen. Plain Text.",
         max_tokens=200,
@@ -222,7 +202,7 @@ async def _blast_all_channels(idea: dict, urls: dict) -> dict:
                    "https://ineedit.com.co/collections/all")
     price_str   = f"€{idea['price_eur']:.0f}"
 
-    post_text = await _ai(
+    post_text = await ai_complete(
         f"Schreibe einen viralen deutschen Social-Media-Post (3 Sätze) für: "
         f"'{idea['title']}' — {idea['tagline']}. Preis: {price_str}. "
         f"Link am Ende: {product_url} #KI #Automatisierung #Shopify",

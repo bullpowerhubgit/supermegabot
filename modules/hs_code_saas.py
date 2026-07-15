@@ -30,7 +30,6 @@ log = logging.getLogger("HSCodeSaaS")
 
 TG_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
-ANTHROPIC = os.getenv("ANTHROPIC_API_KEY", "")
 STATE_FILE = Path(__file__).parent.parent / "data" / "hs_code_saas_state.json"
 
 # ── EU-Zoll-Konstanten (VO EU 2026/382) ───────────────────────────────
@@ -173,11 +172,10 @@ def classify_hs_code_local(product_name: str, description: str = "") -> tuple[st
 
 async def classify_hs_code_ai(product_name: str, description: str = "") -> tuple[str, str, str]:
     """
-    KI-gestützte HS-Code-Klassifizierung via Claude Haiku (Fallback).
+    KI-gestützte HS-Code-Klassifizierung via ai_complete() mit automatischem Provider-Fallback.
     Returns: (hs_code, description, confidence)
     """
-    if not ANTHROPIC:
-        return classify_hs_code_local(product_name, description)
+    from modules.ai_client import ai_complete
 
     prompt = f"""Du bist ein EU-Zollexperte. Klassifiziere dieses Produkt mit dem korrekten 6-stelligen HS-Code (Harmonized System).
 
@@ -188,30 +186,14 @@ Antworte NUR in diesem JSON-Format (kein anderer Text):
 {{"hs_code": "XXXXXX", "category": "kurze Kategoriebeschreibung", "confidence": "HIGH/MEDIUM/LOW"}}"""
 
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 100,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    text = data["content"][0]["text"].strip()
-                    result = json.loads(text)
-                    return (
-                        result.get("hs_code", "999999"),
-                        result.get("category", "Unbekannt"),
-                        result.get("confidence", "MEDIUM"),
-                    )
+        text = await ai_complete(prompt, max_tokens=100)
+        if text:
+            result = json.loads(text.strip())
+            return (
+                result.get("hs_code", "999999"),
+                result.get("category", "Unbekannt"),
+                result.get("confidence", "MEDIUM"),
+            )
     except Exception as e:
         log.warning("AI-Klassifizierung fehlgeschlagen: %s — nutze lokale Klassifizierung", e)
 
@@ -278,7 +260,7 @@ async def classify_product_catalog(
 
             hs_code, category, confidence = classify_hs_code_local(name, desc)
 
-            if confidence == "LOW" and use_ai and ANTHROPIC:
+            if confidence == "LOW" and use_ai:
                 hs_code, category, confidence = await classify_hs_code_ai(name, desc)
 
             cost = calculate_customs_cost([hs_code])
@@ -311,7 +293,7 @@ async def generate_customs_report(
     Zollkosten-Report für einen Shop (monatlich/quartalsweise).
     Für Buchführung und Compliance-Nachweise.
     """
-    classified = await classify_product_catalog(products, use_ai=bool(ANTHROPIC))
+    classified = await classify_product_catalog(products, use_ai=True)
 
     total_customs   = sum(p["customs_cost_eur"] for p in classified)
     needs_review    = [p for p in classified if p["needs_review"]]
@@ -434,5 +416,5 @@ async def get_status() -> dict:
         "price_range":        "€99–299/Monat",
         "clients":            len(state.get("clients", [])),
         "total_classified":   state.get("stats", {}).get("total_classified", 0),
-        "ai_available":       bool(ANTHROPIC),
+        "ai_available":       True,
     }

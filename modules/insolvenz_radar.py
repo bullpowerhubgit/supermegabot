@@ -45,8 +45,6 @@ _DB_PATH = _BASE / "data" / "insolvenz_radar.db"
 # ── Env helpers ───────────────────────────────────────────────────────────────
 def _tg_token()    -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()     -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
-def _anthropic()   -> str: return os.getenv("ANTHROPIC_API_KEY", "")
-def _openai()      -> str: return os.getenv("OPENAI_API_KEY", "")
 def _stripe_key()  -> str: return os.getenv("STRIPE_SECRET_KEY", "")
 def _dashboard_url() -> str:
     return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
@@ -460,8 +458,7 @@ def _get_lead_types(score: int) -> List[str]:
 
 async def enrich_with_ai(entry: Dict) -> Dict:
     """Bereichert einen Lead mit AI-Analyse (optional, fällt auf Heuristik zurück)."""
-    if not _anthropic():
-        return entry
+    from modules.ai_client import ai_complete
 
     prompt = f"""Analysiere diese deutsche Insolvenzbekanntmachung und erstelle ein B2B-Lead-Profil.
 
@@ -483,24 +480,15 @@ Antworte als JSON:
 Score-Logik: 80+ = sofort handeln (M&A/Factoring), 60-79 = hohe Priorität (Steuerberater), 40-59 = mittel, <40 = gering."""
 
     try:
-        async with _session(20) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                      "messages": [{"role": "user", "content": prompt}]}
-            ) as r:
-                if r.status == 200:
-                    d    = await r.json()
-                    text = d.get("content", [{}])[0].get("text", "")
-                    m    = re.search(r"\{.*\}", text, re.DOTALL)
-                    if m:
-                        parsed = json.loads(m.group())
-                        entry["score"]      = int(parsed.get("score", entry["score"]))
-                        entry["branche"]    = parsed.get("branche", entry["branche"])
-                        entry["lead_types"] = json.dumps(parsed.get("lead_typen", []), ensure_ascii=False)
-                        entry["ai_summary"] = parsed.get("ai_summary", "")
+        text = await ai_complete(prompt, system="", max_tokens=300)
+        if text:
+            m = re.search(r"\{.*\}", text, re.DOTALL)
+            if m:
+                parsed = json.loads(m.group())
+                entry["score"]      = int(parsed.get("score", entry["score"]))
+                entry["branche"]    = parsed.get("branche", entry["branche"])
+                entry["lead_types"] = json.dumps(parsed.get("lead_typen", []), ensure_ascii=False)
+                entry["ai_summary"] = parsed.get("ai_summary", "")
     except Exception as e:
         log.debug("AI enrich: %s", e)
     return entry
@@ -564,7 +552,7 @@ async def run_scan(bundesland: str = "", min_score_alert: int = 60) -> Dict:
         entry["rechtsform"] = _extract_rechtsform(entry["debtor_name"])
 
         # AI Enrichment nur für Score >= 50 (spart API-Kosten)
-        if entry["score"] >= 50 and _anthropic():
+        if entry["score"] >= 50:
             entry = await enrich_with_ai(entry)
             await asyncio.sleep(0.3)
 

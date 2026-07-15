@@ -15,6 +15,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("Geheimwaffe")
 
 DATA_DIR = Path(__file__).parent.parent / "data"
@@ -22,8 +24,6 @@ DB_PATH = DATA_DIR / "geheimwaffe.db"
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 SHOPIFY_URL = os.getenv("SHOPIFY_STORE_URL", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
-PERPLEXITY_KEY = os.getenv("PERPLEXITY_API_KEY", "")
 
 try:
     import aiohttp
@@ -108,49 +108,8 @@ async def _ai(prompt: str, system: str = "", task: str = "smart") -> str:
 
 
 async def _perplexity(query: str, system: str = "") -> str:
-    """Perplexity Sonar — Echtzeit-Web-Recherche für Winning Products.
-    Fallback zu Ollama wenn kein Key vorhanden."""
-    if not PERPLEXITY_KEY or not HAS_AIOHTTP:
-        log.info("Perplexity nicht verfügbar — nutze Ollama")
-        return await _ai(query, system=system, task="smart")
-
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": query})
-
-    try:
-        headers = {
-            "Authorization": f"Bearer {PERPLEXITY_KEY}",
-            "Content-Type": "application/json",
-        }
-        payload = {
-            "model": "sonar-pro",           # Echtzeit-Web-Suche
-            "messages": messages,
-            "max_tokens": 2000,
-            "temperature": 0.2,
-            "search_recency_filter": "week",  # Nur aktuelle Daten
-            "return_citations": True,
-        }
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
-            async with s.post("https://api.perplexity.ai/chat/completions",
-                              headers=headers, json=payload) as r:
-                if r.status == 200:
-                    d = await r.json()
-                    choices = d.get("choices", [])
-                    content = choices[0].get("message", {}).get("content", "") if choices else ""
-                    citations = d.get("citations", [])
-                    if citations:
-                        content += "\n\n📎 Quellen: " + ", ".join(citations[:3])
-                    log.info(f"Perplexity sonar-pro: {len(content)} Zeichen")
-                    return content
-                else:
-                    body = await r.text()
-                    log.warning(f"Perplexity HTTP {r.status}: {body[:200]}")
-                    return await _ai(query, system=system, task="smart")
-    except Exception as e:
-        log.error(f"Perplexity Fehler: {e} — Fallback zu Ollama")
-        return await _ai(query, system=system, task="smart")
+    """AI-Recherche via ai_complete() — automatischer Provider-Fallback."""
+    return await ai_complete(query, system=system, model_hint="smart", max_tokens=2000)
 
 
 # ---------------------------------------------------------------------------
@@ -163,30 +122,10 @@ async def find_winning_products(niche: str = None) -> List[Dict]:
 
     system = "Du bist ein E-Commerce-Experte für Shopify Dropshipping und Winning Products. Antworte auf Deutsch."
 
-    if PERPLEXITY_KEY:
-        prompt = f"""Recherchiere aktuelle Winning Products für Shopify Dropshipping in der Nische: {niche_str}
+    prompt = f"""Recherchiere aktuelle Winning Products für Shopify Dropshipping in der Nische: {niche_str}
 
-Analysiere aktuelle Trends (TikTok, Amazon, AliExpress, Google Trends Mai 2026).
+Analysiere aktuelle Trends (TikTok, Amazon, AliExpress, Google Trends).
 Gib eine Liste von 5 profitablen Produkten als JSON zurück:
-[{{
-  "title": "Produktname",
-  "niche": "Nische",
-  "why_winning": "Warum dieses Produkt viral geht (mit aktuellen Daten)",
-  "target_audience": "Zielgruppe",
-  "selling_price": "25-45€",
-  "profit_margin": "60-80%",
-  "trend_score": 8.5,
-  "marketing_angle": "Hauptmarketing-Aussage",
-  "competition": "niedrig/mittel/hoch",
-  "source": "TikTok/Amazon/Google Trends"
-}}]
-Nur JSON ausgeben."""
-        log.info(f"🔍 Perplexity-Suche für Nische: {niche_str}")
-        result = await _perplexity(prompt, system=system)
-    else:
-        prompt = f"""Als E-Commerce-Experte, analysiere folgende Nische für Shopify: {niche_str}
-
-Erstelle eine Liste von 5 Winning Products (JSON Format):
 [{{
   "title": "Produktname",
   "niche": "Nische",
@@ -196,11 +135,13 @@ Erstelle eine Liste von 5 Winning Products (JSON Format):
   "profit_margin": "60-80%",
   "trend_score": 8.5,
   "marketing_angle": "Hauptmarketing-Aussage",
-  "competition": "niedrig/mittel/hoch"
+  "competition": "niedrig/mittel/hoch",
+  "source": "TikTok/Amazon/Google Trends"
 }}]
 Fokus auf: Lösung eines Problems, emotionalen Nutzen, Viralitätspotenzial.
 Nur JSON ausgeben."""
-        result = await _ai(prompt, task="smart")
+    log.info(f"Winning Product Suche für Nische: {niche_str}")
+    result = await _perplexity(prompt, system=system)
 
     products = []
     try:

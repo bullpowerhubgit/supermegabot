@@ -718,9 +718,6 @@ async def _generate_personalized_email(lead: Dict) -> Tuple[str, str]:
     company = lead.get("company", "").strip()
     source  = lead.get("source", "")
 
-    if not ANTHROPIC_KEY:
-        return _fallback_subject_body(name, niche, company)
-
     prompt = (
         f"Du bist E-Mail-Texter für den deutschen Online-Shop ineedit.com.co (Smart Home, Solar, Gadgets).\n"
         f"Schreibe eine kurze, authentische Betreffzeile (max 65 Zeichen) und einen Intro-Absatz (2-3 Sätze, max 120 Wörter) "
@@ -730,31 +727,16 @@ async def _generate_personalized_email(lead: Dict) -> Tuple[str, str]:
         f'{{ "subject": "...", "intro": "..." }}'
     )
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                json={
-                    "model":      "claude-haiku-4-5",
-                    "max_tokens": 256,
-                    "messages":   [{"role": "user", "content": prompt}],
-                },
-                headers={
-                    "x-api-key":         ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type":      "application/json",
-                },
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                if r.status == 200:
-                    data = await r.json(content_type=None)
-                    raw  = data.get("content", [{}])[0].get("text", "{}")
-                    parsed = json.loads(raw)
-                    subject = parsed.get("subject", "")
-                    intro   = parsed.get("intro", "")
-                    if subject and intro:
-                        return subject, intro
+        from modules.ai_client import ai_complete
+        raw = await ai_complete(prompt, system="", max_tokens=256)
+        if raw:
+            parsed = json.loads(raw)
+            subject = parsed.get("subject", "")
+            intro   = parsed.get("intro", "")
+            if subject and intro:
+                return subject, intro
     except Exception as exc:
-        log.warning("Haiku personalization failed: %s", exc)
+        log.warning("AI personalization failed: %s", exc)
 
     return _fallback_subject_body(name, niche, company)
 

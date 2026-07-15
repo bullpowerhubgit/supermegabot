@@ -827,45 +827,15 @@ async def _ai_personalize(company: str, industry: str, city: str,
         f"- Kein Markdown, nur Plain Text"
     )
 
-    # 1. Groq (schnell, kostenlos)
-    groq_key = _e("GROQ_API_KEY")
-    if groq_key:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                    json={"model": "llama-3.1-8b-instant", "max_tokens": 300,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=8),
-                ) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        body = data["choices"][0]["message"]["content"].strip()
-                        body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
-                        return subject, body
-        except Exception as e:
-            log.debug("Groq personalize fallback: %s", e)
-
-    # 2. Claude Haiku (Fallback)
+    # AI: Ollama (lokal) → Groq → Anthropic via ai_client
     try:
-        api_key = _e("ANTHROPIC_API_KEY")
-        if api_key:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    headers={"x-api-key": api_key, "anthropic-version": "2023-06-01"},
-                    timeout=aiohttp.ClientTimeout(total=12),
-                ) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        body = data["content"][0]["text"].strip()
-                        body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
-                        return subject, body
+        from modules.ai_client import ai_complete
+        body = (await ai_complete(prompt, model_hint="fast", max_tokens=300)).strip()
+        if body:
+            body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
+            return subject, body
     except Exception as e:
-        log.debug("Claude personalize fallback: %s", e)
+        log.debug("ai_complete personalize: %s", e)
 
     # 3. Template-Fallback
     body = (

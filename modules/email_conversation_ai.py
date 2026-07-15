@@ -26,7 +26,7 @@ from email.utils import parseaddr
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import aiohttp
+from modules.ai_client import ai_complete
 
 log = logging.getLogger("EmailConversationAI")
 
@@ -35,13 +35,11 @@ _DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 _DB_PATH  = _DATA_DIR / "email_conversations.db"
 
 # ── Umgebungsvariablen ───────────────────────────────────────────────────────
-_ANTHROPIC_KEY   = lambda: os.getenv("ANTHROPIC_API_KEY", "")
 _RAILWAY_DOMAIN  = lambda: os.getenv("RAILWAY_PUBLIC_DOMAIN", "supermegabot-production.up.railway.app")
 _IMAP_HOST       = "imap.gmail.com"
 _IMAP_PORT       = 993
 _SMTP_HOST       = "smtp.gmail.com"
 _SMTP_PORT       = 587
-_CLAUDE_MODEL    = "claude-haiku-4-5-20251001"
 
 # Produktlinks
 _LINKS = {
@@ -359,14 +357,9 @@ class EmailConversationAI:
         )
 
     async def classify_email(self, email_dict: Dict[str, Any]) -> str:
-        """Klassifiziert eine E-Mail via Claude. Gibt eine Kategorie zurück."""
-        key = _ANTHROPIC_KEY()
-        if not key:
-            log.warning("Kein ANTHROPIC_API_KEY — Fallback-Klassifizierung")
-            return self._fallback_classify(email_dict)
-
-        subject  = email_dict.get("subject", "")
-        body     = email_dict.get("body_text", "")[:800]
+        """Klassifiziert eine E-Mail via KI. Gibt eine Kategorie zurück."""
+        subject   = email_dict.get("subject", "")
+        body      = email_dict.get("body_text", "")[:800]
         from_addr = email_dict.get("from_email", "")
 
         classify_prompt = (
@@ -379,35 +372,19 @@ class EmailConversationAI:
         )
 
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json",
-                    },
-                    json={
-                        "model": _CLAUDE_MODEL,
-                        "max_tokens": 20,
-                        "system": "Du bist ein E-Mail-Klassifizierungs-Assistent. Antworte immer nur mit einem Wort.",
-                        "messages": [{"role": "user", "content": classify_prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        raw = data["content"][0]["text"].strip().lower()
-                        # Sicherheitscheck: muss eine valide Kategorie sein
-                        for cat in EMAIL_CATEGORIES:
-                            if cat in raw:
-                                return cat
-                        log.warning("Claude lieferte unbekannte Kategorie: %r — Fallback", raw)
-                    else:
-                        body_text = await resp.text()
-                        log.warning("Claude Classify HTTP %s: %s", resp.status, body_text[:200])
+            raw = await ai_complete(
+                classify_prompt,
+                system="Du bist ein E-Mail-Klassifizierungs-Assistent. Antworte immer nur mit einem Wort.",
+                max_tokens=20,
+            )
+            raw = raw.strip().lower()
+            # Sicherheitscheck: muss eine valide Kategorie sein
+            for cat in EMAIL_CATEGORIES:
+                if cat in raw:
+                    return cat
+            log.warning("KI lieferte unbekannte Kategorie: %r — Fallback", raw)
         except Exception as e:
-            log.error("Claude classify error: %s", e)
+            log.error("classify error: %s", e)
 
         return self._fallback_classify(email_dict)
 
@@ -463,36 +440,12 @@ class EmailConversationAI:
             f"Beginne mit persönlicher Anrede an {sender_name or 'den Sender'}."
         )
 
-        key = _ANTHROPIC_KEY()
-        if not key:
-            log.warning("Kein ANTHROPIC_API_KEY — kein Reply generiert")
-            return None
-
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json",
-                    },
-                    json={
-                        "model": _CLAUDE_MODEL,
-                        "max_tokens": 500,
-                        "system": _SYSTEM_PROMPT,
-                        "messages": [{"role": "user", "content": user_prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=60),
-                ) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        return data["content"][0]["text"].strip()
-                    else:
-                        err = await resp.text()
-                        log.error("Claude generate HTTP %s: %s", resp.status, err[:200])
+            text = await ai_complete(user_prompt, system=_SYSTEM_PROMPT, max_tokens=500)
+            if text:
+                return text.strip()
         except Exception as e:
-            log.error("Claude generate error: %s", e)
+            log.error("generate_reply error: %s", e)
 
         return None
 

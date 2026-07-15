@@ -143,31 +143,16 @@ Text zu prüfen:
 
 
 async def _ai_check(text: str, content_type: ContentType) -> Tuple[int, str]:
-    groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key:
-        return 7, "Groq nicht konfiguriert — Standard-Approve"
-
+    from modules.ai_client import ai_complete
     prompt = _GROQ_PROMPT.format(content_type=content_type, text=text[:800])
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=6)) as s:
-            async with s.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "llama-3.1-8b-instant",
-                    "max_tokens": 60,
-                    "temperature": 0.1,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-            ) as r:
-                data = await r.json()
-        raw = data.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        raw = await ai_complete(prompt, system="", max_tokens=60)
         parsed = json.loads(raw.strip())
         score  = int(parsed.get("score", 5))
         reason = str(parsed.get("reason", "KI-Check"))
         return max(1, min(10, score)), reason
     except Exception as e:
-        log.debug("Groq PostGuard: %s", e)
+        log.debug("ai_complete PostGuard: %s", e)
         return 6, "KI-Check fehlgeschlagen — Grenzfall"
 
 

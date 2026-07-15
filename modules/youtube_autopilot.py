@@ -30,6 +30,8 @@ from pathlib import Path
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("YouTubeAutopilot")
 
 # ─── Konfiguration ────────────────────────────────────────────────────────────
@@ -41,7 +43,6 @@ YT_REFRESH_TOKEN  = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
 YT_SA_CREDS       = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "credentials/yt-tracker-sa.json")
 
 OPENAI_KEY        = os.getenv("OPENAI_API_KEY", "")
-ANTHROPIC_KEY     = os.getenv("ANTHROPIC_API_KEY", "")
 SHOPIFY_DOMAIN    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN     = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2024-10")
@@ -158,27 +159,13 @@ Das Script soll:
 
 Gib NUR den Sprechtext zurück, keine Formatierung, keine Anmerkungen."""
 
-    # Claude zuerst probieren
-    if ANTHROPIC_KEY:
-        try:
-            req = urllib.request.Request(
-                "https://api.anthropic.com/v1/messages",
-                data=json.dumps({
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 400,
-                    "messages": [{"role": "user", "content": prompt}]
-                }).encode(),
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                }
-            )
-            with urllib.request.urlopen(req, timeout=30) as r:
-                data = json.loads(r.read())
-            return data["content"][0]["text"].strip()
-        except Exception as e:
-            log.warning("Claude Script-Gen Fehler: %s", e)
+    # KI-Script via ai_complete (automatischer Provider-Fallback)
+    try:
+        text = await ai_complete(prompt, system="", max_tokens=400)
+        if text:
+            return text.strip()
+    except Exception as e:
+        log.warning("ai_complete Script-Gen Fehler: %s", e)
 
     # Fallback: Einfaches Template
     return (

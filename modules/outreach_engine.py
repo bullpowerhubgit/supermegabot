@@ -46,7 +46,6 @@ _BASE    = Path(__file__).parent.parent
 _DB_PATH = _BASE / "data" / "outreach_engine.db"
 
 # ── Env helpers ───────────────────────────────────────────────────────────────
-def _anthropic()      -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _gmail_user()     -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
 def _gmail_pass()     -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "")
 def _gmail_user2()    -> str: return os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
@@ -183,9 +182,6 @@ AiiteC GmbH
             "body_twitter":  body_twitter,
         }
 
-    if not _anthropic():
-        return _fallback()
-
     prompt = f"""Schreibe eine professionelle, kurze Kalt-Akquise-Nachricht auf Deutsch.
 
 Empfänger: {target['name']} ({target['type']})
@@ -214,23 +210,11 @@ Antworte als JSON:
 }}"""
 
     try:
-        async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=20),
-            connector=aiohttp.TCPConnector(ssl=False)
-        ) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 600,
-                      "messages": [{"role": "user", "content": prompt}]}
-            ) as r:
-                if r.status == 200:
-                    d    = await r.json()
-                    text = d.get("content", [{}])[0].get("text", "")
-                    m    = re.search(r"\{.*\}", text, re.DOTALL)
-                    if m:
-                        return json.loads(m.group())
+        from modules.ai_client import ai_complete
+        text = await ai_complete(prompt, system="", max_tokens=600)
+        m = re.search(r"\{.*\}", text, re.DOTALL)
+        if m:
+            return json.loads(m.group())
     except Exception as e:
         log.debug("AI generate: %s", e)
 

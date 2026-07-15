@@ -80,37 +80,23 @@ def _posts_today(platform: str) -> int:
 # ── Content ────────────────────────────────────────────────────────────────────
 
 async def generate_promo_content() -> str:
-    """Groq KI Content oder hardcoded Template."""
-    groq_key = os.getenv("GROQ_API_KEY", "")
-    if groq_key:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {groq_key}"},
-                    json={
-                        "model": "llama3-8b-8192",
-                        "max_tokens": 200,
-                        "messages": [{
-                            "role": "user",
-                            "content": (
-                                "Schreibe einen viralen deutschen Social-Media-Post über KI-Automatisierung "
-                                "und passives Einkommen. Max 180 Wörter. Nutze Emojis. Füge am Ende ein "
-                                f"Platzhalter {{LINK}} für den Affiliate-Link ein. Hashtags hinzufügen."
-                            )
-                        }]
-                    },
-                    timeout=aiohttp.ClientTimeout(total=15)
-                ) as r:
-                    data = await r.json()
-                    text = data["choices"][0]["message"]["content"].strip()
-                    if "{LINK}" not in text:
-                        text += f"\n\n👉 {AFFILIATE_LINK}"
-                    else:
-                        text = text.replace("{LINK}", AFFILIATE_LINK)
-                    return text
-        except Exception as e:
-            log.warning("Groq Fehler: %s — nutze Template", e)
+    """KI Content via ai_complete oder hardcoded Template."""
+    from modules.ai_client import ai_complete
+    prompt = (
+        "Schreibe einen viralen deutschen Social-Media-Post über KI-Automatisierung "
+        "und passives Einkommen. Max 180 Wörter. Nutze Emojis. Füge am Ende ein "
+        f"Platzhalter {{LINK}} für den Affiliate-Link ein. Hashtags hinzufügen."
+    )
+    try:
+        text = await ai_complete(prompt, max_tokens=200)
+        if text:
+            if "{LINK}" not in text:
+                text += f"\n\n👉 {AFFILIATE_LINK}"
+            else:
+                text = text.replace("{LINK}", AFFILIATE_LINK)
+            return text
+    except Exception as e:
+        log.warning("ai_complete Fehler: %s — nutze Template", e)
 
     tpl = random.choice(TEMPLATES)
     return tpl.replace("{LINK}", AFFILIATE_LINK)

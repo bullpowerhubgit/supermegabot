@@ -28,6 +28,8 @@ from typing import Optional
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("SocialAutopilot")
 
 # ── Credentials ─────────────────────────────────────────────────────────────
@@ -48,8 +50,6 @@ PIN_BOARD  = _e("PINTEREST_BOARD_ID", "")  # optional — posts to user's profil
 SHOP_DOMAIN = _e("SHOPIFY_SHOP_DOMAIN", "")
 SHOP_TOKEN  = _e("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOP_VER    = _e("SHOPIFY_API_VERSION", "2025-01")
-
-ANTHROPIC_KEY = _e("ANTHROPIC_API_KEY", "")
 
 GRAPH = "https://graph.facebook.com/v19.0"
 STATE_FILE = Path(__file__).parent.parent / "data" / "social_autopilot_state.json"
@@ -109,8 +109,7 @@ def _mark_posted(product_id) -> None:
 
 
 # ── Caption generation via Claude Haiku ─────────────────────────────────────
-async def _generate_caption(session: aiohttp.ClientSession, product: dict,
-                             platform: str) -> str:
+async def _generate_caption(product: dict, platform: str) -> str:
     title = product.get("title", "Smart Produkt")
     body = re.sub(r"<[^>]+>", " ", product.get("body_html", "")).strip()[:300]
     tags = product.get("tags", "")
@@ -139,30 +138,12 @@ async def _generate_caption(session: aiohttp.ClientSession, product: dict,
         f"Max {limit} Zeichen. Nur den Post-Text ausgeben, kein Kommentar."
     )
 
-    if not ANTHROPIC_KEY:
-        return f"🛒 {title}\n\n{shop_link}\n\n#SmartHome #Gadgets #Technik"
-
     try:
-        async with session.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={
-                "x-api-key": ANTHROPIC_KEY,
-                "anthropic-version": "2023-06-01",
-                "content-type": "application/json",
-            },
-            json={
-                "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 300,
-                "messages": [{"role": "user", "content": prompt}],
-            },
-            timeout=aiohttp.ClientTimeout(total=20),
-        ) as r:
-            if r.status == 200:
-                resp = await r.json()
-                text = resp["content"][0]["text"].strip()
-                return text[:limit]
+        text = await ai_complete(prompt, max_tokens=300)
+        if text:
+            return text[:limit]
     except Exception as ex:
-        log.warning("Haiku caption error: %s", ex)
+        log.warning("Caption generation error: %s", ex)
 
     return f"🛒 {title}\n\n{shop_link}\n\n#SmartHome #Gadgets #Technik"
 
@@ -318,10 +299,10 @@ async def run_autopilot_cycle() -> dict:
 
         # Generate captions for each platform in parallel
         captions = await asyncio.gather(
-            _generate_caption(session, product, "facebook"),
-            _generate_caption(session, product, "instagram"),
-            _generate_caption(session, product, "twitter"),
-            _generate_caption(session, product, "pinterest"),
+            _generate_caption(product, "facebook"),
+            _generate_caption(product, "instagram"),
+            _generate_caption(product, "twitter"),
+            _generate_caption(product, "pinterest"),
             return_exceptions=True,
         )
         fb_cap, ig_cap, tw_cap, pin_cap = [

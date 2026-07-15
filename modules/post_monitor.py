@@ -62,7 +62,6 @@ _TG_TOKEN = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT  = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 _SB_URL   = lambda: os.getenv("SUPABASE_URL", "")
 _SB_KEY   = lambda: os.getenv("SUPABASE_SERVICE_KEY", os.getenv("SUPABASE_ANON_KEY", ""))
-_GROQ_KEY = lambda: os.getenv("GROQ_API_KEY", "")
 
 # ── Verbotene Muster (gemäß Feedback-Memory) ──────────────────────────────────
 
@@ -185,40 +184,28 @@ async def _check_image_url(image_url: str) -> Optional[str]:
     return None
 
 async def _check_text_quality_llm(text: str) -> List[str]:
-    """Verwendet Groq (kostenlos) um Textqualität zu prüfen."""
-    api_key = _GROQ_KEY()
-    if not api_key or len(text) < 20:
+    """Verwendet ai_complete() um Textqualität zu prüfen."""
+    if len(text) < 20:
         return []
     try:
+        from modules.ai_client import ai_complete
         prompt = (
             f"Analysiere diesen Social-Media-Post auf Qualitätsprobleme. "
             f"Antworte NUR mit JSON: {{\"issues\": [\"problem1\", ...], \"spam_score\": 0.0}}\n\n"
             f"Post:\n{text[:500]}"
         )
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "llama-3.1-70b-versatile",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 200,
-                    "temperature": 0,
-                },
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    content = data["choices"][0]["message"]["content"].strip()
-                    # JSON aus Response extrahieren
-                    m = re.search(r'\{[^}]+\}', content, re.DOTALL)
-                    if m:
-                        result = json.loads(m.group())
-                        issues = result.get("issues", [])
-                        spam_score = float(result.get("spam_score", 0))
-                        if spam_score > 0.7:
-                            issues.append(f"KI-Spam-Score: {spam_score:.2f}")
-                        return [f"[KI] {i}" for i in issues if i]
+        content = await ai_complete(prompt, system="", max_tokens=200)
+        if content:
+            content = content.strip()
+            # JSON aus Response extrahieren
+            m = re.search(r'\{[^}]+\}', content, re.DOTALL)
+            if m:
+                result = json.loads(m.group())
+                issues = result.get("issues", [])
+                spam_score = float(result.get("spam_score", 0))
+                if spam_score > 0.7:
+                    issues.append(f"KI-Spam-Score: {spam_score:.2f}")
+                return [f"[KI] {i}" for i in issues if i]
     except Exception as e:
         log.debug("LLM-Check-Fehler: %s", e)
     return []

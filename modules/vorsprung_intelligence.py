@@ -27,11 +27,12 @@ from typing import Optional
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("VorsprungIntelligence")
 
 BASE_DIR = Path(__file__).parent.parent
 
-ANTHROPIC_KEY   = os.getenv("ANTHROPIC_API_KEY", "")
 SUPABASE_URL    = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY    = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -105,33 +106,6 @@ async def _tg(msg: str) -> bool:
         log.warning(f"TG error: {e}")
         return False
 
-
-# ── Claude AI Synthesis ──────────────────────────────────────────────────────
-
-async def _claude_analyze(system: str, user_msg: str) -> str:
-    if not ANTHROPIC_KEY:
-        return "ANTHROPIC_API_KEY fehlt"
-    url = "https://api.anthropic.com/v1/messages"
-    headers = {
-        "x-api-key": ANTHROPIC_KEY,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-    }
-    body = {
-        "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 800,
-        "system": system,
-        "messages": [{"role": "user", "content": user_msg}],
-    }
-    try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-            async with s.post(url, headers=headers, json=body, timeout=aiohttp.ClientTimeout(total=30)) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    return data["content"][0]["text"].strip()
-                return f"Claude API {r.status}"
-    except Exception as e:
-        return f"Claude error: {e}"
 
 
 # ── Scraper 1: GLEIF — Deutsche Unternehmensdaten (gratis, kein API-Key) ──────
@@ -616,7 +590,7 @@ Erstelle ein präzises Briefing mit:
 
 Max 400 Wörter. Prägnant wie Bloomberg Terminal."""
 
-    return await _claude_analyze(system, user_msg)
+    return await ai_complete(user_msg, system=system, max_tokens=800)
 
 
 # ── Haupt-Scan-Funktion ──────────────────────────────────────────────────────
@@ -775,7 +749,7 @@ zu Intelligence für Investoren aggregiert. Heute {signal_count} Signale.
 Format: Titel (max 100 Zeichen) + Body (max 300 Wörter). Sachlich, zeige Methodik.
 Kein Eigenlob — Fakten und Methode erklären. CTA am Ende für Beta-Zugang."""
 
-    return await _claude_analyze(system, prompt)
+    return await ai_complete(prompt, system=system, max_tokens=800)
 
 
 async def _post_linkedin(content: str) -> dict:

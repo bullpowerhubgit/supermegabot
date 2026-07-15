@@ -370,6 +370,89 @@ body {
 @media(max-width:1100px) { .bpi-grid { grid-template-columns: repeat(3, 1fr); } }
 @media(max-width:750px)  { .bpi-grid { grid-template-columns: repeat(2, 1fr); } }
 @media(max-width:480px)  { .bpi-grid { grid-template-columns: 1fr; } }
+/* ── AI HUNT PANEL ── */
+.ai-provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.ai-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+}
+.ai-card:hover { transform: translateY(-2px); }
+.ai-card.active {
+  border-color: rgba(0,255,136,.4);
+  box-shadow: 0 0 12px rgba(0,255,136,.15);
+  background: rgba(0,255,136,.04);
+}
+.ai-card.active::before {
+  content: 'AKTIV';
+  position: absolute;
+  top: 5px; right: 6px;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--green);
+  opacity: .8;
+}
+.ai-card.standby {
+  border-color: rgba(0,191,255,.15);
+}
+.ai-card.circuit {
+  border-color: rgba(255,71,87,.3);
+  background: rgba(255,71,87,.03);
+  opacity: .75;
+}
+.ai-card.no_key {
+  opacity: .35;
+  filter: grayscale(.5);
+}
+.ai-card-icon { font-size: 20px; line-height: 1; }
+.ai-card-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-card-status {
+  font-size: 10px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ai-card.active   .ai-card-status { color: var(--green); }
+.ai-card.standby  .ai-card-status { color: var(--blue); }
+.ai-card.circuit  .ai-card-status { color: var(--red); }
+.ai-card-fails {
+  font-size: 9px;
+  color: var(--muted);
+}
+.ai-card.active .ai-card-fails { color: rgba(0,255,136,.5); }
+.ai-dot {
+  position: absolute;
+  top: 8px; left: 8px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.ai-dot.active  { background: var(--green); box-shadow: 0 0 5px var(--green); animation: pulse 1.5s infinite; }
+.ai-dot.standby { background: var(--blue); }
+.ai-dot.circuit { background: var(--red); }
+.ai-dot.no_key  { background: var(--muted); }
+
 .bpi-card {
   background: var(--card);
   border: 1px solid var(--border);
@@ -812,6 +895,22 @@ body {
     </div>
   </div>
 
+  <!-- ── API HUNT PANEL ── -->
+  <div class="section" id="ai-hunt-section">
+    <div class="section-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>🤖 API Hunt — KI-Provider Status</span>
+      <span id="ai-current-badge" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:rgba(0,255,136,.12);border:1px solid rgba(0,255,136,.3);color:var(--green)">⏳ Lade...</span>
+    </div>
+    <div class="ai-provider-grid" id="ai-provider-grid">
+      <!-- populated by JS -->
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-green" style="padding:6px 14px;font-size:11px;" onclick="testAIHunt()">⚡ Provider testen</button>
+      <span id="ai-monitor-dot" style="font-size:11px;color:var(--muted)">● Monitor: —</span>
+      <span id="ai-openclaw-status" style="font-size:11px;padding:3px 8px;border-radius:8px;background:rgba(155,93,229,.1);border:1px solid rgba(155,93,229,.2);color:var(--purple)">🖥️ OpenClaw: —</span>
+    </div>
+  </div>
+
   <!-- ── OVERVIEW: Tasks + SEO ── -->
   <div class="overview-row">
 
@@ -1148,27 +1247,164 @@ async function checkHealth() {
   }
 }
 
+// ─── AI Hunt Panel ────────────────────────────────────────────────────────────
+const AI_ICONS = {
+  OpenClaw: '🖥️', Groq: '⚡', DeepSeek: '🐋', OpenRouter: '🔀',
+  Gemini: '♊', Anthropic: '🧠', OpenAI: '🤖', Perplexity: '🔍', Ollama: '🖥️',
+};
+const AI_ORDER = ['OpenClaw','Groq','DeepSeek','OpenRouter','Gemini','Anthropic','OpenAI','Perplexity'];
+
+let _aiStatusCache = null;
+let _aiStatusTs    = 0;
+
+async function loadAIStatus(force = false) {
+  try {
+    // Cache 15s
+    if (!force && _aiStatusCache && (Date.now() - _aiStatusTs) < 15000) {
+      renderAIStatus(_aiStatusCache);
+      return;
+    }
+    const d = await api('GET', '/api/ai/status');
+    _aiStatusCache = d;
+    _aiStatusTs    = Date.now();
+    renderAIStatus(d);
+  } catch(e) {
+    addLog('warn', 'AIHunt Status: ' + e.message);
+  }
+}
+
+function renderAIStatus(d) {
+  const grid  = document.getElementById('ai-provider-grid');
+  const badge = document.getElementById('ai-current-badge');
+  const monDot = document.getElementById('ai-monitor-dot');
+  const ocStatus = document.getElementById('ai-openclaw-status');
+  if (!grid) return;
+
+  const current = d.current_provider || 'unknown';
+  if (badge) {
+    badge.textContent = current !== 'unknown' ? `⚡ ${current} aktiv` : '⏳ Initialisiert...';
+    badge.style.color = current !== 'unknown' ? 'var(--green)' : 'var(--muted)';
+  }
+  if (monDot) {
+    monDot.textContent = d.monitor_running ? '● Monitor: läuft' : '○ Monitor: aus';
+    monDot.style.color = d.monitor_running ? 'var(--green)' : 'var(--red)';
+  }
+
+  // OpenClaw Status
+  const oc = d.OpenClaw || {};
+  if (ocStatus) {
+    if (oc.online) {
+      ocStatus.textContent = `🖥️ OpenClaw: ${oc.fast_model || oc.model || 'llama3.2'} ONLINE`;
+      ocStatus.style.color = 'var(--green)';
+      ocStatus.style.borderColor = 'rgba(0,255,136,.3)';
+    } else {
+      ocStatus.textContent = `🖥️ OpenClaw: offline → Cloud`;
+      ocStatus.style.color = 'var(--orange)';
+      ocStatus.style.borderColor = 'rgba(255,159,67,.3)';
+    }
+  }
+
+  grid.innerHTML = '';
+  AI_ORDER.forEach(name => {
+    const p = d[name];
+    if (!p) return;
+
+    let stateClass = p.status || 'no_key';
+    if (stateClass === 'ok') stateClass = 'active';
+    if (stateClass === 'circuit_open') stateClass = 'circuit';
+
+    // Status-Text
+    let statusText = '';
+    if (p.status === 'ok')          statusText = '✅ Aktiv — wird genutzt';
+    else if (p.status === 'standby') statusText = '🔵 Bereit';
+    else if (p.status === 'circuit_open') {
+      const mins = Math.ceil((p.retry_in || 0) / 60);
+      statusText = `🔴 Gesperrt — ${mins}m`;
+    }
+    else if (p.status === 'no_key')  statusText = '⚫ Kein Key';
+
+    // Extra info for OpenClaw
+    let extra = '';
+    if (name === 'OpenClaw') {
+      extra = oc.online ? `🟢 ${oc.fast_model || 'local'}` : '🔴 Offline';
+    } else {
+      extra = p.deactivations > 0 ? `${p.total_fails || 0} Fehler / ${p.deactivations} Sperren` : 'Stabil';
+    }
+
+    const card = document.createElement('div');
+    card.className = `ai-card ${stateClass}`;
+    card.title     = `${name}: ${statusText}\n${extra}`;
+    card.innerHTML = `
+      <div class="ai-dot ${stateClass}"></div>
+      <div class="ai-card-icon">${AI_ICONS[name] || '🤖'}</div>
+      <div class="ai-card-name">${name}</div>
+      <div class="ai-card-status">${statusText}</div>
+      <div class="ai-card-fails">${extra}</div>`;
+    grid.appendChild(card);
+  });
+
+  // Log nur wenn Provider gewechselt
+  if (current && current !== 'unknown') {
+    addLog('ok', `APIHunt: Aktiver Provider → ${current}`);
+  }
+}
+
+async function testAIHunt() {
+  const btn = event.currentTarget;
+  btn.classList.add('loading');
+  addLog('info', 'APIHunt: Teste alle Provider...');
+  try {
+    // Frische Daten erzwingen
+    _aiStatusCache = null;
+    await loadAIStatus(true);
+    toast('ok', 'APIHunt', `Provider-Status aktualisiert — aktiv: ${_aiStatusCache?.current_provider || '?'}`);
+  } catch(e) {
+    toast('error', 'APIHunt Test', e.message);
+  } finally {
+    setTimeout(() => btn.classList.remove('loading'), 1500);
+  }
+}
+
+// ─── Performance: Unified Refresh Scheduler ───────────────────────────────────
+// Statt 3 getrennter setIntervals — ein einziger koordinierter Tick
+const REFRESH_SCHEDULE = {
+  health:    { fn: checkHealth,       interval: 30000,  last: 0 },
+  revenue:   { fn: loadRevenue,       interval: 60000,  last: 0 },
+  tasks:     { fn: loadTasks,         interval: 45000,  last: 0 },
+  ai_status: { fn: loadAIStatus,      interval: 20000,  last: 0 },
+  seo:       { fn: loadSeoMetrics,    interval: 300000, last: 0 },
+  platform:  { fn: loadPlatformStatus,interval: 300000, last: 0 },
+  mailchimp: { fn: loadMailchimp,     interval: 600000, last: 0 },
+};
+
+async function masterRefreshTick() {
+  const now = Date.now();
+  const due = Object.entries(REFRESH_SCHEDULE)
+    .filter(([, cfg]) => now - cfg.last >= cfg.interval)
+    .map(([name, cfg]) => {
+      cfg.last = now;
+      return cfg.fn().catch(e => addLog('warn', `Refresh ${name}: ${e.message}`));
+    });
+  if (due.length > 0) await Promise.allSettled(due);
+}
+
 // ─── Init ────────────────────────────────────────────────────────────────────
 async function init() {
   addLog('info', '⚡ SuperMegaBot Command Center — geladen');
-  await checkHealth();
+
+  // Alles parallel laden beim Start
   await Promise.allSettled([
+    checkHealth(),
     loadRevenue(),
     loadPlatformStatus(),
     loadTasks(),
     loadSeoMetrics(),
     loadMailchimp(),
+    loadAIStatus(),
   ]);
 
-  // Auto-refresh every 60s
-  setInterval(async () => {
-    await checkHealth();
-    await loadRevenue();
-    await loadTasks();
-  }, 60000);
-
-  // Platform status every 5min
-  setInterval(loadPlatformStatus, 300000);
+  // Einziger Master-Tick alle 5s — ersetzt alle getrennten setIntervals
+  setInterval(masterRefreshTick, 5000);
 }
 
 init();

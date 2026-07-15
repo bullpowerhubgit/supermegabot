@@ -158,61 +158,15 @@ async def _tg_marketing(msg: str) -> bool:
 
 
 async def _ai(prompt: str, max_tokens: int = 600) -> str:
-    """AI completion via central fallback chain."""
+    """AI completion via central fallback chain (ai_client.py handles all providers)."""
+    from modules.ai_client import ai_complete
     try:
-        from modules.ai_client import ai_complete
-        return await ai_complete(prompt, max_tokens=max_tokens)
+        text = await ai_complete(prompt, max_tokens=max_tokens)
+        if text:
+            return text
     except Exception:
         pass
-    # legacy fallback providers (kept for scheduler tasks that don't import modules)
-    import aiohttp
-    for env_var, url, model in [
-        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
-        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
-    ]:
-        key = os.getenv(env_var, "")
-        if not key:
-            continue
-        try:
-            if url == "__gemini__":
-                gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                    async with s.post(gemini_url,
-                        headers={"Content-Type": "application/json"},
-                        json={"contents": [{"parts": [{"text": prompt}]}],
-                              "generationConfig": {"maxOutputTokens": max_tokens}}) as r:
-                        d = await r.json(content_type=None)
-                if "candidates" in d:
-                    text = d["candidates"][0]["content"]["parts"][0]["text"]
-                    if text:
-                        return text
-                continue
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                async with s.post(url,
-                    headers={"Authorization": f"Bearer {key}"},
-                    json={"model": model, "max_tokens": max_tokens,
-                          "messages": [{"role": "user", "content": prompt}]}) as r:
-                    d = await r.json(content_type=None)
-            err = d.get("error", {})
-            if err:
-                if "429" in str(err.get("code", "")) or "rate_limit" in str(err.get("type", "")):
-                    await asyncio.sleep(10)
-                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                        async with s.post(url,
-                            headers={"Authorization": f"Bearer {key}"},
-                            json={"model": model, "max_tokens": max_tokens,
-                                  "messages": [{"role": "user", "content": prompt}]}) as r:
-                            d = await r.json(content_type=None)
-                    if d.get("error"):
-                        continue
-                else:
-                    continue
-            text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
-            if text:
-                return text
-        except Exception:
-            continue
-    # Template-Fallback wenn alle AI-APIs leer sind
+    # Template-Fallback wenn ai_complete leer ist
     templates = [
         "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://autopilot-store-suite-fmbka.myshopify.com",
         "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://autopilot-store-suite-fmbka.myshopify.com",
@@ -1256,37 +1210,15 @@ async def task_shopify_blog_auto() -> str:
     ]
     topic_title, template_body = random.choice(templates)
     final_body = template_body
-    for env_var, api_url, model, is_ant in [
-        ("ANTHROPIC_API_KEY", "https://api.anthropic.com/v1/messages", "claude-haiku-4-5-20251001", True),
-        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", False),
-    ]:
-        key = os.getenv(env_var, "")
-        if not key:
-            continue
-        try:
-            prompt = (f"300 Wörter HTML-Blog auf Deutsch: '{topic_title}'. "
-                      f"Link am Ende: {_dest}. Nur HTML, keine Markdown-Backticks.")
-            if is_ant:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                    async with s.post(api_url,
-                        headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
-                        json={"model": model, "max_tokens": 900,
-                              "messages": [{"role": "user", "content": prompt}]}) as r:
-                        d = await r.json(content_type=None)
-                text = d.get("content", [{}])[0].get("text", "")
-            else:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                    async with s.post(api_url,
-                        headers={"Authorization": f"Bearer {key}"},
-                        json={"model": model, "max_tokens": 900,
-                              "messages": [{"role": "user", "content": prompt}]}) as r:
-                        d = await r.json(content_type=None)
-                text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
-            if text and len(text) > 100:
-                final_body = text
-                break
-        except Exception:
-            continue
+    try:
+        from modules.ai_client import ai_complete
+        prompt = (f"300 Wörter HTML-Blog auf Deutsch: '{topic_title}'. "
+                  f"Link am Ende: {_dest}. Nur HTML, keine Markdown-Backticks.")
+        text = await ai_complete(prompt, max_tokens=900)
+        if text and len(text) > 100:
+            final_body = text
+    except Exception:
+        pass
     # Use GraphQL Admin API — works with write_content scope (same token)
     gql = """
 mutation CreateArticle($article: ArticleCreateInput!) {

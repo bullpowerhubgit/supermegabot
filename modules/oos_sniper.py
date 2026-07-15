@@ -25,6 +25,8 @@ from typing import Dict, List, Optional
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("OOSSniper")
 
 _BASE    = Path(__file__).parent.parent
@@ -35,8 +37,6 @@ TG_API = "https://api.telegram.org"
 
 def _tg_token() -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()  -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
-def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
-def _openai()    -> str: return os.getenv("OPENAI_API_KEY", "")
 
 DEFAULT_TARGETS = [
     t.strip() for t in os.getenv("SNIPER_TARGETS", "").split(",") if t.strip()
@@ -230,21 +230,12 @@ Schreibe in 3 Sätzen:
 
 Format: Headline: ... | FB: ... | SEO: ..."""
 
-    if _anthropic():
-        try:
-            async with _session(20) as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 200,
-                          "messages": [{"role": "user", "content": prompt}]}
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        return d.get("content", [{}])[0].get("text", "")
-        except Exception as e:
-            log.debug("AI error: %s", e)
+    try:
+        text = await ai_complete(prompt, max_tokens=200)
+        if text:
+            return text
+    except Exception as e:
+        log.debug("AI error: %s", e)
     return f'Headline: "Jetzt verfügbar!" | FB: "Alle anderen ausverkauft? Bei uns sofort lieferbar!" | SEO: {product_title.split()[0]} kaufen'
 
 

@@ -28,6 +28,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
 
+from modules.ai_client import ai_complete
+
 # ---------------------------------------------------------------------------
 # Umgebung laden
 # ---------------------------------------------------------------------------
@@ -60,15 +62,19 @@ SHOPIFY_API_VERSION: str = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 STORE_URL: str = os.getenv("SHOPIFY_STORE_URL", f"https://{SHOPIFY_DOMAIN}")
 PUBLIC_STORE_URL: str = "https://ineedit.com.co"          # öffentliche Domain
 
-OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
-OPENROUTER_URL: str = "https://openrouter.ai/api/v1/chat/completions"
-OPENROUTER_MODEL: str = "mistralai/mistral-7b-instruct:free"
-
 # Blog-ID des Shopify-Stores (Standard-Blog)
 SHOPIFY_BLOG_ID: str = os.getenv("SHOPIFY_BLOG_ID", "124344893827")
 
 DATA_DIR: Path = _BASE / "data" / "ai_citation_seo"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+# System-Prompt für alle KI-Generierungen
+_SEO_SYSTEM: str = (
+    "Du bist ein deutschsprachiger SEO-Experte und Smart-Home-Redakteur. "
+    "Schreibe strukturierten, faktischen und hilfreichen Content auf Deutsch "
+    "der von KI-Systemen wie ChatGPT oder Perplexity zitiert werden soll. "
+    "Nutze konkrete Zahlen, Vergleiche und klare Empfehlungen."
+)
 
 # ---------------------------------------------------------------------------
 # Datenmodell
@@ -184,53 +190,6 @@ class AICitationSEO:
             await self._session.close()
 
     # ------------------------------------------------------------------
-    # OpenRouter — Content-Generierung
-    # ------------------------------------------------------------------
-    async def _openrouter_complete(self, prompt: str, max_tokens: int = 1200) -> str:
-        """Ruft OpenRouter API auf; gibt leeren String zurück wenn Key fehlt."""
-        if not OPENROUTER_API_KEY:
-            log.warning("OPENROUTER_API_KEY nicht gesetzt — KI-Generierung nicht möglich")
-            return ""
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": PUBLIC_STORE_URL,
-            "X-Title": "ineedit.com.co AI SEO Engine",
-        }
-        payload = {
-            "model": OPENROUTER_MODEL,
-            "max_tokens": max_tokens,
-            "messages": [
-                {
-                    "role": "system",
-                    "content": (
-                        "Du bist ein deutschsprachiger SEO-Experte und Smart-Home-Redakteur. "
-                        "Schreibe strukturierten, faktischen und hilfreichen Content auf Deutsch "
-                        "der von KI-Systemen wie ChatGPT oder Perplexity zitiert werden soll. "
-                        "Nutze konkrete Zahlen, Vergleiche und klare Empfehlungen."
-                    ),
-                },
-                {"role": "user", "content": prompt},
-            ],
-        }
-        try:
-            session = await self._get_session()
-            async with session.post(OPENROUTER_URL, json=payload, headers=headers) as resp:
-                if resp.status != 200:
-                    body = await resp.text()
-                    log.warning("OpenRouter %d: %s", resp.status, body[:300])
-                    return ""
-                data = await resp.json(content_type=None)
-                choices = data.get("choices", [])
-                if not choices:
-                    log.warning("OpenRouter lieferte keine choices")
-                    return ""
-                return choices[0].get("message", {}).get("content", "").strip()
-        except Exception as exc:
-            log.warning("OpenRouter Fehler: %s", exc)
-            return ""
-
-    # ------------------------------------------------------------------
     # Content-Generierung mit Fallback-Templates
     # ------------------------------------------------------------------
     async def generate_content(self, topic: str, content_type: str) -> ContentPiece:
@@ -256,7 +215,7 @@ class AICitationSEO:
             f"Erwähne konkrete Produkte, Protokolle oder Marken wo sinnvoll. "
             f"Am Ende: Empfehle passende Produkte auf ineedit.com.co."
         )
-        raw = await self._openrouter_complete(prompt, max_tokens=1400)
+        raw = await ai_complete(prompt, system=_SEO_SYSTEM, max_tokens=1400)
         qa_pairs = self._parse_qa_pairs(raw, topic)
 
         if not qa_pairs:
@@ -293,7 +252,7 @@ class AICitationSEO:
             f"Ziel: Bei ineedit.com.co kaufen. "
             f"Schreibe mind. 400 Wörter. Verwende konkrete Spezifikationen und Preisranges."
         )
-        raw = await self._openrouter_complete(prompt, max_tokens=1600)
+        raw = await ai_complete(prompt, system=_SEO_SYSTEM, max_tokens=1600)
 
         if not raw or len(raw) < 100:
             log.warning("Zu kurzer KI-Output für Comparison '%s' (%d Zeichen)", topic, len(raw))
@@ -327,7 +286,7 @@ class AICitationSEO:
             f"Häufige Fehler → Produktempfehlungen von ineedit.com.co → Fazit. "
             f"Deutsch, sachlich, mind. 450 Wörter, konkrete Handlungsempfehlungen."
         )
-        raw = await self._openrouter_complete(prompt, max_tokens=1600)
+        raw = await ai_complete(prompt, system=_SEO_SYSTEM, max_tokens=1600)
 
         if not raw or len(raw) < 100:
             log.warning("Zu kurzer KI-Output für Guide '%s' (%d Zeichen)", topic, len(raw))

@@ -49,8 +49,6 @@ def _stripe_key()  -> str: return os.getenv("STRIPE_SECRET_KEY", "")
 def _tg_token()    -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()     -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _shopify_dom() -> str: return os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-def _anthropic()   -> str: return os.getenv("ANTHROPIC_API_KEY", "")
-def _openai()      -> str: return os.getenv("OPENAI_API_KEY", "")
 
 # Stripe Price IDs für die 3 Tiers (werden bei Setup angelegt)
 def _price_alert()  -> str: return os.getenv("VIRAL_PRICE_ALERT", "")
@@ -422,8 +420,7 @@ def fetch_tiktok_niches() -> List[Dict]:
 # ── AI Scoring ────────────────────────────────────────────────────────────────
 
 async def score_with_ai(keywords_with_sources: List[Dict]) -> List[Dict]:
-    api_key = _anthropic() or _openai()
-    if not api_key or not keywords_with_sources:
+    if not keywords_with_sources:
         return _heuristic_score(keywords_with_sources)
 
     # Top 20 für AI-Bewertung vorbereiten
@@ -448,46 +445,12 @@ Antworte NUR als JSON-Array:
 [{{"keyword": "...", "score": 75, "margin_pct": 65, "supplier_hint": "AliExpress Electronics", "window_h": 48, "reason": "kurze Begründung"}}]
 """
 
+    from modules.ai_client import ai_complete
     try:
-        if _anthropic():
-            async with _session(30) as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": _anthropic(),
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json"
-                    },
-                    json={
-                        "model": "claude-haiku-4-5-20251001",
-                        "max_tokens": 2000,
-                        "messages": [{"role": "user", "content": prompt}]
-                    }
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        raw = d.get("content", [{}])[0].get("text", "[]")
-                        scored = _parse_ai_scores(raw, keywords_with_sources)
-                        if scored:
-                            return scored
-        if _openai():
-            async with _session(30) as s:
-                async with s.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_openai()}",
-                             "Content-Type": "application/json"},
-                    json={
-                        "model": "gpt-4o-mini",
-                        "messages": [{"role": "user", "content": prompt}],
-                        "max_tokens": 2000
-                    }
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        raw = d["choices"][0]["message"]["content"]
-                        scored = _parse_ai_scores(raw, keywords_with_sources)
-                        if scored:
-                            return scored
+        raw = await ai_complete(prompt, system="", max_tokens=2000)
+        scored = _parse_ai_scores(raw, keywords_with_sources)
+        if scored:
+            return scored
     except Exception as e:
         log.warning("AI scoring error: %s", e)
 
@@ -658,43 +621,9 @@ Format (NUR JSON, kein Text drumrum):
         "hashtags": "#trending #dropshipping #onlineshop #trendprodukt #viral"
     }
 
+    from modules.ai_client import ai_complete
     try:
-        api_key = _anthropic()
-        raw_text = ""
-        if api_key:
-            async with _session(25) as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": api_key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json"
-                    },
-                    json={
-                        "model": "claude-haiku-4-5-20251001",
-                        "max_tokens": 800,
-                        "messages": [{"role": "user", "content": prompt}]
-                    }
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        raw_text = d.get("content", [{}])[0].get("text", "")
-        elif _openai():
-            async with _session(25) as s:
-                async with s.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_openai()}",
-                             "Content-Type": "application/json"},
-                    json={
-                        "model": "gpt-4o-mini",
-                        "messages": [{"role": "user", "content": prompt}],
-                        "max_tokens": 800
-                    }
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        raw_text = d["choices"][0]["message"]["content"]
-
+        raw_text = await ai_complete(prompt, system="", max_tokens=800)
         if raw_text:
             match = re.search(r"\{.*\}", raw_text, re.DOTALL)
             if match:
