@@ -529,7 +529,7 @@ async def process_all_inboxes(since_hours: int = 1) -> Dict:
                         pass
 
             # Antwort senden
-            sent = _send_reply(account, from_email, subject, ai_reply,
+            sent = await asyncio.to_thread(_send_reply, account, from_email, subject, ai_reply,
                                 reply["msg_id"])
             if sent:
                 total_answered += 1
