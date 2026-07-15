@@ -1,262 +1,628 @@
 #!/usr/bin/env python3
 """
-Zentraler AI-Client — OpenClaw(Ollama) → Anthropic → OpenAI → Groq → OpenRouter → Gemini → Perplexity → Fallback.
-Einheitlicher Zugang für alle Module: from modules.ai_client import ai_complete
-OpenClaw (lokales Ollama) ist IMMER der erste Provider — kostenlos, kein Rate-Limit!
+API Hunt — Autonomes KI-Fallback-System (IMMER AN)
+Fallback-Kette: Groq → DeepSeek → OpenRouter (5 Modelle) → Gemini → Anthropic → OpenAI → Perplexity → Ollama
+Circuit Breaker: nach 3 Fehlern 10 min deaktiviert, dann auto-re-enable
+Background Health Monitor: alle 5 min alle Provider testen
+Telegram-Alert bei Provider-Wechsel und Ausfällen
 """
 from __future__ import annotations
+
+import asyncio
 import logging
 import os
+import time
+from typing import Optional
 
-log = logging.getLogger("AIClient")
+log = logging.getLogger("APIHunt")
 
-_ANTHROPIC  = lambda: os.getenv("ANTHROPIC_API_KEY", "")
-_OPENAI     = lambda: os.getenv("OPENAI_API_KEY", "")
-_GROQ       = lambda: os.getenv("GROQ_API_KEY", "")
-_OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
-_PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
-_GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
+# ── Env-Getter ─────────────────────────────────────────────────────────────────
+def _groq():       return os.getenv("GROQ_API_KEY", "")
+def _deepseek():   return os.getenv("DEEPSEEK_API_KEY", "")
+def _openrouter(): return os.getenv("OPENROUTER_API_KEY", "")
+def _gemini():     return os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
+def _anthropic():  return os.getenv("ANTHROPIC_API_KEY", "")
+def _openai():     return os.getenv("OPENAI_API_KEY", "")
+def _perplexity(): return os.getenv("PERPLEXITY_API_KEY", "")
+def _ollama_base():return os.getenv("OLLAMA_BASE", "http://localhost:11434")
+def _ollama_model():return os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")
+def _tg_bot():     return os.getenv("TELEGRAM_BOT_TOKEN", "")
+def _tg_chat():    return os.getenv("TELEGRAM_CHAT_ID", "")
 
-_OPENROUTER_MODEL   = "google/gemma-4-26b-a4b-it:free"   # verified working 2026-07-14
-_GROQ_MODEL         = "llama-3.1-8b-instant"
 _OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
-_GEMINI_URLS        = [
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+
+# ── Kostenlose OpenRouter-Modelle (Fallback-Rotation) ──────────────────────────
+_OR_FREE_MODELS = [
+    "google/gemma-4-26b-a4b-it:free",
+    "meta-llama/llama-3.1-8b-instruct:free",
+    "mistralai/mistral-7b-instruct:free",
+    "qwen/qwen3-0.6b:free",
+    "microsoft/phi-3-mini-128k-instruct:free",
 ]
-_OLLAMA_BASE        = lambda: os.getenv("OLLAMA_BASE", "http://localhost:11434")
-_OLLAMA_MODEL       = lambda: os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")
-_OLLAMA_FAST        = lambda: os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")
-_OLLAMA_FIRST       = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
-_OLLAMA_TIMEOUT     = int(os.getenv("OLLAMA_TIMEOUT", "5"))  # short timeout so cloud fallback is fast
+
+# ── Gemini Modelle (kostenlos) ─────────────────────────────────────────────────
+_GEMINI_MODELS = [
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+]
+_GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
+
+# ── Circuit Breaker State ──────────────────────────────────────────────────────
+# {provider_name: {"fails": int, "until": float, "total_fails": int}}
+_CB: dict[str, dict] = {}
+
+_CB_THRESHOLD   = 3      # Fehler bis Deaktivierung
+_CB_BACKOFF_1   = 600    # 10 min nach 1. Deaktivierung
+_CB_BACKOFF_2   = 1800   # 30 min nach 2. Deaktivierung
+_CB_BACKOFF_MAX = 3600   # 1h max
+
+# Letzter aktiver Provider für Wechsel-Detection
+_last_provider: str = ""
+_monitor_running: bool = False
 
 
-def _enabled(name: str) -> bool:
-    return os.getenv(f"{name}_ENABLED", "true").lower() not in ("false", "0", "off")
+def _cb_ok(provider: str) -> bool:
+    """Ist der Provider gerade verfügbar? (Circuit Breaker Check)"""
+    s = _CB.get(provider)
+    if not s:
+        return True
+    if s.get("until", 0) > time.time():
+        return False
+    # Timeout abgelaufen → re-enable
+    s["fails"] = 0
+    return True
 
 
-async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
-    """Full fallback chain: OpenClaw(Ollama) → Anthropic → OpenAI → OpenRouter → Groq → Gemini → Perplexity → empty."""
+def _cb_fail(provider: str) -> None:
+    """Fehler für Provider registrieren — Circuit Breaker aktualisieren."""
+    if provider not in _CB:
+        _CB[provider] = {"fails": 0, "until": 0.0, "total_fails": 0, "deactivations": 0}
+    s = _CB[provider]
+    s["fails"] = s.get("fails", 0) + 1
+    s["total_fails"] = s.get("total_fails", 0) + 1
+    if s["fails"] >= _CB_THRESHOLD:
+        deact = s.get("deactivations", 0)
+        if deact == 0:
+            backoff = _CB_BACKOFF_1
+        elif deact == 1:
+            backoff = _CB_BACKOFF_2
+        else:
+            backoff = _CB_BACKOFF_MAX
+        s["until"] = time.time() + backoff
+        s["deactivations"] = deact + 1
+        s["fails"] = 0
+        log.warning(
+            "APIHunt: %s DEAKTIVIERT für %ds (Deaktivierung #%d, gesamt %d Fehler)",
+            provider, backoff, s["deactivations"], s["total_fails"],
+        )
+        asyncio.ensure_future(_alert_provider_down(provider, backoff))
+
+
+def _cb_success(provider: str) -> None:
+    """Erfolg registrieren — Fehler-Zähler zurücksetzen."""
+    global _last_provider
+    if provider not in _CB:
+        _CB[provider] = {"fails": 0, "until": 0.0, "total_fails": 0, "deactivations": 0}
+    s = _CB[provider]
+    if s.get("fails", 0) > 0:
+        s["fails"] = 0
+
+    if _last_provider and _last_provider != provider:
+        log.info("APIHunt: Provider gewechselt %s → %s", _last_provider, provider)
+        asyncio.ensure_future(_alert_provider_switch(_last_provider, provider))
+    _last_provider = provider
+
+
+# ── Telegram Alerts ────────────────────────────────────────────────────────────
+async def _tg_send(text: str) -> None:
+    """Sendet Telegram-Nachricht (best effort, kein Fehler wenn offline)."""
+    bot = _tg_bot()
+    chat = _tg_chat()
+    if not bot or not chat:
+        return
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
+            await s.post(
+                f"https://api.telegram.org/bot{bot}/sendMessage",
+                json={"chat_id": chat, "text": text[:4000]},
+            )
+    except Exception:
+        pass
+
+
+async def _alert_provider_down(provider: str, backoff: int) -> None:
+    await _tg_send(
+        f"⚠️ API Hunt: {provider} AUSGEFALLEN\n"
+        f"Deaktiviert für {backoff//60} Minuten.\n"
+        f"Automatisch auf nächsten Provider gewechselt."
+    )
+
+
+async def _alert_provider_switch(old: str, new: str) -> None:
+    await _tg_send(
+        f"🔄 API Hunt: Provider-Wechsel\n"
+        f"{old} → {new}\n"
+        f"Automatisch umgeschaltet."
+    )
+
+
+async def _alert_all_failed() -> None:
+    await _tg_send(
+        "🚨 API Hunt KRITISCH: ALLE Provider ausgefallen!\n"
+        "Prüfe API-Keys und Guthaben. System läuft auf Template-Fallback."
+    )
+
+
+# ── Health Monitor (Background Task) ──────────────────────────────────────────
+async def _health_monitor() -> None:
+    """Läuft permanent alle 5 Minuten — testet alle deaktivierten Provider."""
+    global _monitor_running
+    _monitor_running = True
+    log.info("APIHunt: Health Monitor gestartet")
+    while True:
+        try:
+            await asyncio.sleep(300)  # alle 5 min
+            await _probe_all_providers()
+        except asyncio.CancelledError:
+            break
+        except Exception as e:
+            log.debug("APIHunt monitor error: %s", e)
+
+
+async def _probe_all_providers() -> None:
+    """Testet jeden Provider mit einem Mini-Prompt."""
+    import aiohttp
+    probe = [{"role": "user", "content": "Say OK"}]
+
+    async def try_groq():
+        if not _groq() or _cb_ok("Groq"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+                async with s.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_groq()}", "Content-Type": "application/json"},
+                    json={"model": "llama-3.1-8b-instant", "max_tokens": 5, "messages": probe},
+                ) as r:
+                    if r.status == 200:
+                        _CB["Groq"] = {"fails": 0, "until": 0.0, "total_fails": _CB.get("Groq", {}).get("total_fails", 0), "deactivations": 0}
+                        log.info("APIHunt: Groq wieder ONLINE")
+                        await _tg_send("✅ API Hunt: Groq wieder online!")
+        except Exception:
+            pass
+
+    async def try_deepseek():
+        if not _deepseek() or _cb_ok("DeepSeek"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+                async with s.post(
+                    "https://api.deepseek.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_deepseek()}", "Content-Type": "application/json"},
+                    json={"model": "deepseek-chat", "max_tokens": 5, "messages": probe},
+                ) as r:
+                    if r.status == 200:
+                        _CB["DeepSeek"] = {"fails": 0, "until": 0.0, "total_fails": _CB.get("DeepSeek", {}).get("total_fails", 0), "deactivations": 0}
+                        log.info("APIHunt: DeepSeek wieder ONLINE")
+                        await _tg_send("✅ API Hunt: DeepSeek wieder online!")
+        except Exception:
+            pass
+
+    async def try_openrouter():
+        if not _openrouter() or _cb_ok("OpenRouter"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_openrouter()}", "Content-Type": "application/json",
+                             "HTTP-Referer": _OPENROUTER_REFERER},
+                    json={"model": _OR_FREE_MODELS[0], "max_tokens": 5, "messages": probe},
+                ) as r:
+                    if r.status == 200:
+                        _CB["OpenRouter"] = {"fails": 0, "until": 0.0, "total_fails": _CB.get("OpenRouter", {}).get("total_fails", 0), "deactivations": 0}
+                        log.info("APIHunt: OpenRouter wieder ONLINE")
+                        await _tg_send("✅ API Hunt: OpenRouter wieder online!")
+        except Exception:
+            pass
+
+    async def try_anthropic():
+        if not _anthropic() or _cb_ok("Anthropic"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 5,
+                          "messages": probe},
+                ) as r:
+                    if r.status == 200:
+                        _CB["Anthropic"] = {"fails": 0, "until": 0.0, "total_fails": _CB.get("Anthropic", {}).get("total_fails", 0), "deactivations": 0}
+                        log.info("APIHunt: Anthropic wieder ONLINE (Credits aufgeladen!)")
+                        await _tg_send("✅ API Hunt: Anthropic wieder online — Credits aufgeladen!")
+        except Exception:
+            pass
+
+    await asyncio.gather(try_groq(), try_deepseek(), try_openrouter(), try_anthropic())
+
+
+def start_health_monitor() -> None:
+    """Startet den Background Health Monitor (einmalig aufrufen beim Server-Start)."""
+    global _monitor_running
+    if not _monitor_running:
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.ensure_future(_health_monitor())
+            else:
+                log.debug("APIHunt: kein laufender Event-Loop für Monitor")
+        except Exception as e:
+            log.debug("APIHunt: Monitor start error: %s", e)
+
+
+# ── Status-Endpoint ────────────────────────────────────────────────────────────
+def api_status() -> dict:
+    """Gibt aktuellen Status aller Provider zurück (für Dashboard-Anzeige)."""
+    now = time.time()
+    providers = {
+        "Groq":       bool(_groq()),
+        "DeepSeek":   bool(_deepseek()),
+        "OpenRouter":  bool(_openrouter()),
+        "Gemini":     bool(_gemini()),
+        "Anthropic":  bool(_anthropic()),
+        "OpenAI":     bool(_openai()),
+        "Perplexity": bool(_perplexity()),
+        "Ollama":     True,
+    }
+    result = {}
+    for name, has_key in providers.items():
+        if not has_key:
+            result[name] = {"status": "no_key", "active": False}
+            continue
+        s = _CB.get(name, {})
+        disabled_until = s.get("until", 0)
+        if disabled_until > now:
+            result[name] = {
+                "status": "circuit_open",
+                "active": False,
+                "retry_in": int(disabled_until - now),
+                "total_fails": s.get("total_fails", 0),
+            }
+        else:
+            result[name] = {
+                "status": "ok" if name == _last_provider else "standby",
+                "active": name == _last_provider,
+                "total_fails": s.get("total_fails", 0),
+                "deactivations": s.get("deactivations", 0),
+            }
+    result["current_provider"] = _last_provider or "unknown"
+    result["monitor_running"] = _monitor_running
+    return result
+
+
+# ── Haupt-Funktion ─────────────────────────────────────────────────────────────
+async def ai_complete(
+    prompt: str,
+    system: str = "",
+    model_hint: str = "fast",
+    max_tokens: int = 1200,
+) -> str:
+    """
+    Vollautomatischer API Hunt mit Circuit Breaker.
+    Kette: Groq → DeepSeek → OpenRouter (5 Modelle) → Gemini (3 Modelle)
+           → Anthropic → OpenAI → Perplexity → Ollama → Template-Fallback
+    """
     import aiohttp
 
-    messages = [{"role": "user", "content": f"{system}\n\n{prompt}" if system else prompt}]
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
 
-    # 0. OpenClaw — lokales Ollama, kostenlos (kurzer Timeout damit Cloud-Fallback schnell greift)
-    if _OLLAMA_FIRST:
-        chosen = _OLLAMA_FAST() if model_hint == "fast" else _OLLAMA_MODEL()
+    # ── 0. Ollama LOKAL (OpenClaw) — kostenlos, kein Rate-Limit, kurzer Timeout ─
+    _ollama_timeout = int(os.getenv("OLLAMA_TIMEOUT", "5"))
+    _ollama_first   = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
+    if _ollama_first:
+        chosen_model = (
+            os.getenv("OLLAMA_FAST_MODEL", _ollama_model())
+            if model_hint == "fast" else _ollama_model()
+        )
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=_OLLAMA_TIMEOUT)) as s:
-                msg_list = []
-                if system:
-                    msg_list.append({"role": "system", "content": system})
-                msg_list.append({"role": "user", "content": prompt})
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=_ollama_timeout)) as s:
                 async with s.post(
-                    f"{_OLLAMA_BASE()}/api/chat",
-                    json={"model": chosen, "messages": msg_list,
-                          "stream": False, "options": {"num_predict": max_tokens}},
+                    f"{_ollama_base()}/api/chat",
+                    json={"model": chosen_model, "messages": messages, "stream": False,
+                          "options": {"num_predict": max_tokens}},
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         text = d.get("message", {}).get("content", "")
                         if text:
-                            log.info("OpenClaw OK model=%s", chosen)
+                            _cb_success("Ollama")
+                            log.debug("Ollama (lokal) OK model=%s", chosen_model)
                             return text
-                    log.debug("OpenClaw %s — falling to cloud", r.status)
+                    log.debug("Ollama lokal: HTTP %s — Cloud-Fallback", r.status)
         except Exception as e:
-            log.debug("OpenClaw offline: %s — using cloud fallback", e)
+            log.debug("Ollama offline: %s — Cloud-Fallback greift", e)
 
-    primary = os.getenv("AI_PROVIDER_PRIMARY", "groq").lower()  # Groq default (kostenlos, kein Credit-Problem)
-
-    # 1. Groq — PRIMÄRER PROVIDER (kostenlos, schnell, kein Rate-Limit-Problem bei normaler Nutzung)
-    if _GROQ() and _enabled("GROQ") and primary in ("", "groq"):
+    # ── 1. Groq (llama-3.1-8b-instant — schnell, kostenlos) ───────────────────
+    if _groq() and _cb_ok("Groq"):
         try:
-            msg_list = messages
-            if system and not any(m.get("role") == "system" for m in messages):
-                msg_list = [{"role": "system", "content": system}] + list(messages)
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
                 async with s.post(
                     "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_GROQ()}", "Content-Type": "application/json"},
-                    json={"model": _GROQ_MODEL, "max_tokens": max_tokens, "messages": msg_list},
+                    headers={"Authorization": f"Bearer {_groq()}", "Content-Type": "application/json"},
+                    json={"model": "llama-3.1-8b-instant", "max_tokens": max_tokens, "messages": messages},
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
                         if text:
-                            log.debug("Groq OK (primary)")
+                            _cb_success("Groq")
                             return text
+                    if r.status in (401, 403):
+                        log.warning("Groq: Key ungültig (%s)", r.status)
+                        _cb_fail("Groq")
                     elif r.status == 429:
-                        log.debug("Groq rate limit — falling back")
-                    elif r.status in (401, 403):
-                        log.debug("Groq key invalid (%s)", r.status)
+                        log.debug("Groq: Rate limit")
+                        _cb_fail("Groq")
                     else:
-                        log.debug("Groq %s", r.status)
+                        log.debug("Groq: HTTP %s", r.status)
+                        _cb_fail("Groq")
         except Exception as e:
             log.debug("Groq error: %s", e)
+            _cb_fail("Groq")
 
-    # 2. Anthropic (nur wenn Credits vorhanden + ANTHROPIC_ENABLED=true)
-    if _ANTHROPIC() and _enabled("ANTHROPIC") and primary not in ("openai", "groq", "gemini"):
+    # ── 2. DeepSeek (günstig, gut) ─────────────────────────────────────────────
+    if _deepseek() and _cb_ok("DeepSeek"):
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
                 async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": _ANTHROPIC(), "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                          "messages": messages},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        return d["content"][0]["text"]
-                    if r.status in (400, 401, 402, 429, 529):
-                        log.debug("Anthropic skip (%s) — trying next provider", r.status)
-                    else:
-                        log.debug("Anthropic %s", r.status)
-        except Exception as e:
-            log.debug("Anthropic error: %s", e)
-
-    # 3. OpenRouter — Fallback (kostenlose Modelle)
-    if _OPENROUTER() and _enabled("OPENROUTER"):
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                async with s.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_OPENROUTER()}", "Content-Type": "application/json",
-                             "HTTP-Referer": _OPENROUTER_REFERER},
-                    json={"model": _OPENROUTER_MODEL, "max_tokens": max_tokens, "messages": messages},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        content = d.get("choices", [{}])[0].get("message", {}).get("content")
-                        if content:
-                            log.debug("OpenRouter OK model=%s", _OPENROUTER_MODEL)
-                            return content
-                    log.debug("OpenRouter %s", r.status)
-        except Exception as e:
-            log.debug("OpenRouter error: %s", e)
-
-    # 4. OpenAI (primary when AI_PROVIDER_PRIMARY=openai)
-    if _OPENAI() and primary in ("openai",):
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                async with s.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_OPENAI()}", "Content-Type": "application/json"},
-                    json={"model": "gpt-4o-mini", "max_tokens": max_tokens,
-                          "messages": ([{"role": "system", "content": system}] + [{"role": "user", "content": prompt}]) if system else messages},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        return d["choices"][0]["message"]["content"]
-                    if r.status in (401, 403):
-                        log.debug("OpenAI skip (%s) — invalid key", r.status)
-                    else:
-                        log.debug("OpenAI %s", r.status)
-        except Exception as e:
-            log.debug("OpenAI error: %s", e)
-
-    # 5. Groq als letzter Fallback (wenn primary != groq aber alle anderen fehlschlagen)
-    if _GROQ() and primary not in ("", "groq"):
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                async with s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_GROQ()}", "Content-Type": "application/json"},
-                    json={"model": _GROQ_MODEL, "max_tokens": max_tokens, "messages": messages},
+                    "https://api.deepseek.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_deepseek()}", "Content-Type": "application/json"},
+                    json={"model": "deepseek-chat", "max_tokens": max_tokens, "messages": messages},
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
                         if text:
+                            _cb_success("DeepSeek")
                             return text
-                    if r.status in (401, 403):
-                        log.debug("Groq fallback skip (%s) — invalid key", r.status)
+                    if r.status in (401, 403, 402):
+                        log.warning("DeepSeek: Key/Credits Problem (%s)", r.status)
+                        _cb_fail("DeepSeek")
+                    elif r.status == 429:
+                        log.debug("DeepSeek: Rate limit")
+                        _cb_fail("DeepSeek")
                     else:
-                        log.debug("Groq %s", r.status)
+                        _cb_fail("DeepSeek")
         except Exception as e:
-            log.debug("Groq error: %s", e)
+            log.debug("DeepSeek error: %s", e)
+            _cb_fail("DeepSeek")
 
-    # 4. Gemini (try 3 free models — 2.0-flash-lite → 1.5-flash → 1.5-flash-8b)
-    if _GEMINI():
-        full_prompt = f"{system}\n\n{prompt}" if system else prompt
-        for gemini_url in _GEMINI_URLS:
+    # ── 3. OpenRouter — 5 kostenlose Modelle rotation ──────────────────────────
+    if _openrouter() and _cb_ok("OpenRouter"):
+        or_fail_count = 0
+        for model in _OR_FREE_MODELS:
             try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
                     async with s.post(
-                        f"{gemini_url}?key={_GEMINI()}",
+                        "https://openrouter.ai/api/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {_openrouter()}",
+                            "Content-Type": "application/json",
+                            "HTTP-Referer": _OPENROUTER_REFERER,
+                        },
+                        json={"model": model, "max_tokens": max_tokens, "messages": messages},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("OpenRouter")
+                                log.debug("OpenRouter OK: %s", model)
+                                return text
+                        elif r.status in (401, 403):
+                            log.warning("OpenRouter: Key ungültig")
+                            _cb_fail("OpenRouter")
+                            break
+                        else:
+                            log.debug("OpenRouter %s auf %s — nächstes Modell", r.status, model)
+                            or_fail_count += 1
+            except Exception as e:
+                log.debug("OpenRouter %s error: %s", model, e)
+                or_fail_count += 1
+        if or_fail_count >= len(_OR_FREE_MODELS):
+            _cb_fail("OpenRouter")
+
+    # ── 4. Gemini (3 kostenlose Modelle) ──────────────────────────────────────
+    if _gemini() and _cb_ok("Gemini"):
+        full_prompt = f"{system}\n\n{prompt}" if system else prompt
+        gemini_ok = False
+        for model in _GEMINI_MODELS:
+            try:
+                url = f"{_GEMINI_BASE}/{model}:generateContent?key={_gemini()}"
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(
+                        url,
                         headers={"Content-Type": "application/json"},
                         json={"contents": [{"parts": [{"text": full_prompt}]}],
                               "generationConfig": {"maxOutputTokens": max_tokens}},
                     ) as r:
                         if r.status == 200:
                             d = await r.json(content_type=None)
-                            text = d.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                            text = (d.get("candidates") or [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
                             if text:
-                                model_name = gemini_url.split("models/")[1].split(":")[0]
-                                log.debug("Gemini OK via %s", model_name)
+                                _cb_success("Gemini")
+                                log.debug("Gemini OK: %s", model)
                                 return text
-                        if r.status in (400, 401, 403):
-                            log.debug("Gemini skip (%s) — invalid key", r.status)
-                            break  # key invalid, don't try other models
-                        log.debug("Gemini %s on %s — try next model", r.status, gemini_url.split("models/")[1].split(":")[0])
+                        elif r.status in (400, 401, 403):
+                            log.warning("Gemini: Key ungültig (%s)", r.status)
+                            _cb_fail("Gemini")
+                            gemini_ok = False
+                            break
+                        else:
+                            log.debug("Gemini %s auf %s — nächstes Modell", r.status, model)
             except Exception as e:
-                log.debug("Gemini error: %s", e)
-                break
+                log.debug("Gemini %s error: %s", model, e)
+        if not gemini_ok and "Gemini" not in _CB:
+            _cb_fail("Gemini")
 
-    # 5. OpenRouter (free models available — any valid API key)
-    if _OPENROUTER():
+    # ── 5. Anthropic Claude Haiku ─────────────────────────────────────────────
+    if _anthropic() and _cb_ok("Anthropic"):
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+            msg_list = [m for m in messages if m.get("role") != "system"]
+            sys_text = system or next((m["content"] for m in messages if m.get("role") == "system"), "")
+            payload = {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": max_tokens,
+                "messages": msg_list or [{"role": "user", "content": prompt}],
+            }
+            if sys_text:
+                payload["system"] = sys_text
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
                 async with s.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_OPENROUTER()}",
-                             "HTTP-Referer": _OPENROUTER_REFERER,
-                             "Content-Type": "application/json"},
-                    json={"model": _OPENROUTER_MODEL, "max_tokens": max_tokens, "messages": messages},
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json=payload,
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
-                        text = d["choices"][0]["message"]["content"]
+                        text = (d.get("content") or [{"text": ""}])[0].get("text", "")
                         if text:
+                            _cb_success("Anthropic")
                             return text
-                    log.debug("OpenRouter %s", r.status)
+                    if r.status in (400, 402, 529):
+                        log.warning("Anthropic: Kein Guthaben (%s) — 1h deaktiviert", r.status)
+                        # Länger deaktivieren wenn Guthaben leer
+                        if "Anthropic" not in _CB:
+                            _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                        _CB["Anthropic"]["until"] = time.time() + 3600
+                    elif r.status in (401, 403):
+                        log.warning("Anthropic: Key ungültig (%s)", r.status)
+                        _cb_fail("Anthropic")
+                    else:
+                        _cb_fail("Anthropic")
         except Exception as e:
-            log.debug("OpenRouter error: %s", e)
+            log.debug("Anthropic error: %s", e)
+            _cb_fail("Anthropic")
 
-    # 6. Perplexity (min 16 tokens required by API)
-    if _PERPLEXITY() and _enabled("PERPLEXITY"):
+    # ── 6. OpenAI GPT-4o-mini ─────────────────────────────────────────────────
+    if _openai() and _cb_ok("OpenAI"):
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
                 async with s.post(
-                    "https://api.perplexity.ai/chat/completions",
-                    headers={"Authorization": f"Bearer {_PERPLEXITY()}", "Content-Type": "application/json"},
-                    json={"model": "sonar", "max_tokens": max(max_tokens, 16), "messages": messages},
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_openai()}", "Content-Type": "application/json"},
+                    json={"model": "gpt-4o-mini", "max_tokens": max_tokens, "messages": messages},
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
-                        return d["choices"][0]["message"]["content"]
-                    log.debug("Perplexity %s", r.status)
+                        text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                        if text:
+                            _cb_success("OpenAI")
+                            return text
+                    if r.status == 429:
+                        log.warning("OpenAI: Quota überschritten — 30 min deaktiviert")
+                        if "OpenAI" not in _CB:
+                            _CB["OpenAI"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                        _CB["OpenAI"]["until"] = time.time() + 1800
+                    elif r.status in (401, 403):
+                        _cb_fail("OpenAI")
+                    else:
+                        _cb_fail("OpenAI")
         except Exception as e:
-            log.debug("Perplexity error: %s", e)
+            log.debug("OpenAI error: %s", e)
+            _cb_fail("OpenAI")
 
-    # Local Ollama fallback (works when running locally or when OLLAMA_BASE is set)
-    _ollama_base = os.getenv("OLLAMA_BASE", "http://localhost:11434")
-    _ollama_model = os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest")
+    # ── 7. Perplexity ─────────────────────────────────────────────────────────
+    if _perplexity() and _cb_ok("Perplexity"):
+        pplx_enabled = os.getenv("PERPLEXITY_ENABLED", "true").lower() not in ("false", "0", "off")
+        if pplx_enabled:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(
+                        "https://api.perplexity.ai/chat/completions",
+                        headers={"Authorization": f"Bearer {_perplexity()}", "Content-Type": "application/json"},
+                        json={"model": "sonar", "max_tokens": max(max_tokens, 16), "messages": messages},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("Perplexity")
+                                return text
+                        elif r.status in (401, 403, 402):
+                            _cb_fail("Perplexity")
+                        else:
+                            _cb_fail("Perplexity")
+            except Exception as e:
+                log.debug("Perplexity error: %s", e)
+                _cb_fail("Perplexity")
+
+    # ── 8. Ollama (lokal / OpenClaw) ───────────────────────────────────────────
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
-                f"{_ollama_base}/api/chat",
-                json={"model": _ollama_model, "messages": messages, "stream": False},
+                f"{_ollama_base()}/api/chat",
+                json={"model": _ollama_model(), "messages": messages, "stream": False,
+                      "options": {"num_predict": max_tokens}},
             ) as r:
                 if r.status == 200:
                     d = await r.json(content_type=None)
                     text = d.get("message", {}).get("content", "")
                     if text:
-                        log.debug("Ollama OK: %d chars", len(text))
+                        _cb_success("Ollama")
+                        log.info("APIHunt: Ollama als letzter Ausweg OK")
                         return text
     except Exception as e:
-        log.debug("Ollama skip: %s", e)
+        log.debug("Ollama error: %s", e)
 
-    log.warning("ai_complete: all providers failed")
+    # ── Alle Provider ausgefallen ──────────────────────────────────────────────
+    log.error("APIHunt: ALLE Provider ausgefallen!")
+    asyncio.ensure_future(_alert_all_failed())
     return ""
+
+
+# ── Synchroner Wrapper (für Module die kein async haben) ──────────────────────
+def ai_complete_sync(prompt: str, system: str = "", max_tokens: int = 800) -> str:
+    """Synchroner Wrapper um ai_complete() für nicht-async Module."""
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, ai_complete(prompt, system, max_tokens=max_tokens))
+                return future.result(timeout=45)
+        else:
+            return loop.run_until_complete(ai_complete(prompt, system, max_tokens=max_tokens))
+    except Exception as e:
+        log.error("ai_complete_sync error: %s", e)
+        return ""
+
+
+# ── Beim Import: Provider-Status einmalig loggen ───────────────────────────────
+def _log_startup_status() -> None:
+    providers = [
+        ("Groq",       _groq()),
+        ("DeepSeek",   _deepseek()),
+        ("OpenRouter",  _openrouter()),
+        ("Gemini",     _gemini()),
+        ("Anthropic",  _anthropic()),
+        ("OpenAI",     _openai()),
+        ("Perplexity", _perplexity()),
+    ]
+    available = [name for name, key in providers if key]
+    missing   = [name for name, key in providers if not key]
+    log.info(
+        "APIHunt: %d Provider verfügbar: %s | Fehlende Keys: %s",
+        len(available), ", ".join(available) or "keine", ", ".join(missing) or "keine",
+    )
+
+
+_log_startup_status()

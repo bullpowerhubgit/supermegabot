@@ -1113,6 +1113,15 @@ async def handle_logs_clear(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_ai_status(req):
+    """GET /api/ai/status — APIHunt Provider-Status."""
+    try:
+        from modules.ai_client import api_status
+        return web.json_response(api_status())
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def handle_health(req):
     cached = _cache_get("system_health", 30)
     if cached is not None:
@@ -10329,6 +10338,14 @@ async def create_app():
     except Exception as e:
         log.warning("Hermes start failed: %s", e)
 
+    # APIHunt Health Monitor (immer an — überwacht alle KI-Provider)
+    try:
+        from modules.ai_client import start_health_monitor
+        start_health_monitor()
+        log.info("APIHunt Health Monitor gestartet")
+    except Exception as e:
+        log.warning("APIHunt Monitor start failed: %s", e)
+
     app = web.Application(middlewares=[logging_middleware, cors_middleware])
     app["bot"] = bot
 
@@ -10389,6 +10406,7 @@ async def create_app():
     app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
+    app.router.add_get("/api/ai/status", handle_ai_status)
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
     app.router.add_post("/api/army/start", handle_army_start)
