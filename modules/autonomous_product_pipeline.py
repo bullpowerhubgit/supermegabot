@@ -116,7 +116,7 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
         "product": {
             "title": idea["title"],
             "body_html": description,
-            "vendor": "SuperMegaBot",
+            "vendor": "iNeedit",
             "product_type": "Digital Product",
             "tags": ", ".join(idea.get("keywords", []) + ["digital", "automation", "ki"]),
             "status": "active",

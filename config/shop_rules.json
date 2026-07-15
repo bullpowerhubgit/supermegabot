@@ -1,0 +1,110 @@
+{
+  "_comment": "Zentrale Shop-Qualitätsregeln — NIEMALS ändern ohne Rudolf-Freigabe",
+  "_version": "2026-07-15",
+
+  "shop": {
+    "name": "iNeedit / ineedit.com.co",
+    "niche": "Smart & Modern Tech",
+    "niche_description": "JEDES Produkt muss mit moderner Technologie zu tun haben. Kein Billig-Alltag, keine Retro-Ware."
+  },
+
+  "allowed_vendors": [
+    "iNeedit",
+    "Printify",
+    "I Want That! I Need It!",
+    "AliExpress Import",
+    "Alibaba Import",
+    "eBay Import",
+    "AIITEC",
+    "Restposten"
+  ],
+
+  "blocked_vendors": [
+    "SuperMegaBot",
+    "BullPowerBot",
+    "TestVendor",
+    "Demo",
+    "Fake",
+    "BullPowerHub"
+  ],
+
+  "allowed_niches": [
+    "Smart Home", "Solar", "Powerstation", "E-Bike", "E-Mobility",
+    "Saugroboter", "Smart Lighting", "Smart Security", "Smart Plug",
+    "Smart Thermostat", "Smart Display", "Grow Light", "3D Drucker",
+    "Laser Engraver", "Drone", "Kamera", "Audio", "Gaming", "Wearable",
+    "Smartwatch", "Home Office Tech", "Auto Tech", "Pet Tech",
+    "Camping Tech", "Fitness Tech", "Werkzeug Profi", "EV Charging",
+    "Netzwerk Tech", "Tablets", "Smartphones", "Smart Gadget",
+    "Elektronik", "Camping", "Outdoor", "Solar/Power", "Grow"
+  ],
+
+  "blocked_categories": [
+    "Notizbuch", "Kalender", "Planner", "Ringordner", "Bürobedarf",
+    "Frühstücksbrettchen", "Schneidebrett", "Holzbrett", "Servierbrett",
+    "Pfannenwender", "Kochutensilien ohne Tech", "Besteck",
+    "Bettwäsche", "Kissenbezug", "Handtuch", "Badetuch",
+    "Babybadewanne", "Lauflernhilfe", "Trinklerntasse",
+    "Kugelschreiber", "Stift", "Füller",
+    "Flipchart", "Whiteboard manuell",
+    "Kleidung", "Mode",
+    "Lebensmittel", "Kaffee", "Tee"
+  ],
+
+  "quality_requirements": {
+    "min_rating_stars": 4.5,
+    "min_review_count": 100,
+    "min_price_ek_eur": 8.0,
+    "max_price_ek_eur": 300.0,
+    "min_title_length": 12,
+    "max_title_length": 250,
+    "required_fields": ["title", "product_type", "vendor", "price"],
+    "price_markup_factor": 2.2
+  },
+
+  "blocked_title_patterns": [
+    "article", "news", "blog", "reddit", "hackernews",
+    "says they regret", "still running trains", "owners say",
+    "tastenkürzel ein-/ausblenden"
+  ],
+
+  "smart_niche_keywords": [
+    "smart", "wifi", "bluetooth", "led", "solar", "akku", "usb",
+    "digital", "elektronik", "tech", "app", "sensor", "automatisch",
+    "robot", "drohne", "laser", "3d", "gaming", "cam", "pro",
+    "electric", "elektrisch", "power", "lader", "ladegerät",
+    "iot", "zigbee", "tuya", "alexa", "google home", "matter",
+    "display", "monitor", "streaming", "wireless", "charger"
+  ],
+
+  "automation": {
+    "smart_product_finder_interval_hours": 12,
+    "smart_product_finder_max_imports_per_run": 15,
+    "research_sources": ["amazon_de_bestseller", "aliexpress_trending", "reddit_tech"],
+    "ai_quality_gate": true,
+    "ai_model": "claude-haiku-4-5-20251001",
+    "duplicate_check": true,
+    "gatekeeper_enabled": true
+  },
+
+  "disabled_tasks": [
+    {
+      "name": "shopify_mass_creator",
+      "reason": "Erstellte Fake-Produkte mit vendor=SuperMegaBot (HN-Artikel, Notizbücher etc.)",
+      "disabled_date": "2026-07-15"
+    },
+    {
+      "name": "shopify_bulk_activate",
+      "reason": "Würde bereinigte CJ Dropshipping Produkte wieder aktivieren",
+      "disabled_date": "2026-07-15"
+    }
+  ],
+
+  "import_rules": {
+    "always_set_vendor": "iNeedit",
+    "always_set_inventory": 50,
+    "always_require_product_type": true,
+    "always_run_gatekeeper": true,
+    "never_import_from_vendor": ["SuperMegaBot", "BullPowerBot"]
+  }
+}
