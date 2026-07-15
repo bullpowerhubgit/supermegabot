@@ -381,7 +381,26 @@ async def ai_complete(
            → Anthropic → OpenAI → Perplexity → Ollama → Template-Fallback
     """
     async with _get_sem():
-        return await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
+        result = await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
+
+    if not result:
+        # Provider nur rate-limitiert (fails==0, until>now) → kurz warten, einmal retry
+        def _rate_limit_wait() -> float:
+            waits = []
+            for p in ("Groq", "OpenRouter", "OpenAI"):
+                cb = _CB.get(p, {})
+                if cb.get("fails", 1) == 0 and cb.get("until", 0) > time.time():
+                    waits.append(cb["until"] - time.time())
+            return min(waits) + 1.0 if waits else 0.0
+
+        wait = _rate_limit_wait()
+        if 0 < wait <= 35:
+            log.debug("APIHunt: Alle Provider rate-limitiert — %.0fs Warten → Retry", wait)
+            await asyncio.sleep(wait)
+            async with _get_sem():
+                result = await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
+
+    return result
 
 
 async def _ai_complete_inner(
