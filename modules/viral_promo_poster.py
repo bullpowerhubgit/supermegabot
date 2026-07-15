@@ -212,21 +212,10 @@ def _fallback_content(platform: str, angle: str, top_products: List[Dict]) -> st
 # ── Facebook ──────────────────────────────────────────────────────────────────
 
 async def post_facebook_page(text: str) -> Dict:
-    token   = _fb_page_token()
-    page_id = _fb_page_id()
-    if not token:
-        return {"ok": False, "error": "no FB page token"}
     try:
-        async with _session() as s:
-            async with s.post(
-                f"https://graph.facebook.com/v19.0/{page_id}/feed",
-                params={"access_token": token},
-                data={"message": text}
-            ) as r:
-                data = await r.json()
-                if "id" in data:
-                    return {"ok": True, "post_id": data["id"]}
-                return {"ok": False, "error": data.get("error", {}).get("message", str(data))}
+        from modules.post_gateway import safe_post
+        result = await safe_post("facebook", text, source_module="viral_promo_poster")
+        return result
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -425,34 +414,10 @@ async def post_twitter(text: str) -> Dict:
 # ── LinkedIn ──────────────────────────────────────────────────────────────────
 
 async def post_linkedin(text: str) -> Dict:
-    token = _li_token()
-    urn   = _li_urn()
-    if not token:
-        return {"ok": False, "error": "no LinkedIn token"}
-    payload = {
-        "author":          urn,
-        "lifecycleState":  "PUBLISHED",
-        "specificContent": {
-            "com.linkedin.ugc.ShareContent": {
-                "shareCommentary": {"text": text},
-                "shareMediaCategory": "NONE",
-            }
-        },
-        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
-    }
     try:
-        async with _session() as s:
-            async with s.post(
-                "https://api.linkedin.com/v2/ugcPosts",
-                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
-                         "X-Restli-Protocol-Version": "2.0.0"},
-                json=payload
-            ) as r:
-                if r.status in (200, 201):
-                    loc = r.headers.get("X-RestLi-Id", "ok")
-                    return {"ok": True, "post_id": loc}
-                text_resp = await r.text()
-                return {"ok": False, "error": f"HTTP {r.status}: {text_resp[:200]}"}
+        from modules.post_gateway import safe_post
+        result = await safe_post("linkedin", text, source_module="viral_promo_poster")
+        return result
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
