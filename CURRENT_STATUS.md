@@ -1,5 +1,36 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 ~11:00 CEST**
+**Stand: 2026-07-15 ~12:30 CEST**
+
+## ✅ v46 — HttpGuard + OpenClaw/Ollama + PostGuard + Connection Pool + MegaDash UI
+
+### Deployed: Letzter Commit 8a3c4c0e (Perplexity/OpenAI/Gmail fixes)
+
+**Neue Module (diese Session, bereits committed):**
+1. ✅ **modules/http_guard.py** — Monkey-patcht `aiohttp.ClientSession._request` → fängt ALLE Social/Email/SMS/Shopify-POSTs ab bevor sie rausgehen
+2. ✅ **modules/post_guard.py** — 3-Layer Gate: Regel-Check → Groq AI Score (1-10) → Telegram-Approval (5min Timeout)
+3. ✅ **modules/ollama_manager.py** — Full Ollama Management API (pull/delete/chat/stream/status)
+4. ✅ **modules/connection_pool.py** — Globaler TCP-Pool (200 Connections, 30/Host, Keepalive 60s)
+5. ✅ **modules/open_claw.py** — Response-Cache (LRU 256, 10min TTL) + `ai_or_claw()` Lokal→Cloud Fallback
+6. ✅ **dashboard/megadash.html** — Ollama/OpenClaw Panel mit Live-Status, Chat, Model-Pull-UI
+7. ✅ **dashboard/server.py** — 8 neue `/api/ollama/*` Routen + HttpGuard Activation + ConnectionPool Cleanup
+
+**Telegram Bot:**
+- `@DudiRudibot` (Token: `8600739487:AAHk_...Jt0O8`) ✅ — neues Token bestätigt
+- `@RudiCludiBot` (Token: `8320990321:AAHUfd...C9Fc`) ✅ — Backup Bot
+
+**Railway Env-Vars (alle gesetzt):**
+- `TELEGRAM_BOT_TOKEN` ✅, `TELEGRAM_BOT_TOKEN_RUDICLONE` ✅, `TELEGRAM_BOT_TOKEN_2` ✅
+- `GEMINI_API_KEY` ✅, `GROQ_API_KEY` ✅, `ANTHROPIC_API_KEY` ✅
+- `KLAVIYO_API_KEY` ✅, `WHATSAPP_TOKEN` ⚠️ (abgelaufen, neu generieren!)
+
+**System Health:**
+- Railway: ✅ `{"status":"ok","circuits_open":[]}` — uptime laufend
+- Syntax: ✅ 0 Fehler über alle .py Dateien
+- Telegram @DudiRudibot: ✅ verifiziert
+- Ollama (lokal): ✅ `llama3.2:latest` online
+- Groq auf Railway: ✅ configured (lokal Cloudflare-Block, auf Server OK)
+
+---
 
 ## ✅ v45 — APIHunt CB-Fix + Gmail Tageslimit-Fix + Klaviyo Format + VaCYq3 Key
 
@@ -169,22 +200,31 @@ OpenClaw (Ollama lokal, kostenlos)
 
 ## ⚠️ OFFENE PUNKTE (manuell erforderlich)
 
-### 1. Twilio Console Webhook-URL setzen (manuell)
+### 1. WhatsApp Access Token erneuern (WICHTIG!)
+- Aktueller `WHATSAPP_TOKEN` in Railway ist **abgelaufen** (Error 467: User logged out)
+- **Schritte:**
+  1. business.facebook.com → System Users → "Conversions API System User"
+  2. "Generate new token" → App: `1994952984446870` (AIITEC WA App)
+  3. Permissions: `whatsapp_business_messaging` + `whatsapp_business_management`
+  4. Token kopieren → Railway Variable `WHATSAPP_ACCESS_TOKEN` setzen
+- Betroffene Module: `whatsapp_automation.py`, `whatsapp_abandoned_cart.py`, `brutus_core.py`
+
+### 2. Twilio Console Webhook-URL setzen (manuell)
 - Voice: `https://supermegabot-production.up.railway.app/api/phone/incoming`
 - SMS: `https://supermegabot-production.up.railway.app/api/sms/incoming`
 - Wo: Twilio Console → Phone Numbers → +17625685298 → Voice/Messaging
 
-### 2. Google Merchant Center Feed einreichen (manuell)
+### 3. Google Merchant Center Feed einreichen (manuell)
 - URL: `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
 - Wo: merchants.google.com → Feeds → Neue Datenquelle
 
-### 3. GitHub Actions RAILWAY_TOKEN abgelaufen (manuell)
+### 4. GitHub Actions RAILWAY_TOKEN abgelaufen (manuell)
 - **Workaround**: `railway up --detach --service supermegabot` (lokal, funktioniert)
 - **Fix**: Neues Token unter railway.com → Project Settings → Tokens → GitHub Secret `RAILWAY_TOKEN` updaten
 
-### Facebook Rate Limited (temporär, kein Handlungsbedarf)
-- Viral Traffic Machine: Reddit/Medium/LinkedIn funktionieren
-- Instagram/Facebook: temporär geblockt (erholt sich automatisch)
+### Gemini API Quota (temporär, kein Handlungsbedarf)
+- Key `AQ.Ab8RN6KL5Y2D...` ist valid (kein 401), nur Free-Tier Quota erreicht
+- 8 andere Provider als Fallback aktiv
 
 ### Anthropic API Credits erschöpft (kein Handlungsbedarf)
 - OpenRouter (Gemma) als Fallback aktiv
