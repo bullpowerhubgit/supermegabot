@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Onboarding — ineedit.com.co</title>
+<style>
+:root {
+  --bg: #09090f;
+  --s1: #111118;
+  --s2: #18181f;
+  --border: #252530;
+  --accent: #635bff;
+  --acc2: #7c74ff;
+  --green: #22c55e;
+  --yellow: #f59e0b;
+  --red: #ef4444;
+  --text: #e4e4ef;
+  --muted: #7878a0;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg:#f5f5fa; --s1:#fff; --s2:#f0f0f8; --border:#ddd; --text:#111; --muted:#666; }
+}
+:root[data-theme="dark"] { --bg:#09090f; --s1:#111118; --s2:#18181f; --border:#252530; --text:#e4e4ef; --muted:#7878a0; }
+:root[data-theme="light"] { --bg:#f5f5fa; --s1:#fff; --s2:#f0f0f8; --border:#ddd; --text:#111; --muted:#666; }
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+
+/* ── Layout ── */
+.shell{display:flex;flex-direction:column;align-items:center;padding:40px 16px 80px}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:560px}
+.card+.card{margin-top:16px}
+
+/* ── Header ── */
+.hero{text-align:center;padding:48px 32px 32px}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,91,255,.1);border:1px solid rgba(99,91,255,.25);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--accent);margin-bottom:20px}
+.hero h1{font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px}
+.hero p{color:var(--muted);max-width:380px;margin:0 auto}
+
+/* ── Steps nav ── */
+.steps{display:flex;padding:0 20px;border-bottom:1px solid var(--border)}
+.step-dot{flex:1;display:flex;flex-direction:column;align-items:center;padding:16px 4px;position:relative;cursor:pointer}
+.step-dot:not(:last-child)::after{content:'';position:absolute;top:22px;left:50%;width:100%;height:1px;background:var(--border);z-index:0}
+.dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;z-index:1;position:relative;transition:.2s}
+.dot.active{background:var(--accent);color:#fff}
+.dot.done{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.4)}
+.dot.pending{background:var(--s2);color:var(--muted);border:1px solid var(--border)}
+.step-dot span{font-size:11px;margin-top:4px;color:var(--muted)}
+.step-dot.active-step span{color:var(--text);font-weight:600}
+
+/* ── Panel ── */
+.panel{padding:28px 28px 24px;display:none}
+.panel.visible{display:block}
+.panel-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.panel-desc{color:var(--muted);font-size:14px;margin-bottom:24px}
+
+/* ── Form ── */
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+input,select,textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-size:14px;outline:none;transition:.15s}
+input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,91,255,.12)}
+.field{margin-bottom:16px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--acc2)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-block{width:100%}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:10px;margin-top:20px}
+
+/* ── Status / Alert ── */
+.status-box{border-radius:8px;padding:14px 16px;font-size:13px;margin-bottom:16px;display:none}
+.status-box.visible{display:block}
+.status-ok{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);color:var(--green)}
+.status-err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:var(--red)}
+.status-info{background:rgba(99,91,255,.08);border:1px solid rgba(99,91,255,.25);color:var(--accent)}
+.status-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);color:var(--yellow)}
+
+/* ── Account ID display ── */
+.id-box{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:13px;word-break:break-all;margin-bottom:12px}
+
+/* ── Link button ── */
+.link-btn{display:block;background:var(--accent);color:#fff;text-align:center;padding:14px;border-radius:8px;font-weight:700;font-size:15px;text-decoration:none;margin:12px 0}
+.link-btn:hover{background:var(--acc2)}
+
+/* ── Checklist ── */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:8px}
+.checklist li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted);padding:10px 14px;background:var(--s2);border-radius:7px;border:1px solid var(--border)}
+.checklist li.ok{color:var(--green);border-color:rgba(34,197,94,.25)}
+.checklist li .ci{flex-shrink:0;font-size:15px}
+
+/* ── Loader ── */
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Product grid ── */
+.product-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.product-item{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center}
+.product-name{font-weight:600;font-size:14px}
+.product-price{font-family:monospace;font-size:13px;color:var(--accent)}
+.product-id{font-family:monospace;font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── Footer ── */
+.footer{text-align:center;margin-top:32px;font-size:12px;color:var(--muted)}
+.footer a{color:var(--muted);text-decoration:none}
+
+@media(max-width:540px){.field-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <!-- Hero -->
+  <div style="text-align:center;margin-bottom:32px">
+    <div class="hero-badge">💳 ineedit.com.co · Vendor Platform</div>
+    <h1 style="font-size:30px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px">Vendor Onboarding</h1>
+    <p style="color:var(--muted);max-width:420px;margin:0 auto">Verbinde dein Stripe-Konto mit der ineedit-Plattform. Du erhältst 90% jeder Zahlung — wir behalten 10% Plattform-Fee.</p>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="steps">
+      <div class="step-dot active-step" id="dot-1">
+        <div class="dot active" id="d1">1</div>
+        <span>Konto</span>
+      </div>
+      <div class="step-dot" id="dot-2">
+        <div class="dot pending" id="d2">2</div>
+        <span>Verifizierung</span>
+      </div>
+      <div class="step-dot" id="dot-3">
+        <div class="dot pending" id="d3">3</div>
+        <span>Produkte</span>
+      </div>
+      <div class="step-dot" id="dot-4">
+        <div class="dot pending" id="d4">4</div>
+        <span>Live</span>
+      </div>
+    </div>
+
+    <!-- Step 1: Create Account -->
+    <div class="panel visible" id="panel-1">
+      <div class="panel-title">Vendor-Konto erstellen</div>
+      <div class="panel-desc">Gib deine Basis-Daten ein. Wir erstellen damit ein verbundenes Stripe-Konto für dich.</div>
+      <div id="step1-status" class="status-box"></div>
+      <div class="field">
+        <label>E-Mail-Adresse</label>
+        <input type="email" id="s1-email" placeholder="dein@email.de">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Vorname</label>
+          <input type="text" id="s1-fname" placeholder="Max">
+        </div>
+        <div class="field">
+          <label>Nachname</label>
+          <input type="text" id="s1-lname" placeholder="Mustermann">
+        </div>
+      </div>
+      <div class="field">
+        <label>Unternehmensname (optional)</label>
+        <input type="text" id="s1-biz" placeholder="Mein Shop GmbH">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary btn-block" onclick="createAccount()">
+          <span id="s1-label">Konto erstellen</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Verification -->
+    <div class="panel" id="panel-2">
+      <div class="panel-title">Stripe-Verifizierung</div>
+      <div class="panel-desc">Klicke auf den Button, um das sichere Stripe-Formular zu öffnen. Dort gibst du Bankdaten, Adresse und ID ein.</div>
+      <div id="step2-status" class="status-box"></div>
+      <div class="id-box" id="account-id-display">—</div>
+      <a href="#" class="link-btn" id="onboarding-link-btn" target="_blank" onclick="return openOnboarding()">
+        🔐 Stripe-Verifizierung starten
+      </a>
+      <div style="font-size:13px;color:var(--muted);margin-top:8px">Nach der Verifizierung kehrst du automatisch hierher zurück. Dann weiter zu Schritt 3.</div>
+      <div class="btn-row" style="margin-top:20px">
+        <button class="btn btn-outline" onclick="checkStatus()">Status prüfen</button>
+        <button class="btn btn-primary" id="to-step3-btn" onclick="goStep(3)" disabled>Weiter zu Produkten →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Products -->
+    <div class="panel" id="panel-3">
+      <div class="panel-title">Erstes Produkt anlegen</div>
+      <div class="panel-desc">Füge dein erstes Produkt hinzu. Der Preis in Cent (z.B. 4900 = €49,00).</div>
+      <div id="step3-status" class="status-box"></div>
+      <div class="field">
+        <label>Produktname</label>
+        <input type="text" id="s3-name" placeholder="Mein digitales Produkt">
+      </div>
+      <div class="field">
+        <label>Beschreibung</label>
+        <input type="text" id="s3-desc" placeholder="Was bekommt der Käufer?">
+      </div>
+      <div class="field">
+        <label>Preis (in Cent — 4900 = €49,00)</label>
+        <input type="number" id="s3-price" placeholder="4900" min="100">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goStep(2)">← Zurück</button>
+        <button class="btn btn-primary" onclick="createProduct()">Produkt erstellen →</button>
+      </div>
+      <div class="product-list" id="product-list"></div>
+    </div>
+
+    <!-- Step 4: Live -->
+    <div class="panel" id="panel-4">
+      <div class="panel-title">🎉 Du bist live!</div>
+      <div class="panel-desc">Dein Vendor-Konto ist eingerichtet und verifiziert. Hier deine Zusammenfassung:</div>
+      <ul class="checklist" id="final-checklist">
+        <li class="ok"><span class="ci">✅</span><span>Stripe-Konto verbunden</span></li>
+        <li class="ok"><span class="ci">✅</span><span>Verifizierung abgeschlossen</span></li>
+        <li class="ok" id="final-product-check"><span class="ci">✅</span><span>Erstes Produkt angelegt</span></li>
+        <li class="ok"><span class="ci">✅</span><span>Auszahlungen aktiviert (90% für dich)</span></li>
+      </ul>
+      <div id="checkout-test-area" style="margin-top:20px;display:none">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:8px">Checkout testen mit deinem ersten Produkt:</div>
+        <a id="checkout-link" href="#" class="link-btn" target="_blank">🛒 Test-Checkout öffnen</a>
+        <div style="font-size:12px;color:var(--muted);margin-top:8px">Testkarte: 4242 4242 4242 4242 · beliebiges Datum + CVC</div>
+      </div>
+      <div style="margin-top:20px;font-size:13px;color:var(--muted)">Konto-ID: <span class="id-box" id="final-account-id" style="display:inline;padding:2px 8px;font-size:12px">—</span></div>
+    </div>
+  </div>
+
+  <p class="footer">ineedit.com.co · <a href="/">Admin Dashboard</a> · Powered by Stripe Connect</p>
+</div>
+
+<script>
+const API = '';
+let accountId = localStorage.getItem('vendor_account_id') || '';
+let firstPriceId = '';
+
+// ── Restore state ───────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const params = new URLSearchParams(location.search);
+  if (params.get('account')) {
+    accountId = params.get('account');
+    localStorage.setItem('vendor_account_id', accountId);
+  }
+  if (accountId) {
+    document.getElementById('account-id-display').textContent = accountId;
+    document.getElementById('final-account-id').textContent = accountId;
+    goStep(2);
+    checkStatus();
+  }
+});
+
+// ── Step navigation ─────────────────────────────────────────────────────────
+function goStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('panel-'+i).classList.toggle('visible', i===n);
+    document.getElementById('dot-'+i).classList.toggle('active-step', i===n);
+    const d = document.getElementById('d'+i);
+    if(i < n){ d.className='dot done'; d.textContent='✓'; }
+    else if(i===n){ d.className='dot active'; d.textContent=i; }
+    else{ d.className='dot pending'; d.textContent=i; }
+  });
+}
+
+function showStatus(id, msg, type) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = 'status-box visible status-'+type;
+}
+
+// ── Step 1: Create Account ──────────────────────────────────────────────────
+async function createAccount() {
+  const email = document.getElementById('s1-email').value.trim();
+  const fname = document.getElementById('s1-fname').value.trim();
+  const lname = document.getElementById('s1-lname').value.trim();
+  const biz   = document.getElementById('s1-biz').value.trim();
+  if (!email) return showStatus('step1-status','E-Mail ist erforderlich','err');
+
+  const btn = document.querySelector('#panel-1 .btn-primary');
+  btn.disabled = true;
+  document.getElementById('s1-label').innerHTML = '<span class="spinner"></span>';
+
+  try {
+    const res = await fetch(API+'/api/account', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, firstName: fname, lastName: lname, businessName: biz })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Fehler beim Erstellen');
+    accountId = data.accountId;
+    localStorage.setItem('vendor_account_id', accountId);
+    document.getElementById('account-id-display').textContent = accountId;
+    document.getElementById('final-account-id').textContent = accountId;
+    goStep(2);
+  } catch(e) {
+    showStatus('step1-status', e.message, 'err');
+    btn.disabled = false;
+    document.getElementById('s1-label').textContent = 'Konto erstellen';
+  }
+}
+
+// ── Step 2: Onboarding ──────────────────────────────────────────────────────
+async function openOnboarding() {
+  try {
+    const res = await fetch(API+'/api/account-link', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ accountId })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    window.open(data.url, '_blank');
+    showStatus('step2-status','Stripe-Formular geöffnet. Fülle alles aus und kehre dann hierher zurück.','info');
+  } catch(e) {
+    showStatus('step2-status', e.message, 'err');
+  }
+  return false;
+}
+
+async function checkStatus() {
+  if (!accountId) return;
+  try {
+    const res = await fetch(API+'/api/account/'+accountId+'/status');
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    const ok = data.chargesEnabled && data.payoutsEnabled;
+    if (ok) {
+      showStatus('step2-status','✅ Konto verifiziert! Charges & Payouts aktiviert. Weiter zu Produkten.','ok');
+      document.getElementById('to-step3-btn').disabled = false;
+    } else {
+      const pending = (data.requirements?.currently_due || []).slice(0,3).join(', ') || 'Verifizierung ausstehend';
+      showStatus('step2-status','⏳ Verifizierung noch nicht abgeschlossen. Offene Punkte: '+pending,'warn');
+    }
+  } catch(e) {
+    showStatus('step2-status', e.message, 'err');
+  }
+}
+
+// ── Step 3: Product ─────────────────────────────────────────────────────────
+async function createProduct() {
+  const name  = document.getElementById('s3-name').value.trim();
+  const desc  = document.getElementById('s3-desc').value.trim();
+  const price = parseInt(document.getElementById('s3-price').value, 10);
+  if (!name || isNaN(price) || price < 100) return showStatus('step3-status','Name und Preis (min. 100 Cent) sind erforderlich','err');
+
+  try {
+    const res = await fetch(API+'/api/create-product', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ accountId, productName: name, productDescription: desc, productPrice: price })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    firstPriceId = data.priceId;
+    showStatus('step3-status','✅ Produkt erstellt: '+data.productName+' ('+((data.amount||price)/100).toFixed(2)+'€)','ok');
+
+    const list = document.getElementById('product-list');
+    const el = document.createElement('div');
+    el.className = 'product-item';
+    el.innerHTML = `<div><div class="product-name">${data.productName}</div><div class="product-id">${data.priceId}</div></div><div class="product-price">${((data.amount||price)/100).toFixed(2)} €</div>`;
+    list.appendChild(el);
+
+    // Enable checkout test
+    prepCheckout(data.priceId);
+    goStep(4);
+  } catch(e) {
+    showStatus('step3-status', e.message, 'err');
+  }
+}
+
+async function prepCheckout(priceId) {
+  try {
+    const res = await fetch(API+'/api/create-checkout-session', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ accountId, priceId })
+    });
+    const data = await res.json();
+    if (res.ok && data.url) {
+      document.getElementById('checkout-link').href = data.url;
+      document.getElementById('checkout-test-area').style.display = 'block';
+    }
+  } catch(e) {}
+}
+</script>
+</body>
+</html>
