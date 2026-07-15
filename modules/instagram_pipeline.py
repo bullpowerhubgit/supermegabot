@@ -125,6 +125,12 @@ async def _get_shopify_image() -> str:
 
 async def post_to_facebook(text: str, page_token: str) -> dict:
     """Postet auf Facebook AIITEC Page."""
+    try:
+        from modules.post_guard import validate_and_log
+        if not await validate_and_log(text, platform="instagram"):
+            return {"ok": False, "blocked": True, "reason": "PostGuard: Qualitätsprüfung nicht bestanden"}
+    except Exception:
+        pass
     if not page_token:
         return {"ok": False, "error": "kein FACEBOOK_PAGE_TOKEN_AIITEC gesetzt"}
     try:

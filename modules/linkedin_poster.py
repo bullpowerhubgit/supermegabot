@@ -108,6 +108,13 @@ def _save_posted(posted: set):
 
 async def post_to_linkedin(text: str) -> dict:
     """Veröffentlicht einen LinkedIn-Post als Person."""
+    try:
+        from modules.post_guard import validate_and_log
+        if not await validate_and_log(text, platform="linkedin"):
+            return {"blocked": True, "reason": "PostGuard: Qualitätsprüfung nicht bestanden"}
+    except Exception:
+        pass
+
     if not LI_TOKEN or not LI_PERSON_ID:
         log.info("[DRY-RUN] LinkedIn: %s", text[:80])
         return {"dry_run": True}

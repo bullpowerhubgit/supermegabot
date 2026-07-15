@@ -1648,6 +1648,17 @@ async def task_traffic_max_orchestrator() -> str:
         return f"TrafficMax Fehler: {e}"
 
 
+async def task_seo_scaler() -> str:
+    """SEO Scaler: AI-optimiert Shopify Produkte + erstellt Top-Bundles täglich."""
+    try:
+        from modules.seo_scaler import run_full_seo_cycle
+        report = await run_full_seo_cycle()
+        await _tg(report)
+        return "SEO Scaler OK"
+    except Exception as e:
+        return f"SEO Scaler Fehler: {e}"
+
+
 async def task_api_hunt_watchdog() -> str:
     """APIHunt Watchdog: prüft alle 8 AI-Provider, Telegram-Alert falls < 2 aktiv."""
     try:
@@ -8218,6 +8229,8 @@ TASKS = [
     # ── TRAFFIC MAX ORCHESTRATOR + APIHunt Watchdog ──────────────────────────
     ("traffic_max",             task_traffic_max_orchestrator, 10800,  250),  # 3h — IndexNow+GMC+Email parallel
     ("api_hunt_watchdog",       task_api_hunt_watchdog,        3600,   40),  # 1h — sichert AI-API-Verfügbarkeit
+    # ── SEO SCALER + SHOP PERFEKTIONIST ──────────────────────────────────────
+    ("seo_scaler",              task_seo_scaler,              21600,  450),  # 6h — AI-SEO + Bundles auto-erstellen
 ]
 
 
