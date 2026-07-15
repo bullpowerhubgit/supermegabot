@@ -70,6 +70,7 @@ _CB_BACKOFF_MAX = 3600   # 1h max
 # Letzter aktiver Provider für Wechsel-Detection
 _last_provider: str = ""
 _monitor_running: bool = False
+_last_all_failed_log: float = 0.0
 
 # Globales Semaphore: max. 3 gleichzeitige AI-Calls → kein Thundering-Herd bei 344 Tasks
 _AI_SEM: Optional[asyncio.Semaphore] = None
@@ -381,26 +382,7 @@ async def ai_complete(
            → Anthropic → OpenAI → Perplexity → Ollama → Template-Fallback
     """
     async with _get_sem():
-        result = await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
-
-    if not result:
-        # Provider nur rate-limitiert (fails==0, until>now) → kurz warten, einmal retry
-        def _rate_limit_wait() -> float:
-            waits = []
-            for p in ("Groq", "OpenRouter", "OpenAI"):
-                cb = _CB.get(p, {})
-                if cb.get("fails", 1) == 0 and cb.get("until", 0) > time.time():
-                    waits.append(cb["until"] - time.time())
-            return min(waits) + 1.0 if waits else 0.0
-
-        wait = _rate_limit_wait()
-        if 0 < wait <= 35:
-            log.debug("APIHunt: Alle Provider rate-limitiert — %.0fs Warten → Retry", wait)
-            await asyncio.sleep(wait)
-            async with _get_sem():
-                result = await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
-
-    return result
+        return await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
 
 
 async def _ai_complete_inner(
@@ -714,9 +696,13 @@ async def _ai_complete_inner(
     except Exception as e:
         log.debug("Ollama error: %s", e)
 
-    # ── Alle Provider ausgefallen ──────────────────────────────────────────────
-    log.error("APIHunt: ALLE Provider ausgefallen!")
-    asyncio.ensure_future(_alert_all_failed())
+    # ── Alle Provider ausgefallen — Log-Throttling: max 1× alle 5 Minuten ────────
+    global _last_all_failed_log
+    now = time.time()
+    if now - _last_all_failed_log >= 300:
+        _last_all_failed_log = now
+        log.error("APIHunt: ALLE Provider ausgefallen!")
+        asyncio.ensure_future(_alert_all_failed())
     return ""
 
 
