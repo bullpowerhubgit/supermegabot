@@ -206,6 +206,7 @@ async def create_all_payment_links() -> list:
                 "billing_address_collection":      "auto",
             }
 
+            await asyncio.sleep(0)  # yield to event loop — prevents health-check starvation on large batches
             resp = await _post(session, "/payment_links", payload)
 
             if resp.get("id"):
