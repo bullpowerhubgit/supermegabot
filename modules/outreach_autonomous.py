@@ -536,6 +536,36 @@ JSON-Antwort:
     return fallback()
 
 
+# ── Supabase CRM-Logging ──────────────────────────────────────────────────────
+
+async def _sb_insert_lead_event(data: dict) -> None:
+    """Schreibt ein Lead-Event in Supabase lead_events (fire-and-forget)."""
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    auth_key = key or os.getenv("SUPABASE_ANON_KEY", "")
+    if not url or not auth_key:
+        log.debug("Supabase credentials fehlen — lead_event nicht gespeichert")
+        return
+    try:
+        async with aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(ssl=False),
+            timeout=aiohttp.ClientTimeout(total=8),
+        ) as s:
+            await s.post(
+                f"{url}/rest/v1/lead_events",
+                json=data,
+                headers={
+                    "apikey": auth_key,
+                    "Authorization": f"Bearer {auth_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal",
+                },
+            )
+        log.debug("Supabase lead_event gespeichert: %s", data.get("event_type"))
+    except Exception as e:
+        log.debug("Supabase lead_event Fehler: %s", e)
+
+
 # ── Email senden ──────────────────────────────────────────────────────────────
 
 def send_email(to: str, subject: str, body: str) -> bool:
@@ -651,6 +681,16 @@ async def run_outreach_cycle() -> Dict:
                 sent_at = int(time.time())
                 status  = "sent"
                 results["emails_sent"] += 1
+                # Supabase CRM: Lead-Event eintragen
+                await _sb_insert_lead_event({
+                    "event_type": "outreach_email_sent",
+                    "source":     "outreach_autonomous",
+                    "email":      target["email"],
+                    "company":    target["name"],
+                    "product_id": lead["uid"],
+                    "notes":      msgs.get("subject", "")[:255],
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                })
                 await asyncio.sleep(4)  # Anti-Spam
             else:
                 results["errors"] += 1

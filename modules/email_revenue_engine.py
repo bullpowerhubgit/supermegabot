@@ -485,13 +485,28 @@ async def klaviyo_activator() -> Dict[str, Any]:
                 log.warning("Flow activate error %s: %s", row["flow_name"], exc)
         result["flows"]["activated"] = activated
 
-        # -- 1c. First Purchase Incentive campaign --
-        try:
-            campaign_result = await _create_first_purchase_campaign(session)
-            result["campaign"] = campaign_result
-        except Exception as exc:
-            log.warning("Campaign creation error: %s", exc)
-            result["errors"].append(f"campaign: {exc}")
+        # -- 1c. First Purchase Incentive campaign (Dedup: max 1x pro Tag) --
+        today_iso = date.today().isoformat()
+        conn = _db()
+        already_today = conn.execute(
+            "SELECT 1 FROM ere_flows WHERE flow_name='campaign_first_purchase_today' "
+            "AND date(created_at)=?", (today_iso,)
+        ).fetchone()
+        conn.close()
+        if already_today:
+            result["campaign"] = {"ok": True, "skipped": True, "reason": "bereits heute erstellt"}
+            log.info("First Purchase Campaign heute bereits erstellt — übersprungen")
+        else:
+            try:
+                campaign_result = await _create_first_purchase_campaign(session)
+                result["campaign"] = campaign_result
+                if campaign_result.get("ok"):
+                    # Merke: heute bereits erstellt
+                    _save_flow("campaign_first_purchase_today",
+                               campaign_result.get("campaign_id", "today"), "live")
+            except Exception as exc:
+                log.warning("Campaign creation error: %s", exc)
+                result["errors"].append(f"campaign: {exc}")
 
     result["ok"] = len(result["errors"]) == 0
     return result
@@ -1256,6 +1271,81 @@ async def handle_email_stats(request: aiohttp.web.Request) -> aiohttp.web.Respon
     except Exception as exc:
         log.error("handle_email_stats error: %s", exc)
         return aiohttp.web.json_response({"ok": False, "error": str(exc)}, status=500)
+
+
+async def handle_sendgrid_webhook(request: aiohttp.web.Request) -> aiohttp.web.Response:
+    """POST /api/webhooks/sendgrid
+    Verarbeitet SendGrid Event-Webhooks: bounce, unsubscribe, spam_report.
+    Schreibt bounced-Status in ere_sends und markiert Leads in mass_outreach.
+    """
+    try:
+        events = await request.json()
+    except Exception:
+        return aiohttp.web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+
+    if not isinstance(events, list):
+        events = [events]
+
+    processed = 0
+    for ev in events:
+        email_addr = (ev.get("email") or "").lower().strip()
+        event_type = (ev.get("event") or "").lower()
+        if not email_addr:
+            continue
+
+        if event_type in ("bounce", "blocked", "dropped"):
+            # Mark in ere_sends
+            try:
+                conn = _db()
+                conn.execute(
+                    "UPDATE ere_sends SET status='bounced' WHERE email=? AND status='sent'",
+                    (email_addr,),
+                )
+                conn.commit()
+                conn.close()
+            except Exception as exc:
+                log.warning("Bounce DB update error (%s): %s", email_addr, exc)
+
+            # Mark in mass_outreach leads table
+            try:
+                from pathlib import Path as _Path
+                _mo_db = DATA_DIR / "mass_outreach.db"
+                if _mo_db.exists():
+                    import sqlite3 as _sq
+                    _c = _sq.connect(str(_mo_db))
+                    _c.execute(
+                        "UPDATE leads SET status='bounced' WHERE email=?", (email_addr,)
+                    )
+                    _c.commit()
+                    _c.close()
+            except Exception as exc:
+                log.warning("mass_outreach bounce update error (%s): %s", email_addr, exc)
+
+            log.info("Bounce recorded for %s (event=%s)", email_addr, event_type)
+            processed += 1
+
+        elif event_type in ("unsubscribe", "spamreport"):
+            # Unified unsubscribe across all systems
+            try:
+                from modules.mass_outreach_1000 import handle_unsubscribe as _mo_unsub
+                _mo_unsub(email_addr)
+            except Exception as exc:
+                log.warning("Unified unsubscribe error (%s): %s", email_addr, exc)
+            # Also mark ere_sends
+            try:
+                conn = _db()
+                conn.execute(
+                    "UPDATE ere_sends SET status='unsubscribed' WHERE email=? AND status='sent'",
+                    (email_addr,),
+                )
+                conn.commit()
+                conn.close()
+            except Exception as exc:
+                log.warning("ere_sends unsubscribe update error (%s): %s", email_addr, exc)
+            log.info("Unsubscribe recorded for %s (event=%s)", email_addr, event_type)
+            processed += 1
+
+    return aiohttp.web.json_response({"ok": True, "processed": processed})
 
 
 async def handle_email_blast(request: aiohttp.web.Request) -> aiohttp.web.Response:

@@ -65,7 +65,7 @@ EMAIL_CATEGORIES = [
 
 # ── Systemanweisung für Claude ────────────────────────────────────────────────
 _SYSTEM_PROMPT = (
-    "Du bist Max, ein aufgeweckter, menschlicher Kundenservice-Assistent bei BullPower — "
+    "Du bist Rudolf Sarkany, Gründer und Geschäftsführer von AiiteC — "
     "einem KI-Automatisierungs-Unternehmen. Schreibe eine natürliche, lebendige Email-Antwort "
     "auf Deutsch. Sei freundlich aber professionell. Zeige echtes Interesse am Anliegen des "
     "Kunden. Keine Standard-Floskeln, keine steifen Formulierungen. Maximum 200 Wörter."
@@ -435,7 +435,7 @@ class EmailConversationAI:
             f"Nachricht:\n{body}\n\n"
             f"Aufgabe: {category_prompt}\n"
             f"{lang_hint}\n\n"
-            f"Unterschreibe mit: 'Liebe Grüße, Max von BullPower Team'\n"
+            f"Unterschreibe mit: 'Liebe Grüße, Rudolf Sarkany | AiiteC'\n"
             f"Füge am Ende einen unauffälligen Abmeldelink ein: {unsubscribe_url}\n"
             f"Beginne mit persönlicher Anrede an {sender_name or 'den Sender'}."
         )
@@ -460,8 +460,50 @@ class EmailConversationAI:
             "Mailinglisten entfernen.\n\n"
             "Solltest du in Zukunft wieder von uns hören wollen, kannst du dich jederzeit "
             "neu anmelden.\n\n"
-            "Alles Gute,\nMax von BullPower Team"
+            "Alles Gute,\nRudolf Sarkany | AiiteC"
         )
+
+    def _persist_unsubscribe(self, email_addr: str) -> None:
+        """Schreibt Abmeldung in alle bekannten Opt-out-Listen (unified unsubscribe)."""
+        email_addr = (email_addr or "").lower().strip()
+        if not email_addr or "@" not in email_addr:
+            return
+        # 1. mass_outreach_1000 — primäres Opt-out-System
+        try:
+            from modules.mass_outreach_1000 import handle_unsubscribe as _mo_unsub
+            _mo_unsub(email_addr)
+        except Exception as exc:
+            log.warning("mass_outreach_1000 unsubscribe error: %s", exc)
+        # 2. Lokale email_conversations.db
+        try:
+            conn = sqlite3.connect(str(_DB_PATH))
+            conn.execute(
+                "UPDATE email_threads SET status='unsubscribed' WHERE sender_email=?",
+                (email_addr,)
+            )
+            conn.commit()
+            conn.close()
+        except Exception as exc:
+            log.warning("email_conversations.db unsubscribe error: %s", exc)
+        # 3. email_revenue.db — ere_sends Blacklist
+        try:
+            _rev_db = _DATA_DIR / "email_revenue.db"
+            if _rev_db.exists():
+                conn2 = sqlite3.connect(str(_rev_db))
+                conn2.execute("""
+                    CREATE TABLE IF NOT EXISTS ere_unsubscribes (
+                        email TEXT PRIMARY KEY,
+                        unsubscribed_at TEXT DEFAULT (datetime('now'))
+                    )
+                """)
+                conn2.execute(
+                    "INSERT OR IGNORE INTO ere_unsubscribes (email) VALUES (?)", (email_addr,)
+                )
+                conn2.commit()
+                conn2.close()
+        except Exception as exc:
+            log.warning("email_revenue.db unsubscribe error: %s", exc)
+        log.info("Unsubscribe persistiert für: %s", email_addr)
 
     async def send_reply(
         self,
@@ -595,6 +637,10 @@ class EmailConversationAI:
                     log.error("Reply-Generierung fehlgeschlagen: %s", e)
                     reply_text = None
                     stats["errors"] += 1
+
+                # Unsubscribe in DB persistieren (DSGVO) — auch wenn kein Reply gesendet wird
+                if category == "unsubscribe":
+                    self._persist_unsubscribe(em.get("from_email", ""))
 
                 if not reply_text:
                     stats["skipped"] += 1

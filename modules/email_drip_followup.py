@@ -193,6 +193,44 @@ async def enroll_sent_leads() -> int:
     return enrolled
 
 
+# ── Enroll single lead (called by sofia_agent_hub after phone calls) ──────────
+
+async def enroll_lead(email: str, product_id: str = "general", source: str = "manual") -> bool:
+    """
+    Trägt einen einzelnen Lead direkt in alle 4 Drip-Schritte ein.
+    Wird von sofia_agent_hub.py nach Telefonanrufen aufgerufen.
+    Signatur: enroll_lead(email, product_id, source)
+    """
+    if not email:
+        log.warning("enroll_lead: keine Email angegeben")
+        return False
+
+    ddb = _db()
+    try:
+        already = ddb.execute(
+            "SELECT COUNT(*) FROM drip_sequence WHERE lead_email=?", (email,)
+        ).fetchone()[0]
+        if already > 0:
+            log.debug("enroll_lead: %s bereits in Drip-Sequenz", email)
+            return False
+
+        now = time.time()
+        for step in DRIP_STEPS:
+            scheduled = now + step["delay_h"] * 3600
+            ddb.execute(
+                "INSERT INTO drip_sequence (lead_email, step, scheduled_at, status) VALUES (?,?,?,?)",
+                (email, step["step"], scheduled, "pending")
+            )
+        ddb.commit()
+        log.info("enroll_lead: %s eingetragen — source=%s product=%s", email, source, product_id)
+        return True
+    except Exception as e:
+        log.warning("enroll_lead Fehler: %s", e)
+        return False
+    finally:
+        ddb.close()
+
+
 # ── Send due drips ────────────────────────────────────────────────────────────
 
 def _smtp_config_from_env() -> dict:

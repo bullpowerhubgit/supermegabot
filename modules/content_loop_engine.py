@@ -325,6 +325,10 @@ async def run_content_loop() -> dict:
     Hauptfunktion: 1 SEO-Artikel generieren und auf alle Kanäle verteilen.
     Aufruf: alle 8h via Scheduler = ~90 Artikel/Monat.
     """
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.info("ContentLoopEngine pausiert (SOCIAL_POSTING_PAUSED gesetzt)")
+        return {"topic": "", "shopify_url": None, "channels": [], "errors": ["posting_paused"], "ok": False}
+
     result = {
         "topic": "",
         "shopify_url": None,

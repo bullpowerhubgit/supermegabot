@@ -6601,6 +6601,32 @@ async def handle_queue_enqueue(req):
         return web.json_response({"error": str(e)}, status=500)
 
 
+async def _handle_sales_funnel(req):
+    """GET /api/sales/funnel — Funnel-Analytics: Visits → Leads → Checkouts → Sales."""
+    try:
+        from modules.revenue_engine import get_revenue_status
+        revenue = await get_revenue_status()
+        funnel = {
+            "ok": True,
+            "funnel": {
+                "visits":    revenue.get("visits", 0),
+                "leads":     revenue.get("leads", 0),
+                "checkouts": revenue.get("checkouts", 0),
+                "sales":     revenue.get("sales", 0),
+                "revenue":   revenue.get("total_revenue", 0),
+            },
+            "source": "revenue_engine",
+        }
+        return web.json_response(funnel)
+    except Exception as e:
+        return web.json_response({
+            "ok": True,
+            "funnel": {"visits": 0, "leads": 0, "checkouts": 0, "sales": 0, "revenue": 0},
+            "note": "revenue_engine nicht verfügbar",
+            "error": str(e),
+        })
+
+
 @web.middleware
 async def logging_middleware(request, handler):
     resp = await handler(request)
@@ -6632,6 +6658,39 @@ async def cors_middleware(request, handler):
     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
     resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key"
     return resp
+
+
+# ---------------------------------------------------------------------------
+# Auth Middleware — X-API-Key Validierung für alle /api/* Routen
+# ---------------------------------------------------------------------------
+_AUTH_EXEMPT_EXACT = {"/health", "/api/digistore24/ipn"}
+
+@web.middleware
+async def auth_middleware(request, handler):
+    """Prüft X-API-Key für alle /api/-Routen.
+    Ausnahmen: /health, Webhook-Endpunkte, Feed-Routen.
+    Wird nur aktiv wenn DASHBOARD_SECRET gesetzt ist.
+    """
+    secret = os.getenv("DASHBOARD_SECRET", "")
+    if secret and request.path.startswith("/api/"):
+        path = request.path
+        exempt = (
+            path in _AUTH_EXEMPT_EXACT
+            or path.startswith("/feed/")
+            or path.endswith("/webhook")
+            or path.endswith("/ipn")
+            or path.startswith("/api/digistore24/")
+            or path.startswith("/api/webhooks/")
+            or path.startswith("/api/shopify/order-webhook")
+        )
+        if not exempt:
+            api_key = request.headers.get("X-API-Key", "")
+            if api_key != secret:
+                return web.json_response(
+                    {"ok": False, "error": "Unauthorized — X-API-Key header required"},
+                    status=401,
+                )
+    return await handler(request)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -10463,7 +10522,7 @@ async def create_app():
     except Exception as e:
         log.warning("APIHunt Monitor start failed: %s", e)
 
-    app = web.Application(middlewares=[logging_middleware, cors_middleware])
+    app = web.Application(middlewares=[logging_middleware, cors_middleware, auth_middleware])
 
     # Connection-Pool Cleanup beim Shutdown
     async def _close_connection_pool(application):
@@ -10539,7 +10598,7 @@ async def create_app():
     app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
-    app.router.add_get("/api/ai/status", handle_ai_status)
+    # /api/ai/status bereits oben registriert — Duplikat entfernt
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
     app.router.add_post("/api/army/start", handle_army_start)
@@ -10823,7 +10882,7 @@ async def create_app():
     app.router.add_post("/api/mega/daily",           handle_mega_run)
     app.router.add_get("/bullpower",                 handle_bullpower_mcc)
     app.router.add_get("/api/env/validate",          handle_env_validate)
-    app.router.add_get("/api/revenue/summary",       handle_revenue_summary)
+    # /api/revenue/summary bereits oben registriert — Duplikat entfernt
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10866,7 +10925,7 @@ async def create_app():
     app.router.add_post("/api/monetization/launch",   handle_monetization_launch)
     app.router.add_post("/api/mail/error-guard",      handle_mail_error_guard)
     app.router.add_get( "/api/mail/errors",           handle_mail_error_summary)
-    app.router.add_post("/api/watchdog/run",           handle_mac_watchdog)
+    app.router.add_post("/api/mac/watchdog",           handle_mac_watchdog)
     app.router.add_post("/api/monitor/run",            handle_monitor_hub)
     app.router.add_post("/api/content-loop/run",      handle_content_loop)
     app.router.add_post("/api/syndication/run",       handle_free_syndication)
@@ -11229,7 +11288,7 @@ async def create_app():
     app.router.add_post("/api/linkedin/run",             handle_linkedin_run)
     app.router.add_get( "/api/instagram/status",         handle_instagram_status)
     app.router.add_post("/api/instagram/run",            handle_instagram_run)
-    app.router.add_post("/api/pinterest/run",            handle_pinterest_run)
+    # /api/pinterest/run bereits oben registriert — Duplikat entfernt
     app.router.add_post("/api/email/run",                handle_email_run)
     app.router.add_post("/api/email/daily-summary",      handle_email_daily_summary_run)
     app.router.add_post("/api/shopify/blog",             handle_shopify_blog_run)
@@ -11273,7 +11332,7 @@ async def create_app():
     app.router.add_get( "/api/revenue/orchestrator",     handle_revenue_orchestrator_status)
     app.router.add_post("/api/revenue/orchestrator/run", handle_revenue_orchestrator_run)
     app.router.add_get( "/api/tiktok/status",            handle_tiktok_ads_status)
-    app.router.add_post("/api/tiktok/run",               handle_tiktok_ads_run)
+    app.router.add_post("/api/tiktok/ads-run",           handle_tiktok_ads_run)
 
     # ── Product Bundle Engine ─────────────────────────────────────────────────
     app.router.add_post("/api/bundles/create",           handle_bundles_create)
@@ -11306,6 +11365,10 @@ async def create_app():
     app.router.add_post("/api/mailchimp/cycle",           handle_mailchimp_autonomy_cycle)
     app.router.add_post("/api/gumroad/promote",           handle_gumroad_blast)
     app.router.add_post("/api/indexnow/blast",            handle_indexnow_blast)
+    # ── Fehlende MegaDash-Alias-Routen ─────────────────────────────────────────
+    app.router.add_post("/api/indexnow/submit",           handle_indexnow_blast)       # MegaDash-Alias
+    app.router.add_get( "/api/digistore/sync",            handle_digistore_status)      # MegaDash-Alias
+    app.router.add_get( "/api/health",                    handle_health)                 # MegaDash-Alias für /health
     app.router.add_post("/api/digistore/affiliate-blast", handle_ds24_affiliate_blast_all)
     app.router.add_post("/api/pinterest/post",            handle_pinterest_run)
     app.router.add_post("/api/discord/blast",             handle_discord_send)
@@ -11370,6 +11433,8 @@ async def create_app():
     app.router.add_get( "/api/digistore/products",        handle_ds24_product_list)
     app.router.add_get( "/api/affiliates/status",         handle_affiliate_stats_new)
     app.router.add_get( "/api/analytics/summary",         handle_analytics_legacy)
+    app.router.add_get( "/api/analytics",                 handle_analytics_legacy)   # Alias für /api/analytics/summary
+    app.router.add_get( "/api/sales/funnel",              _handle_sales_funnel)      # MegaDash-Funnel-Endpoint
     app.router.add_get( "/api/meta/status",               handle_meta_ads_status)
     app.router.add_post("/api/email/test",                handle_email_test_send)
     app.router.add_get( "/api/email/accounts/check",      handle_email_accounts_check)
@@ -11850,11 +11915,44 @@ async def create_app():
     log.info("SMS Incoming Handler registriert (/api/sms/incoming)")
 
     # ── Sofia Voice Agent ─────────────────────────────────────────────────────
+
+    def _twilio_valid(req: web.Request, post_data: dict) -> bool:
+        """Prüft X-Twilio-Signature — schützt vor gefälschten Webhook-Requests.
+        Fail-open wenn TWILIO_AUTH_TOKEN nicht konfiguriert (kein Produktions-Blocker).
+        """
+        token = os.getenv("TWILIO_AUTH_TOKEN", "")
+        if not token:
+            log.debug("TWILIO_AUTH_TOKEN nicht gesetzt — Signatur-Check übersprungen")
+            return True
+        try:
+            from twilio.request_validator import RequestValidator
+            # URL aus öffentlichem Host rekonstruieren (korrekt hinter Railway-Proxy)
+            proto = req.headers.get("X-Forwarded-Proto", "https")
+            host  = (req.headers.get("X-Forwarded-Host")
+                     or req.headers.get("Host")
+                     or os.getenv("RAILWAY_PUBLIC_DOMAIN", req.url.host))
+            path  = str(req.rel_url)
+            url   = f"{proto}://{host}{path}"
+            sig   = req.headers.get("X-Twilio-Signature", "")
+            valid = RequestValidator(token).validate(url, post_data, sig)
+            if not valid:
+                log.warning("Twilio Signatur ungültig — IP=%s URL=%s",
+                            req.headers.get("X-Forwarded-For", req.remote), url)
+            return valid
+        except ImportError:
+            log.debug("twilio-Bibliothek fehlt — Signatur-Check übersprungen")
+            return True
+        except Exception as _ve:
+            log.warning("Twilio Signatur-Fehler: %s", _ve)
+            return True  # fail-open bei unerwarteten Fehlern
+
     async def handle_voice_incoming(req: web.Request) -> web.Response:
         """POST /api/voice/incoming — Twilio ruft hier an."""
         try:
             from modules.sofia_voice_agent import handle_incoming_call
             data = await req.post()
+            if not _twilio_valid(req, dict(data)):
+                return web.Response(status=403, text="Forbidden: invalid Twilio signature")
             call_sid = data.get("CallSid", "unknown")
             from_num = data.get("From", "")
             log.info("Sofia: Eingehender Anruf %s von %s", call_sid, from_num)
@@ -11872,6 +11970,8 @@ async def create_app():
         try:
             from modules.sofia_voice_agent import handle_voice_response
             data = await req.post()
+            if not _twilio_valid(req, dict(data)):
+                return web.Response(status=403, text="Forbidden: invalid Twilio signature")
             call_sid  = req.rel_url.query.get("call_sid") or data.get("CallSid", "")
             speech    = data.get("SpeechResult", "")
             conf_raw  = data.get("Confidence", "1.0")
@@ -11893,6 +11993,8 @@ async def create_app():
         try:
             from modules.sofia_voice_agent import handle_call_status
             data       = await req.post()
+            if not _twilio_valid(req, dict(data)):
+                return web.Response(status=403, text="Forbidden: invalid Twilio signature")
             call_sid   = data.get("CallSid", "")
             status     = data.get("CallStatus", "")
             try:
@@ -12133,6 +12235,14 @@ async def create_app():
         except Exception as e:
             return web.json_response({"ok": False, "error": str(e)}, status=500)
 
+    async def handle_sendgrid_webhook(request):
+        """POST /api/webhooks/sendgrid — Bounce + Unsubscribe Events von SendGrid."""
+        try:
+            from modules.email_revenue_engine import handle_sendgrid_webhook as _sg_wh
+            return await _sg_wh(request)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
     async def handle_full_start(request):
         results = {}
         try:
@@ -12189,6 +12299,7 @@ async def create_app():
     app.router.add_post("/api/shopify/optimize-now",     handle_shopify_optimize)
     app.router.add_post("/api/email/blast-now",          handle_email_blast_now)
     app.router.add_get("/api/email/daily-stats",         handle_email_daily_stats)
+    app.router.add_post("/api/webhooks/sendgrid",        handle_sendgrid_webhook)
     app.router.add_post("/api/system/full-start",        handle_full_start)
     app.router.add_post("/api/system/emergency-stop",    handle_emergency_stop)
     app.router.add_post("/api/system/sync-env",          handle_sync_env)
@@ -12808,6 +12919,7 @@ async def create_app():
     app.router.add_get( "/feed/pricerunner.xml",       handle_pricerunner_feed)
     app.router.add_post("/api/watchdog/run",           handle_watchdog_run)
     app.router.add_get( "/api/watchdog/stats",         handle_watchdog_stats)
+    # /api/mac/watchdog (handle_mac_watchdog) oben separat registriert
     log.info("Income Automation routes registered (shopping/drip/cart/price/watchdog)")
 
     # ── LinkedIn DM Outreach ───────────────────────────────────────────────────
@@ -12875,17 +12987,8 @@ async def create_app():
         except Exception as e:
             return web.json_response({"status": "loading", "error": str(e)}, status=200)
 
-    async def handle_pilot_run(request):
-        """POST /api/pilot/run — Autonomous Pilot Zyklus sofort ausführen."""
-        try:
-            from modules.autonomous_pilot import run_pilot_cycle
-            result = await run_pilot_cycle()
-            return web.json_response({"status": "ok", "result": str(result)})
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
-
     app.router.add_get( "/api/pilot/status", handle_pilot_status)
-    app.router.add_post("/api/pilot/run",    handle_pilot_run)
+    # /api/pilot/run bereits oben registriert — zweites Duplikat entfernt
     log.info("Autonomous Pilot routes registered (/api/pilot/*, /api/linkedin/*, /api/affiliate/*, /api/traffic/*)")
 
     # ── Agent Coordinator ──────────────────────────────────────────────────
@@ -16450,6 +16553,13 @@ async def handle_ki_leasing_webhook(req):
     try:
         payload    = await req.read()
         sig_header = req.headers.get("Stripe-Signature", "")
+        # Stripe-Signatur validieren (identisch zu handle_stripe_webhook)
+        from modules.stripe_automation import verify_webhook_signature
+        webhook_secret = os.getenv("STRIPE_KI_LEASING_WEBHOOK_SECRET", os.getenv("STRIPE_WEBHOOK_SECRET", ""))
+        if webhook_secret:
+            if not verify_webhook_signature(payload, sig_header, webhook_secret):
+                log.warning("KI-Leasing webhook: ungültige Stripe-Signatur")
+                return web.json_response({"ok": False, "error": "Invalid Stripe signature"}, status=400)
         event      = json.loads(payload)
         from modules.ki_leasing_engine import handle_webhook
         result = await handle_webhook(event)
@@ -17468,23 +17578,8 @@ async def handle_env_validate(req: web.Request) -> web.Response:
         })
 
 
-async def handle_revenue_summary(req: web.Request) -> web.Response:
-    """GET /api/revenue/summary — Combined revenue from all streams."""
-    try:
-        from modules.revenue_aggregator import get_summary
-        return web.json_response(await get_summary())
-    except Exception:
-        try:
-            from modules.revenue_tracker import get_daily_summary
-            data = get_daily_summary()
-            return web.json_response(data)
-        except Exception as e2:
-            return web.json_response({
-                "ds24": 0, "shopify": 0, "stripe": 0,
-                "total": 0,
-                "alert": "Revenue-Daten werden geladen...",
-                "error": str(e2)[:100],
-            })
+# handle_revenue_summary: vollständige Multi-Source-Implementierung (Stripe+Shopify+DS24)
+# befindet sich weiter oben als handle_revenue_summary(req) — dieses Duplikat entfernt.
 
 
 if __name__ == '__main__':

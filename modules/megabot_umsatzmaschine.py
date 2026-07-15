@@ -309,7 +309,7 @@ class MegaBotUmsatzmaschine:
     ) -> str:
         client_id = f"mb_{datetime.now().strftime('%Y%m%d%H%M%S')}"
         pkg = package_name.lower().replace(" ", "-")
-        self.clients[client_id] = {
+        client_data = {
             "email": email,
             "package": package_name,
             "package_key": pkg,
@@ -323,8 +323,26 @@ class MegaBotUmsatzmaschine:
             "ai_systems": ["Chatbot", "Recommendation Engine", "Content Generator"],
             "history": [],
         }
+        self.clients[client_id] = client_data
         self.save_clients()
         log.info("Neuer Kunde: %s | %s | €%.2f", email, package_name, amount_paid)
+        # Sync to Supabase clients table — persists across Railway restarts
+        try:
+            from modules.supabase_client import get_client as _sb
+            _sb().table("clients").upsert({
+                "client_id": client_id,
+                "email": email,
+                "plan": pkg,
+                "company_name": company_name or email.split("@")[0],
+                "amount_paid": amount_paid,
+                "service_active": True,
+                "subscription_status": "active",
+                "registered_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat(),
+            }, on_conflict="email").execute()
+            log.info("Supabase clients sync OK: %s", email)
+        except Exception as _e:
+            log.warning("Supabase clients sync failed (data saved locally): %s", _e)
         return client_id
 
     async def trigger_immediate_delivery(self, client_id: str) -> Dict[str, Any]:

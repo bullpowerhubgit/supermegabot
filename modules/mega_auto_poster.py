@@ -5,10 +5,14 @@ Posts content simultaneously to: Facebook (2 pages), Instagram, Shopify Blog,
 Klaviyo Campaign, Mailchimp Campaign, SendGrid Email, Telegram, Twitter/X.
 """
 import asyncio
+import base64
 import hashlib
+import hmac
 import json
 import logging
 import os
+import time
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -40,6 +44,9 @@ _TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public 
 _TG_ALERT       = os.getenv("TELEGRAM_CHAT_ID", "")       # system alerts → private chat
 TG_CHAT         = _TG_CHANNEL or ""                        # no private spam if channel not set
 TWITTER_KEY     = os.getenv("TWITTER_API_KEY", "")
+TWITTER_SECRET  = os.getenv("TWITTER_API_SECRET", "")
+TWITTER_TOKEN   = os.getenv("TWITTER_ACCESS_TOKEN", "")
+TWITTER_TOKEN_S = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "")
 ANTHROPIC_KEY   = os.getenv("ANTHROPIC_API_KEY", "")
 LINKEDIN_TOKEN  = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
 _ln_urn         = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
@@ -237,7 +244,7 @@ async def _post_tiktok(content: dict) -> bool:
     """Post video/photo to TikTok via Content Posting API."""
     token = os.getenv("TIKTOK_ACCESS_TOKEN", "")
     if not token:
-        log.debug("TikTok: kein Access Token (TIKTOK_ACCESS_TOKEN fehlt)")
+        log.warning("TikTok: TIKTOK_ACCESS_TOKEN nicht konfiguriert — Channel wird übersprungen")
         return False
     try:
         import aiohttp
@@ -403,11 +410,11 @@ async def _post_klaviyo_campaign(content: dict) -> bool:
             campaign_id = d.get("data", {}).get("id", "")
             if not campaign_id:
                 return False
-            # Send campaign
+            # Send campaign — Klaviyo erwartet campaign-id unter relationships, nicht attributes
             async with s.post(
                 f"https://a.klaviyo.com/api/campaign-send-jobs/",
                 headers=headers,
-                json={"data": {"type": "campaign-send-job", "attributes": {"id": campaign_id}}},
+                json={"data": {"type": "campaign-send-job", "relationships": {"campaign": {"data": {"type": "campaign", "id": campaign_id}}}}},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 send_d = await r.json(content_type=None)
@@ -496,23 +503,64 @@ text-decoration:none;border-radius:6px">{content.get('cta','Jetzt kaufen')}</a><
         return False
 
 
+def _tw_oauth_header(method: str, url: str) -> str:
+    """OAuth 1.0a Authorization header for Twitter API v2 user-context requests."""
+    nonce = base64.urlsafe_b64encode(os.urandom(16)).decode().rstrip("=")
+    ts = str(int(time.time()))
+    oauth_params = {
+        "oauth_consumer_key":     TWITTER_KEY,
+        "oauth_nonce":            nonce,
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp":        ts,
+        "oauth_token":            TWITTER_TOKEN,
+        "oauth_version":          "1.0",
+    }
+    sorted_params = "&".join(
+        f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(str(v), safe='')}"
+        for k, v in sorted(oauth_params.items())
+    )
+    base_string = "&".join([
+        method.upper(),
+        urllib.parse.quote(url, safe=""),
+        urllib.parse.quote(sorted_params, safe=""),
+    ])
+    signing_key = (urllib.parse.quote(TWITTER_SECRET, safe="") + "&" +
+                   urllib.parse.quote(TWITTER_TOKEN_S, safe=""))
+    signature = base64.b64encode(
+        hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()
+    ).decode()
+    oauth_params["oauth_signature"] = signature
+    header_parts = ", ".join(
+        f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(str(v), safe="")}"'
+        for k, v in sorted(oauth_params.items())
+    )
+    return f"OAuth {header_parts}"
+
+
 async def _post_twitter(content: dict) -> bool:
-    if not TWITTER_KEY:
+    """Post tweet via OAuth 1.0a (user-context) — required for POST /2/tweets."""
+    if not TWITTER_KEY or not TWITTER_SECRET or not TWITTER_TOKEN or not TWITTER_TOKEN_S:
+        if TWITTER_KEY and not TWITTER_TOKEN:
+            log.warning("Twitter: TWITTER_ACCESS_TOKEN oder TWITTER_ACCESS_TOKEN_SECRET fehlt — POST /2/tweets benötigt OAuth 1.0a, kein Bearer Token")
         return False
     try:
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
         tweet = f"{content['body'][:200]}\n{tags}\n{content.get('url','')}".strip()[:280]
-        bearer = TWITTER_KEY.replace("new1_", "") if TWITTER_KEY.startswith("new1_") else TWITTER_KEY
+        tw_url = "https://api.twitter.com/2/tweets"
+        auth = _tw_oauth_header("POST", tw_url)
         async with aiohttp.ClientSession() as s:
             async with s.post(
-                "https://api.twitter.com/2/tweets",
-                headers={"Authorization": f"Bearer {bearer}", "Content-Type": "application/json"},
+                tw_url,
+                headers={"Authorization": auth, "Content-Type": "application/json"},
                 json={"text": tweet},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 d = await r.json(content_type=None)
-        return bool(d.get("data", {}).get("id"))
+        ok = bool(d.get("data", {}).get("id"))
+        if not ok:
+            log.warning("Twitter post fehlgeschlagen: %s", d)
+        return ok
     except Exception as exc:
         log.warning("Twitter post failed: %s", exc)
         return False

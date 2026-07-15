@@ -10,7 +10,9 @@ import json
 import logging
 import os
 import re
+import sqlite3
 import time
+from pathlib import Path
 from typing import Dict, Optional
 
 import aiohttp
@@ -28,7 +30,68 @@ SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 BASE_URL      = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN', 'supermegabot-production.up.railway.app')}"
 
 # In-memory Gesprächsspeicher (Call-SID → Verlauf)
+# Primär In-Memory für niedrige Latenz; SQLite als Persistenz-Backup bei Server-Restart.
 _conversations: Dict[str, dict] = {}
+
+_CONV_DB = Path(__file__).parent.parent / "data" / "sofia_conversations.db"
+
+
+def _conv_db_init() -> sqlite3.Connection:
+    """Erstellt/öffnet die Konversations-Datenbank."""
+    _CONV_DB.parent.mkdir(exist_ok=True)
+    conn = sqlite3.connect(str(_CONV_DB), check_same_thread=False, timeout=5)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS active_calls (
+            call_sid   TEXT PRIMARY KEY,
+            data       TEXT NOT NULL,
+            updated_at REAL NOT NULL
+        )
+    """)
+    conn.commit()
+    return conn
+
+
+def _conv_save(call_sid: str) -> None:
+    """Schreibt den aktuellen Gesprächszustand in SQLite (fire-and-forget)."""
+    conv = _conversations.get(call_sid)
+    if not conv:
+        return
+    try:
+        conn = _conv_db_init()
+        conn.execute(
+            "INSERT OR REPLACE INTO active_calls (call_sid, data, updated_at) VALUES (?,?,?)",
+            (call_sid, json.dumps(conv, ensure_ascii=False), time.time())
+        )
+        conn.commit()
+        conn.close()
+    except Exception as _e:
+        log.debug("Conv-SQLite save: %s", _e)
+
+
+def _conv_recover(call_sid: str) -> Optional[dict]:
+    """Lädt Gespräch aus SQLite — Fallback nach Railway-Restart (max 1 Stunde alt)."""
+    try:
+        conn = _conv_db_init()
+        row = conn.execute(
+            "SELECT data, updated_at FROM active_calls WHERE call_sid=?", (call_sid,)
+        ).fetchone()
+        conn.close()
+        if row and (time.time() - row[1]) < 3600:
+            return json.loads(row[0])
+    except Exception as _e:
+        log.debug("Conv-SQLite recover: %s", _e)
+    return None
+
+
+def _conv_delete(call_sid: str) -> None:
+    """Entfernt abgeschlossenen Anruf aus SQLite."""
+    try:
+        conn = _conv_db_init()
+        conn.execute("DELETE FROM active_calls WHERE call_sid=?", (call_sid,))
+        conn.commit()
+        conn.close()
+    except Exception as _e:
+        log.debug("Conv-SQLite delete: %s", _e)
 
 SOFIA_SYSTEM = """Du bist Sofia, eine selbstbewusste deutschsprachige Verkäuferin von AIITEC (ineedit.com.co).
 Dein Ziel: Bedarf verstehen → passendes Smart-Home/Tech-Produkt empfehlen → Kauf abschließen.
@@ -56,8 +119,16 @@ def _process_reply(conv: dict, reply: str) -> str:
     """Kaufsignal erkennen, Marker entfernen, History speichern."""
     if "[KAUFSIGNAL]" in reply or "[SMS_SENDEN]" in reply:
         conv["buy_signal"] = True
-        for prod in ["Solar", "Kamera", "Thermostat", "Rasenmäher", "LED", "Starter"]:
-            if prod in reply:
+        # Spezifischere Fragmente zuerst — verhindert Fehlzuordnungen bei ähnlichen Namen
+        for prod in [
+            "Roboter-Rasenmäher", "Rasenmäher",
+            "Balkonkraftwerk", "Solar",
+            "Sicherheitskamera", "Kamera",
+            "Thermostat",
+            "Starter Set", "Starter",
+            "LED System", "LED",
+        ]:
+            if prod.lower() in reply.lower():
                 conv["product"] = prod
                 break
     clean = re.sub(r'\[KAUFSIGNAL\]|\[SMS_SENDEN\]', '', reply).strip()
@@ -67,6 +138,12 @@ def _process_reply(conv: dict, reply: str) -> str:
 
 async def _ai_response(call_sid: str, user_text: str) -> str:
     """Generiert Sofia-Antwort über zentralen ai_client (Ollama → Groq → Anthropic)."""
+    # Nach Railway-Restart: Gespräch aus SQLite wiederherstellen
+    if call_sid not in _conversations:
+        recovered = _conv_recover(call_sid)
+        if recovered:
+            log.info("Sofia [%s] Gespräch aus SQLite wiederhergestellt nach Restart", call_sid)
+            _conversations[call_sid] = recovered
     conv = _conversations.setdefault(call_sid, {"history": [], "buy_signal": False, "product": None})
     conv["history"].append({"role": "user", "content": user_text})
 
@@ -81,12 +158,15 @@ async def _ai_response(call_sid: str, user_text: str) -> str:
         from modules.ai_client import ai_complete
         reply = await ai_complete(prompt, system=SOFIA_SYSTEM, model_hint="fast", max_tokens=120)
         if reply:
-            return _process_reply(conv, reply.strip())
+            result = _process_reply(conv, reply.strip())
+            _conv_save(call_sid)
+            return result
     except Exception as e:
         log.warning("Sofia ai_complete: %s", e)
 
     fallback = "Entschuldigung, einen Moment bitte. Könnten Sie das wiederholen?"
     conv["history"].append({"role": "assistant", "content": fallback})
+    _conv_save(call_sid)
     return fallback
 
 
@@ -119,6 +199,7 @@ async def handle_incoming_call(call_sid: str, from_number: str) -> str:
         "history": [], "buy_signal": False, "product": None,
         "from": from_number, "start": time.time(),
     }
+    _conv_save(call_sid)
     greeting = "AIITEC, guten Tag, hier ist Sofia. Was kann ich für Sie tun?"
     return _twiml_gather(greeting, call_sid, timeout=6)
 
@@ -156,7 +237,10 @@ async def handle_call_status(call_sid: str, call_status: str, duration: int) -> 
     if call_status not in ("completed", "busy", "no-answer"):
         return
 
-    conv = _conversations.pop(call_sid, {})
+    conv = _conversations.pop(call_sid, None)
+    if conv is None:
+        conv = _conv_recover(call_sid) or {}
+    _conv_delete(call_sid)
     from_number = conv.get("from", "")
     buy_signal  = conv.get("buy_signal", False)
     product     = conv.get("product", "Smart Home Produkt")
@@ -201,18 +285,25 @@ async def _post_call_actions(call_sid: str, sms_now: bool = False) -> None:
 
 
 def _get_stripe_payment_link(product_name: str) -> str:
-    """Gibt vorkonfigurierten Stripe Payment Link zurück (aus .env)."""
-    # Mapping Produktname → STRIPE_LINK_* env var
-    link_map = {
-        "Solar":      "STRIPE_PAYMENT_LINK_AUTOMATON_SUITE",
-        "Kamera":     "STRIPE_LINK_PRO",
-        "Thermostat": "STRIPE_LINK_PRO",
-        "Rasenmäher": "STRIPE_LINK_ENTERPRISE",
-        "LED":        "STRIPE_LINK_STARTER",
-        "Starter":    "STRIPE_LINK_STARTER",
-    }
-    for key_fragment, env_var in link_map.items():
-        if key_fragment in product_name:
+    """Gibt vorkonfigurierten Stripe Payment Link zurück (aus .env).
+    Reihenfolge: spezifischere Fragmente zuerst — kein Fehlmatch bei Substring-Überschneidungen.
+    """
+    link_map = [
+        ("Roboter-Rasenmäher", "STRIPE_LINK_ENTERPRISE"),
+        ("Rasenmäher",         "STRIPE_LINK_ENTERPRISE"),
+        ("Balkonkraftwerk",    "STRIPE_PAYMENT_LINK_AUTOMATON_SUITE"),
+        ("Solar",              "STRIPE_PAYMENT_LINK_AUTOMATON_SUITE"),
+        ("Sicherheitskamera",  "STRIPE_LINK_PRO"),
+        ("Kamera",             "STRIPE_LINK_PRO"),
+        ("Thermostat",         "STRIPE_LINK_PRO"),
+        ("Starter Set",        "STRIPE_LINK_STARTER"),
+        ("Starter",            "STRIPE_LINK_STARTER"),
+        ("LED System",         "STRIPE_LINK_STARTER"),
+        ("LED",                "STRIPE_LINK_STARTER"),
+    ]
+    name_lower = product_name.lower()
+    for key_fragment, env_var in link_map:
+        if key_fragment.lower() in name_lower:
             link = os.getenv(env_var)
             if link:
                 return link

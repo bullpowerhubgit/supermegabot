@@ -183,7 +183,22 @@ async def _post_instagram(session: aiohttp.ClientSession, caption: str,
                 return {"ok": False, "error": d.get("error", {}).get("message", str(d))}
             container_id = d["id"]
 
-        await asyncio.sleep(3)
+        # Warten bis Instagram Container-Processing abgeschlossen ist (max 60s)
+        for _attempt in range(6):
+            await asyncio.sleep(10)
+            async with session.get(
+                f"{GRAPH}/{container_id}",
+                params={"fields": "status_code", "access_token": FB_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r_status:
+                status_data = await r_status.json()
+            sc = status_data.get("status_code", "")
+            if sc == "FINISHED":
+                break
+            if sc == "ERROR":
+                log.warning("Instagram container processing error: %s", status_data)
+                return {"ok": False, "error": f"container_error: {status_data}"}
+            # IN_PROGRESS oder PUBLISHED — weiter warten
 
         # Step 2: publish
         url2 = f"{GRAPH}/{IG_ID}/media_publish"
@@ -286,6 +301,10 @@ async def _post_pinterest(session: aiohttp.ClientSession, caption: str,
 
 # ── Main cycle ────────────────────────────────────────────────────────────────
 async def run_autopilot_cycle() -> dict:
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.info("Social Autopilot pausiert (SOCIAL_POSTING_PAUSED gesetzt)")
+        return {"ok": False, "error": "posting_paused", "posted": 0}
+
     results = []
     async with aiohttp.ClientSession() as session:
         product = await _get_shopify_product(session)
@@ -296,6 +315,20 @@ async def run_autopilot_cycle() -> dict:
         image_url = product["images"][0]["src"]
         handle = product.get("handle", "")
         shop_link = f"https://{SHOP_DOMAIN}/products/{handle}" if SHOP_DOMAIN else ""
+
+        # ── Content Quality Gate ─────────────────────────────────────────────
+        try:
+            from modules.content_quality_gate import is_content_valid, sanitize_content
+            check_payload = {"title": title, "body": title}
+            check_payload, problems = sanitize_content(check_payload, title)
+            if problems:
+                log.warning("ContentGate Probleme: %s", problems)
+            if not is_content_valid(check_payload, title):
+                log.error("ContentGate BLOCKIERT Social-Autopilot Post: %s", problems)
+                return {"ok": False, "error": f"quality_gate: {problems}", "posted": 0}
+        except ImportError:
+            pass
+        # ────────────────────────────────────────────────────────────────────
 
         # Generate captions for each platform in parallel
         captions = await asyncio.gather(

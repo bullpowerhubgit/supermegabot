@@ -48,7 +48,7 @@ def _reddit_secret()   -> str: return os.getenv("REDDIT_CLIENT_SECRET", "")
 def _tg_token()        -> str: return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat()         -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _gumroad_token()   -> str: return os.getenv("GUMROAD_ACCESS_TOKEN", "")
-def _ig_token()        -> str: return os.getenv("FACEBOOK_IG_ACCESS_TOKEN", os.getenv("FACEBOOK_META_TOKEN", ""))
+def _ig_token()        -> str: return os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", os.getenv("FACEBOOK_IG_ACCESS_TOKEN", os.getenv("FACEBOOK_META_TOKEN", "")))
 def _ig_account_id()   -> str: return os.getenv("INSTAGRAM_BUSINESS_ACCOUNT_ID", "17841478315197796")
 
 # Cooldowns in seconds
@@ -574,6 +574,10 @@ async def create_gumroad_product() -> Dict:
 # ── Main orchestrator ─────────────────────────────────────────────────────────
 
 async def run_promo_cycle(top_products: Optional[List[Dict]] = None) -> Dict:
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.info("ViralPromoPoster pausiert (SOCIAL_POSTING_PAUSED gesetzt)")
+        return {"angle": "paused", "platforms": [], "posted_count": 0, "errors": ["posting_paused"]}
+
     _init_db()
 
     # Load top products from viral scanner if not provided
@@ -588,6 +592,23 @@ async def run_promo_cycle(top_products: Optional[List[Dict]] = None) -> Dict:
 
     angle = random.choice(_ANGLES)
     results: Dict[str, object] = {"angle": angle, "platforms": [], "posted_count": 0, "errors": []}
+
+    # ── Content Quality Gate ────────────────────────────────────────────────
+    try:
+        from modules.content_quality_gate import is_content_valid, sanitize_content
+        if top_products:
+            product_name = top_products[0].get("keyword", "")
+            check_payload = {"title": product_name, "body": product_name}
+            check_payload, problems = sanitize_content(check_payload, product_name)
+            if problems:
+                log.warning("ContentGate Probleme: %s", problems)
+            if product_name and not is_content_valid(check_payload, product_name):
+                log.error("ContentGate BLOCKIERT ViralPromoPoster: %s", problems)
+                results["errors"].append(f"quality_gate: {problems}")
+                return results
+    except ImportError:
+        pass
+    # ────────────────────────────────────────────────────────────────────────
 
     # ── Telegram ──────────────────────────────────────────────────────────────
     if _cooldown_ok("telegram", "main"):
