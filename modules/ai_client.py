@@ -188,13 +188,20 @@ async def _alert_all_failed() -> None:
 
 # ── Health Monitor (Background Task) ──────────────────────────────────────────
 async def _health_monitor() -> None:
-    """Läuft permanent alle 5 Minuten — testet alle deaktivierten Provider."""
+    """Läuft permanent — testet alle deaktivierten Provider.
+    Normal: alle 5 min. Wenn alle ausgefallen: alle 60s (Schnell-Recovery)."""
     global _monitor_running
     _monitor_running = True
     log.info("APIHunt: Health Monitor gestartet")
     while True:
         try:
-            await asyncio.sleep(300)  # alle 5 min
+            # Schnell-Recovery wenn alle Provider deaktiviert
+            all_blocked = all(
+                _CB.get(p, {}).get("until", 0) > time.time()
+                for p in ["Groq", "DeepSeek", "OpenRouter", "Gemini", "Anthropic", "OpenAI", "Perplexity"]
+            )
+            interval = 60 if all_blocked else 300
+            await asyncio.sleep(interval)
             await _probe_all_providers()
         except asyncio.CancelledError:
             break
@@ -703,6 +710,11 @@ async def _ai_complete_inner(
         _last_all_failed_log = now
         log.error("APIHunt: ALLE Provider ausgefallen!")
         asyncio.ensure_future(_alert_all_failed())
+        # Notfall: alle CB-States sofort zurücksetzen damit nächster Call Provider neu versucht
+        for p in list(_CB.keys()):
+            _CB[p]["until"] = 0.0
+            _CB[p]["fails"] = 0
+        log.warning("APIHunt: CB-Reset erzwungen — alle Provider reaktiviert für nächsten Versuch")
     return ""
 
 
