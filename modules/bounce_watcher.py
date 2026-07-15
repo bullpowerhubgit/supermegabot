@@ -241,14 +241,9 @@ def _imap_scan_account(acc) -> List[dict]:
 # ── Telegram ──────────────────────────────────────────────────────────────────
 
 async def _tg(text: str) -> None:
-    if not TG_BOT or not TG_CHAT:
-        return
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-            await s.post(
-                f"https://api.telegram.org/bot{TG_BOT}/sendMessage",
-                json={"chat_id": TG_CHAT, "text": text[:4000], "parse_mode": "Markdown"},
-            )
+        from modules.telegram_throttle import send as tg_send
+        await tg_send(text)
     except Exception:
         pass
 
