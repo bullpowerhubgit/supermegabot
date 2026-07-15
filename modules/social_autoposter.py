@@ -58,7 +58,7 @@ async def _post_with_retry(
     for attempt in range(max_retries):
         async with session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=30)) as r:
             last_status = r.status
-            last_resp = await r.json()
+            last_resp = await r.json(content_type=None)
         if last_status != 429:
             break
         if attempt < max_retries - 1:
@@ -179,7 +179,7 @@ async def post_photo_to_facebook(message: str, image_url: str) -> dict:
     try:
         async with aiohttp.ClientSession() as s:
             async with s.post(url, data=data, timeout=aiohttp.ClientTimeout(total=20)) as r:
-                resp = await r.json()
+                resp = await r.json(content_type=None)
         if "id" in resp or "post_id" in resp:
             return {"ok": True, "platform": "facebook", "post_id": resp.get("post_id", resp.get("id"))}
         return {"ok": False, "platform": "facebook", "error": resp.get("error", {}).get("message", str(resp))}
@@ -253,7 +253,7 @@ async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
                 },
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
-                container = await r.json()
+                container = await r.json(content_type=None)
             container_id = container.get("id")
             if not container_id:
                 return {"ok": False, "platform": "instagram", "error": container.get("error", {}).get("message", str(container))}
@@ -265,7 +265,7 @@ async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
                     f"{GRAPH}/{container_id}",
                     params={"fields": "status_code", "access_token": FB_TOKEN},
                 ) as r:
-                    status = await r.json()
+                    status = await r.json(content_type=None)
                 if status.get("status_code") == "FINISHED":
                     break
 
@@ -274,7 +274,7 @@ async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
                 data={"creation_id": container_id, "access_token": FB_TOKEN},
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
-                publish = await r.json()
+                publish = await r.json(content_type=None)
 
         if "id" in publish:
             return {"ok": True, "platform": "instagram_reel", "post_id": publish["id"]}
@@ -321,15 +321,16 @@ async def post_to_linkedin(text: str, link: str = "") -> dict:
                 json=payload,
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
-                resp = await r.json()
-        if r.status in (200, 201):
+                resp = await r.json(content_type=None)
+                status = r.status
+        if status in (200, 201):
             post_id = resp.get("id", "")
             log.info("LinkedIn post OK: %s", post_id)
             register_posted(text, "linkedin")
             return {"ok": True, "platform": "linkedin", "post_id": post_id}
-        if r.status == 429:
+        if status == 429:
             return {"ok": False, "platform": "linkedin", "error": "Rate Limit (429) — täglich max ~25 Posts"}
-        err = resp.get("message", str(resp))
+        err = resp.get("message", str(resp)) if isinstance(resp, dict) else str(resp)
         return {"ok": False, "platform": "linkedin", "error": err}
     except Exception as e:
         return {"ok": False, "platform": "linkedin", "error": str(e)}
@@ -346,8 +347,8 @@ async def get_linkedin_stats() -> dict:
                 headers={"Authorization": f"Bearer {LI_TOKEN}"},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
-                data = await r.json()
-        if "name" in data:
+                data = await r.json(content_type=None)
+        if isinstance(data, dict) and "name" in data:
             return {"ok": True, "name": data.get("name"), "email": data.get("email")}
         return {"ok": False, "error": str(data)[:80]}
     except Exception as e:
@@ -366,7 +367,7 @@ async def get_youtube_stats() -> dict:
                 params={"part": "snippet,statistics", "id": YT_CHANNEL, "key": YT_KEY},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                data = await r.json()
+                data = await r.json(content_type=None)
         items = data.get("items", [])
         if not items:
             return {"ok": False, "error": "Kanal nicht gefunden"}
@@ -395,7 +396,7 @@ async def get_instagram_stats() -> dict:
                 params={"fields": "username,followers_count,media_count", "access_token": FB_TOKEN},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                data = await r.json()
+                data = await r.json(content_type=None)
         if "error" in data:
             return {"ok": False, "error": data["error"].get("message")}
         return {
@@ -420,7 +421,7 @@ async def get_facebook_stats() -> dict:
                 params={"fields": "name,fan_count,followers_count", "access_token": FB_TOKEN},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                data = await r.json()
+                data = await r.json(content_type=None)
         if "error" in data:
             return {"ok": False, "error": data["error"].get("message")}
         return {
