@@ -60,10 +60,10 @@ def _coordinator_send(from_agent: str, payload: dict, to_agent: str = "all", msg
         log.debug("Coordinator unavailable: %s", e)
 
 
-async def _supabase_upsert(table: str, data: dict) -> None:
+async def _supabase_upsert(table: str, data: dict, on_conflict: str = "id") -> None:
     try:
         from modules.supabase_client import get_client
-        get_client().table(table).upsert(data, on_conflict="id").execute()
+        get_client().table(table).upsert(data, on_conflict=on_conflict).execute()
     except Exception as e:
         log.debug("Supabase upsert Fehler: %s", e)
 
@@ -135,7 +135,7 @@ async def trigger_post_call_cascade(
         "buying_signal": buying_signal,
         "notes":         transcript[:500] if transcript else "",
         "created_at":    now,
-    }))
+    }, on_conflict="call_sid"))
 
     # ── 3. Kurze Anrufe (<30s) — nur loggen ──────────────────────────────────
     if duration < 30:

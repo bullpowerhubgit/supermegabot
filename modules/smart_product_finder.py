@@ -26,6 +26,7 @@ from urllib.parse import quote_plus, urljoin
 import aiohttp
 from dotenv import load_dotenv
 from modules.ai_client import ai_complete
+from modules.product_gatekeeper import validate_product
 
 load_dotenv()
 log = logging.getLogger(__name__)
@@ -343,6 +344,17 @@ async def _create_shopify_product(session: aiohttp.ClientSession, product: dict)
     if price_vk < 9.99:
         price_vk = 9.99
 
+    # Gatekeeper-Check — verhindert Fake/Junk-Produkte unabhaengig vom KI-Gate
+    ok_gate, reason = validate_product(
+        title=title,
+        vendor="iNeedit",
+        product_type=niche,
+        price=price_ek,
+    )
+    if not ok_gate:
+        log.warning("Gatekeeper blockiert Produkt: %s — %s", title[:60], reason)
+        return False
+
     # Tags aus Nische ableiten
     niche_tags = {
         "Smart Home": ["smart-home", "smart", "alexa", "wifi"],
@@ -394,15 +406,24 @@ async def _create_shopify_product(session: aiohttp.ClientSession, product: dict)
         }
     }
     url = f"https://{SHOP}/admin/api/{API_VER}/products.json"
-    try:
-        async with session.post(url, headers=HEADERS, json=payload, timeout=TIMEOUT) as r:
-            if r.status == 429:
-                await asyncio.sleep(3)
-                return False
-            return r.status in (200, 201)
-    except Exception as e:
-        log.debug("Shopify create Fehler: %s", e)
-        return False
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            async with session.post(url, headers=HEADERS, json=payload, timeout=TIMEOUT) as r:
+                if r.status == 429:
+                    retry_after = int(r.headers.get("Retry-After", 10))
+                    log.warning(
+                        "Shopify 429 — warte %ds (Versuch %d/%d): %s",
+                        retry_after, attempt + 1, max_retries, title[:60],
+                    )
+                    await asyncio.sleep(retry_after)
+                    continue
+                return r.status in (200, 201)
+        except Exception as e:
+            log.debug("Shopify create Fehler: %s", e)
+            return False
+    log.warning("Shopify create nach %d Versuchen fehlgeschlagen: %s", max_retries, title[:60])
+    return False
 
 
 # ── Haupt-Pipeline ────────────────────────────────────────────────────────────

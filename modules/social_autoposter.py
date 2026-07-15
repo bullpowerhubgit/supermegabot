@@ -29,7 +29,7 @@ import aiohttp
 log = logging.getLogger("SocialAutoPoster")
 
 # ── Credentials ────────────────────────────────────────────────────────────
-FB_TOKEN   = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC") or os.getenv("FACEBOOK_PAGE_TOKEN") or os.getenv("META_ACCESS_TOKEN", "")
+FB_TOKEN   = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", "")  # NUR AiiteC-Token — kein Fallback auf anderen Token
 FB_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
 IG_ID      = os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
 LI_TOKEN   = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
@@ -43,6 +43,30 @@ SHOP_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}"
 DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 
 STATE_FILE = Path(__file__).parent.parent / "data" / "social_autoposter_state.json"
+
+
+# ── HTTP Helper: POST mit exponentiellem Backoff bei 429 ─────────────────────
+async def _post_with_retry(
+    session: aiohttp.ClientSession,
+    url: str,
+    data: dict,
+    max_retries: int = 3,
+) -> tuple[int, dict]:
+    """POST mit exponentiellem Backoff bei Meta-Rate-Limit (429): 60s, 120s, 240s."""
+    backoff = [60, 120, 240]
+    last_status, last_resp = 0, {}
+    for attempt in range(max_retries):
+        async with session.post(url, data=data, timeout=aiohttp.ClientTimeout(total=30)) as r:
+            last_status = r.status
+            last_resp = await r.json()
+        if last_status != 429:
+            break
+        if attempt < max_retries - 1:
+            wait = backoff[attempt]
+            log.warning("Rate Limit 429 — warte %ds (Versuch %d/%d)", wait, attempt + 1, max_retries)
+            await asyncio.sleep(wait)
+    return last_status, last_resp
+
 
 # ── Content Templates (DE + EN) ─────────────────────────────────────────────
 _TEMPLATES_DE = [
@@ -124,18 +148,20 @@ async def post_to_facebook(message: str, image_url: str = "", link: str = "") ->
         log.warning("Post Guardian blockiert FB-Post: %s", errors)
         return {"ok": False, "platform": "facebook", "blocked": True, "errors": errors}
     if not FB_TOKEN:
-        return {"ok": False, "platform": "facebook", "error": "FACEBOOK_PAGE_TOKEN nicht gesetzt"}
+        return {"ok": False, "platform": "facebook", "error": "FACEBOOK_PAGE_TOKEN_AIITEC nicht gesetzt — Post abgebrochen"}
     url = f"{GRAPH}/{FB_PAGE_ID}/feed"
     data: dict = {"message": message, "access_token": FB_TOKEN}
     if link:
         data["link"] = link
     try:
         async with aiohttp.ClientSession() as s:
-            async with s.post(url, data=data, timeout=aiohttp.ClientTimeout(total=20)) as r:
-                resp = await r.json()
+            status, resp = await _post_with_retry(s, url, data)
+        if status == 429:
+            return {"ok": False, "platform": "facebook", "error": "Rate Limit (429) — warte vor erneutem Post"}
         if "id" in resp:
             post_id = resp["id"]
             log.info("FB post OK: %s", post_id)
+            register_posted(message, "facebook")
             return {"ok": True, "platform": "facebook", "post_id": post_id}
         err = resp.get("error", {}).get("message", str(resp))
         log.warning("FB post Fehler: %s", err)
@@ -174,31 +200,36 @@ async def post_to_instagram(caption: str, image_url: str) -> dict:
         log.warning("Post Guardian blockiert IG-Post: %s", errors)
         return {"ok": False, "platform": "instagram", "blocked": True, "errors": errors}
     if not FB_TOKEN or not IG_ID:
-        return {"ok": False, "platform": "instagram", "error": "INSTAGRAM_ACCOUNT_ID oder FB_TOKEN fehlt"}
+        return {"ok": False, "platform": "instagram", "error": "INSTAGRAM_ACCOUNT_ID oder FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
+    if not image_url:
+        return {"ok": False, "platform": "instagram", "error": "image_url ist erforderlich — IG akzeptiert keine Text-Only Posts"}
     try:
         async with aiohttp.ClientSession() as s:
             # Schritt 1: Media Container erstellen
-            async with s.post(
+            status1, container = await _post_with_retry(
+                s,
                 f"{GRAPH}/{IG_ID}/media",
-                data={"image_url": image_url, "caption": caption, "access_token": FB_TOKEN},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                container = await r.json()
+                {"image_url": image_url, "caption": caption, "access_token": FB_TOKEN},
+            )
+            if status1 == 429:
+                return {"ok": False, "platform": "instagram", "error": "Rate Limit (429) — warte vor erneutem Post"}
             container_id = container.get("id")
             if not container_id:
                 err = container.get("error", {}).get("message", str(container))
                 return {"ok": False, "platform": "instagram", "error": f"Container: {err}"}
 
             # Schritt 2: Container publishen
-            async with s.post(
+            status2, publish = await _post_with_retry(
+                s,
                 f"{GRAPH}/{IG_ID}/media_publish",
-                data={"creation_id": container_id, "access_token": FB_TOKEN},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                publish = await r.json()
+                {"creation_id": container_id, "access_token": FB_TOKEN},
+            )
+            if status2 == 429:
+                return {"ok": False, "platform": "instagram", "error": "Rate Limit (429) — warte vor erneutem Post"}
 
         if "id" in publish:
             log.info("IG post OK: %s", publish["id"])
+            register_posted(caption, "instagram")
             return {"ok": True, "platform": "instagram", "post_id": publish["id"]}
         err = publish.get("error", {}).get("message", str(publish))
         return {"ok": False, "platform": "instagram", "error": err}
@@ -294,6 +325,7 @@ async def post_to_linkedin(text: str, link: str = "") -> dict:
         if r.status in (200, 201):
             post_id = resp.get("id", "")
             log.info("LinkedIn post OK: %s", post_id)
+            register_posted(text, "linkedin")
             return {"ok": True, "platform": "linkedin", "post_id": post_id}
         if r.status == 429:
             return {"ok": False, "platform": "linkedin", "error": "Rate Limit (429) — täglich max ~25 Posts"}
@@ -441,7 +473,8 @@ async def post_to_all(
             await _tg(f"🚫 <b>PostGuard blockiert Post</b>\nGrund: {reason}\n\nText: <i>{message[:200]}</i>")
             return {"ok": False, "blocked": True, "reason": reason}
     except ImportError:
-        log.warning("PostGuard nicht verfügbar — Post ohne Check")
+        log.error("PostGuard (modules.post_guard) nicht importierbar — Post abgebrochen")
+        return {"ok": False, "blocked": True, "reason": "PostGuard nicht verfügbar — Post abgebrochen"}
 
     active = platforms or ["facebook"]
     if image_url and "instagram" not in active:

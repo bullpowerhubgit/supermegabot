@@ -19,19 +19,24 @@ import aiohttp
 
 log = logging.getLogger("Sofia")
 
-TWILIO_SID    = os.getenv("TWILIO_ACCOUNT_SID", "")
-TWILIO_TOKEN  = os.getenv("TWILIO_AUTH_TOKEN", "")
-TWILIO_PHONE  = os.getenv("TWILIO_PHONE_NUMBER", "")
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-TELEGRAM_BOT  = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT = os.getenv("TELEGRAM_CHAT_ID", "")
-STRIPE_KEY    = os.getenv("STRIPE_SECRET_KEY", "")
-SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
-BASE_URL      = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN', 'supermegabot-production.up.railway.app')}"
+TWILIO_SID           = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_TOKEN         = os.getenv("TWILIO_AUTH_TOKEN", "")
+TWILIO_PHONE         = os.getenv("TWILIO_PHONE_NUMBER", "")
+TWILIO_WHATSAPP_FROM = os.getenv("TWILIO_WHATSAPP_FROM", "")
+ANTHROPIC_KEY        = os.getenv("ANTHROPIC_API_KEY", "")
+TELEGRAM_BOT         = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")
+STRIPE_KEY           = os.getenv("STRIPE_SECRET_KEY", "")
+SHOP_URL             = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
+BASE_URL             = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN', 'supermegabot-production.up.railway.app')}"
 
 # In-memory Gesprächsspeicher (Call-SID → Verlauf)
 # Primär In-Memory für niedrige Latenz; SQLite als Persistenz-Backup bei Server-Restart.
 _conversations: Dict[str, dict] = {}
+
+# Deduplication: Nummern die bereits eine SMS/WhatsApp erhalten haben (In-Memory).
+# Verhindert Doppel-SMS bei Twilio-Retries oder Mehrfach-Anrufen.
+_sms_sent: set = set()
 
 _CONV_DB = Path(__file__).parent.parent / "data" / "sofia_conversations.db"
 
@@ -255,8 +260,10 @@ async def handle_call_status(call_sid: str, call_status: str, duration: int) -> 
     # Telegram-Alert immer
     asyncio.create_task(_send_telegram_alert(from_number, duration, buy_signal, product, history))
 
-    # Multi-Agenten-Cascade
-    if duration >= 30:
+    # Multi-Agenten-Cascade — IMMER für abgeschlossene Anrufe, auch < 30s.
+    # Die Dauer-Logik liegt im Hub (sofia_agent_hub.py); kurze Anrufe (Aufhänger,
+    # Falschanruf) werden dort minimal geloggt statt hier verloren zu gehen.
+    if call_status == "completed":
         try:
             from modules.sofia_agent_hub import trigger_post_call_cascade
             transcript = "\n".join(
@@ -312,35 +319,97 @@ def _get_stripe_payment_link(product_name: str) -> str:
 
 
 async def _send_post_call_sms(to_number: str, product: str, buy_signal: bool) -> None:
-    """Sendet SMS mit Payment Link nach dem Anruf."""
-    if not TWILIO_SID or not TWILIO_TOKEN or not TWILIO_PHONE:
-        log.warning("Sofia SMS: Twilio nicht konfiguriert")
+    """Sendet WhatsApp (bevorzugt) oder SMS mit Payment Link nach dem Anruf.
+
+    Schutz:
+    - Deduplication via _sms_sent (in-memory): verhindert Doppel-Nachrichten bei
+      Twilio-Retries oder Mehrfach-Anrufen derselben Nummer.
+    - Placeholder-Produkt: Wenn kein echtes Produkt bekannt, generischer Katalog-Link
+      ohne internen Fallback-String ("Smart Home Produkt") in der Kunden-Nachricht.
+    - WhatsApp-first: Wenn TWILIO_WHATSAPP_FROM konfiguriert, wird WhatsApp versucht;
+      bei Fehler automatischer Fallback auf klassische SMS.
+    """
+    if not TWILIO_SID or not TWILIO_TOKEN:
+        log.warning("Sofia Nachricht: Twilio nicht konfiguriert")
+        return
+
+    # Issue 4: Deduplication — keine Doppel-Nachricht an dieselbe Nummer
+    if to_number in _sms_sent:
+        log.info("Sofia Dedup: Nachricht für %s bereits gesendet, überspringe", to_number)
         return
 
     payment_url = _get_stripe_payment_link(product)
-    sms_text = (
-        f"Hallo! Hier ist Sofia von AIITEC 🏠\n"
-        f"Ihr persönlicher Link für {product}:\n"
-        f"{payment_url}\n"
-        f"Fragen? Rufen Sie uns an: {TWILIO_PHONE}"
-    )
 
-    try:
-        async with aiohttp.ClientSession(
-            auth=aiohttp.BasicAuth(TWILIO_SID, TWILIO_TOKEN),
-            timeout=aiohttp.ClientTimeout(total=10),
-        ) as s:
-            async with s.post(
-                f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_SID}/Messages.json",
-                data={"From": TWILIO_PHONE, "To": to_number, "Body": sms_text},
-            ) as r:
-                data = await r.json()
-                if r.status == 201:
-                    log.info("Sofia SMS ✅ → %s: %s", to_number, payment_url)
-                else:
-                    log.warning("Sofia SMS failed %s: %s", r.status, data.get("message",""))
-    except Exception as e:
-        log.warning("Sofia SMS error: %s", e)
+    # Issue 3: Placeholder-Schutz — nie "Smart Home Produkt" dem Kunden zeigen
+    _placeholder = "Smart Home Produkt"
+    product_is_known = product and product != _placeholder
+    if product_is_known:
+        sms_text = (
+            f"Hallo! Hier ist Sofia von AIITEC.\n"
+            f"Ihr persönlicher Link für {product}:\n"
+            f"{payment_url}\n"
+            f"Fragen? Rufen Sie uns an: {TWILIO_PHONE}"
+        )
+    else:
+        # Kein konkretes Produkt bekannt → generischer Katalog-Link
+        catalog_url = f"{SHOP_URL}/collections/smart-home"
+        sms_text = (
+            f"Hallo! Hier ist Sofia von AIITEC.\n"
+            f"Schauen Sie sich unser aktuelles Angebot an:\n"
+            f"{catalog_url}\n"
+            f"Fragen? Rufen Sie uns an: {TWILIO_PHONE}"
+        )
+        payment_url = catalog_url
+
+    # Issue 2: WhatsApp zuerst, SMS als Fallback
+    sent_via: Optional[str] = None
+    if TWILIO_WHATSAPP_FROM:
+        try:
+            import base64
+            wa_to = f"whatsapp:{to_number}" if not to_number.startswith("whatsapp:") else to_number
+            auth_header = base64.b64encode(f"{TWILIO_SID}:{TWILIO_TOKEN}".encode()).decode()
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+                async with s.post(
+                    f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_SID}/Messages.json",
+                    data={"From": TWILIO_WHATSAPP_FROM, "To": wa_to, "Body": sms_text},
+                    headers={"Authorization": f"Basic {auth_header}"},
+                ) as r:
+                    if r.status in (200, 201):
+                        sent_via = "whatsapp"
+                        log.info("Sofia WhatsApp ✅ → %s: %s", to_number, payment_url)
+                    else:
+                        data = await r.json()
+                        log.warning("Sofia WhatsApp failed %s: %s — falle auf SMS zurück",
+                                    r.status, data.get("message", ""))
+        except Exception as e:
+            log.warning("Sofia WhatsApp error: %s — falle auf SMS zurück", e)
+
+    # SMS-Fallback wenn WhatsApp nicht konfiguriert oder fehlgeschlagen
+    if sent_via is None:
+        if not TWILIO_PHONE:
+            log.warning("Sofia SMS: TWILIO_PHONE_NUMBER nicht konfiguriert")
+            return
+        try:
+            async with aiohttp.ClientSession(
+                auth=aiohttp.BasicAuth(TWILIO_SID, TWILIO_TOKEN),
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as s:
+                async with s.post(
+                    f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_SID}/Messages.json",
+                    data={"From": TWILIO_PHONE, "To": to_number, "Body": sms_text},
+                ) as r:
+                    data = await r.json()
+                    if r.status == 201:
+                        sent_via = "sms"
+                        log.info("Sofia SMS ✅ → %s: %s", to_number, payment_url)
+                    else:
+                        log.warning("Sofia SMS failed %s: %s", r.status, data.get("message", ""))
+        except Exception as e:
+            log.warning("Sofia SMS error: %s", e)
+
+    # Deduplication-Set aktualisieren wenn Nachricht erfolgreich versendet
+    if sent_via:
+        _sms_sent.add(to_number)
 
 
 async def _send_telegram_alert(

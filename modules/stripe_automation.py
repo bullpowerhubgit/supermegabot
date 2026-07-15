@@ -385,6 +385,7 @@ async def handle_webhook_event(event: Dict) -> str:
 
     if etype == "customer.subscription.created":
         plan = ""
+        amount = 0.0
         items = data.get("items", {}).get("data", [])
         customer_email = data.get("customer_email", "?")
         if items:
@@ -392,11 +393,32 @@ async def handle_webhook_event(event: Dict) -> str:
             amount = (price.get("unit_amount", 0) or 0) / 100
             cur    = price.get("currency", "eur").upper()
             plan   = f"{amount:.2f} {cur}/{price.get('recurring', {}).get('interval', '')}"
+        # Map amount to subscription tier (matches checkout.session.completed tiers)
+        if amount <= 55:
+            tier_from_amount = "starter"
+        elif amount <= 110:
+            tier_from_amount = "pro"
+        else:
+            tier_from_amount = "enterprise"
         await _tg(
             f"🔔 <b>Neues Abo</b> — Stripe\n"
             f"Plan: {plan}\n"
             f"Email: {customer_email}"
         )
+        # Activate client in Supabase — handles trial-to-paid and API-created subscriptions
+        # that arrive without a preceding checkout.session.completed event.
+        try:
+            from modules.supabase_client import get_client
+            if customer_email and "@" in str(customer_email):
+                get_client().table("clients").upsert({
+                    "email": customer_email,
+                    "service_active": True,
+                    "subscription_status": "active",
+                    "plan": tier_from_amount,
+                    "updated_at": datetime.now().isoformat(),
+                }, on_conflict="email").execute()
+        except Exception as _e:
+            log.warning("subscription.created Supabase upsert: %s", _e)
         if customer_email and "@" in customer_email:
             asyncio.create_task(_auto_enroll_buyer(customer_email, customer_email.split("@")[0],
                                                     float(plan.split()[0]) if plan else 0,
