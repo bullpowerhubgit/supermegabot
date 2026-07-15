@@ -426,6 +426,20 @@ async def task_github_backup() -> str:
         return f"GitHub Backup: {e}"
 
 
+async def task_bounce_watcher() -> str:
+    """BounceWatcher — scannt alle Gmail-Konten nach Delivery-Fehlern → Blocklist."""
+    try:
+        from modules.bounce_watcher import run_bounce_watcher
+        result = await run_bounce_watcher()
+        return (
+            f"BounceWatcher: {result.get('bounces_found', 0)} Bounces, "
+            f"{result.get('new_blocks', 0)} neu geblockt, "
+            f"{result.get('scanned_accounts', 0)} Konten gescannt"
+        )
+    except Exception as e:
+        return f"BounceWatcher Fehler: {e}"
+
+
 async def task_claude_watchdog() -> str:
     """Claude Guardian — autonomer 6h-Check: Health, Revenue, Errors → Telegram-Report."""
     try:
@@ -7982,6 +7996,7 @@ TASKS = [
     ("buyer_traffic_engine",   task_buyer_traffic_engine,    14400, 4010),  # 4h — Reddit Answers+SEO Blog+Klaviyo+TG+Deals
     # ── Real-time (every few minutes) ────────────────────────────────────────
     ("system_health",           task_system_health,           300,    10),   # 5 min
+    ("bounce_watcher",          task_bounce_watcher,           1800,   25),  # 30 min — Delivery-Fehler scannen
     ("claude_watchdog",         task_claude_watchdog,         21600, 1200),  # 6h — Claude Guardian
     ("railway_health",          task_railway_health,          600,    20),   # 10 min
     ("shopify_orders_alert",    task_shopify_orders_alert,    600,    15),   # 10 min
