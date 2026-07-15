@@ -66,9 +66,36 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenClaw offline: %s — using cloud fallback", e)
 
-    primary = os.getenv("AI_PROVIDER_PRIMARY", "").lower()
+    primary = os.getenv("AI_PROVIDER_PRIMARY", "groq").lower()  # Groq default (kostenlos, kein Credit-Problem)
 
-    # 1. Anthropic (skip on 529 = no credits, 401 = invalid)
+    # 1. Groq — PRIMÄRER PROVIDER (kostenlos, schnell, kein Rate-Limit-Problem bei normaler Nutzung)
+    if _GROQ() and _enabled("GROQ") and primary in ("", "groq"):
+        try:
+            msg_list = messages
+            if system and not any(m.get("role") == "system" for m in messages):
+                msg_list = [{"role": "system", "content": system}] + list(messages)
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                async with s.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_GROQ()}", "Content-Type": "application/json"},
+                    json={"model": _GROQ_MODEL, "max_tokens": max_tokens, "messages": msg_list},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                        if text:
+                            log.debug("Groq OK (primary)")
+                            return text
+                    elif r.status == 429:
+                        log.debug("Groq rate limit — falling back")
+                    elif r.status in (401, 403):
+                        log.debug("Groq key invalid (%s)", r.status)
+                    else:
+                        log.debug("Groq %s", r.status)
+        except Exception as e:
+            log.debug("Groq error: %s", e)
+
+    # 2. Anthropic (nur wenn Credits vorhanden + ANTHROPIC_ENABLED=true)
     if _ANTHROPIC() and _enabled("ANTHROPIC") and primary not in ("openai", "groq", "gemini"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
@@ -89,8 +116,8 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Anthropic error: %s", e)
 
-    # 1b. OpenRouter — PRIORITY FALLBACK (when Anthropic/OpenAI have no credits)
-    if _OPENROUTER():
+    # 3. OpenRouter — Fallback (kostenlose Modelle)
+    if _OPENROUTER() and _enabled("OPENROUTER"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
                 async with s.post(
@@ -109,8 +136,8 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenRouter error: %s", e)
 
-    # 2. OpenAI (primary when AI_PROVIDER_PRIMARY=openai)
-    if _OPENAI() and primary in ("", "openai"):
+    # 4. OpenAI (primary when AI_PROVIDER_PRIMARY=openai)
+    if _OPENAI() and primary in ("openai",):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(
@@ -129,8 +156,8 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenAI error: %s", e)
 
-    # 3. Groq (free tier: llama-3.1-8b-instant — set GROQ_API_KEY from console.groq.com)
-    if _GROQ():
+    # 5. Groq als letzter Fallback (wenn primary != groq aber alle anderen fehlschlagen)
+    if _GROQ() and primary not in ("", "groq"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
                 async with s.post(
@@ -140,11 +167,11 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
-                        text = d["choices"][0]["message"]["content"]
+                        text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
                         if text:
                             return text
                     if r.status in (401, 403):
-                        log.debug("Groq skip (%s) — invalid key", r.status)
+                        log.debug("Groq fallback skip (%s) — invalid key", r.status)
                     else:
                         log.debug("Groq %s", r.status)
         except Exception as e:
