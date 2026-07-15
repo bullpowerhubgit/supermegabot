@@ -107,47 +107,14 @@ def _save_posted(posted: set):
 
 
 async def post_to_linkedin(text: str) -> dict:
-    """Veröffentlicht einen LinkedIn-Post als Person."""
-    try:
-        from modules.post_guard import validate_and_log
-        if not await validate_and_log(text, platform="linkedin"):
-            return {"blocked": True, "reason": "PostGuard: Qualitätsprüfung nicht bestanden"}
-    except Exception:
-        pass
-
-    if not LI_TOKEN or not LI_PERSON_ID:
-        log.info("[DRY-RUN] LinkedIn: %s", text[:80])
-        return {"dry_run": True}
-
-    payload = {
-        "author": f"urn:li:person:{LI_PERSON_ID}",
-        "lifecycleState": "PUBLISHED",
-        "specificContent": {
-            "com.linkedin.ugc.ShareContent": {
-                "shareCommentary": {"text": text},
-                "shareMediaCategory": "NONE",
-            }
-        },
-        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
-    }
-
-    async with aiohttp.ClientSession() as s:
-        async with s.post(
-            "https://api.linkedin.com/v2/ugcPosts",
-            json=payload,
-            headers={
-                "Authorization": f"Bearer {LI_TOKEN}",
-                "Content-Type": "application/json",
-                "X-Restli-Protocol-Version": "2.0.0",
-            },
-            timeout=aiohttp.ClientTimeout(total=15),
-        ) as r:
-            result = await r.json()
-            if r.status in (200, 201):
-                log.info("LinkedIn-Post veröffentlicht: %s", result.get("id"))
-            else:
-                log.warning("LinkedIn Fehler %s: %s", r.status, result)
-            return result
+    """Veröffentlicht einen LinkedIn-Post — via Post Gateway (5-Schicht-Prüfung)."""
+    from modules.post_gateway import safe_post
+    result = await safe_post("linkedin", text, source_module="linkedin_poster")
+    if result.get("ok"):
+        return {"id": result.get("post_id", "ok")}
+    if result.get("blocked"):
+        return {"blocked": True, "reason": " | ".join(result.get("errors", []))}
+    return {"error": " | ".join(result.get("errors", ["Unbekannter Fehler"]))}
 
 
 async def linkedin_posting_loop():

@@ -12305,6 +12305,35 @@ async def create_app():
     app.router.add_get("/api/social/autopilot-status", handle_social_autopilot_status)
     log.info("Social Autopilot routes registered (/api/social/*)")
 
+    # ── Post Gateway Status ────────────────────────────────────────────────────
+    async def handle_post_gateway_stats(request):
+        """GET /api/posts/gateway-stats — Posts gesendet/blockiert/fehlgeschlagen (letzte 24h)."""
+        try:
+            from modules.post_gateway import get_gateway_stats
+            hours = int(request.rel_url.query.get("hours", "24"))
+            return web.json_response(get_gateway_stats(hours=hours))
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_post_gateway_test(request):
+        """POST /api/posts/test — Testpost durch alle Gateway-Schichten."""
+        try:
+            data = await request.json()
+            from modules.post_gateway import safe_post
+            result = await safe_post(
+                platform=data.get("platform", "facebook"),
+                text=data.get("text", ""),
+                image_url=data.get("image_url", ""),
+                source_module="dashboard_test",
+            )
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get("/api/posts/gateway-stats", handle_post_gateway_stats)
+    app.router.add_post("/api/posts/test", handle_post_gateway_test)
+    log.info("Post Gateway routes registered (/api/posts/gateway-stats, /api/posts/test)")
+
     # ── YouTube Autopilot ──────────────────────────────────────────────────
     async def handle_yt_create(request):
         try:
