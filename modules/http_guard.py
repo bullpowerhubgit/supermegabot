@@ -32,6 +32,7 @@ import json
 import logging
 import os
 import re
+import time
 from typing import Any, Optional
 from unittest.mock import patch
 
@@ -42,6 +43,27 @@ from aiohttp.client import _RequestContextManager
 log = logging.getLogger("HttpGuard")
 
 _ACTIVATED = False
+
+# ── Telegram Rate Limiter (global für ALLE aiohttp Telegram-Calls) ────────────
+_TG_MIN_INTERVAL = 3.0   # max 1 Nachricht / 3s (Telegram-Limit: 30/s per group, aber in Praxis 1/3s safe)
+_tg_last_sent: float = 0.0
+_tg_lock = asyncio.Lock()
+_tg_blocked_count: int = 0
+
+
+async def _tg_rate_check() -> bool:
+    """Gibt True zurück wenn Telegram-Call erlaubt ist, False wenn Rate-Limit greift."""
+    global _tg_last_sent, _tg_blocked_count
+    async with _tg_lock:
+        now = time.monotonic()
+        since = now - _tg_last_sent
+        if since >= _TG_MIN_INTERVAL:
+            _tg_last_sent = now
+            return True
+        _tg_blocked_count += 1
+        if _tg_blocked_count % 20 == 1:
+            log.warning("TelegramGuard: %d Nachrichten rate-limitiert (1/%gs Limit)", _tg_blocked_count, _TG_MIN_INTERVAL)
+        return False
 
 # ── Posting-Endpoints die abgefangen werden ───────────────────────────────────
 _SOCIAL_POST_PATTERNS = [
@@ -285,6 +307,19 @@ _original_request = ClientSession._request
 
 async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any):
     url = str(str_or_url)
+
+    # ── Telegram Rate Limiter — greift für ALLE sendMessage Calls ─────────────
+    if method.upper() == "POST" and "api.telegram.org" in url and "sendMessage" in url:
+        allowed = await _tg_rate_check()
+        if not allowed:
+            # Silently drop — kein Exception, kein Crash, nur verwerfen
+            # Gibt einen gefakten 200-Response zurück damit rufende Module nicht crashen
+            log.debug("TelegramGuard: DROP %s (rate limit)", url[:80])
+            raise ClientResponseError(
+                request_info=None, history=(), status=429,
+                message="TelegramGuard: rate limited (1 msg/3s)"
+            )
+
     content_type = _classify_url(url, method)
 
     if content_type:
@@ -330,15 +365,41 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
     return await _original_request(self, method, str_or_url, **kwargs)
 
 
+_tg_urllib_last: float = 0.0
+_tg_urllib_blocked: int = 0
+
+
+def _patch_urllib_telegram() -> None:
+    """Patcht urllib.request.urlopen um Telegram-Calls zu rate-limitieren."""
+    import urllib.request as _urllib
+    _orig_urlopen = _urllib.urlopen
+
+    def _guarded_urlopen(req, *args, **kwargs):
+        global _tg_urllib_last, _tg_urllib_blocked
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        if "api.telegram.org" in url and "sendMessage" in url:
+            now = time.monotonic()
+            if now - _tg_urllib_last < _TG_MIN_INTERVAL:
+                _tg_urllib_blocked += 1
+                if _tg_urllib_blocked % 10 == 1:
+                    log.warning("TelegramGuard(urllib): %d Calls verworfen", _tg_urllib_blocked)
+                raise Exception("TelegramGuard: urllib rate limited")
+            _tg_urllib_last = now
+        return _orig_urlopen(req, *args, **kwargs)
+
+    _urllib.urlopen = _guarded_urlopen
+
+
 def activate() -> None:
     """Aktiviert den HTTP-Guard. Einmalig beim Server-Start aufrufen."""
     global _ACTIVATED
     if _ACTIVATED:
         return
     ClientSession._request = _intercepted_request
+    _patch_urllib_telegram()
     _ACTIVATED = True
     log.info(
-        "HttpGuard AKTIV — %d Social + %d Email + %d SMS + %d Shopify Patterns abgefangen",
+        "HttpGuard AKTIV — %d Social + %d Email + %d SMS + %d Shopify Patterns + Telegram Rate-Limit",
         len(_SOCIAL_POST_PATTERNS),
         len(_EMAIL_POST_PATTERNS),
         len(_SMS_POST_PATTERNS),

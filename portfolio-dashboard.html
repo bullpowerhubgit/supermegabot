@@ -1,0 +1,898 @@
+<title>Rudolf Sarkany — Project Portfolio 2026</title>
+<style>
+:root {
+  --bg:    #04040a;
+  --bg2:   #080812;
+  --bg3:   #0c0c1a;
+  --bg4:   #101020;
+  --bd:    #1c1c35;
+  --bd2:   #252545;
+  --tx:    #bcc0dc;
+  --tx2:   #6a70a0;
+  --tx3:   #404468;
+  --wh:    #ffffff;
+  --live:  #00d97c;
+  --local: #f5c842;
+  --warn:  #f97316;
+  --dead:  #444468;
+  --acc:   #7c3aed;
+  --acc2:  #a855f7;
+  --teal:  #00bcd4;
+  --pink:  #ec4899;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body { background: var(--bg); color: var(--tx); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.55; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; border: none; outline: none; }
+
+/* ─ HEADER ─────────────────────────────────────────────── */
+.hdr { position: sticky; top: 0; z-index: 200; background: rgba(4,4,10,.96); backdrop-filter: blur(16px); border-bottom: 1px solid var(--bd); padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.hdr-logo { font-size: 13px; font-weight: 700; color: var(--wh); font-family: 'SF Mono', 'Fira Code', monospace; white-space: nowrap; letter-spacing: -.3px; }
+.hdr-logo span { color: var(--acc2); }
+.search-wrap { flex: 1; min-width: 160px; max-width: 320px; position: relative; }
+.search { width: 100%; background: var(--bg3); border: 1px solid var(--bd); color: var(--tx); border-radius: 7px; padding: 7px 12px 7px 32px; font-size: 13px; }
+.search:focus { outline: none; border-color: var(--acc2); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--tx3); font-size: 13px; pointer-events: none; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.f-btn { padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; letter-spacing: .4px; background: var(--bg3); border: 1px solid var(--bd); color: var(--tx2); transition: .12s; }
+.f-btn:hover, .f-btn.active { background: var(--acc); border-color: var(--acc); color: #fff; }
+.hdr-stats { display: flex; gap: 16px; margin-left: auto; }
+.hdr-stat { text-align: right; }
+.hdr-stat-n { font-size: 15px; font-weight: 700; color: var(--wh); }
+.hdr-stat-l { font-size: 10px; color: var(--tx3); letter-spacing: .5px; }
+
+/* ─ STATS BAR ───────────────────────────────────────────── */
+.statsbar { display: flex; gap: 0; border-bottom: 1px solid var(--bd); background: var(--bg2); overflow-x: auto; }
+.sbar-item { flex: 1; min-width: 100px; padding: 12px 20px; border-right: 1px solid var(--bd); }
+.sbar-item:last-child { border-right: none; }
+.sbar-n { font-size: 22px; font-weight: 800; color: var(--wh); }
+.sbar-l { font-size: 10px; color: var(--tx3); margin-top: 1px; letter-spacing: .5px; text-transform: uppercase; }
+.dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+.dot-live { background: var(--live); box-shadow: 0 0 6px var(--live); }
+.dot-local { background: var(--local); }
+.dot-warn { background: var(--warn); }
+.dot-dead { background: var(--dead); }
+
+/* ─ MAIN LAYOUT ─────────────────────────────────────────── */
+.main { max-width: 1400px; margin: 0 auto; padding: 24px 20px 80px; }
+.section { margin-bottom: 40px; }
+.sec-hdr { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.sec-badge { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; padding: 3px 10px; border-radius: 4px; text-transform: uppercase; }
+.sec-title { font-size: 13px; font-weight: 700; color: var(--wh); }
+.sec-count { font-size: 11px; color: var(--tx3); margin-left: auto; }
+
+/* ─ CARD GRID ───────────────────────────────────────────── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.card { background: var(--bg3); border: 1px solid var(--bd); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color .15s, transform .15s; position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--card-accent, var(--bd)); }
+.card:hover { border-color: var(--bd2); transform: translateY(-1px); }
+.card-head { display: flex; align-items: flex-start; gap: 8px; }
+.card-status { flex-shrink: 0; margin-top: 4px; }
+.card-info { flex: 1; min-width: 0; }
+.card-title { font-size: 13px; font-weight: 700; color: var(--wh); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-sub { font-size: 11px; color: var(--tx2); margin-top: 2px; }
+.card-desc { font-size: 12px; color: var(--tx2); line-height: 1.5; flex: 1; }
+.card-url { font-size: 10px; font-family: 'SF Mono', 'Fira Code', monospace; color: var(--tx3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 4px 8px; background: var(--bg2); border-radius: 4px; border: 1px solid var(--bd); }
+.card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; transition: .12s; }
+.btn-primary { background: var(--card-accent, var(--acc)); color: #fff; }
+.btn-primary:hover { filter: brightness(1.15); }
+.btn-ghost { background: var(--bg2); border: 1px solid var(--bd); color: var(--tx2); }
+.btn-ghost:hover { border-color: var(--bd2); color: var(--wh); }
+.card-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+.tag { font-size: 9px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: var(--bg4); border: 1px solid var(--bd); color: var(--tx3); text-transform: uppercase; letter-spacing: .5px; }
+
+/* Hidden by filter */
+.card.hidden { display: none; }
+
+/* ─ STRIPE SECTION ──────────────────────────────────────── */
+.stripe-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+.prod-card { background: var(--bg3); border: 1px solid var(--bd); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.prod-title { font-size: 12px; font-weight: 600; color: var(--wh); }
+.prod-meta { display: flex; align-items: center; justify-content: space-between; }
+.prod-status { font-size: 10px; }
+.prod-btn { padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: 600; background: var(--acc); color: #fff; }
+
+/* ─ NETLIFY GRID ────────────────────────────────────────── */
+.netlify-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.netlify-card { background: var(--bg3); border: 1px solid var(--bd); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 10px; transition: .12s; }
+.netlify-card:hover { border-color: var(--bd2); }
+.netlify-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--bg4); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.netlify-info { min-width: 0; flex: 1; }
+.netlify-name { font-size: 12px; font-weight: 600; color: var(--wh); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.netlify-url { font-size: 10px; color: var(--tx3); font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.netlify-visit { padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: 600; background: #0a7a5e; color: #00d97c; flex-shrink: 0; }
+
+/* ─ RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .hdr { padding: 10px 14px; }
+  .hdr-stats { display: none; }
+  .main { padding: 16px 12px 60px; }
+  .statsbar { display: none; }
+}
+</style>
+
+<!-- HEADER -->
+<nav class="hdr">
+  <div class="hdr-logo">⚡ <span>AIITEC</span> / Rudolf Sarkany — Portfolio 2026</div>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input class="search" id="search" placeholder="Projekt suchen…" oninput="filterCards()">
+  </div>
+  <div class="filters">
+    <button class="f-btn active" onclick="setFilter('all',this)">Alle</button>
+    <button class="f-btn" onclick="setFilter('live',this)">🟢 Live</button>
+    <button class="f-btn" onclick="setFilter('local',this)">🟡 Lokal</button>
+    <button class="f-btn" onclick="setFilter('railway',this)">Railway</button>
+    <button class="f-btn" onclick="setFilter('netlify',this)">Netlify</button>
+    <button class="f-btn" onclick="setFilter('saas',this)">SaaS</button>
+    <button class="f-btn" onclick="setFilter('bot',this)">Bots</button>
+  </div>
+  <div class="hdr-stats">
+    <div class="hdr-stat"><div class="hdr-stat-n" id="total-count">—</div><div class="hdr-stat-l">Projekte</div></div>
+    <div class="hdr-stat"><div class="hdr-stat-n" style="color:var(--live)" id="live-count">—</div><div class="hdr-stat-l">Live</div></div>
+  </div>
+</nav>
+
+<!-- STATS BAR -->
+<div class="statsbar">
+  <div class="sbar-item"><div class="sbar-n">9</div><div class="sbar-l"><span class="dot dot-live"></span>Railway Services</div></div>
+  <div class="sbar-item"><div class="sbar-n" id="netlify-total">34+</div><div class="sbar-l"><span class="dot dot-live"></span>Netlify Sites</div></div>
+  <div class="sbar-item"><div class="sbar-n">440</div><div class="sbar-l"><span class="dot dot-live"></span>DS24 Produkte</div></div>
+  <div class="sbar-item"><div class="sbar-n">8</div><div class="sbar-l"><span class="dot dot-live"></span>Stripe Produkte aktiv</div></div>
+  <div class="sbar-item"><div class="sbar-n">10+</div><div class="sbar-l"><span class="dot dot-local"></span>Lokale Apps</div></div>
+  <div class="sbar-item"><div class="sbar-n">390+</div><div class="sbar-l"><span class="dot dot-local"></span>Python-Module</div></div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ── RAILWAY LIVE SERVICES ──────────────────────────────────── -->
+<div class="section" data-cat="railway live">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#1a0f30;color:#7c3aed">Railway</span>
+    <span class="sec-title">Live Deployments — Railway</span>
+    <span class="sec-count">9 Services</span>
+  </div>
+  <div class="grid">
+
+    <div class="card" style="--card-accent:#7c3aed" data-tags="railway live saas">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">SuperMegaBot Dashboard</div>
+          <div class="card-sub">Port 8888 · 93+ API Routes · aiohttp</div>
+        </div>
+      </div>
+      <div class="card-desc">Haupt-Dashboard: Shopify, Telegram, KI-Tools, Stripe, Supabase. 390+ Module, 110 Bot-Kommandos. Zentrale Steuerung aller Systeme.</div>
+      <div class="card-url">supermegabot-production.up.railway.app</div>
+      <div class="card-actions">
+        <a href="http://localhost:8888" class="btn btn-primary">▶ Start lokal</a>
+        <a href="https://supermegabot-production.up.railway.app" target="_blank" class="btn btn-ghost">🌐 Live</a>
+        <a href="https://github.com/bullpowerhubgit/supermegabot" target="_blank" class="btn btn-ghost">GitHub</a>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">aiohttp</span><span class="tag">Shopify</span><span class="tag">Telegram</span><span class="tag">Stripe</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#00bcd4" data-tags="railway live saas aiitec">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">AIITEC SaaS Server</div>
+          <div class="card-sub">Port 8091 · B2B SaaS · Railway</div>
+        </div>
+      </div>
+      <div class="card-desc">B2B-SaaS: Lead Agent, Compliance Wächter, Intelligence Suite. EU-AI-Act Compliance, KI-Leasing-Portal, Stripe-Integration.</div>
+      <div class="card-url">aiitec-saas-production.up.railway.app</div>
+      <div class="card-actions">
+        <a href="http://localhost:8091" class="btn btn-primary" style="background:#00bcd4">▶ Start lokal</a>
+        <a href="https://aiitec-saas-production.up.railway.app" target="_blank" class="btn btn-ghost">🌐 Live</a>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">EU-AI-Act</span><span class="tag">B2B</span><span class="tag">Stripe</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#00d97c" data-tags="railway live saas eu shopify">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">EU Compliance SaaS</div>
+          <div class="card-sub">Railway · DSGVO/EU-AI-Act</div>
+        </div>
+      </div>
+      <div class="card-desc">EU-Compliance für Shopify-Shops: DSGVO-Audit, EU-AI-Act Scanner, Compliance-Reports als SaaS. Stripe-Subscription.</div>
+      <div class="card-url">eu-compliance-saas.up.railway.app</div>
+      <div class="card-actions">
+        <a href="https://eu-compliance-saas.up.railway.app" target="_blank" class="btn btn-primary" style="background:#00d97c;color:#050508">🌐 Live</a>
+      </div>
+      <div class="card-tags"><span class="tag">DSGVO</span><span class="tag">EU-AI-Act</span><span class="tag">Shopify</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f5c842" data-tags="railway live shopify">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">Shopify KI-Suite</div>
+          <div class="card-sub">Railway · AI-Powered Shopify Tools</div>
+        </div>
+      </div>
+      <div class="card-desc">KI-gestützte Shopify-Automation: Cross-Selling, SEO-Optimierung, Produkt-Finder, Smart Collections, Auto-Beschreibungen.</div>
+      <div class="card-url">shopify-ki-suite.up.railway.app</div>
+      <div class="card-actions">
+        <a href="https://shopify-ki-suite.up.railway.app" target="_blank" class="btn btn-primary" style="background:#f5c842;color:#050508">🌐 Live</a>
+      </div>
+      <div class="card-tags"><span class="tag">Shopify</span><span class="tag">KI</span><span class="tag">Python</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#ec4899" data-tags="railway live bot telegram">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">Telegram Subscription Bot</div>
+          <div class="card-sub">Railway · Premium Bot · Stripe Gating</div>
+        </div>
+      </div>
+      <div class="card-desc">Telegram-Bot mit 110 Kommandos. Premium-Befehle hinter Stripe-Paywall. Digistore24 + Shopify-Integration. Auto-Scheduler.</div>
+      <div class="card-url">telegram-bot.up.railway.app</div>
+      <div class="card-actions">
+        <a href="https://t.me/" target="_blank" class="btn btn-primary" style="background:#ec4899">📱 Telegram</a>
+        <a href="https://railway.app" target="_blank" class="btn btn-ghost">Railway</a>
+      </div>
+      <div class="card-tags"><span class="tag">Telegram</span><span class="tag">Stripe</span><span class="tag">Bot</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f97316" data-tags="railway live marketing">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">Income Maximizer</div>
+          <div class="card-sub">Railway · DS24 + Klaviyo Automation</div>
+        </div>
+      </div>
+      <div class="card-desc">Vollautonome Income-Pipeline: DS24 Top-Produkte → Klaviyo E-Mail-Kampagnen alle 2h. eBay/Amazon Research-Integration.</div>
+      <div class="card-url">income-maximizer.up.railway.app</div>
+      <div class="card-actions">
+        <a href="https://railway.app" target="_blank" class="btn btn-primary" style="background:#f97316">Railway</a>
+      </div>
+      <div class="card-tags"><span class="tag">DS24</span><span class="tag">Klaviyo</span><span class="tag">Automation</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#8b5cf6" data-tags="railway live ai">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">Google Automation Suite</div>
+          <div class="card-sub">Railway · 4 Google APIs · Auto-Cycle</div>
+        </div>
+      </div>
+      <div class="card-desc">4 Google API Keys (Custom Search, YouTube, Indexing, Maps). Key-Pool-Rotation. Automatisches SEO-Indexing, YouTube-Trends alle 6h.</div>
+      <div class="card-url">google-automation.up.railway.app</div>
+      <div class="card-actions">
+        <a href="https://railway.app" target="_blank" class="btn btn-primary" style="background:#8b5cf6">Railway</a>
+      </div>
+      <div class="card-tags"><span class="tag">Google APIs</span><span class="tag">SEO</span><span class="tag">YouTube</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" data-tags="railway live shopify">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">ineedit.com.co Store Backend</div>
+          <div class="card-sub">Shopify · 10k Produkte · Smart Home</div>
+        </div>
+      </div>
+      <div class="card-desc">Shopify-Store Backend: 10.000 echte Smart-Home-Produkte, Gatekeeper, Smart Collections, GA4 + Meta Pixel integriert, SEO-Auto.</div>
+      <div class="card-url">ineedit.com.co</div>
+      <div class="card-actions">
+        <a href="https://ineedit.com.co" target="_blank" class="btn btn-primary" style="background:#06b6d4;color:#050508">🛒 Shop</a>
+        <a href="https://ineedit.com.co/admin" target="_blank" class="btn btn-ghost">Admin</a>
+      </div>
+      <div class="card-tags"><span class="tag">Shopify</span><span class="tag">Smart Home</span><span class="tag">10k Produkte</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" data-tags="railway live ai">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">RudiClone AI Agent</div>
+          <div class="card-sub">Railway · Autonomer Business-Agent</div>
+        </div>
+      </div>
+      <div class="card-desc">Autonomer Business-Strategist: analysiert Märkte, findet Opportunities, generiert Berichte. Geheimwaffe Competitive Intelligence.</div>
+      <div class="card-url">rudiclone.up.railway.app</div>
+      <div class="card-actions">
+        <a href="https://railway.app" target="_blank" class="btn btn-primary" style="background:#10b981">Railway</a>
+      </div>
+      <div class="card-tags"><span class="tag">Claude AI</span><span class="tag">Autonomous</span><span class="tag">Strategy</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── LOKALE PROJEKTE ──────────────────────────────────────── -->
+<div class="section" data-cat="local">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#1a1400;color:#f5c842">Lokal</span>
+    <span class="sec-title">Lokale Projekte — Mac</span>
+    <span class="sec-count">10 Projekte</span>
+  </div>
+  <div class="grid">
+
+    <div class="card" style="--card-accent:#f5c842" data-tags="local bot">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">SuperMegaBot (lokal)</div>
+          <div class="card-sub">/Users/rudolfsarkany/supermegabot</div>
+        </div>
+      </div>
+      <div class="card-desc">Haupt-Codebase. 390+ Module. Local Dev auf Port 8888. Railway-Deploy via GitHub Actions.</div>
+      <div class="card-url">localhost:8888</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#f5c842;color:#050508" onclick="copyCmd('cd /Users/rudolfsarkany/supermegabot && python3 dashboard/server.py')">📋 Start-Befehl kopieren</button>
+        <a href="http://localhost:8888" class="btn btn-ghost">localhost</a>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">aiohttp</span><span class="tag">390+ Module</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#ff5a5f" data-tags="local obd car">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">MacOBD-Pro</div>
+          <div class="card-sub">/Users/rudolfsarkany/obdium · Port 8765</div>
+        </div>
+      </div>
+      <div class="card-desc">OBD-II Diagnose-App für macOS. Alle erweiterten Module fertig. Echtzeit-Fahrzeugdaten, Fehlercode-Scanner, Performance-Monitoring.</div>
+      <div class="card-url">localhost:8765</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#ff5a5f" onclick="copyCmd('cd /Users/rudolfsarkany/obdium && python3 server.py')">📋 Start kopieren</button>
+        <a href="http://localhost:8765" class="btn btn-ghost">localhost</a>
+      </div>
+      <div class="card-tags"><span class="tag">OBD-II</span><span class="tag">Python</span><span class="tag">macOS</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#7c3aed" data-tags="local ai">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Local Coder (Ollama)</div>
+          <div class="card-sub">Port 7777 · LaunchAgent · CLI: lc</div>
+        </div>
+      </div>
+      <div class="card-desc">Lokaler KI-Code-Assistent auf Ollama-Basis. Web-UI auf Port 7777. LaunchAgent für Autostart. Kommandozeile: `lc`.</div>
+      <div class="card-url">localhost:7777</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#7c3aed" onclick="copyCmd('open http://localhost:7777')">▶ Öffnen</button>
+        <button class="btn btn-ghost" onclick="copyCmd('lc')">CLI: lc</button>
+      </div>
+      <div class="card-tags"><span class="tag">Ollama</span><span class="tag">Local AI</span><span class="tag">CLI</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#00bcd4" data-tags="local telegram bot">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Windsurf Telegram Bot</div>
+          <div class="card-sub">/Users/rudolfsarkany/windsurf-telegram-bot</div>
+        </div>
+      </div>
+      <div class="card-desc">Telegram-Automation-Bot mit Windsurf-Integration. Nachrichten-Orchestrierung, Gruppen-Management.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#00bcd4;color:#050508" onclick="copyCmd('cd /Users/rudolfsarkany/windsurf-telegram-bot && node index.js')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">Node.js</span><span class="tag">Telegram</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" data-tags="local shopify">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Shopify Automation API</div>
+          <div class="card-sub">/Users/rudolfsarkany/shopify-automation-api</div>
+        </div>
+      </div>
+      <div class="card-desc">Shopify REST API Wrapper + Automations. Produkt-Import, Bulk-Operations, Webhook-Handler.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#10b981" onclick="copyCmd('cd /Users/rudolfsarkany/shopify-automation-api && node server.js')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">Node.js</span><span class="tag">Shopify API</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f97316" data-tags="local income">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Automated Income Systems</div>
+          <div class="card-sub">/Users/rudolfsarkany/automated-income-systems</div>
+        </div>
+      </div>
+      <div class="card-desc">Multi-Stream Einkommens-Automation: DS24, eBay, Amazon, Affiliate — alle kombiniert in einer Pipeline.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#f97316" onclick="copyCmd('cd /Users/rudolfsarkany/automated-income-systems && python3 main.py')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">Multi-Income</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#a855f7" data-tags="local radar account">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Account Radar</div>
+          <div class="card-sub">/Users/rudolfsarkany/Account-Radar</div>
+        </div>
+      </div>
+      <div class="card-desc">Account-Monitoring und Radar für alle Plattformen. Überwacht Status, Änderungen, Alarme.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#a855f7" onclick="copyCmd('cd /Users/rudolfsarkany/Account-Radar && python3 main.py')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">Monitoring</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" data-tags="local api gateway">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Windsurf API Gateway</div>
+          <div class="card-sub">/Users/rudolfsarkany/windsurf-api-gateway</div>
+        </div>
+      </div>
+      <div class="card-desc">API-Gateway für alle Windsurf-Integrationen. Routing, Auth, Rate-Limiting.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#06b6d4;color:#050508" onclick="copyCmd('cd /Users/rudolfsarkany/windsurf-api-gateway && node index.js')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">Node.js</span><span class="tag">API</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" data-tags="local shopify app">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">AutoSuite RudiBot (Shopify App)</div>
+          <div class="card-sub">/Users/rudolfsarkany/autosuiterudibot</div>
+        </div>
+      </div>
+      <div class="card-desc">Shopify App (React Router Template). Voll entwickelt für Shopify App Store Einreichung.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#10b981" onclick="copyCmd('cd /Users/rudolfsarkany/autosuiterudibot && npm run dev')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">React</span><span class="tag">Shopify App</span><span class="tag">Remix</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f5c842" data-tags="local ai hermes">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info">
+          <div class="card-title">Hermes Agent</div>
+          <div class="card-sub">/Users/rudolfsarkany/.hermes/hermes-agent</div>
+        </div>
+      </div>
+      <div class="card-desc">Lokaler Hermes AI-Agent. Autonome Task-Ausführung, Tool-Calling, Reasoning-Loops.</div>
+      <div class="card-actions">
+        <button class="btn btn-primary" style="background:#f5c842;color:#050508" onclick="copyCmd('cd /Users/rudolfsarkany/.hermes/hermes-agent && python3 main.py')">📋 Start kopieren</button>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">AI Agent</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── NETLIFY LIVE SITES ──────────────────────────────────── -->
+<div class="section" data-cat="netlify live">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#002718;color:#00d97c">Netlify</span>
+    <span class="sec-title">Live Landing Pages — aiitecbuuss.netlify.app</span>
+    <span class="sec-count" id="netlify-count">34+ Sites</span>
+  </div>
+  <div class="netlify-grid" id="netlify-grid">
+    <!-- Generated by JS -->
+  </div>
+</div>
+
+<!-- ── STRIPE PRODUKTE ────────────────────────────────────── -->
+<div class="section" data-cat="stripe saas">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#1a0a30;color:#a855f7">Stripe</span>
+    <span class="sec-title">Aktive Stripe-Produkte</span>
+    <span class="sec-count">8 aktiv · 92 inaktive Duplikate (bereinigen!)</span>
+  </div>
+  <div class="stripe-grid">
+    <div class="prod-card">
+      <div class="prod-title">KI Social Media Autopilot</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut7r3vlYYBwzyd" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">Smart Habit Tracker Pro — KI-Powered</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6EQuppVGSQnD" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">KI-Produktivitäts-System für Unternehmer</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6EqwwUCKAOMG" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">SEO Dominator 2026 — Komplettpaket</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6DEIYAboL1a7" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">Passives Einkommen Masterplan — Digital</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6D7Mf0QHIeFt" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">Smart Business Blueprint 2026</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6DlZeSAabM6O" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">E-Commerce Automation Master 2026</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6CdkU21R46Cc" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card">
+      <div class="prod-title">KI-Business-Suite Pro</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-live"></span>Aktiv</span><a href="https://dashboard.stripe.com/products/prod_Ut6CC2VgThRoph" target="_blank" class="prod-btn">Stripe →</a></div>
+    </div>
+    <div class="prod-card" style="border-color:#1a0000">
+      <div class="prod-title" style="color:var(--tx3)">92 inaktive Duplikate</div>
+      <div class="prod-meta"><span class="prod-status"><span class="dot dot-dead"></span>Bereinigen</span><a href="https://dashboard.stripe.com/products" target="_blank" class="prod-btn" style="background:#333">Stripe</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── DS24 AFFILIATE ──────────────────────────────────────── -->
+<div class="section" data-cat="ds24 affiliate income">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#1a0700;color:#f97316">DS24</span>
+    <span class="sec-title">Digistore24 Affiliate Produkte</span>
+    <span class="sec-count">440 aktive Produkte · 50% Provision</span>
+  </div>
+  <div class="grid">
+    <div class="card" style="--card-accent:#f97316" data-tags="ds24 affiliate income">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">KI & Automation Kategorie</div>
+          <div class="card-sub">29 Produkte · bis 50% Provision</div>
+        </div>
+      </div>
+      <div class="card-desc">ChatGPT, Claude, KI-Tools — die profitabelste Kategorie. Alle Produkte live auf Netlify.</div>
+      <div class="card-url">aiitec-ki-automation.netlify.app</div>
+      <div class="card-actions">
+        <a href="https://aiitec-ki-automation.netlify.app" target="_blank" class="btn btn-primary" style="background:#f97316">Besuchen</a>
+        <a href="https://www.digistore24.com/api/call/listProducts/JSON/" target="_blank" class="btn btn-ghost">DS24 API</a>
+      </div>
+      <div class="card-tags"><span class="tag">DS24</span><span class="tag">Affiliate</span><span class="tag">29 Produkte</span></div>
+    </div>
+    <div class="card" style="--card-accent:#f5c842" data-tags="ds24 affiliate income">
+      <div class="card-head">
+        <span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info">
+          <div class="card-title">Digital Skills — 306 Produkte</div>
+          <div class="card-sub">Größte Kategorie · Hauptseite</div>
+        </div>
+      </div>
+      <div class="card-desc">306 digitale Produkte: Kurse, Software, Coaching, E-Books. Haupt-Landingpage für Affiliate-Traffic.</div>
+      <div class="card-url">aiitec-digital-skills.netlify.app</div>
+      <div class="card-actions">
+        <a href="https://aiitec-digital-skills.netlify.app" target="_blank" class="btn btn-primary" style="background:#f5c842;color:#050508">Besuchen</a>
+      </div>
+      <div class="card-tags"><span class="tag">DS24</span><span class="tag">306 Produkte</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GITHUB REPOS ──────────────────────────────────────── -->
+<div class="section" data-cat="github">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#0d1117;color:#58a6ff">GitHub</span>
+    <span class="sec-title">GitHub Repositories — bullpowerhubgit</span>
+    <span class="sec-count">20 Repos</span>
+  </div>
+  <div class="grid">
+
+    <div class="card" style="--card-accent:#58a6ff" data-tags="github saas python">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">supermegabot</div><div class="card-sub">Haupt-Repo · Python · AI Automation</div></div></div>
+      <div class="card-desc">SuperMegaBot - AI Automation System. Ollama + Shopify + Telegram + Supabase. 390+ Module. Aktiv entwickelt.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/supermegabot" target="_blank" class="btn btn-primary" style="background:#58a6ff;color:#050508">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">Aktiv</span><span class="tag">Main Repo</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#58a6ff" data-tags="github shopify landing">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">shopify-brutal-tuning-landing</div><div class="card-sub">HTML · Landing Page · Live</div></div></div>
+      <div class="card-desc">BullPower Hub — Shopify Brutal Tuning Sales Landing Page. Produktionsreife HTML-Seite.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/shopify-brutal-tuning-landing" target="_blank" class="btn btn-primary" style="background:#58a6ff;color:#050508">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">HTML</span><span class="tag">Shopify</span><span class="tag">Landing</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#58a6ff" data-tags="github website portfolio">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">bullpowerhubgit.github.io</div><div class="card-sub">HTML · GitHub Pages · Live</div></div></div>
+      <div class="card-desc">BullpowerHub / AIITEC — Rudolf Sarkany. Persönliche GitHub Pages Website.</div>
+      <div class="card-url">bullpowerhubgit.github.io</div>
+      <div class="card-actions">
+        <a href="https://bullpowerhubgit.github.io" target="_blank" class="btn btn-primary" style="background:#58a6ff;color:#050508">Live →</a>
+        <a href="https://github.com/bullpowerhubgit/bullpowerhubgit.github.io" target="_blank" class="btn btn-ghost">GitHub</a>
+      </div>
+      <div class="card-tags"><span class="tag">HTML</span><span class="tag">GitHub Pages</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f5c842" data-tags="github saas steuern">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">steuercockpit</div><div class="card-sub">HTML · Steuer & Abo-Cockpit</div></div></div>
+      <div class="card-desc">Steuer- und Abo-Cockpit. Dashboard für Steuerverwaltung und Abonnement-Tracking.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/steuercockpit" target="_blank" class="btn btn-primary" style="background:#58a6ff;color:#050508">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">HTML</span><span class="tag">Dashboard</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#58a6ff" data-tags="github traffic seo">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">brutal-traffic-engine</div><div class="card-sub">Traffic Automation</div></div></div>
+      <div class="card-desc">Traffic-Generation Engine. Aggressive Traffic-Automation für maximale Reichweite.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/brutal-traffic-engine" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Traffic</span><span class="tag">Automation</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#58a6ff" data-tags="github traffic social">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">social-traffic-engine</div><div class="card-sub">Social Media Traffic</div></div></div>
+      <div class="card-desc">Social Media Traffic Engine. Automatisierter Social-Traffic für alle Plattformen.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/social-traffic-engine" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Social</span><span class="tag">Traffic</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" data-tags="github seo traffic">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">seo-traffic-engine</div><div class="card-sub">SEO Traffic Automation</div></div></div>
+      <div class="card-desc">SEO-Traffic Engine. Automatisierte SEO-Optimierung und Traffic-Gewinnung.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/seo-traffic-engine" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">SEO</span><span class="tag">Traffic</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#10b981" data-tags="github seo tools">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">seo-turbo-tools</div><div class="card-sub">SEO Tool-Suite</div></div></div>
+      <div class="card-desc">SEO Turbo Tools. Komplette SEO-Tool-Suite für schnelle Ranking-Verbesserungen.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/seo-turbo-tools" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">SEO</span><span class="tag">Tools</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#a855f7" data-tags="github kpi business">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">process-improvement-kpi-tool</div><div class="card-sub">KPI Dashboard</div></div></div>
+      <div class="card-desc">Process Improvement & KPI Tool. Prozessoptimierung und KPI-Tracking für Unternehmen.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/process-improvement-kpi-tool" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">KPI</span><span class="tag">Dashboard</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#95bf47" data-tags="github shopify landing">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">shopify-suite-landing</div><div class="card-sub">BullPower Hub · Landing Page</div></div></div>
+      <div class="card-desc">BullPower Hub — Shopify Suite Landing Page. Professionelle Verkaufsseite für Shopify-Dienstleistungen.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/shopify-suite-landing" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">HTML</span><span class="tag">Shopify</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f97316" data-tags="github lead marketing">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">bullpower-lead</div><div class="card-sub">Lead Capture Landing Page</div></div></div>
+      <div class="card-desc">BullPower Hub — Lead Capture Landing Page. E-Mail-Sammlung und Lead-Generation.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/bullpower-lead" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Lead Gen</span><span class="tag">HTML</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#6a70a0" data-tags="github legal">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">bullpower-legal</div><div class="card-sub">Datenschutz · Impressum</div></div></div>
+      <div class="card-desc">BullPower Hub — Legal Pages. Datenschutz, Impressum, AGB für alle BullPower-Projekte.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/bullpower-legal" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Legal</span><span class="tag">HTML</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#ec4899" data-tags="github bot telegram">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">rudimaster-bot</div><div class="card-sub">Telegram Master Bot</div></div></div>
+      <div class="card-desc">RudiMaster Telegram Bot. Autonomer Bot mit erweiterter Intelligenz und Kommando-Set.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/rudimaster-bot" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Bot</span><span class="tag">Telegram</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#6a70a0" data-tags="github legal bot">
+      <div class="card-head"><span class="card-status"><span class="dot dot-live"></span></span>
+        <div class="card-info"><div class="card-title">rudibot-legal</div><div class="card-sub">Legal pages for RudiBot</div></div></div>
+      <div class="card-desc">Legal pages für RudiBot: Datenschutz, Nutzungsbedingungen, Impressum.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/rudibot-legal" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Legal</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#f5c842" data-tags="github shopify app">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">suiteap111 / autosuiterudibot / wwwwsuite</div><div class="card-sub">Shopify App Varianten</div></div></div>
+      <div class="card-desc">Shopify App Suite — verschiedene Versionen und Varianten der AutoSuite. React Router, Remix.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/autosuiterudibot" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">Shopify App</span><span class="tag">React</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#06b6d4" data-tags="github account monitoring">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">Account-Radar</div><div class="card-sub">Account Monitoring Tool</div></div></div>
+      <div class="card-desc">Überwacht alle Platform-Accounts auf Änderungen, Sperren und Status-Updates. Telegram-Alerts.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/Account-Radar" target="_blank" class="btn btn-ghost">GitHub →</a>
+        <button class="btn btn-ghost" onclick="copyCmd('cd /Users/rudolfsarkany/Account-Radar && python3 main.py')">▶ Start</button>
+      </div>
+      <div class="card-tags"><span class="tag">Python</span><span class="tag">Monitoring</span></div>
+    </div>
+
+    <div class="card" style="--card-accent:#a855f7" data-tags="github ios ollama ai">
+      <div class="card-head"><span class="card-status"><span class="dot dot-local"></span></span>
+        <div class="card-info"><div class="card-title">reins (Ollama iOS/Mac Client)</div><div class="card-sub">iOS/Android/macOS Ollama App</div></div></div>
+      <div class="card-desc">Ollama Client für iOS, Android, macOS, Linux und Windows. Native App für lokale KI-Nutzung.</div>
+      <div class="card-actions">
+        <a href="https://github.com/bullpowerhubgit/reins" target="_blank" class="btn btn-ghost">GitHub →</a>
+      </div>
+      <div class="card-tags"><span class="tag">iOS</span><span class="tag">Ollama</span><span class="tag">Swift</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── QUICK COMMANDS ─────────────────────────────────────── -->
+<div class="section">
+  <div class="sec-hdr">
+    <span class="sec-badge" style="background:#0a0a0a;color:#6a70a0">Terminal</span>
+    <span class="sec-title">Quick-Start Befehle</span>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">SuperMegaBot starten</div>
+      <code style="font-size:12px;color:#00d97c;font-family:monospace;display:block;margin-bottom:8px">cd ~/supermegabot && python3 dashboard/server.py</code>
+      <button class="btn btn-ghost" style="font-size:11px" onclick="copyCmd('cd ~/supermegabot && python3 dashboard/server.py')">📋 Kopieren</button>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">MacOBD-Pro starten</div>
+      <code style="font-size:12px;color:#00d97c;font-family:monospace;display:block;margin-bottom:8px">cd ~/obdium && python3 server.py</code>
+      <button class="btn btn-ghost" style="font-size:11px" onclick="copyCmd('cd ~/obdium && python3 server.py')">📋 Kopieren</button>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Syntax Check alle Module</div>
+      <code style="font-size:12px;color:#00d97c;font-family:monospace;display:block;margin-bottom:8px">for f in ~/supermegabot/modules/*.py; do python3 -m py_compile "$f"; done</code>
+      <button class="btn btn-ghost" style="font-size:11px" onclick="copyCmd('for f in ~/supermegabot/modules/*.py; do python3 -m py_compile \"$f\" && echo \"OK: $f\"; done')">📋 Kopieren</button>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--bd);border-radius:8px;padding:14px">
+      <div style="font-size:11px;color:var(--tx3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Railway Health Check</div>
+      <code style="font-size:12px;color:#00d97c;font-family:monospace;display:block;margin-bottom:8px">curl -s https://supermegabot-production.up.railway.app/health</code>
+      <button class="btn btn-ghost" style="font-size:11px" onclick="copyCmd('curl -s https://supermegabot-production.up.railway.app/health')">📋 Kopieren</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:24px;right:24px;background:#1a1a2e;border:1px solid #00d97c;color:#00d97c;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;opacity:0;transition:.3s;z-index:9999;pointer-events:none">
+  ✓ Befehl kopiert!
+</div>
+
+<script>
+// ── Netlify Sites ────────────────────────────────────────────
+const NETLIFY_SITES = [
+  {name:'shopify-ki-suite-aiitec', icon:'🛒', cat:'shopify'},
+  {name:'aiitec-ki-automation', icon:'🤖', cat:'ki'},
+  {name:'aiitec-business', icon:'💼', cat:'business'},
+  {name:'aiitec-social-media', icon:'📱', cat:'social'},
+  {name:'aiitec-ecommerce', icon:'🛒', cat:'shop'},
+  {name:'aiitec-immobilien', icon:'🏠', cat:'immobilien'},
+  {name:'aiitec-digital-skills', icon:'🎯', cat:'skills'},
+  {name:'aiitec-affiliate-marketing-system', icon:'🔗', cat:'affiliate'},
+  {name:'aiitec-agency-aufbauen', icon:'🏢', cat:'business'},
+  {name:'aiitec-ai-income-machine', icon:'🤖', cat:'ki'},
+  {name:'aiitec-amazon-private-label-2026', icon:'📦', cat:'amazon'},
+  {name:'aiitec-chatgpt-business-autopilot', icon:'⚡', cat:'ki'},
+  {name:'aiitec-chatgpt-masterclass', icon:'🧠', cat:'ki'},
+  {name:'aiitec-copywriting-ki-profi', icon:'✍️', cat:'skills'},
+  {name:'aiitec-dropshipping-lieferanten', icon:'📦', cat:'shop'},
+  {name:'aiitec-ebay-ki-verkaufen', icon:'🏷️', cat:'shop'},
+  {name:'aiitec-email-liste-aufbauen', icon:'📧', cat:'marketing'},
+  {name:'aiitec-etsy-digitale-produkte', icon:'🎨', cat:'shop'},
+  {name:'aiitec-freelancing-einkommen', icon:'💻', cat:'skills'},
+  {name:'aiitec-immobilien-investment', icon:'🏠', cat:'immobilien'},
+  {name:'aiitec-immobilien-ki-analyse', icon:'📊', cat:'immobilien'},
+  {name:'aiitec-ki-marketing-agentur-starten', icon:'📣', cat:'business'},
+  {name:'aiitec-ki-prompt-engineering-business', icon:'💡', cat:'ki'},
+  {name:'aiitec-ki-texte-geld-verdienen', icon:'💰', cat:'ki'},
+  {name:'aiitec-mindset-wohlstand', icon:'🧠', cat:'personal'},
+  {name:'aiitec-newsletter-business-aufbauen', icon:'📰', cat:'marketing'},
+  {name:'aiitec-online-kurs-business', icon:'🎓', cat:'business'},
+  {name:'aiitec-seo-agentur-aufbauen-2026', icon:'🔍', cat:'business'},
+  {name:'aiitec-shopify-automation', icon:'🛒', cat:'shopify'},
+  {name:'aiitec-shopify-print-on-demand-system', icon:'👕', cat:'shopify'},
+  {name:'aiitec-social-media-manager-ki', icon:'📱', cat:'social'},
+  {name:'aiitec-voice-ki-business', icon:'🎙️', cat:'ki'},
+  {name:'aiitec-webdesign-ki-agentur-starten', icon:'🎨', cat:'business'},
+  {name:'aiitec-youtube-automation', icon:'▶️', cat:'social'},
+];
+
+const grid = document.getElementById('netlify-grid');
+NETLIFY_SITES.forEach(s => {
+  const url = `https://${s.name}.netlify.app`;
+  grid.innerHTML += `
+  <div class="netlify-card" data-tags="netlify live ${s.cat}">
+    <div class="netlify-icon">${s.icon}</div>
+    <div class="netlify-info">
+      <div class="netlify-name">${s.name}</div>
+      <div class="netlify-url">${url}</div>
+    </div>
+    <a href="${url}" target="_blank" class="netlify-visit">Besuchen →</a>
+  </div>`;
+});
+
+document.getElementById('netlify-count').textContent = NETLIFY_SITES.length + ' Sites';
+document.getElementById('netlify-total').textContent = NETLIFY_SITES.length;
+
+// ── Count ─────────────────────────────────────────────────────
+const allCards = document.querySelectorAll('.card, .netlify-card');
+document.getElementById('total-count').textContent = allCards.length;
+document.getElementById('live-count').textContent =
+  document.querySelectorAll('[data-tags*="live"]').length;
+
+// ── Filter ───────────────────────────────────────────────────
+let activeFilter = 'all';
+let searchQ = '';
+
+function setFilter(f, btn) {
+  activeFilter = f;
+  document.querySelectorAll('.f-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  apply();
+}
+
+function filterCards() {
+  searchQ = document.getElementById('search').value.toLowerCase();
+  apply();
+}
+
+function apply() {
+  document.querySelectorAll('.card, .netlify-card, .prod-card').forEach(c => {
+    const tags = (c.dataset.tags || '') + ' ' + c.textContent.toLowerCase();
+    const matchFilter = activeFilter === 'all' || tags.includes(activeFilter);
+    const matchSearch = !searchQ || tags.includes(searchQ);
+    c.style.display = matchFilter && matchSearch ? '' : 'none';
+  });
+}
+
+// ── Copy command ─────────────────────────────────────────────
+function copyCmd(cmd) {
+  navigator.clipboard.writeText(cmd).then(() => {
+    const t = document.getElementById('toast');
+    t.style.opacity = '1';
+    setTimeout(() => t.style.opacity = '0', 2000);
+  });
+}
+</script>

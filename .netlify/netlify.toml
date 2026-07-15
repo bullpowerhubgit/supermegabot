@@ -7,7 +7,7 @@ redirects = []
 [functions."*"]
 
 [build]
-publish = "/Users/rudolfsarkany/CascadeProjects/supermegabot"
+publish = "/Users/rudolfsarkany/supermegabot"
 publishOrigin = "default"
 
 [build.environment]
