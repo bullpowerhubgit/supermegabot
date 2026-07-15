@@ -1775,15 +1775,51 @@ const REFRESH_SCHEDULE = {
   whatsapp:  { fn: loadWhatsAppPanel, interval: 120000, last: 0 },
 };
 
+// ─── Auto-Reconnect: Server-Restart überbrücken ────────────────────────────────
+let _healthFailCount = 0;
+let _reconnecting = false;
+
+async function _serverAlive() {
+  try {
+    const r = await fetch(BASE + '/health', { method: 'GET', cache: 'no-store' });
+    return r.ok;
+  } catch { return false; }
+}
+
+async function _waitForServerAndReload() {
+  if (_reconnecting) return;
+  _reconnecting = true;
+  document.getElementById('sys-status').textContent = '🔄 RECONNECT...';
+  addLog('warn', '⚠️ Server nicht erreichbar — warte auf Neustart...');
+  for (let i = 0; i < 120; i++) {
+    await new Promise(r => setTimeout(r, 5000));
+    if (await _serverAlive()) {
+      addLog('ok', '✅ Server wieder online — lade Dashboard neu');
+      window.location.reload();
+      return;
+    }
+  }
+  _reconnecting = false;
+  document.getElementById('sys-status').textContent = '🔴 DOWN';
+  addLog('warn', 'Server nach 10 Minuten nicht erreichbar');
+}
+
 async function masterRefreshTick() {
   const now = Date.now();
   const due = Object.entries(REFRESH_SCHEDULE)
     .filter(([, cfg]) => now - cfg.last >= cfg.interval)
     .map(([name, cfg]) => {
       cfg.last = now;
-      return cfg.fn().catch(e => addLog('warn', `Refresh ${name}: ${e.message}`));
+      return cfg.fn().catch(e => {
+        if (name === 'health') {
+          _healthFailCount++;
+          if (_healthFailCount >= 3) _waitForServerAndReload();
+        }
+        addLog('warn', `Refresh ${name}: ${e.message}`);
+      });
     });
   if (due.length > 0) await Promise.allSettled(due);
+  else _healthFailCount = Math.max(0, _healthFailCount - 1);
 }
 
 // ─── Init ────────────────────────────────────────────────────────────────────
