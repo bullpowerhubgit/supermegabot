@@ -280,7 +280,44 @@ async def _delayed_send(checkout_id: str, first_name: str, products: List[Dict],
         sent    = await _whatsapp_send(phone, msg)
         channel = "whatsapp"
 
-    # 2. Telegram-Alert an Rudolf (immer als Fallback/Kopie)
+    # 2. Email-Fallback via SendGrid / SMTP (wenn kein Telefon oder WhatsApp fehlschlug)
+    if not sent and email:
+        try:
+            from modules.email_revenue_engine import (
+                _sendgrid_send, _get_next_smtp_account, _smtp_send,
+                _build_cart_recovery_html, _mark_recovered, _record_send,
+                _already_recovered, SENDGRID_KEY,
+            )
+            import asyncio as _asyncio
+            import aiohttp as _aiohttp
+            # Nur senden wenn noch nicht per email_revenue_engine gesendet
+            if not _already_recovered(checkout_id):
+                subj, html_body, text_body = _build_cart_recovery_html(
+                    first_name=first_name,
+                    items=products,
+                    total=str(total),
+                    checkout_url=checkout_url,
+                    email=email,
+                )
+                async with _aiohttp.ClientSession() as _sess:
+                    email_sent = await _sendgrid_send(_sess, email, first_name or "", subj, html_body, text_body)
+                if not email_sent:
+                    acc = _get_next_smtp_account()
+                    if acc:
+                        email_sent = await _asyncio.get_event_loop().run_in_executor(
+                            None, _smtp_send, acc, email, subj, html_body, text_body
+                        )
+                if email_sent:
+                    _mark_recovered(checkout_id, email)
+                    _record_send(email, "sendgrid" if SENDGRID_KEY else "smtp",
+                                 "cart_rescue_email_fallback", subj)
+                    sent    = True
+                    channel = "email"
+                    log.info("Cart Rescue Email-Fallback gesendet → %s", email)
+        except Exception as _exc:
+            log.warning("Cart Rescue Email-Fallback Fehler: %s", _exc)
+
+    # 3. Telegram-Alert an Rudolf (immer als Kopie/Info)
     owner_msg = (
         f"🛒 <b>Cart Rescue gesendet</b>\n"
         f"👤 {first_name or '?'} · {email or phone}\n"

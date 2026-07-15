@@ -181,16 +181,29 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
 # ── Individual task implementations ─────────────────────────────────────────
 
 async def task_digistore_sync() -> str:
-    """Fetch new Digistore24 orders → save to Supabase → Telegram alert."""
+    """Fetch new Digistore24 orders → paginate all pages → Supabase + Telegram alert."""
     try:
         from modules.digistore24_automation import get_orders, ping
         if not await ping():
             return "DS24 API nicht konfiguriert"
-        orders = await get_orders(page=1, per_page=20)
-        if not orders:
-            return "Keine neuen Bestellungen"
 
-        # Save to data file for dashboard
+        # Paginate: fetch pages until we get an empty page or hit 10 pages
+        all_orders: list = []
+        page = 1
+        per_page = 50
+        while page <= 10:
+            page_orders = await get_orders(page=page, per_page=per_page)
+            if not page_orders:
+                break
+            all_orders.extend(page_orders)
+            if len(page_orders) < per_page:
+                break  # Last page reached
+            page += 1
+
+        if not all_orders:
+            return "Keine Bestellungen von DS24"
+
+        # Load old known IDs from cache
         out = DATA_DIR / "digistore_orders.json"
         old_ids: set = set()
         if out.exists():
@@ -199,19 +212,46 @@ async def task_digistore_sync() -> str:
                            for o in json.loads(out.read_text())}
             except Exception:
                 pass
-        out.write_text(json.dumps(orders, indent=2, ensure_ascii=False))
+        out.write_text(json.dumps(all_orders, indent=2, ensure_ascii=False))
 
-        new_orders = [o for o in orders if o.get("transaction_id") not in old_ids]
+        new_orders = [o for o in all_orders if (o.get("transaction_id") or o.get("id")) not in old_ids]
+
+        # Insert new orders into revenue_snapshots in Supabase
         if new_orders:
+            try:
+                from modules.supabase_client import get_client as _sb
+                today = datetime.now().strftime("%Y-%m-%d")
+                ds24_total = 0.0
+                for o in new_orders:
+                    for field in ("earned_amount", "merchant_amount", "amount"):
+                        try:
+                            v = float(o.get(field) or 0)
+                            if v:
+                                ds24_total += v
+                                break
+                        except (ValueError, TypeError):
+                            pass
+                if ds24_total > 0:
+                    _sb().table("revenue_snapshots").insert({
+                        "date": today,
+                        "ds24_total": round(ds24_total, 2),
+                        "grand_total": round(ds24_total, 2),
+                        "source": "digistore24",
+                        "note": f"{len(new_orders)} neue DS24-Bestellungen",
+                        "created_at": datetime.now().isoformat(),
+                    }).execute()
+            except Exception as _e:
+                log.warning("DS24 revenue_snapshots: %s", _e)
+
             lines = [f"🏪 <b>Digistore24 — {len(new_orders)} neue Bestellung(en)!</b>"]
             for o in new_orders[:5]:
-                name   = o.get("main_product_name") or o.get("product_name","?")
-                amount = o.get("earned_amount") or o.get("merchant_amount") or o.get("amount","?")
-                date   = o.get("transaction_pay_date") or o.get("created_at","")[:10]
+                name   = o.get("main_product_name") or o.get("product_name", "?")
+                amount = o.get("earned_amount") or o.get("merchant_amount") or o.get("amount", "?")
+                date   = o.get("transaction_pay_date") or o.get("created_at", "")[:10]
                 lines.append(f"  • {name} — {amount} EUR | {date}")
             await _tg("\n".join(lines))
-            return f"{len(new_orders)} neue Bestellungen, Telegram-Alert gesendet"
-        return f"{len(orders)} Bestellungen gecacht, keine neuen"
+            return f"{len(new_orders)} neue DS24-Bestellungen ({len(all_orders)} gesamt, {page-1} Seiten), Telegram gesendet"
+        return f"{len(all_orders)} DS24-Bestellungen gecacht ({page-1} Seiten), keine neuen"
     except Exception as e:
         return f"Fehler: {e}"
 
@@ -557,6 +597,29 @@ async def task_seo_optimizer() -> str:
         return f"SEO: {result.get('processed',0)} geprüft, {updated} aktualisiert"
     except Exception as e:
         return f"Fehler: {e}"
+
+
+async def task_mrr_snapshot() -> str:
+    """Täglicher MRR-Snapshot: Stripe MRR berechnen und in revenue_snapshots speichern."""
+    try:
+        from modules.monetization import get_mrr
+        mrr = get_mrr()
+        try:
+            from modules.supabase_client import get_client as _sb
+            _sb().table("revenue_snapshots").insert({
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "stripe_total": round(mrr, 2),
+                "grand_total": round(mrr, 2),
+                "source": "stripe_mrr",
+                "note": f"Täglicher MRR-Snapshot: {mrr:.2f} EUR",
+                "created_at": datetime.now().isoformat(),
+            }).execute()
+            log.info("MRR-Snapshot: %.2f EUR gespeichert", mrr)
+        except Exception as _e:
+            log.warning("MRR-Snapshot Supabase: %s", _e)
+        return f"MRR-Snapshot: {mrr:.2f} EUR in Supabase revenue_snapshots gespeichert"
+    except Exception as e:
+        return f"MRR-Snapshot Fehler: {e}"
 
 
 async def task_revenue_report() -> str:
@@ -1503,6 +1566,52 @@ async def task_email_seq_process() -> str:
         return f"EmailSeq: {sent} gesendet, {failed} Fehler"
     except Exception as e:
         return f"EmailSeq Fehler: {e}"
+
+
+async def task_ere_abandoned_cart() -> str:
+    """EmailRevenueEngine: Shopify Abandoned-Cart Recovery alle 2h."""
+    try:
+        from modules.email_revenue_engine import abandoned_cart_fixer
+        result = await abandoned_cart_fixer()
+        sent = result.get("sent", 0)
+        skipped = result.get("skipped", 0)
+        failed = result.get("failed", 0)
+        return f"ERECart: {sent} gesendet, {skipped} übersprungen, {failed} Fehler"
+    except Exception as e:
+        return f"ERECart Fehler: {e}"
+
+
+async def task_ere_lead_blast() -> str:
+    """EmailRevenueEngine: Lead-Email-Blast 1x täglich (Zeitfenster 10-11 Uhr)."""
+    try:
+        now_hour = datetime.now().hour
+        if not (10 <= now_hour < 12):
+            return f"ERELeadBlast: außerhalb Zeitfenster (Stunde={now_hour}, Fenster=10-12)"
+        if await task_ran_recently("ere_lead_blast", min_interval_hours=22):
+            return "ERELeadBlast: heute bereits gelaufen"
+        from modules.email_revenue_engine import lead_email_blaster
+        result = await lead_email_blaster(max_per_run=200)
+        sent = result.get("sent", 0)
+        failed = result.get("failed", 0)
+        await record_task_run("ere_lead_blast")
+        return f"ERELeadBlast: {sent} gesendet, {failed} Fehler"
+    except Exception as e:
+        return f"ERELeadBlast Fehler: {e}"
+
+
+async def task_ere_welcome_sequence() -> str:
+    """EmailRevenueEngine: Welcome-Sequence für Klaviyo-Subscriber ohne Bestellung (täglich)."""
+    try:
+        if await task_ran_recently("ere_welcome_sequence", min_interval_hours=23):
+            return "EREWelcome: heute bereits gelaufen"
+        from modules.email_revenue_engine import welcome_sequence_trigger
+        result = await welcome_sequence_trigger()
+        triggered = result.get("triggered", 0)
+        skipped = result.get("skipped", 0)
+        await record_task_run("ere_welcome_sequence")
+        return f"EREWelcome: {triggered} ausgelöst, {skipped} übersprungen"
+    except Exception as e:
+        return f"EREWelcome Fehler: {e}"
 
 
 async def task_email_seq_enroll() -> str:
@@ -7524,6 +7633,7 @@ TASKS = [
     ("ds24_marketplace_auto",  task_ds24_marketplace_auto,  28800, 1220),  # 8h  — DS24 Marketplace listen+optimieren
     ("ds24_funnel_auto",       task_ds24_funnel_automation, 21600, 1260),  # 6h  — DS24 Sales-Funnels auto
     ("stripe_auto_billing",    task_stripe_auto_billing,    21600, 1300),  # 6h  — Stripe Abos+Rechnungen auto
+    ("mrr_snapshot",           task_mrr_snapshot,           86400, 1335),  # 24h — Täglicher MRR-Snapshot in Supabase
     ("revenue_payout",         task_revenue_auto_payout,    86400, 1340),  # 24h — Revenue-Report + Auszahlung
     ("revenue_maximizer",      task_revenue_maximizer,      14400, 1380),  # 4h  — Upsells+Cross-Sells+Pricing
     ("revenue_mega_tracker",   task_revenue_mega_tracker,   28800, 1420),  # 8h  — Alle Kanäle Revenue-Dashboard
@@ -7870,6 +7980,10 @@ TASKS = [
     ("bp_product_curation",     task_bp_product_curation,    14400,  300),  # 4h — Smart-Home Produkte kuratieren, Junk archivieren
     ("bp_roas_watchdog",        task_bp_roas_watchdog,        3600,  400),  # 1h — Meta Ads ROAS, schlechte Campaigns pausieren
     ("bp_revenue_health",       task_bp_revenue_health,       7200,  500),  # 2h — Revenue Health Check alle Streams
+    # ── EMAIL REVENUE ENGINE — Cart Recovery + Lead Blast + Welcome ────────────
+    ("ere_abandoned_cart",      task_ere_abandoned_cart,      7200,  130),  # 2h   — Abandoned Cart Recovery via SendGrid/SMTP
+    ("ere_lead_blast",          task_ere_lead_blast,          3600,  145),  # 1h poll, läuft nur 10-12 Uhr — Lead-Email-Blast 200/Tag
+    ("ere_welcome_sequence",    task_ere_welcome_sequence,   86400,  160),  # tägl. — Welcome für Subscriber ohne Kauf
 ]
 
 

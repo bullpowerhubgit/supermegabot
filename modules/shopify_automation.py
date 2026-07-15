@@ -179,12 +179,83 @@ def get_shopify_status_message() -> str:
 
 # ── Webhook-Handler ──────────────────────────────────────────────────────────
 
+async def _create_shopify_fulfillment(order_id: int, tracking_number: str = "", tracking_company: str = "") -> dict:
+    """Meldet eine Shopify-Bestellung als fulfilled via Admin API zurück.
+    Shopify-Dashboard zeigt danach 'Fulfilled' statt 'Unfulfilled'.
+    """
+    domain = SHOPIFY_DOMAIN()
+    token = SHOPIFY_TOKEN()
+    version = API_VERSION()
+    if not domain or not token:
+        return {"error": "Shopify nicht konfiguriert"}
+    url = f"https://{domain}/admin/api/{version}/orders/{order_id}/fulfillments.json"
+    payload: dict = {"fulfillment": {"notify_customer": True}}
+    if tracking_number:
+        payload["fulfillment"]["tracking_number"] = tracking_number
+    if tracking_company:
+        payload["fulfillment"]["tracking_company"] = tracking_company
+    body = json.dumps(payload).encode()
+    req = urllib.request.Request(url, data=body, method="POST", headers={
+        "X-Shopify-Access-Token": token,
+        "Content-Type": "application/json",
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            return json.loads(r.read())
+    except Exception as e:
+        log.warning("create_shopify_fulfillment order %s: %s", order_id, e)
+        return {"error": str(e)}
+
+
+async def _pod_fulfill_and_confirm(order_data: dict) -> None:
+    """Submit to Printify/Printful and report fulfillment status back to Shopify."""
+    order_id = order_data.get("id")
+    pod_ok = False
+    tracking_number = ""
+    tracking_company = ""
+    try:
+        from modules.printify_automation import ping as py_ping, handle_shopify_order as py_fulfill
+        if await py_ping():
+            result = await py_fulfill(order_data)
+            if isinstance(result, dict) and not result.get("error"):
+                pod_ok = True
+                tracking_number = result.get("tracking_number", "")
+                tracking_company = result.get("tracking_company", "Printify")
+    except Exception as e:
+        log.debug("Printify POD fulfill: %s", e)
+    if not pod_ok:
+        try:
+            from modules.printful_automation import ping as pf_ping, create_order_from_shopify as pf_fulfill
+            if await pf_ping():
+                result = await pf_fulfill(order_data)
+                if isinstance(result, dict) and not result.get("error"):
+                    tracking_company = "Printful"
+                    pod_ok = True
+        except Exception as e:
+            log.debug("Printful POD fulfill: %s", e)
+    # Report fulfillment back to Shopify so dashboard shows 'Fulfilled' instead of 'Unfulfilled'
+    if order_id and pod_ok:
+        try:
+            fres = await _create_shopify_fulfillment(order_id, tracking_number, tracking_company)
+            if isinstance(fres, dict) and not fres.get("error"):
+                log.info("Shopify fulfillment created for order %s via %s", order_id, tracking_company)
+            else:
+                log.warning("Shopify fulfillment failed for order %s: %s", order_id, fres)
+        except Exception as e:
+            log.warning("Shopify fulfillment call error: %s", e)
+
+
 async def handle_shopify_order_webhook(order_data: dict) -> None:
-    """Aufgerufen wenn Shopify eine neue Bestellung sendet."""
+    """Aufgerufen wenn Shopify eine neue Bestellung sendet (orders/create oder orders/paid)."""
     try:
         notify_new_order(order_data)
     except Exception as e:
-        log.error("Order webhook error: %s", e)
+        log.error("Order webhook notify error: %s", e)
+    # Trigger POD fulfillment so orders are not stuck as 'Unfulfilled'
+    try:
+        asyncio.create_task(_pod_fulfill_and_confirm(order_data))
+    except Exception as e:
+        log.debug("POD fulfill task: %s", e)
 
 
 async def get_customers(limit: int = 50) -> list:

@@ -403,16 +403,90 @@ async def handle_webhook_event(event: Dict) -> str:
                                                     "saas_onboarding"))
         return "subscription.created handled + onboarding enrolled"
 
+    if etype == "charge.dispute.created":
+        amount   = data.get("amount", 0) / 100
+        currency = data.get("currency", "eur").upper()
+        charge_id = data.get("charge", "?")
+        reason   = data.get("reason", "unknown")
+        # Look up customer email via billing_details or metadata
+        customer_email = (
+            data.get("billing_details", {}).get("email")
+            or data.get("metadata", {}).get("email")
+            or "?"
+        )
+        await _tg(
+            f"🚨 <b>CHARGEBACK!</b> Stripe Dispute\n"
+            f"Betrag: {amount:.2f} {currency}\n"
+            f"Grund: {reason}\n"
+            f"Charge: {charge_id}\n"
+            f"Email: {customer_email}\n"
+            f"⚠️ Service pausiert bis Klärung!"
+        )
+        # Pause service in Supabase by setting service_active=False
+        try:
+            from modules.supabase_client import get_client
+            if customer_email and "@" in str(customer_email):
+                get_client().table("clients").update({
+                    "service_active": False,
+                    "dispute_reason": reason,
+                    "dispute_charge_id": charge_id,
+                    "updated_at": datetime.now().isoformat(),
+                }).eq("email", customer_email).execute()
+        except Exception as _e:
+            log.warning("Dispute Supabase update: %s", _e)
+        return f"charge.dispute.created handled → service paused for {customer_email}"
+
     if etype == "charge.refunded":
         amount   = data.get("amount_refunded", 0) / 100
         currency = data.get("currency", "eur").upper()
         email    = data.get("billing_details", {}).get("email", "?")
+        charge_id = data.get("id", "?")
         await _tg(
             f"↩️ <b>Stripe Rückerstattung</b>\n"
             f"Betrag: {amount:.2f} {currency}\n"
             f"Email: {email}"
         )
-        return "charge.refunded handled"
+        # Set service_active=False in Supabase
+        try:
+            from modules.supabase_client import get_client
+            if email and "@" in str(email):
+                get_client().table("clients").update({
+                    "service_active": False,
+                    "updated_at": datetime.now().isoformat(),
+                }).eq("email", email).execute()
+        except Exception as _e:
+            log.warning("Refund Supabase update: %s", _e)
+        # Update revenue_snapshots: insert negative entry to correct MRR
+        try:
+            from modules.supabase_client import get_client
+            get_client().table("revenue_snapshots").insert({
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "stripe_total": -round(amount, 2),
+                "grand_total": -round(amount, 2),
+                "source": "stripe_refund",
+                "note": f"Refund charge {charge_id} email={email}",
+                "created_at": datetime.now().isoformat(),
+            }).execute()
+        except Exception as _e:
+            log.warning("Refund revenue_snapshots: %s", _e)
+        # Send confirmation email to customer
+        if email and "@" in str(email):
+            try:
+                from modules.megabot_umsatzmaschine import send_email_with_attachment
+                await send_email_with_attachment(
+                    email,
+                    "Ihre Rückerstattung wurde bearbeitet",
+                    (
+                        f"Hallo,\n\n"
+                        f"Ihre Rückerstattung von {amount:.2f} {currency} wurde erfolgreich verarbeitet.\n"
+                        f"Der Betrag erscheint innerhalb von 5-10 Werktagen auf Ihrem Konto.\n\n"
+                        f"Bei Fragen: support@ineedit.com.co\n\n"
+                        f"Mit freundlichen Grüßen,\nMegaBot Team"
+                    ),
+                )
+            except Exception as _e:
+                log.warning("Refund confirmation email: %s", _e)
+        return f"charge.refunded handled → service paused, revenue corrected, email sent"
 
     if etype == "invoice.payment_failed":
         amount   = (data.get("amount_due") or 0) / 100
@@ -430,12 +504,61 @@ async def handle_webhook_event(event: Dict) -> str:
     if etype == "customer.subscription.updated":
         customer_email = data.get("customer_email", "?")
         status = data.get("status", "?")
+        # Determine new plan tier from price amount
+        items = data.get("items", {}).get("data", [])
+        new_plan = ""
+        new_amount = 0.0
+        if items:
+            price = items[0].get("price", {})
+            new_amount = (price.get("unit_amount", 0) or 0) / 100
+            interval = price.get("recurring", {}).get("interval", "month")
+            new_plan = f"{new_amount:.2f} EUR/{interval}"
+            # Map amount to tier name
+            if new_amount <= 55:
+                tier = "starter"
+            elif new_amount <= 110:
+                tier = "pro"
+            else:
+                tier = "enterprise"
+        else:
+            tier = "unknown"
         await _tg(
             f"🔄 <b>Abo aktualisiert</b> — Stripe\n"
             f"Status: {status}\n"
+            f"Neuer Plan: {new_plan or tier}\n"
             f"Email: {customer_email}"
         )
-        return f"subscription.updated handled (status={status})"
+        # Update plan in Supabase clients table
+        try:
+            from modules.supabase_client import get_client
+            if customer_email and "@" in str(customer_email):
+                get_client().table("clients").update({
+                    "plan": tier,
+                    "subscription_status": status,
+                    "updated_at": datetime.now().isoformat(),
+                }).eq("email", customer_email).execute()
+        except Exception as _e:
+            log.warning("Subscription update Supabase: %s", _e)
+        # Update local megabot_clients.json
+        try:
+            from modules.megabot_umsatzmaschine import CLIENTS_FILE
+            import json as _json
+            if CLIENTS_FILE.exists():
+                clients_data = _json.loads(CLIENTS_FILE.read_text(encoding="utf-8"))
+                updated = False
+                for cid, client in clients_data.items():
+                    if client.get("email", "").lower() == str(customer_email).lower():
+                        client["package"] = tier
+                        client["subscription_status"] = status
+                        client["plan_updated"] = datetime.now().isoformat()
+                        updated = True
+                if updated:
+                    CLIENTS_FILE.write_text(
+                        _json.dumps(clients_data, ensure_ascii=False, indent=2), encoding="utf-8"
+                    )
+        except Exception as _e:
+            log.warning("Subscription update local JSON: %s", _e)
+        return f"subscription.updated handled (status={status}, tier={tier})"
 
     return f"unhandled: {etype}"
 

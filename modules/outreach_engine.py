@@ -243,6 +243,33 @@ def send_email(to_email: str, subject: str, body: str, sender_idx: int = 0) -> b
 
 # ── Hauptfunktion: Outreach-Batch generieren & senden ────────────────────────
 
+async def _sb_insert_lead_event(data: dict) -> None:
+    """Schreibt ein Lead-Event in Supabase lead_events (fire-and-forget)."""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    auth_key = key or os.getenv("SUPABASE_ANON_KEY", "")
+    if not url or not auth_key:
+        log.debug("Supabase credentials fehlen — lead_event nicht gespeichert")
+        return
+    try:
+        async with _aio.ClientSession() as s:
+            await s.post(
+                f"{url}/rest/v1/lead_events",
+                json=data,
+                headers={
+                    "apikey": auth_key,
+                    "Authorization": f"Bearer {auth_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal",
+                },
+                timeout=_aio.ClientTimeout(total=8),
+            )
+        log.debug("Supabase lead_event gespeichert: %s", data.get("event_type"))
+    except Exception as e:
+        log.debug("Supabase lead_event Fehler: %s", e)
+
+
 async def generate_outreach_batch(
     auto_send_email: bool = True,
     max_targets: int = 10,
@@ -336,6 +363,16 @@ async def generate_outreach_batch(
                         "UPDATE outreach_queue SET status='sent', sent_at=? WHERE target_email=? AND lead_uid=?",
                         (now, target["email"], lead.get("uid", ""))
                     )
+                # Supabase CRM: Lead-Event eintragen
+                asyncio.create_task(_sb_insert_lead_event({
+                    "event_type": "outreach_email_sent",
+                    "source":     "outreach_engine",
+                    "email":      target.get("email", ""),
+                    "company":    target.get("name", ""),
+                    "product_id": lead.get("uid", ""),
+                    "notes":      msgs.get("subject", "")[:255],
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }))
                 await asyncio.sleep(3)  # Anti-Spam: 3s zwischen Emails
             else:
                 with _db() as conn:

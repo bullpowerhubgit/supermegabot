@@ -585,15 +585,21 @@ Abmeldung: Antwort mit "Stop" genügt.""",
 # ── Hilfsfunktionen ───────────────────────────────────────────────────────────
 
 def _personalized_opener(company_name: str, segment: str) -> str:
-    """Generiert eine KI-personalisierte Eröffnungszeile per Claude Haiku."""
+    """Generiert eine KI-personalisierte Eröffnungszeile via ai_complete()."""
     try:
-        from modules.claude_automation import ask, FAST_MODEL
+        from modules.ai_client import ai_complete
         prompt = (
             f"Schreibe EINE kurze (max. 20 Wörter) deutsche Begrüßungszeile für eine "
             f"B2B-Kalt-Email an '{company_name}' ({segment}). "
-            f"Sehr spezifisch auf ihre Branche. Kein 'Ich schreibe Ihnen wegen', direkt starten."
+            f"Sehr spezifisch auf ihre Branche. Kein 'Ich schreibe Ihnen wegen', direkt starten. "
+            f"Antworte NUR mit der Zeile, kein JSON, keine Anführungszeichen."
         )
-        return ask(prompt, model=FAST_MODEL, max_tokens=60).strip()
+        loop = asyncio.new_event_loop()
+        try:
+            result = loop.run_until_complete(ai_complete(prompt, max_tokens=60, model_hint="fast"))
+            return result.strip().strip('"').strip("'")
+        finally:
+            loop.close()
     except Exception:
         return ""
 
