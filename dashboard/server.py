@@ -419,6 +419,117 @@ async def handle_ollama_models(req):
         return web.json_response({"ok": False, "models": [], "error": str(e)})
 
 
+async def handle_ollama_status(req):
+    """Detaillierter Ollama-Status inkl. laufende Modelle + Empfehlungen."""
+    try:
+        from modules.ollama_manager import get_manager
+        data = await get_manager().status()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"online": False, "error": str(e)})
+
+
+async def handle_ollama_chat(req):
+    """Chat mit lokalem Ollama-Modell."""
+    try:
+        body    = await req.json()
+        prompt  = body.get("prompt", "")
+        system  = body.get("system", "Du bist AIITEC SuperBot.")
+        model   = body.get("model") or None
+        if not prompt:
+            return web.json_response({"ok": False, "error": "prompt required"}, status=400)
+        from modules.ollama_manager import get_manager
+        text = await get_manager().chat(prompt, model=model, system=system)
+        return web.json_response({"ok": bool(text), "response": text,
+                                   "model": model or "default", "source": "ollama-local"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ollama_stream(req):
+    """Streaming-Chat mit lokalem Ollama (Server-Sent Events)."""
+    try:
+        body   = await req.json()
+        prompt = body.get("prompt", "")
+        system = body.get("system", "")
+        model  = body.get("model") or None
+        if not prompt:
+            return web.json_response({"ok": False, "error": "prompt required"}, status=400)
+
+        resp = web.StreamResponse(headers={"Content-Type": "text/event-stream",
+                                            "Cache-Control": "no-cache"})
+        await resp.prepare(req)
+
+        from modules.ollama_manager import get_manager
+        async for chunk in get_manager().stream(prompt, model=model, system=system):
+            await resp.write(f"data: {json.dumps({'chunk': chunk})}\n\n".encode())
+        await resp.write(b"data: [DONE]\n\n")
+        return resp
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ollama_generate(req):
+    """Einfache Text-Generierung mit Ollama."""
+    try:
+        body   = await req.json()
+        prompt = body.get("prompt", "")
+        model  = body.get("model") or None
+        if not prompt:
+            return web.json_response({"ok": False, "error": "prompt required"}, status=400)
+        from modules.ollama_manager import get_manager
+        text = await get_manager().generate(prompt, model=model)
+        return web.json_response({"ok": bool(text), "response": text, "source": "ollama-local"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ollama_pull(req):
+    """Neues Modell herunterladen — Fortschritt als JSON-Stream."""
+    try:
+        body  = await req.json()
+        model = body.get("model", "").strip()
+        if not model:
+            return web.json_response({"ok": False, "error": "model required"}, status=400)
+
+        resp = web.StreamResponse(headers={"Content-Type": "application/x-ndjson",
+                                            "Cache-Control": "no-cache"})
+        await resp.prepare(req)
+
+        from modules.ollama_manager import get_manager
+        async for line in get_manager().pull(model):
+            await resp.write((line + "\n").encode())
+        await resp.write(b'{"status":"complete"}\n')
+        return resp
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ollama_delete(req):
+    """Installiertes Modell löschen."""
+    try:
+        body  = await req.json()
+        model = body.get("model", "").strip()
+        if not model:
+            return web.json_response({"ok": False, "error": "model required"}, status=400)
+        from modules.ollama_manager import get_manager
+        result = await get_manager().delete(model)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ollama_info(req):
+    """Details zu einem installierten Modell."""
+    model = req.query.get("model", DEFAULT_MODEL if 'DEFAULT_MODEL' in dir() else "llama3.2:latest")
+    try:
+        from modules.ollama_manager import get_manager
+        info = await get_manager().model_info(model)
+        return web.json_response(info)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_open_claw_status(req):
     """OpenClaw = lokales Ollama AI System."""
     try:
@@ -10366,8 +10477,15 @@ async def create_app():
     app.router.add_post("/api/telegram/send", handle_telegram_send)
     app.router.add_get("/api/shopify", handle_shopify_legacy)
     app.router.add_get("/api/shopify/status", handle_shopify_status)
-    app.router.add_get("/api/ollama/models", handle_ollama_models)
-    app.router.add_get("/api/open-claw/status", handle_open_claw_status)
+    app.router.add_get("/api/ollama/models",     handle_ollama_models)
+    app.router.add_get("/api/ollama/status",     handle_ollama_status)
+    app.router.add_post("/api/ollama/chat",      handle_ollama_chat)
+    app.router.add_post("/api/ollama/stream",    handle_ollama_stream)
+    app.router.add_post("/api/ollama/generate",  handle_ollama_generate)
+    app.router.add_post("/api/ollama/pull",      handle_ollama_pull)
+    app.router.add_post("/api/ollama/delete",    handle_ollama_delete)
+    app.router.add_get("/api/ollama/info",       handle_ollama_info)
+    app.router.add_get("/api/open-claw/status",  handle_open_claw_status)
     app.router.add_post("/api/open-claw/generate", handle_open_claw_generate)
     app.router.add_post("/api/open-claw/chat", handle_open_claw_chat)
     app.router.add_post("/api/open-claw/revenue", handle_open_claw_revenue)
