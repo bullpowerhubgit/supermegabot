@@ -509,6 +509,10 @@ async def ai_complete(
                             log.warning("OpenRouter: Key ungültig")
                             _cb_fail("OpenRouter")
                             break
+                        elif r.status == 429:
+                            _cb_rate_limit("OpenRouter", 60)
+                            or_fail_count = 0  # Rate-Limit ≠ harter Fehler
+                            break
                         else:
                             log.debug("OpenRouter %s auf %s — nächstes Modell", r.status, model)
                             or_fail_count += 1
