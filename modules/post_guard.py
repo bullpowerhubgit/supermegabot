@@ -51,9 +51,9 @@ _BASE = Path(__file__).parent.parent
 _DB   = _BASE / "data" / "post_guard.db"
 
 # ── Konfiguration ─────────────────────────────────────────────────────────────
-AI_SCORE_AUTO_APPROVE = 7    # >= 7 → sofort posten
-AI_SCORE_AUTO_REJECT  = 4    # <= 4 → sofort blockieren
-TELEGRAM_APPROVAL_TIMEOUT = 300  # 5 Minuten
+AI_SCORE_AUTO_APPROVE = 6    # >= 6 → sofort posten (war 7, zu restriktiv)
+AI_SCORE_AUTO_REJECT  = 3    # <= 3 → sofort blockieren (war 4)
+TELEGRAM_APPROVAL_TIMEOUT = 90   # 90s (war 300s — zu lange, führte zu auto-REJECT)
 
 BLOCKED_PATTERNS = [
     r"\blorem ipsum\b", r"\bundefined\b", r"\bnull\b", r"\bNaN\b",
@@ -64,10 +64,20 @@ BLOCKED_PATTERNS = [
 _compiled_blocks = [re.compile(p, re.IGNORECASE) for p in BLOCKED_PATTERNS]
 
 NICHE_KEYWORDS = [
+    # Core Nische
     "smart", "tech", "ki", "ai", "solar", "automatisierung", "automation",
     "shopify", "e-commerce", "digital", "gadget", "robot", "sensor",
     "wlan", "wifi", "app", "smart home", "e-bike", "powerstation",
     "online", "shop", "umsatz", "revenue", "business", "marketing",
+    # Erweitert — Smart Home / Gadgets
+    "led", "bluetooth", "usb", "ladekabel", "akku", "batterie", "energie",
+    "kamera", "sicherheit", "alarm", "temperatur", "luftqualität",
+    "steckdose", "schalter", "dimmer", "thermostat", "heizung",
+    "produktempfehlung", "angebot", "rabatt", "sale", "deal", "kaufen",
+    "ineedit", "aiitec", "shopify", "amazon", "aliexpress",
+    # Business / SaaS
+    "saas", "software", "tool", "platform", "service", "lösung", "system",
+    "lead", "kunde", "conversion", "traffic", "seo", "content",
 ]
 
 ContentType = Literal["social", "email", "product", "sms"]

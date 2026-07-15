@@ -27,6 +27,11 @@ def _openai():      return os.getenv("OPENAI_API_KEY", "")
 def _perplexity():  return os.getenv("PERPLEXITY_API_KEY", "")
 def _tg_bot():      return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat():     return os.getenv("TELEGRAM_CHAT_ID", "")
+# Neue kostenlose Provider
+def _cerebras():    return os.getenv("CEREBRAS_API_KEY", "")
+def _together():    return os.getenv("TOGETHER_API_KEY", "")
+def _sambanova():   return os.getenv("SAMBANOVA_API_KEY", "")
+def _mistral():     return os.getenv("MISTRAL_API_KEY", "")
 
 # ── OpenClaw / Ollama Konfiguration ────────────────────────────────────────────
 def _ollama_base()  : return os.getenv("OLLAMA_BASE", "http://localhost:11434")
@@ -48,7 +53,26 @@ _OR_FREE_MODELS = [
     "mistralai/mistral-7b-instruct:free",
     "qwen/qwen3-0.6b:free",
     "microsoft/phi-3-mini-128k-instruct:free",
+    "google/gemma-3-12b-it:free",
+    "deepseek/deepseek-r1-0528:free",
+    "tngtech/deepseek-r1t-chimera:free",
 ]
+
+# ── Cerebras Modelle (kostenlos, sehr schnell) ─────────────────────────────────
+_CEREBRAS_MODELS = ["llama-4-scout-17b-16e-instruct", "llama-3.3-70b"]
+_CEREBRAS_BASE   = "https://api.cerebras.ai/v1/chat/completions"
+
+# ── SambaNova Modelle (kostenlos) ──────────────────────────────────────────────
+_SAMBANOVA_MODELS = ["Meta-Llama-3.3-70B-Instruct", "Meta-Llama-3.1-405B-Instruct"]
+_SAMBANOVA_BASE   = "https://api.sambanova.ai/v1/chat/completions"
+
+# ── Together AI Modelle (kostenlos-Tier) ───────────────────────────────────────
+_TOGETHER_MODELS = ["meta-llama/Llama-3-8b-chat-hf", "mistralai/Mistral-7B-Instruct-v0.3"]
+_TOGETHER_BASE   = "https://api.together.xyz/v1/chat/completions"
+
+# ── Mistral API (kostenlos-Tier) ───────────────────────────────────────────────
+_MISTRAL_MODELS = ["mistral-small-latest", "open-mistral-7b"]
+_MISTRAL_BASE   = "https://api.mistral.ai/v1/chat/completions"
 
 # ── Gemini Modelle (kostenlos) ─────────────────────────────────────────────────
 _GEMINI_MODELS = [
@@ -72,13 +96,13 @@ _last_provider: str = ""
 _monitor_running: bool = False
 _last_all_failed_log: float = 0.0
 
-# Globales Semaphore: max. 3 gleichzeitige AI-Calls → kein Thundering-Herd bei 344 Tasks
+# Globales Semaphore: max. 8 gleichzeitige AI-Calls (erhöht da 4 Groq + 9 OR Modelle verfügbar)
 _AI_SEM: Optional[asyncio.Semaphore] = None
 
 def _get_sem() -> asyncio.Semaphore:
     global _AI_SEM
     if _AI_SEM is None:
-        _AI_SEM = asyncio.Semaphore(3)
+        _AI_SEM = asyncio.Semaphore(8)
     return _AI_SEM
 
 
@@ -309,7 +333,44 @@ async def _probe_all_providers() -> None:
         except Exception:
             _openclaw_last_check = time.time()
 
-    await asyncio.gather(try_openclaw(), try_groq(), try_deepseek(), try_openrouter(), try_anthropic())
+    async def try_cerebras():
+        if not _cerebras() or not _cb_ok("Cerebras"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(_CEREBRAS_BASE, headers={"Authorization": f"Bearer {_cerebras()}", "Content-Type": "application/json"},
+                    json={"model": _CEREBRAS_MODELS[0], "messages": [{"role": "user", "content": "ok"}], "max_tokens": 5}) as r:
+                    if r.status == 200:
+                        _cb_reset("Cerebras")
+        except Exception:
+            _cb_fail("Cerebras")
+
+    async def try_sambanova():
+        if not _sambanova() or not _cb_ok("SambaNova"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(_SAMBANOVA_BASE, headers={"Authorization": f"Bearer {_sambanova()}", "Content-Type": "application/json"},
+                    json={"model": _SAMBANOVA_MODELS[0], "messages": [{"role": "user", "content": "ok"}], "max_tokens": 5}) as r:
+                    if r.status == 200:
+                        _cb_reset("SambaNova")
+        except Exception:
+            _cb_fail("SambaNova")
+
+    async def try_mistral():
+        if not _mistral() or not _cb_ok("Mistral"):
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(_MISTRAL_BASE, headers={"Authorization": f"Bearer {_mistral()}", "Content-Type": "application/json"},
+                    json={"model": _MISTRAL_MODELS[0], "messages": [{"role": "user", "content": "ok"}], "max_tokens": 5}) as r:
+                    if r.status == 200:
+                        _cb_reset("Mistral")
+        except Exception:
+            _cb_fail("Mistral")
+
+    await asyncio.gather(try_openclaw(), try_groq(), try_deepseek(), try_openrouter(), try_anthropic(),
+                         try_cerebras(), try_sambanova(), try_mistral())
 
 
 def start_health_monitor() -> None:
@@ -453,33 +514,47 @@ async def _ai_complete_inner(
             _openclaw_online = False
             _openclaw_last_check = time.time()
 
-    # ── 1. Groq (llama-3.1-8b-instant — schnell, kostenlos) ───────────────────
+    # ── 1. Groq (4-Modell-Rotation: llama/gemma/mixtral — alle kostenlos) ────────
+    _GROQ_ROTATION = [
+        "llama-3.1-8b-instant",
+        "llama-3.3-70b-versatile",
+        "gemma2-9b-it",
+        "mixtral-8x7b-32768",
+    ]
     if _groq() and _cb_ok("Groq"):
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-                async with s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_groq()}", "Content-Type": "application/json"},
-                    json={"model": "llama-3.1-8b-instant", "max_tokens": max_tokens, "messages": messages},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
-                        if text:
-                            _cb_success("Groq")
-                            return text
-                    if r.status in (401, 403):
-                        log.warning("Groq: Key ungültig (%s)", r.status)
-                        _cb_fail("Groq")
-                    elif r.status == 429:
-                        log.debug("Groq: Rate-Limit — 90s Pause")
-                        _cb_rate_limit("Groq", 90)
-                    else:
-                        log.debug("Groq: HTTP %s", r.status)
-                        _cb_fail("Groq")
-        except Exception as e:
-            log.debug("Groq error: %s", e)
-            _cb_fail("Groq")
+        for _gm in _GROQ_ROTATION:
+            _gm_cb = f"Groq:{_gm}"
+            if not _cb_ok(_gm_cb):
+                continue
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
+                    async with s.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {_groq()}", "Content-Type": "application/json"},
+                        json={"model": _gm, "max_tokens": max_tokens, "messages": messages},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("Groq")
+                                if _gm_cb in _CB:
+                                    _CB[_gm_cb]["fails"] = 0
+                                return text
+                        elif r.status in (401, 403):
+                            log.warning("Groq: Key ungültig (%s)", r.status)
+                            _cb_fail("Groq")
+                            break
+                        elif r.status == 429:
+                            log.debug("Groq/%s: Rate-Limit — 120s Pause, nächstes Modell", _gm)
+                            _cb_rate_limit(_gm_cb, 120)
+                            continue
+                        else:
+                            log.debug("Groq/%s: HTTP %s", _gm, r.status)
+                            _cb_fail(_gm_cb)
+            except Exception as e:
+                log.debug("Groq/%s error: %s", _gm, e)
+                _cb_fail(_gm_cb)
 
     # ── 2. DeepSeek (günstig, gut) ─────────────────────────────────────────────
     if _deepseek() and _cb_ok("DeepSeek"):
@@ -685,7 +760,67 @@ async def _ai_complete_inner(
                 log.debug("Perplexity error: %s", e)
                 _cb_fail("Perplexity")
 
-    # ── 8. Ollama (lokal / OpenClaw) ───────────────────────────────────────────
+    # ── 8. Cerebras (kostenlos, sehr schnell) ──────────────────────────────────
+    if _cerebras() and _cb_ok("Cerebras"):
+        for model in _CEREBRAS_MODELS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(_CEREBRAS_BASE,
+                        headers={"Authorization": f"Bearer {_cerebras()}", "Content-Type": "application/json"},
+                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("Cerebras")
+                                log.info("APIHunt: Cerebras OK model=%s", model)
+                                return text
+            except Exception as e:
+                log.debug("Cerebras %s: %s", model, e)
+        _cb_fail("Cerebras")
+
+    # ── 9. SambaNova (kostenlos) ────────────────────────────────────────────────
+    if _sambanova() and _cb_ok("SambaNova"):
+        for model in _SAMBANOVA_MODELS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                    async with s.post(_SAMBANOVA_BASE,
+                        headers={"Authorization": f"Bearer {_sambanova()}", "Content-Type": "application/json"},
+                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("SambaNova")
+                                log.info("APIHunt: SambaNova OK model=%s", model)
+                                return text
+            except Exception as e:
+                log.debug("SambaNova %s: %s", model, e)
+        _cb_fail("SambaNova")
+
+    # ── 10. Mistral API ─────────────────────────────────────────────────────────
+    if _mistral() and _cb_ok("Mistral"):
+        for model in _MISTRAL_MODELS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(_MISTRAL_BASE,
+                        headers={"Authorization": f"Bearer {_mistral()}", "Content-Type": "application/json"},
+                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("Mistral")
+                                log.info("APIHunt: Mistral OK model=%s", model)
+                                return text
+            except Exception as e:
+                log.debug("Mistral %s: %s", model, e)
+        _cb_fail("Mistral")
+
+    # ── 11. Ollama (lokal / OpenClaw) ───────────────────────────────────────────
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
