@@ -72,11 +72,22 @@ Quantum Self-Improver, Quantum Self-Repair, Auto Token Refresher
 - ⚠️ Mailchimp: alle Keys abgelaufen → neu holen auf mailchimp.com/account/api
 
 ## ⏳ OFFENE PUNKTE
-1. Instagram Token: Erneuerung vor 2026-09-06
-2. Facebook Groups: Meta App Review ausstehend
-3. Meta Ad: "Wird bearbeitet" → auf "Aktiv" warten → ROAS prüfen
-4. Reddit Contributor Program: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
-5. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
+1. Facebook Groups: Meta App Review ausstehend
+2. Meta Ad: "Wird bearbeitet" → auf "Aktiv" warten → ROAS prüfen
+3. Reddit Contributor Program: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
+4. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
+5. GMC Identitätsverifizierung: merchants.google.com → Banner "Identität bestätigen" → Personalausweis hochladen
+
+## ✅ ABGESCHLOSSEN (2026-07-15)
+- GMC Feed registriert: 316 Produkte live (PRODUCTS SOURCE 18), feed mit g:content_language=de + g:target_country=DE (commit d92c9111)
+- Twilio Webhooks gesetzt: Voice → /api/phone/incoming (war /api/voice/incoming), SMS war korrekt
+- GitHub Actions RAILWAY_TOKEN erneuert (gh secret set, 18:14 Uhr)
+- WhatsApp Token: gültig (System User Token gesetzt, expires_at=0, permanent)
+- Meta/Instagram: Alle Tokens → SuperMegaBotSystem System User Token (31 Scopes, nie ablaufend)
+- AIHunt CB-Fixes: OpenRouter/Perplexity 429 → rate_limit statt CB-Fail, Semaphore(3), Log-Throttle
+- Gmail 550/5.4.5: Zentral in gmail_accounts.py (GMAIL_DAILY_EXHAUSTED Set)
+- Mailchimp us5 Key gesetzt (rudolfsarkany1984@gmail.com, Liste AIITEC ID bc5c7887cf)
+- Telegram @DudiRudibot Token erneuert (8600739487:AAHk_DEJa7O5...)
 
 ## 🔄 SHOPIFY FULL AUTONOMY — LÄUFT (09.07.2026 16:26)
 Script: `shopify_full_autonomy_continue.py` (PID 39137)

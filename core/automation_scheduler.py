@@ -426,6 +426,18 @@ async def task_github_backup() -> str:
         return f"GitHub Backup: {e}"
 
 
+async def task_claude_watchdog() -> str:
+    """Claude Guardian — autonomer 6h-Check: Health, Revenue, Errors → Telegram-Report."""
+    try:
+        from modules.claude_watchdog import run_watchdog
+        result = await run_watchdog()
+        issues = result.get("issues", [])
+        rev = result.get("revenue", {}).get("total_today", 0)
+        return f"Watchdog OK — €{rev:.2f} heute, {len(issues)} Issues"
+    except Exception as e:
+        return f"Watchdog Fehler: {e}"
+
+
 async def task_system_health() -> str:
     """Check system resources, alert on critical thresholds."""
     try:
@@ -7917,6 +7929,7 @@ TASKS = [
     ("buyer_traffic_engine",   task_buyer_traffic_engine,    14400, 4010),  # 4h — Reddit Answers+SEO Blog+Klaviyo+TG+Deals
     # ── Real-time (every few minutes) ────────────────────────────────────────
     ("system_health",           task_system_health,           300,    10),   # 5 min
+    ("claude_watchdog",         task_claude_watchdog,         21600, 1200),  # 6h — Claude Guardian
     ("railway_health",          task_railway_health,          600,    20),   # 10 min
     ("shopify_orders_alert",    task_shopify_orders_alert,    600,    15),   # 10 min
     # ── Sales & Orders (every 15-30 min) ─────────────────────────────────────
