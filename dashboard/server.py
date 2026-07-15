@@ -3540,7 +3540,10 @@ async def handle_social_drafts(req):
     import json as _json
     from datetime import timezone as _tz, datetime as _dt
     try:
-        import anthropic as _anthropic
+        try:
+            import modules.anthropic_compat as _anthropic
+        except ImportError:
+            import anthropic as _anthropic
         api_key = os.getenv("ANTHROPIC_API_KEY", "")
         if not api_key:
             return web.json_response({"ok": False, "error": "ANTHROPIC_API_KEY not configured"}, status=500)
@@ -4211,7 +4214,10 @@ async def handle_telegram_webhook(req):
 
         # --- AI Antwort ---
         try:
-            import anthropic
+            try:
+                import modules.anthropic_compat as anthropic
+            except ImportError:
+                import anthropic
             client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
             reply_msg = client.messages.create(
                 model="claude-haiku-4-5-20251001",
@@ -10458,6 +10464,15 @@ async def create_app():
         log.warning("APIHunt Monitor start failed: %s", e)
 
     app = web.Application(middlewares=[logging_middleware, cors_middleware])
+
+    # Connection-Pool Cleanup beim Shutdown
+    async def _close_connection_pool(application):
+        try:
+            from modules.connection_pool import close_pool
+            await close_pool()
+        except Exception:
+            pass
+    app.on_cleanup.append(_close_connection_pool)
     app["bot"] = bot
 
     # Existing routes

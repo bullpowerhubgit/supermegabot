@@ -266,7 +266,10 @@ async def classify_reply(sender: str, subject: str, body: str) -> dict:
     if not ANTHROPIC_KEY:
         return {"classification": "UNKNOWN", "product_key": "AI_ACT_REPORT", "reason": "kein API Key"}
 
-    import anthropic
+    try:
+        import modules.anthropic_compat as anthropic
+    except ImportError:
+        import anthropic
     client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 
     prompt = f"""Du bist ein Sales-Assistent. Klassifiziere diese Email-Antwort:

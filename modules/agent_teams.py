@@ -52,7 +52,10 @@ async def _call_claude(prompt: str, max_tokens: int = 1024) -> str:
     if not ANTHROPIC_API_KEY:
         return "[Claude unavailable — no ANTHROPIC_API_KEY]"
     try:
-        import anthropic
+        try:
+            import modules.anthropic_compat as anthropic
+        except ImportError:
+            import anthropic
         client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
         msg = await client.messages.create(
             model="claude-sonnet-4-6",
