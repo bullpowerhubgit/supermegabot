@@ -239,56 +239,25 @@ async def _submit_indexnow(session: aiohttp.ClientSession, article_url: str) -> 
 
 async def _post_telegram(session: aiohttp.ClientSession,
                           title: str, article_url: str) -> bool:
-    """Artikel-Ankündigung auf Telegram."""
-    if not TG_TOKEN or not TG_CHAT:
-        return False
+    """Artikel-Ankündigung auf Telegram — via Post Gateway."""
     text = (
-        f"📱 *Neuer Artikel:*\n"
-        f"_{title}_\n\n"
+        f"📱 <b>Neuer Artikel:</b>\n"
+        f"<i>{title}</i>\n\n"
         f"🔗 {article_url}\n\n"
         f"#SmartHome #Gadgets #Technik"
     )
-    async with session.post(
-        f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-        json={"chat_id": TG_CHAT, "text": text, "parse_mode": "Markdown"},
-        timeout=aiohttp.ClientTimeout(total=10)
-    ) as r:
-        ok = r.status == 200
-        if ok:
-            log.info("Telegram: Artikel gepostet")
-        return ok
+    from modules.post_gateway import safe_post
+    result = await safe_post("telegram", text, source_module="content_loop_engine")
+    return result.get("ok", False)
 
 
 async def _post_linkedin(session: aiohttp.ClientSession,
                           title: str, article_url: str, summary: str) -> bool:
-    """Artikel als LinkedIn Post (wenn Token vorhanden)."""
-    if not LINKEDIN_TOKEN or not LINKEDIN_URN:
-        return False
+    """Artikel als LinkedIn Post — via Post Gateway (5-Schicht-Prüfung)."""
     text = f"🔍 {title}\n\n{summary[:300]}...\n\n👉 {article_url}\n\n#SmartHome #Gadgets #Technologie"
-    payload = {
-        "author": LINKEDIN_URN,
-        "lifecycleState": "PUBLISHED",
-        "specificContent": {
-            "com.linkedin.ugc.ShareContent": {
-                "shareCommentary": {"text": text},
-                "shareMediaCategory": "NONE"
-            }
-        },
-        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
-    }
-    async with session.post(
-        "https://api.linkedin.com/v2/ugcPosts",
-        headers={"Authorization": f"Bearer {LINKEDIN_TOKEN}",
-                 "Content-Type": "application/json"},
-        json=payload,
-        timeout=aiohttp.ClientTimeout(total=15)
-    ) as r:
-        ok = r.status in (200, 201)
-        if ok:
-            log.info("LinkedIn: Artikel gepostet")
-        else:
-            log.debug("LinkedIn Fehler %s", r.status)
-        return ok
+    from modules.post_gateway import safe_post
+    result = await safe_post("linkedin", text, source_module="content_loop_engine")
+    return result.get("ok", False)
 
 
 async def _post_devto(session: aiohttp.ClientSession,

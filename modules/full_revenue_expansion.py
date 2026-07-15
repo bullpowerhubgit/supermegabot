@@ -1033,7 +1033,7 @@ async def push_digital_products() -> Dict:
             if not url:
                 continue
 
-            subject = f"Du nutzt nur {30 + i % 40}% deines Einkommenspotenzials — hier ist der Rest"
+            subject = f"{dp['emoji']} {dp['name']} — Jetzt für {dp['price']} verfügbar"
             html    = _build_digital_product_email(name, dp, url)
             ok = await _send_sendgrid(email, subject, html)
             if ok:
@@ -1072,8 +1072,7 @@ def _build_digital_product_email(name: str, dp: Dict, url: str) -> str:
 <h2 style="color:#f39c12;">{dp['emoji']} {dp['name']}</h2>
 <h3 style="color:#ddd;">{greeting}</h3>
 <p style="color:#b0b0b0;font-size:16px;line-height:1.6;">
-Die meisten Menschen nutzen weniger als 30% ihres finanziellen Potenzials.
-Nicht weil sie nicht könnten — sondern weil sie nicht <em>wissen</em> wie.
+Entdecke {dp['name']} — das digitale Tool das deinen Workflow auf das nächste Level bringt.
 </p>
 <p style="color:#c0c0c0;font-size:15px;line-height:1.6;">{dp['hook']}</p>
 <div style="background:#0f3460;border-radius:8px;padding:20px;margin:20px 0;text-align:center;">
