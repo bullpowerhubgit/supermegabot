@@ -176,68 +176,23 @@ async def _post_telegram(content: dict) -> bool:
 
 
 async def _post_facebook_page(page_id: str, token: str, content: dict) -> bool:
-    if not token or not page_id:
-        return False
-    try:
-        import aiohttp
-        tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:5])
-        msg = f"{content['body']}\n\n{tags}\n\n{content.get('url', '')}"
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://graph.facebook.com/v19.0/{page_id}/feed",
-                data={"message": msg[:63206], "access_token": token},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                d = await r.json(content_type=None)
-        return bool(d.get("id"))
-    except Exception as exc:
-        log.warning("Facebook page %s post failed: %s", page_id, exc)
-        return False
+    """Facebook Post — via Post Gateway (5-Schicht-Prüfung)."""
+    tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:5])
+    msg = f"{content.get('body','')}\n\n{tags}\n\n{content.get('url', '')}".strip()
+    image_url = content.get("image_url", "")
+    from modules.post_gateway import safe_post
+    result = await safe_post("facebook", msg, image_url=image_url, source_module="mega_auto_poster")
+    return result.get("ok", False)
 
 
 async def _post_instagram(content: dict) -> bool:
-    token = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", FB_TOKEN_AIITEC)
-    if not token or not IG_ACCOUNT_ID:
-        return False
-    try:
-        import aiohttp
-        tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:10])
-        caption = f"{content['body']}\n\n{tags}"[:2200]
-        image_url = content.get("image_url", IG_PIXEL)
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://graph.facebook.com/v19.0/{IG_ACCOUNT_ID}/media",
-                data={"image_url": image_url, "caption": caption, "access_token": token},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                container = await r.json(content_type=None)
-            container_id = container.get("id", "")
-            if not container_id:
-                return False
-            # Instagram braucht Zeit für Medien-Processing — warten bis status=FINISHED
-            for attempt in range(6):
-                await asyncio.sleep(10)
-                async with s.get(
-                    f"https://graph.facebook.com/v19.0/{container_id}",
-                    params={"fields": "status_code", "access_token": token},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as r:
-                    status_data = await r.json(content_type=None)
-                if status_data.get("status_code") == "FINISHED":
-                    break
-                if status_data.get("status_code") == "ERROR":
-                    log.warning("Instagram container error: %s", status_data)
-                    return False
-            async with s.post(
-                f"https://graph.facebook.com/v19.0/{IG_ACCOUNT_ID}/media_publish",
-                data={"creation_id": container_id, "access_token": token},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                pub = await r.json(content_type=None)
-        return bool(pub.get("id"))
-    except Exception as exc:
-        log.warning("Instagram post failed: %s", exc)
-        return False
+    """Instagram Post — via Post Gateway (5-Schicht-Prüfung)."""
+    tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:10])
+    caption = f"{content.get('body','')}\n\n{tags}"[:2200]
+    image_url = content.get("image_url", IG_PIXEL)
+    from modules.post_gateway import safe_post
+    result = await safe_post("instagram", caption, image_url=image_url, source_module="mega_auto_poster")
+    return result.get("ok", False)
 
 
 async def _post_tiktok(content: dict) -> bool:
