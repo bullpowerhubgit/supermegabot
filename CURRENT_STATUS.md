@@ -1,5 +1,15 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 — QUALITÄTSSICHERUNG KOMPLETT + SEO TURBO + RAILWAY LIVE**
+**Stand: 2026-07-15 19:00 UTC — SYSTEM-CHECK ABGESCHLOSSEN ✅**
+
+## 🤖 AUTONOMER CHECK 2026-07-15 19:00 UTC
+| Fehler | Fix | Status |
+|--------|-----|--------|
+| Gmail-Credentials fehlten auf Railway | 10 Keys gesetzt (GMAIL_USER/APP_PASSWORD 1,3,5,7,8 + Aliase) | ✅ |
+| Shopify-Token fehlten auf Railway | 4 Keys gesetzt (ADMIN_API_TOKEN, ACCESS_TOKEN, DOMAIN, VERSION) | ✅ |
+| Supabase `revenue_snapshots` fehlte `grand_total`, `source`, `note` | Spalten per ALTER TABLE hinzugefügt | ✅ |
+| AIITEC IMAP altes Passwort (rqcd...) | Korrekte Credentials gesetzt | ✅ |
+| Telegram Rate-Limit | 429 — zu viele Nachrichten — Watchdog braucht Rate-Limit-Schutz | ⚠️ |
+| Health: Server online | circuits_open=[], uptime=383s | ✅ |
 
 ## ✅ QUALITÄTSSICHERUNG (2026-07-15 — DAUERHAFT IMPLEMENTIERT)
 | System | Status | Abdeckung |
@@ -8,11 +18,33 @@
 | **PostValidator** (post_validator.py) | ✅ AKTIV | 5 Layer: Sanity, Spam, Nischen-Check, KI 7/10, Duplikat |
 | **HttpGuard** (http_guard.py) | ✅ AKTIV | Fail-Safe: false bei Fehler (nicht mehr silent-pass!) |
 | **Post Gateway** (post_gateway.py) | ✅ AKTIV | Central hub FB/IG/LI/TW/TG + 5-Schicht + Telegram-Alert |
-| **Email Guardian** (email_guardian.py) | ✅ NEU | 6 Layer: Empfänger, Placeholder, localhost, Spam, Duplikat |
-| **Email Guardian v2** (email_guard.py) | ✅ AKTIV | 6 Layer: Format, Placeholder, Spam, Bounce, Duplikat, KI |
-| **SEO Turbo** (shopify_seo_auto.py) | ✅ NEU | 100 Produkte/2h via Cursor-Pagination (1200/Tag, alle 10k in 8 Tagen) |
-| **IndexNow Turbo** (traffic_max_orchestrator.py) | ✅ NEU | 500 URLs alle 3h → Bing+Yandex sofort indexiert |
-| **APIHunt Watchdog** (traffic_max_orchestrator.py) | ✅ NEU | 8 Provider check stündlich → Telegram-Alert falls < 2 aktiv |
+| **Email Guardian** (email_guardian.py) | ✅ AKTIV | 6 Layer: Empfänger, Placeholder, localhost, Spam, Duplikat |
+| **Bounce Auto-Fixer** (email_bounce_fixer.py) | ✅ NEU | IMAP-Scan alle 5min → Mailchimp/Klaviyo/Sequenz auto-unsubscribe → TG-Alert |
+| **EmailGuard v2** (email_guard.py) | ✅ AKTIV | 6 Layer: Format, Placeholder, Spam, Bounce-Blocklist, Duplikat, KI (min 4/10) |
+| **BounceWatcher** (bounce_watcher.py) | ✅ AKTIV | IMAP-Scan alle 30min → Blocklist + Gmail-Cleanup (Trash+Expunge) |
+| **SEO Scaler** (seo_scaler.py) | ✅ AKTIV | AI-SEO alle Shopify-Produkte + 5 Bundles auto-erstellt (alle 6h) |
+| **APIHunt 11 Provider** (ai_client.py) | ✅ AKTIV | +4 neu: Cerebras, SambaNova, Mistral, Together AI |
+| **SEO Turbo** (shopify_seo_auto.py) | ✅ AKTIV | 100 Produkte/2h via Cursor-Pagination (1200/Tag) |
+| **IndexNow Turbo** (traffic_max_orchestrator.py) | ✅ AKTIV | 500 URLs alle 3h → Bing+Yandex sofort indexiert |
+| **APIHunt Watchdog** (traffic_max_orchestrator.py) | ✅ AKTIV | 11 Provider check stündlich → Telegram-Alert falls < 2 aktiv |
+
+## ⚡ NEU (2026-07-15 — POST/EMAIL GUARD + SEO SCALER)
+- **PostGuard v2 + Post Gateway**: JEDER Social Post muss 5 Layer bestehen (FB/IG/LI/TW/TG)
+  - post_guard.py: 6 Layer inkl. KI-Score; HttpGuard fail-safe (war silent-pass → 90% Fehlerquote)
+  - post_gateway.py: Zentral-Hub; alle Poster-Module umgestellt (mega_auto_poster, content_loop_engine, viral_promo_poster, linkedin_poster, instagram_pipeline, twitter_auto_poster)
+- **EmailGuard v2**: validate_email() vor JEDEM smtp_email.send_email() — Format+Placeholder+Bounce+Duplikat+KI
+- **BounceWatcher**: smtp_email.py triggert 30s nach Send einen bounce_watcher scan; Bounce-Mails werden aus Gmail gelöscht (Trash+Expunge)
+- **SEO Scaler + APIHunt +4**: seo_scaler.py (Shopify AI-SEO alle 6h), ai_client.py (11 Provider)
+
+## ⚡ NEU (2026-07-15 — BOUNCE AUTO-FIXER)
+- **BOUNCE AUTO-FIXER** — email_bounce_fixer.py (neu, läuft alle 5min):
+  - IMAP-Scan Gmail auf Mailer-Daemon/Delivery-Failed/Undeliverable
+  - Extraktion der fehlerhaften Adresse (RFC 3464, Postfix, Exchange, Google Formats)
+  - Auto-Fix: Mailchimp unsubscribe + Klaviyo suppress + Sequence deaktivieren + Outreach-DB
+  - Gmail-Postfach aufräumen: Bounce-Email als gelesen markieren
+  - SQLite Bounce-Blacklist: is_blacklisted() für andere Module nutzbar
+  - Dashboard: POST /api/email/bounce-fix + GET /api/email/bounce-blacklist
+  - Telegram-Report: was wurde gefixed + welche Adressen
 
 ## ⚡ NEU (2026-07-15)
 - POST GATEWAY: Alle 5 wichtigsten Poster-Module auf Gateway umgestellt
