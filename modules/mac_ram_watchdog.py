@@ -301,22 +301,30 @@ def run_ram_watchdog() -> dict:
         _mark_alerted(state, "ram_warn")
         result["alerts"].append(f"ram:{ram['pct']:.0f}%")
 
-    # ── 3. Disk-Überwachung + Auto-Cleanup ──────────────────────────────────
+    # ── 3. TM-Snapshots: IMMER alle 2 Stunden löschen (bauen 30+ GB/Tag auf) ──
+    if _cooldown_ok(state, "tm_snapshots", 120):
+        snaps = delete_tm_snapshots()
+        if snaps > 0:
+            _mark_alerted(state, "tm_snapshots")
+            result["actions"].append(f"tm_snapshots_deleted: {snaps}")
+            log.info("TM-Snapshots regelmässig gelöscht: %d", snaps)
+
+    # ── 4. Disk-Überwachung + Auto-Cleanup ──────────────────────────────────
     if disk_gb < DISK_CRIT_GB:
         result["ok"] = False
         if _cooldown_ok(state, "disk_crit", 60):
-            _tg(f"🔴 *Disk Kritisch: nur {disk_gb:.1f} GB frei!*\nLösche TM-Snapshots...")
+            _tg(f"🔴 *Disk Kritisch: nur {disk_gb:.1f} GB frei!*\nLösche TM-Snapshots + Cache...")
             snaps = delete_tm_snapshots()
             cleanup = trigger_disk_cleanup(force=True)
             evict_icloud_cache()
             freed  = cleanup.get("freed_mb", 0)
             after  = cleanup.get("free_after_gb", disk_gb)
             _tg(f"🧹 Disk-Notfall-Cleanup:\n"
-                f"TM-Snapshots gelöscht: {snaps}\n"
-                f"Caches befreit: {freed:.0f} MB\n"
+                f"TM-Snapshots: {snaps}\n"
+                f"Caches: {freed:.0f} MB\n"
                 f"Jetzt frei: {after:.1f} GB")
             _mark_alerted(state, "disk_crit")
-            result["actions"].append(f"disk_crit_cleanup: {freed:.0f}MB + {snaps} snapshots")
+            result["actions"].append(f"disk_crit_cleanup: {freed:.0f}MB + {snaps}snap")
 
     elif disk_gb < DISK_CLEAN_GB:
         if _cooldown_ok(state, "disk_clean", 90):
