@@ -71,6 +71,15 @@ _CB_BACKOFF_MAX = 3600   # 1h max
 _last_provider: str = ""
 _monitor_running: bool = False
 
+# Globales Semaphore: max. 5 gleichzeitige AI-Calls → kein Thundering-Herd bei 344 Tasks
+_AI_SEM: Optional[asyncio.Semaphore] = None
+
+def _get_sem() -> asyncio.Semaphore:
+    global _AI_SEM
+    if _AI_SEM is None:
+        _AI_SEM = asyncio.Semaphore(5)
+    return _AI_SEM
+
 
 def _cb_ok(provider: str) -> bool:
     """Ist der Provider gerade verfügbar? (Circuit Breaker Check)"""
@@ -371,6 +380,16 @@ async def ai_complete(
     Kette: Groq → DeepSeek → OpenRouter (5 Modelle) → Gemini (3 Modelle)
            → Anthropic → OpenAI → Perplexity → Ollama → Template-Fallback
     """
+    async with _get_sem():
+        return await _ai_complete_inner(prompt=prompt, system=system, model_hint=model_hint, max_tokens=max_tokens)
+
+
+async def _ai_complete_inner(
+    prompt: str,
+    system: str = "",
+    model_hint: str = "fast",
+    max_tokens: int = 1200,
+) -> str:
     import aiohttp
 
     messages = []
