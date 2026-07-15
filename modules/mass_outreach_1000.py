@@ -94,49 +94,67 @@ FOLLOWUP_D2    = 11
 UNSUBSCRIBE_BASE = _e("RAILWAY_PUBLIC_DOMAIN",
                        "supermegabot-production.up.railway.app")
 
+# ── Stripe Payment Links (aus .env, zur Laufzeit geladen) ────────────────────
+def _stripe(env_var: str, fallback: str = "https://aiitec.de") -> str:
+    return os.getenv(env_var) or fallback
+
 # ── Zielgruppen (Branchen → Email-Pitch-Track) ─────────────────────────────
 INDUSTRY_TRACKS: Dict[str, Dict] = {
     "E-Commerce": {
-        "subject": "Automatisiere deinen Shopify-Shop komplett — Demo gefällig?",
+        "subject": "Automatisiere deinen Shopify-Shop komplett — direkt starten",
         "hook": "Shopify-Händler mit 50+ Produkten reduzieren mit unserer KI-Suite 80% der manuellen Arbeit.",
-        "cta": "Kostenlose 14-Tage-Demo buchen",
+        "cta": "Jetzt Starter-Paket bestellen (€49/Mo)",
         "url": "https://shopify-brutal-tuning.vercel.app",
+        "stripe_env": "STRIPE_LINK_STARTER",
+        "stripe_price": "€49/Monat",
     },
     "IT-Dienstleister": {
-        "subject": "KI-Mitarbeiter auf Abruf — Reseller-Programm mit 30% Provision",
+        "subject": "KI-Mitarbeiter auf Abruf — 30% Provision als Reseller",
         "hook": "IT-Dienstleister die unsere KI-Agenten als White-Label anbieten, verdienen 30% recurring.",
-        "cta": "Partnerschaft unverbindlich anfragen",
+        "cta": "Enterprise-Partnerschaft starten (€299/Mo)",
         "url": "https://bullpower-hub.vercel.app",
+        "stripe_env": "STRIPE_LINK_ENTERPRISE",
+        "stripe_price": "€299/Monat",
     },
     "Marketing-Agentur": {
-        "subject": "5× mehr Content in 1/10 der Zeit — KI-Content-Suite für Agenturen",
+        "subject": "5× mehr Content in 1/10 der Zeit — Pro-Plan jetzt",
         "hook": "Marketing-Agenturen nutzen unseren CreatorAI-Stack für Social, Blog und Ads — vollautomatisch.",
-        "cta": "Agentur-Demo anfordern",
+        "cta": "Pro-Plan starten (€99/Mo)",
         "url": "https://creatorai-ultra.vercel.app",
+        "stripe_env": "STRIPE_LINK_PRO",
+        "stripe_price": "€99/Monat",
     },
     "Steuerberater": {
-        "subject": "EU AI Act Compliance-Tool für Ihre Mandanten — kostenlos testen",
+        "subject": "EU AI Act Compliance-Tool — kostenlos testen, dann €49/Mo",
         "hook": "Ab 2026 müssen Ihre Mandanten den EU AI Act erfüllen. Wir liefern das Audit-Tool.",
-        "cta": "Kostenlos testen",
+        "cta": "Starter-Paket sichern (€49/Mo)",
         "url": "https://bullpower-steuercockpit.netlify.app",
+        "stripe_env": "STRIPE_LINK_STARTER",
+        "stripe_price": "€49/Monat",
     },
     "Handwerk": {
-        "subject": "Mehr Aufträge ohne Werbung — KI-Akquise für Handwerksbetriebe",
+        "subject": "Mehr Aufträge ohne Werbung — KI-Akquise ab €49/Mo",
         "hook": "Handwerksbetriebe finden mit unserem System automatisch Neukunden in ihrer Region.",
-        "cta": "Gratis Demo vereinbaren",
+        "cta": "Starter sofort buchen (€49/Mo)",
         "url": "https://autoincome-ai.vercel.app",
+        "stripe_env": "STRIPE_LINK_STARTER",
+        "stripe_price": "€49/Monat",
     },
     "Handel": {
-        "subject": "Automatisierter Produktimport + SEO für Ihren Online-Shop",
+        "subject": "1.000 Produkte/Tag automatisch importieren — direkt bestellen",
         "hook": "Importieren Sie 1.000+ Produkte täglich, komplett mit SEO-Texten und Kategorien.",
-        "cta": "Shop-Demo starten",
+        "cta": "Pro-Plan aktivieren (€99/Mo)",
         "url": "https://shopify-acquisition-engine.vercel.app",
+        "stripe_env": "STRIPE_LINK_PRO",
+        "stripe_price": "€99/Monat",
     },
     "Default": {
-        "subject": "KI automatisiert Ihr Business — Demo für {company}",
+        "subject": "KI automatisiert {company} — direkt starten ab €49",
         "hook": "Unternehmen wie {company} sparen 20+ Stunden/Woche durch unsere KI-Automatisierung.",
-        "cta": "Jetzt kostenlos testen",
+        "cta": "Starter-Paket bestellen (€49/Mo)",
         "url": "https://bullpower-hub.vercel.app",
+        "stripe_env": "STRIPE_LINK_STARTER",
+        "stripe_price": "€49/Monat",
     },
 }
 
@@ -790,53 +808,73 @@ async def run_research(session_limit: int = 2000) -> Dict:
 # ── AI Email Writer ───────────────────────────────────────────────────────────
 async def _ai_personalize(company: str, industry: str, city: str,
                             contact: str = "") -> Tuple[str, str]:
-    """Generiert personalisierten Subject + Email-Body via Claude."""
-    track = INDUSTRY_TRACKS.get(industry, INDUSTRY_TRACKS["Default"])
-    subject = track["subject"].replace("{company}", company)
-    first_name = contact.split()[0] if contact else "Hallo"
-    unsub_hash = hashlib.md5(f"{company}{industry}".encode()).hexdigest()[:8]
+    """Generiert personalisierten Subject + Email-Body (Groq → Claude → Template)."""
+    track       = INDUSTRY_TRACKS.get(industry, INDUSTRY_TRACKS["Default"])
+    subject     = track["subject"].replace("{company}", company)
+    stripe_url  = _stripe(track.get("stripe_env", "STRIPE_LINK_STARTER"))
+    stripe_price = track.get("stripe_price", "€49/Monat")
+
+    prompt = (
+        f"Schreibe eine kurze, personalisierte deutsche B2B-Kalt-Email (max 100 Wörter) für:\n"
+        f"Firma: {company} | Branche: {industry} | Stadt: {city}\n\n"
+        f"Hook: {track['hook'].replace('{company}', company)}\n"
+        f"Direkt-Bestell-Link: {stripe_url} ({stripe_price})\n\n"
+        f"Regeln:\n"
+        f"- Professionell aber menschlich, kein Spam-Stil\n"
+        f"- Den Stripe-Link DIREKT in die Email einbauen als klickbarer CTA\n"
+        f"- Beginne mit 'Guten Tag' falls kein Name bekannt\n"
+        f"- Ende mit: '▶ Jetzt direkt bestellen: {stripe_url}'\n"
+        f"- Kein Markdown, nur Plain Text"
+    )
+
+    # 1. Groq (schnell, kostenlos)
+    groq_key = _e("GROQ_API_KEY")
+    if groq_key:
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    json={"model": "llama-3.1-8b-instant", "max_tokens": 300,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=8),
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        body = data["choices"][0]["message"]["content"].strip()
+                        body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
+                        return subject, body
+        except Exception as e:
+            log.debug("Groq personalize fallback: %s", e)
+
+    # 2. Claude Haiku (Fallback)
     try:
         api_key = _e("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("No API key")
-        async with aiohttp.ClientSession() as session:
-            payload = {
-                "model": "claude-haiku-4-5-20251001",
-                "max_tokens": 400,
-                "messages": [{
-                    "role": "user",
-                    "content": (
-                        f"Schreibe eine kurze, personalisierte deutsche B2B-Kalt-Email (max 120 Wörter) für:\n"
-                        f"Firma: {company}\nBranche: {industry}\nStadt: {city}\n\n"
-                        f"Hook: {track['hook'].replace('{company}', company)}\n"
-                        f"CTA: {track['cta']}\nURL: {track['url']}\n\n"
-                        f"Regeln: professionell aber menschlich, kein Spam-Stil, "
-                        f"konkret auf die Branche eingehen, kurz und prägnant. "
-                        f"Beginne mit 'Guten Tag' falls kein Name bekannt."
-                    )
-                }]
-            }
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                json=payload,
-                headers={"x-api-key": api_key, "anthropic-version": "2023-06-01"},
-                timeout=aiohttp.ClientTimeout(total=15)
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    body = data["content"][0]["text"].strip()
-                    body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
-                    return subject, body
+        if api_key:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.anthropic.com/v1/messages",
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    headers={"x-api-key": api_key, "anthropic-version": "2023-06-01"},
+                    timeout=aiohttp.ClientTimeout(total=12),
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        body = data["content"][0]["text"].strip()
+                        body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
+                        return subject, body
     except Exception as e:
-        log.debug("AI personalize fallback: %s", e)
+        log.debug("Claude personalize fallback: %s", e)
+
+    # 3. Template-Fallback
     body = (
         f"Guten Tag,\n\n"
         f"{track['hook'].replace('{company}', company)}\n\n"
         f"Für {company} in {city or 'Ihrer Region'} könnte das besonders relevant sein.\n\n"
-        f"{track['cta']}: {track['url']}\n\n"
-        f"Gerne zeige ich Ihnen in einer 15-Minuten-Demo den konkreten Nutzen.\n\n"
-        f"Mit freundlichen Grüßen\nRudolf Sarkany | AiiteC\n"
-        f"https://bullpower-hub.vercel.app\n\n"
+        f"▶ Jetzt direkt starten ({stripe_price}):\n{stripe_url}\n\n"
+        f"Gerne beantworte ich Ihre Fragen: rudolfsarkany1984@gmail.com\n\n"
+        f"Mit freundlichen Grüßen\nRudolf Sarkany | AIITEC\n\n"
         f"---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
     )
     return subject, body
