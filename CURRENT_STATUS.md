@@ -76,6 +76,25 @@
 - viral_promo_poster.py, instagram_pipeline.py, linkedin_poster.py
 - twitter_auto_poster.py, smtp_email.py, full_revenue_expansion.py
 
+## ⚡ STRIPE MONETARISIERUNG PHASE 2 ABGESCHLOSSEN (2026-07-15)
+
+### 91 Payment Links erstellt — alle monetarisierten Produkte kaufbar
+- 53+28 = alle Produkte bekamen Preise (HTTP 400 Bug gefixt: `type` Feld entfernt)
+- 91 Stripe Payment Links (`buy.stripe.com/...`) erstellt
+- 36 wichtigste PLINK_ Keys in .env geschrieben
+- email_ai_conversations.py: KONVERSATIONS_SYSTEM nutzt echte Links (keine fake plink_ mehr)
+- Commit: f1816be5 — gepusht nach main
+
+### Top Revenue Produkte:
+| Produkt | Preis | Payment Link |
+|---------|-------|-------------|
+| KI-Leasing Enterprise | €2999/mo | buy.stripe.com/9B6bJ33Zg6TU1gc... |
+| Compliance-Wächter AI Act | €1500/mo | buy.stripe.com/eVq28t67o3HIgb6... |
+| EU AI Act Enterprise Audit | €5000 einm. | buy.stripe.com/4gM00l0N49227EA... |
+| HR-KI Hochrisiko-Audit | €1499 einm. | buy.stripe.com/fZuaEZ9jA1zAgb6... |
+| Insolvenz-Radar Pro | €800/mo | buy.stripe.com/14AeVf67ocee6Aw... |
+| KI-Leasing Pro | €999/mo | buy.stripe.com/28E3cxeDUbaa2kg... |
+
 ## ⚡ STRIPE MONETARISIERUNG (2026-07-15 — SESSION HEUTE)
 
 ### 8 Rebuilt (aus archivierten Fakes → echte Produkte):
