@@ -438,11 +438,11 @@ class CommandRouter:
             "nexus run": self._cmd_nexus_run,
             "/nexus_blast": self._cmd_nexus_blast,
             "nexus blast": self._cmd_nexus_blast,
-            "/nexus_signals": self._cmd_nexus,
-            "/nexus_actions": self._cmd_nexus,
-            "/nexus_evolve": self._cmd_nexus,
-            "/nexus_report": self._cmd_nexus,
-            "/nexus_dna": self._cmd_nexus,
+            "/nexus_signals": self._cmd_nexus_signals,
+            "/nexus_actions": self._cmd_nexus_actions,
+            "/nexus_evolve": self._cmd_nexus_evolve,
+            "/nexus_report": self._cmd_nexus_report,
+            "/nexus_dna": self._cmd_nexus_dna,
             # Product Generator
             "/generate": self._cmd_generate,
             "generate": self._cmd_generate,
@@ -638,6 +638,21 @@ class CommandRouter:
             "/ebay_blast": self._cmd_ebay_blast,
             "/amazon_blast": self._cmd_amazon_blast,
             "/twilio_blast": self._cmd_twilio_blast,
+            # ── KI-Direkt ────────────────────────────────────────────────────
+            "/ai": self._cmd_ai,
+            "ai frage": self._cmd_ai,
+            "ki frage": self._cmd_ai,
+            # ── Leads ────────────────────────────────────────────────────────
+            "/leads": self._cmd_leads,
+            "leads": self._cmd_leads,
+            "/lead_status": self._cmd_leads,
+            # ── Broadcast ────────────────────────────────────────────────────
+            "/broadcast": self._cmd_broadcast,
+            "broadcast": self._cmd_broadcast,
+            "/nachricht": self._cmd_broadcast,
+            # ── Shopify Alias ────────────────────────────────────────────────
+            "/shopify": self._cmd_shopify_stats,
+            "shopify": self._cmd_shopify_stats,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -654,6 +669,75 @@ class CommandRouter:
 
         # AI chat fallback (cloud AI chain when Ollama offline)
         return await self._cmd_ai_chat(text, session_id)
+
+    # ── Premium / Paywall Gate ────────────────────────────────────────────────
+
+    def _is_premium(self, session_id: str) -> bool:
+        """
+        Check whether the caller has an active paid subscription.
+
+        Priority:
+          1. PREMIUM_SESSION_IDS env var — comma-separated list of always-premium
+             session IDs (e.g. the owner's own Telegram chat: "telegram_5088771245").
+          2. PREMIUM_TELEGRAM_CHAT_IDS env var — Telegram chat IDs of paying customers.
+          3. Falls back to checking Supabase `clients` table if SUPABASE_URL is set.
+
+        Returns True if premium, False otherwise.
+        """
+        # 1. Hard-coded admin/owner sessions (always premium)
+        admin_sessions = {s.strip() for s in os.getenv("PREMIUM_SESSION_IDS", "").split(",") if s.strip()}
+        # Always grant premium to the owner's own chat
+        owner_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+        if owner_chat:
+            admin_sessions.add(f"telegram_{owner_chat}")
+            admin_sessions.add(f"tg-{owner_chat}")
+        if session_id in admin_sessions:
+            return True
+
+        # 2. Env-var list of paying customer Telegram IDs
+        premium_chats = {c.strip() for c in os.getenv("PREMIUM_TELEGRAM_CHAT_IDS", "").split(",") if c.strip()}
+        tg_id = session_id.replace("telegram_", "").replace("tg-", "")
+        if tg_id in premium_chats:
+            return True
+
+        # 3. Supabase clients table (non-blocking sync check via thread)
+        try:
+            import concurrent.futures
+            supabase_url = os.getenv("SUPABASE_URL", "")
+            if not supabase_url:
+                return False
+
+            def _check_db():
+                try:
+                    from modules.supabase_client import get_supabase_client
+                    client = get_supabase_client()
+                    rows = (
+                        client.table("clients")
+                        .select("id,status")
+                        .eq("telegram_id", tg_id)
+                        .eq("status", "active")
+                        .limit(1)
+                        .execute()
+                    )
+                    return bool(rows.data)
+                except Exception:
+                    return False
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as ex:
+                return ex.submit(_check_db).result(timeout=3)
+        except Exception:
+            return False
+
+    def _require_premium(self, session_id: str) -> Optional[str]:
+        """Return an error string if the session is NOT premium, else None."""
+        if not self._is_premium(session_id):
+            return (
+                "🔒 <b>Premium-Funktion</b>\n\n"
+                "Diese Funktion erfordert ein aktives Abonnement.\n\n"
+                "Tippe /plans um die Preise zu sehen.\n"
+                "Tippe /subscribe um jetzt zu starten (14 Tage gratis)."
+            )
+        return None
 
     async def _cmd_screenshot(self, text: str, session_id: str) -> str:
         """Take a Mac screenshot and return the saved file path."""
@@ -1053,7 +1137,10 @@ class CommandRouter:
         return "\n".join(lines)
 
     async def _cmd_team_run(self, text: str, session_id: str) -> str:
-        """Agent Team ausführen"""
+        """Agent Team ausführen. [PREMIUM Enterprise]"""
+        gate = self._require_premium(session_id)
+        if gate:
+            return gate
         try:
             dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
             async with aiohttp.ClientSession() as s:
@@ -1091,7 +1178,9 @@ class CommandRouter:
             return f"❌ /mrr Fehler: {e}"
 
     async def _cmd_help(self, text, session_id) -> str:
-        return """SuperMegaBot Befehle:
+        return """SuperMegaBot Befehle (v2):
+  ⚠️  PAYWALL: /plans und /subscribe für Premium-Zugang.
+      Ohne Abo: Basis-Commands. Premium: alle KI/Shopify/DS24-Commands.
 
   System:
     status          - CPU/RAM/Disk anzeigen
@@ -1184,7 +1273,13 @@ class CommandRouter:
     /nexus_evolve       - Self-Evolution jetzt
     /nexus_report       - Tages-Report senden
     /nexus_dna          - Revenue-DNA anzeigen
-    /nexus_blast <msg>  - Broadcast an alle Kanäle + Agenten"""
+    /nexus_blast <msg>  - Broadcast an alle Kanäle + Agenten
+
+  🤖 KI & KOMMUNIKATION:
+    /ai <frage>         - Direkte KI-Anfrage (Ollama → Cloud Fallback)
+    /leads              - Lead-Übersicht aus Supabase (letzte 10)
+    /broadcast <msg>    - Broadcast-Nachricht an alle Telegram-Chats
+    /shopify            - Shopify Store Stats (Alias für /shopify_stats)"""
 
     async def _cmd_nexus(self, text: str, session_id: str) -> str:
         """NEXUS-1 Status via Telegram."""
@@ -1214,7 +1309,10 @@ class CommandRouter:
             return f"NEXUS Status Fehler: {e}"
 
     async def _cmd_nexus_run(self, text: str, session_id: str) -> str:
-        """Startet sofort einen NEXUS-Zyklus."""
+        """Startet sofort einen NEXUS-Zyklus. [PREMIUM]"""
+        gate = self._require_premium(session_id)
+        if gate:
+            return gate
         import aiohttp
         try:
             smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
@@ -1243,6 +1341,234 @@ class CommandRouter:
                     f"Slack: {'✅' if data.get('slack_ok') else '❌'}")
         except Exception as e:
             return f"Broadcast Fehler: {e}"
+
+    # ── NEXUS Sub-Commands (real handlers) ────────────────────────────────────
+
+    async def _cmd_nexus_signals(self, text: str, session_id: str) -> str:
+        """NEXUS — letzte erkannte Trend-Signale."""
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{smb_url}/api/nexus/signals",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    data = await r.json()
+            signals = data.get("signals", data.get("data", []))
+            if not signals:
+                return "📡 NEXUS: Keine Signale vorhanden (noch kein Scan-Zyklus gelaufen)."
+            lines = [f"📡 <b>NEXUS Signale — letzte {min(len(signals),5)}:</b>\n"]
+            for sig in signals[:5]:
+                kw    = str(sig.get("keyword", sig.get("trend", "?")))[:40]
+                score = sig.get("score", sig.get("strength", 0))
+                src   = sig.get("source", sig.get("channel", "?"))
+                lines.append(f"• {kw} (Score: {score:.0f}) — {src}")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"NEXUS Signale Fehler: {e}"
+
+    async def _cmd_nexus_actions(self, text: str, session_id: str) -> str:
+        """NEXUS — letzte Aktionen + Performance."""
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{smb_url}/api/nexus/actions",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    data = await r.json()
+            actions = data.get("actions", data.get("data", []))
+            if not actions:
+                return "⚡ NEXUS: Keine Aktionen protokolliert."
+            lines = [f"⚡ <b>NEXUS Aktionen — letzte {min(len(actions),5)}:</b>\n"]
+            for act in actions[:5]:
+                atype  = act.get("type", act.get("action", "?"))
+                result = str(act.get("result", act.get("status", "?")))[:50]
+                ts     = str(act.get("timestamp", act.get("created_at", "")))[:16]
+                lines.append(f"• {atype}: {result} ({ts})")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"NEXUS Aktionen Fehler: {e}"
+
+    async def _cmd_nexus_evolve(self, text: str, session_id: str) -> str:
+        """NEXUS — Self-Evolution-Zyklus jetzt starten."""
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{smb_url}/api/nexus/evolve",
+                    json={},
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as r:
+                    data = await r.json()
+            adjusted   = data.get("adjusted", data.get("strategies_adjusted", 0))
+            dna_ok     = data.get("dna_updated", data.get("ok", False))
+            best       = data.get("best_strategy", data.get("winner", "?"))
+            return (
+                f"🧬 <b>NEXUS Evolution abgeschlossen!</b>\n"
+                f"Strategien angepasst: {adjusted}\n"
+                f"DNA aktualisiert: {'✅' if dna_ok else '⚠️'}\n"
+                f"Beste Strategie jetzt: {best}"
+            )
+        except Exception as e:
+            return f"NEXUS Evolve Fehler: {e}"
+
+    async def _cmd_nexus_report(self, text: str, session_id: str) -> str:
+        """NEXUS — Tages-Report generieren und senden."""
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{smb_url}/api/nexus/report",
+                    json={},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    data = await r.json()
+            today_actions = data.get("today_actions", data.get("actions_today", 0))
+            revenue_impact = data.get("revenue_impact", data.get("revenue", 0))
+            top_strategy   = data.get("top_strategy", data.get("best_strategy", "?"))
+            return (
+                f"📋 <b>NEXUS Tages-Report</b>\n"
+                f"📅 {datetime.utcnow().strftime('%Y-%m-%d')}\n\n"
+                f"⚡ Aktionen heute: {today_actions}\n"
+                f"💶 Revenue-Impact: €{float(revenue_impact):.2f}\n"
+                f"🏆 Top-Strategie: {top_strategy}\n\n"
+                f"Vollständiger Report per Telegram gesendet."
+            )
+        except Exception as e:
+            return f"NEXUS Report Fehler: {e}"
+
+    async def _cmd_nexus_dna(self, text: str, session_id: str) -> str:
+        """NEXUS — Revenue-DNA anzeigen."""
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{smb_url}/api/nexus/dna",
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    data = await r.json()
+            dna = data.get("dna", data.get("data", {}))
+            if not dna:
+                return "🧬 NEXUS: Keine DNA-Daten vorhanden (noch kein Evolution-Zyklus)."
+            lines = ["🧬 <b>NEXUS Revenue-DNA:</b>\n"]
+            for k, v in list(dna.items())[:8]:
+                v_str = f"{float(v):.3f}" if isinstance(v, (int, float)) else str(v)[:30]
+                lines.append(f"• {k}: {v_str}")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"NEXUS DNA Fehler: {e}"
+
+    # ── New Core Commands ─────────────────────────────────────────────────────
+
+    async def _cmd_ai(self, text: str, session_id: str) -> str:
+        """Direkte KI-Anfrage via ai_complete() — Vollautomatische Provider-Kette."""
+        prompt = text.strip()
+        # Strip command prefix
+        for prefix in ("/ai", "ai frage", "ki frage"):
+            if prompt.lower().startswith(prefix):
+                prompt = prompt[len(prefix):].strip()
+                break
+        if not prompt:
+            return (
+                "🤖 <b>KI-Direktanfrage</b>\n\n"
+                "Usage: <code>/ai Deine Frage hier</code>\n\n"
+                "Beispiele:\n"
+                "• /ai Was sind die Top-Trends im E-Commerce 2026?\n"
+                "• /ai Schreibe einen Facebook-Post über Smart Home\n"
+                "• /ai Optimiere diesen Produkttitel: ..."
+            )
+        try:
+            from modules.ai_client import ai_complete
+            result = await ai_complete(
+                prompt,
+                system=(
+                    "Du bist SuperMegaBot, ein autonomer KI-Assistent für E-Commerce-Automatisierung. "
+                    "Antworte immer auf Deutsch. Sei präzise, praktisch und handlungsorientiert."
+                ),
+                max_tokens=1200,
+            )
+            if not result or result.startswith("KI momentan"):
+                # Fallback via Ollama chat
+                result = await self.bot.ai.chat(
+                    [{"role": "user", "content": prompt}],
+                    task="smart",
+                )
+            return f"🤖 <b>KI-Antwort:</b>\n\n{result}" if result else "❌ KI momentan nicht verfügbar."
+        except Exception as e:
+            return f"KI Fehler: {e}"
+
+    async def _cmd_leads(self, text: str, session_id: str) -> str:
+        """Lead-Übersicht aus Supabase (lead_events Tabelle)."""
+        try:
+            from modules.supabase_client import get_supabase_client
+            client = get_supabase_client()
+            result = (
+                client.table("lead_events")
+                .select("id,email,source,channel,created_at,revenue")
+                .order("created_at", desc=True)
+                .limit(10)
+                .execute()
+            )
+            rows = result.data or []
+            if not rows:
+                return (
+                    "📋 <b>Leads</b>\n\n"
+                    "Keine Leads in Supabase (lead_events leer).\n"
+                    "Leads werden automatisch erfasst sobald der erste Kauf stattfindet."
+                )
+            total_revenue = sum(float(r.get("revenue", 0) or 0) for r in rows)
+            lines = [f"📋 <b>Letzte {len(rows)} Leads</b> (€{total_revenue:.2f} gesamt)\n"]
+            for r in rows:
+                email  = r.get("email", "?")[:30]
+                source = r.get("source", r.get("channel", "?"))
+                ts     = str(r.get("created_at", ""))[:10]
+                rev    = r.get("revenue")
+                rev_str = f" | €{float(rev):.2f}" if rev else ""
+                lines.append(f"• {email} ({source}{rev_str}) — {ts}")
+            return "\n".join(lines)
+        except ImportError:
+            return "❌ Supabase Client nicht verfügbar (SUPABASE_URL fehlt?)"
+        except Exception as e:
+            return f"Leads Fehler: {e}"
+
+    async def _cmd_broadcast(self, text: str, session_id: str) -> str:
+        """Broadcast-Nachricht an alle konfigurierten Telegram-Chats senden."""
+        # Strip command prefix
+        msg = text.strip()
+        for prefix in ("/broadcast", "/nachricht", "broadcast"):
+            if msg.lower().startswith(prefix):
+                msg = msg[len(prefix):].strip()
+                break
+        if not msg:
+            return (
+                "📢 <b>Broadcast</b>\n\n"
+                "Usage: <code>/broadcast Deine Nachricht</code>\n\n"
+                "Die Nachricht wird an den konfigurierten Telegram-Chat gesendet.\n"
+                "Für mehrere Empfänger TELEGRAM_BROADCAST_CHATS in .env setzen (kommagetrennt)."
+            )
+        # Collect target chat IDs
+        broadcast_chats_env = os.getenv("TELEGRAM_BROADCAST_CHATS", "")
+        chat_ids: List[str] = [c.strip() for c in broadcast_chats_env.split(",") if c.strip()]
+        if TELEGRAM_CHAT_ID and TELEGRAM_CHAT_ID not in chat_ids:
+            chat_ids.insert(0, TELEGRAM_CHAT_ID)
+        if not chat_ids:
+            return "❌ Keine Broadcast-Empfänger konfiguriert (TELEGRAM_CHAT_ID fehlt)."
+        formatted = f"📢 <b>Broadcast</b>\n\n{msg}"
+        sent = 0
+        failed = 0
+        for cid in chat_ids:
+            try:
+                await send_telegram(formatted, chat_id=cid)
+                sent += 1
+            except Exception:
+                failed += 1
+        return (
+            f"✅ Broadcast gesendet!\n"
+            f"📨 Empfänger: {sent} erfolgreich"
+            + (f", {failed} fehlgeschlagen" if failed else "")
+            + f"\n📝 Nachricht: {msg[:80]}{'...' if len(msg) > 80 else ''}"
+        )
 
     async def _cmd_generate(self, text: str, session_id: str) -> str:
         """Startet den Product Generator via Telegram."""
@@ -1353,7 +1679,10 @@ class CommandRouter:
             return f"DS24 Fix Fehler: {e}"
 
     async def _cmd_ds24_1000(self, text: str, session_id: str) -> str:
-        """Startet die Massenanlage von 1000 DS24-Produkten mit SEO."""
+        """Startet die Massenanlage von 1000 DS24-Produkten mit SEO. [PREMIUM]"""
+        gate = self._require_premium(session_id)
+        if gate:
+            return gate
         import aiohttp
         try:
             smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")

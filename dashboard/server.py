@@ -2668,7 +2668,7 @@ async def handle_klaviyo_send_campaign(req):
 <p><a href="https://www.checkout-ds24.com/product/668035" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
 <p style="color:#888;font-size:12px">Rudolf | AIITEC · BullPower Hub</p>
 </body></html>""")
-    list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
+    list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "bc5c7887cf"))
     from modules.klaviyo_automation import send_campaign as kl_send
     result = await kl_send(subject, html_body, list_id)
     return web.json_response(result)
@@ -4976,7 +4976,7 @@ async def handle_shopify_customer_webhook(req):
             return web.json_response({"ok": False, "error": "no email"})
 
         klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
-        klaviyo_list = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+        klaviyo_list = os.getenv("KLAVIYO_LIST_ID", "bc5c7887cf")
         if not klaviyo_key:
             return web.json_response({"ok": False, "error": "no klaviyo key"})
 
@@ -5022,18 +5022,24 @@ async def handle_shopify_customer_webhook(req):
 
 
 async def handle_shopify_orders(req):
+    """GET /api/shopify/orders — echte Shopify Bestellungen via async shopify_client."""
     try:
-        from modules.shopify_automation import get_recent_orders, format_orders_message
-        orders = get_recent_orders(limit=10)
+        from modules.shopify_client import get_orders
+        limit = int(req.rel_url.query.get("limit", "10"))
+        orders = await get_orders(limit=limit)
         return web.json_response({"ok": True, "orders": orders, "count": len(orders)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_shopify_revenue(req):
+    """GET /api/shopify/revenue — Umsatz heute + Monat via async shopify_client."""
     try:
-        from modules.shopify_automation import get_revenue_today
-        return web.json_response({"ok": True, **get_revenue_today()})
+        from modules.shopify_client import get_analytics_summary
+        data = await get_analytics_summary()
+        if not data:
+            return web.json_response({"ok": False, "error": "Shopify API nicht erreichbar oder keine Daten"})
+        return web.json_response({"ok": True, **data})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -6044,7 +6050,7 @@ async def handle_whatsapp_webhook(req):
         import hmac as _hmac
         payload = await req.read()
         # Verify X-Hub-Signature-256 (Meta requires this for security)
-        wa_app_secret = os.getenv("WHATSAPP_APP_SECRET", "")
+        wa_app_secret = os.getenv("WHATSAPP_APP_SECRET") or os.getenv("FACEBOOK_APP_SECRET", "")
         sig_header = req.headers.get("X-Hub-Signature-256", "")
         if wa_app_secret:
             expected_sig = "sha256=" + _hmac.new(
@@ -9186,6 +9192,43 @@ async def handle_ds24_stats_live(req):
     except Exception as e:
         return web.json_response({"ok": False, "total_eur": 0.0, "orders": 0, "detail": str(e)})
 
+
+async def handle_ds24_revenue(req):
+    """GET /api/ds24/revenue — Echte DS24-Verkaufszahlen (today/week/month/quarter/total)."""
+    try:
+        from modules.digistore24_automation import get_sales_stats, is_configured
+        if not is_configured():
+            return web.json_response({
+                "ok": False, "error": "DS24 nicht konfiguriert — DIGISTORE24_API_KEY fehlt",
+                "revenue": {"today": 0, "week": 0, "month": 0, "quarter": 0, "total": 0},
+            })
+        stats = await asyncio.wait_for(get_sales_stats(), timeout=15)
+        return web.json_response({
+            "ok": True,
+            "source": "digistore24_api",
+            "revenue": {
+                "today":   stats.get("today",   0.0),
+                "week":    stats.get("week",     0.0),
+                "month":   stats.get("month",    0.0),
+                "quarter": stats.get("quarter",  0.0),
+                "total":   stats.get("total",    0.0),
+            },
+            "orders": {
+                "today":   stats.get("orders_today",   0),
+                "week":    stats.get("orders_week",    0),
+                "month":   stats.get("orders_month",   0),
+                "quarter": stats.get("orders_quarter", 0),
+                "total":   stats.get("orders_total",   0),
+            },
+        })
+    except asyncio.TimeoutError:
+        return web.json_response({
+            "ok": False, "error": "DS24 API timeout",
+            "revenue": {"today": 0, "week": 0, "month": 0, "quarter": 0, "total": 0},
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
 async def handle_auto_poster_run_alias(req):
     return await _trigger_task("mega_auto_post", background=True)
 
@@ -11463,6 +11506,7 @@ async def create_app():
     app.router.add_get( "/api/digistore24/stats",         handle_ds24_stats_live)
     app.router.add_get( "/api/digistore24/products",      handle_ds24_product_list)
     app.router.add_get( "/api/digistore24/orders",        handle_digistore_orders)
+    app.router.add_get( "/api/ds24/revenue",              handle_ds24_revenue)
     app.router.add_post("/api/reddit/blast",              handle_reddit_blast)  # also POST
     # ── AUTONOMOUS PRODUCT PIPELINE ROUTES ───────────────────────────────────
     app.router.add_post("/api/product/pipeline/run",      handle_product_pipeline_run)
@@ -13290,6 +13334,22 @@ async def create_app():
     asyncio.create_task(_setup_tg_on_start())
     log.info("Telegram auto-setup task scheduled")
 
+    # Auto-register Shopify webhooks on startup (checkouts/create, customers/create, etc.)
+    async def _register_shopify_webhooks_on_start():
+        await asyncio.sleep(10)  # wait for server to be ready
+        try:
+            from modules.shopify_webhook_registrar import ensure_webhooks
+            results = await asyncio.to_thread(ensure_webhooks)
+            ok = sum(1 for r in results if r.get("status") in ("registered", "already_exists"))
+            log.info("Shopify webhook registration: %d/%d OK — %s",
+                     ok, len(results),
+                     [(r["topic"], r["status"]) for r in results])
+        except Exception as e:
+            log.warning("Shopify webhook registration failed (non-fatal): %s", e)
+
+    asyncio.create_task(_register_shopify_webhooks_on_start())
+    log.info("Shopify webhook auto-registration task scheduled")
+
     # Send Telegram Master Dashboard startup notification
     try:
         from modules.telegram_master_dashboard import send_startup_notification
@@ -14114,20 +14174,25 @@ async def handle_umsatzmaschine_delivery(req):
 
 
 async def handle_revenue_summary(req):
-    """GET /api/revenue/summary — combined revenue from Stripe + Shopify + DS24."""
+    """GET /api/revenue/summary — combined revenue from Stripe + Shopify + DS24 (heute + Woche)."""
     import aiohttp as _aiohttp
+    from datetime import timedelta
     try:
-        today = datetime.utcnow().date().isoformat()
-        shopify_eur = 0.0
-        shopify_orders = 0
-        ds24_eur = 0.0
-        stripe_eur = 0.0
-        stripe_detail = {}
-        shopify_detail = {}
-        ds24_detail = {}
+        now_utc   = datetime.utcnow()
+        today     = now_utc.date().isoformat()
+        week_ago  = (now_utc - timedelta(days=7)).date().isoformat()
+
+        shopify_eur       = 0.0
+        shopify_week_eur  = 0.0
+        shopify_orders    = 0
+        ds24_eur          = 0.0
+        stripe_eur        = 0.0
+        stripe_detail     = {}
+        shopify_detail    = {}
+        ds24_detail       = {}
 
         async with _aiohttp.ClientSession() as session:
-            # Stripe — today's charges (real revenue, not balance)
+            # Stripe — today's charges
             stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
             if stripe_key:
                 try:
@@ -14136,32 +14201,43 @@ async def handle_revenue_summary(req):
                     stripe_eur = st.get("today_revenue", 0.0)
                     stripe_detail = {
                         "today_revenue": stripe_eur,
-                        "order_count": st.get("order_count", 0),
-                        "currency": st.get("currency", "EUR"),
+                        "order_count":   st.get("order_count", 0),
+                        "currency":      st.get("currency", "EUR"),
                         "ok": True,
                     }
                 except Exception as e:
                     stripe_detail = {"ok": False, "error": str(e)}
 
-            # Shopify orders today
+            # Shopify orders — heute + letzte 7 Tage
             shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
             shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
             shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
             if shopify_domain and shopify_token:
                 try:
-                    url = (
+                    hdrs = {"X-Shopify-Access-Token": shopify_token}
+                    t = _aiohttp.ClientTimeout(total=12)
+                    # Heute
+                    url_today = (
                         f"https://{shopify_domain}/admin/api/{shopify_ver}/orders.json"
                         f"?status=any&created_at_min={today}T00:00:00Z&limit=100"
                     )
-                    async with session.get(url, headers={"X-Shopify-Access-Token": shopify_token},
-                                           timeout=_aiohttp.ClientTimeout(total=10)) as r:
-                        d = await r.json()
-                    orders = d.get("orders", [])
-                    shopify_eur = round(sum(float(o.get("total_price", 0)) for o in orders), 2)
-                    shopify_orders = len(orders)
+                    async with session.get(url_today, headers=hdrs, timeout=t) as r:
+                        orders_today = (await r.json(content_type=None)).get("orders", [])
+                    shopify_eur    = round(sum(float(o.get("total_price", 0)) for o in orders_today), 2)
+                    shopify_orders = len(orders_today)
+                    # Letzte 7 Tage
+                    url_week = (
+                        f"https://{shopify_domain}/admin/api/{shopify_ver}/orders.json"
+                        f"?status=any&created_at_min={week_ago}T00:00:00Z&limit=250"
+                    )
+                    async with session.get(url_week, headers=hdrs, timeout=t) as r:
+                        orders_week = (await r.json(content_type=None)).get("orders", [])
+                    shopify_week_eur = round(sum(float(o.get("total_price", 0)) for o in orders_week), 2)
                     shopify_detail = {
-                        "orders_today": shopify_orders,
+                        "orders_today":      shopify_orders,
                         "revenue_today_eur": shopify_eur,
+                        "revenue_week_eur":  shopify_week_eur,
+                        "orders_week":       len(orders_week),
                         "ok": True,
                     }
                 except Exception as e:
@@ -14170,29 +14246,30 @@ async def handle_revenue_summary(req):
             # DS24 stats
             try:
                 from modules.digistore24_automation import get_sales_stats
-                stats = await get_sales_stats()
+                stats  = await get_sales_stats()
                 ds24_eur = round(float(stats.get("today", 0)), 2)
                 ds24_detail = {"ok": True, "today_eur": ds24_eur, "stats": stats}
             except Exception as e:
                 ds24_detail = {"ok": False, "error": str(e)}
 
-        total_eur = round(shopify_eur + ds24_eur + stripe_eur, 2)
+        total_eur      = round(shopify_eur + ds24_eur + stripe_eur, 2)
+        this_week_eur  = round(shopify_week_eur + ds24_eur + stripe_eur, 2)
 
         return web.json_response({
             # Canonical flat fields for dashboard widgets
-            "total_eur":    total_eur,
-            "shopify_eur":  shopify_eur,
-            "ds24_eur":     ds24_eur,
-            "stripe_eur":   stripe_eur,
-            "today":        today,
-            "this_week":    None,  # populated on next iteration
+            "total_eur":       total_eur,
+            "shopify_eur":     shopify_eur,
+            "ds24_eur":        ds24_eur,
+            "stripe_eur":      stripe_eur,
+            "today":           today,
+            "this_week":       this_week_eur,
             # Detailed per-platform breakdown
-            "stripe":       stripe_detail,
-            "shopify":      shopify_detail,
-            "ds24":         ds24_detail,
+            "stripe":          stripe_detail,
+            "shopify":         shopify_detail,
+            "ds24":            ds24_detail,
             # Legacy alias
             "total_today_eur": total_eur,
-            "timestamp":    datetime.utcnow().isoformat() + "Z",
+            "timestamp":       now_utc.isoformat() + "Z",
         })
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)

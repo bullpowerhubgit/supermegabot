@@ -365,6 +365,34 @@ async def handle_webhook_event(event: Dict) -> str:
         if email and "@" in email:
             asyncio.create_task(_auto_enroll_buyer(email, name, amount, seq))
             asyncio.create_task(_umsatzmaschine_delivery(data))
+        # Supabase: Kunde sofort freischalten — robust auch wenn customer.subscription.created
+        # nicht ankommt oder customer_email dort leer ist.
+        if mode == "subscription" and email and "@" in email:
+            pkg = meta.get("package") or meta.get("plan", "")
+            if pkg in ("starter", "pro", "enterprise"):
+                tier = pkg
+            elif amount <= 55:
+                tier = "starter"
+            elif amount <= 110:
+                tier = "pro"
+            else:
+                tier = "enterprise"
+            try:
+                from modules.supabase_client import get_client
+                get_client().table("clients").upsert({
+                    "email": email,
+                    "service_active": True,
+                    "subscription_status": "active",
+                    "plan": tier,
+                    "name": name,
+                    "updated_at": datetime.now().isoformat(),
+                }, on_conflict="email").execute()
+                log.info(
+                    "checkout.session.completed: Supabase client activated (email=%s, plan=%s)",
+                    email, tier,
+                )
+            except Exception as _e:
+                log.warning("checkout.session.completed Supabase upsert: %s", _e)
         return f"checkout.session.completed handled → {seq}"
 
     if etype in ("customer.subscription.deleted", "customer.subscription.canceled"):
