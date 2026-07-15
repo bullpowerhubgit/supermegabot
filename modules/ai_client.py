@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
 API Hunt — Autonomes KI-Fallback-System (IMMER AN)
-Fallback-Kette: Groq → DeepSeek → OpenRouter (5 Modelle) → Gemini → Anthropic → OpenAI → Perplexity → Ollama
+Kette: OpenClaw/Ollama (lokal) → Groq → DeepSeek → OpenRouter (5 Modelle) → Gemini → Anthropic → OpenAI → Perplexity → Ollama
 Circuit Breaker: nach 3 Fehlern 10 min deaktiviert, dann auto-re-enable
 Background Health Monitor: alle 5 min alle Provider testen
 Telegram-Alert bei Provider-Wechsel und Ausfällen
+OpenClaw ist IMMER Schritt 0 — kostenlos, kein Rate-Limit, kein Datenschutzproblem
 """
 from __future__ import annotations
 
@@ -17,17 +18,26 @@ from typing import Optional
 log = logging.getLogger("APIHunt")
 
 # ── Env-Getter ─────────────────────────────────────────────────────────────────
-def _groq():       return os.getenv("GROQ_API_KEY", "")
-def _deepseek():   return os.getenv("DEEPSEEK_API_KEY", "")
-def _openrouter(): return os.getenv("OPENROUTER_API_KEY", "")
-def _gemini():     return os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
-def _anthropic():  return os.getenv("ANTHROPIC_API_KEY", "")
-def _openai():     return os.getenv("OPENAI_API_KEY", "")
-def _perplexity(): return os.getenv("PERPLEXITY_API_KEY", "")
-def _ollama_base():return os.getenv("OLLAMA_BASE", "http://localhost:11434")
-def _ollama_model():return os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")
-def _tg_bot():     return os.getenv("TELEGRAM_BOT_TOKEN", "")
-def _tg_chat():    return os.getenv("TELEGRAM_CHAT_ID", "")
+def _groq():        return os.getenv("GROQ_API_KEY", "")
+def _deepseek():    return os.getenv("DEEPSEEK_API_KEY", "")
+def _openrouter():  return os.getenv("OPENROUTER_API_KEY", "")
+def _gemini():      return os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
+def _anthropic():   return os.getenv("ANTHROPIC_API_KEY", "")
+def _openai():      return os.getenv("OPENAI_API_KEY", "")
+def _perplexity():  return os.getenv("PERPLEXITY_API_KEY", "")
+def _tg_bot():      return os.getenv("TELEGRAM_BOT_TOKEN", "")
+def _tg_chat():     return os.getenv("TELEGRAM_CHAT_ID", "")
+
+# ── OpenClaw / Ollama Konfiguration ────────────────────────────────────────────
+def _ollama_base()  : return os.getenv("OLLAMA_BASE", "http://localhost:11434")
+def _ollama_model() : return os.getenv("OLLAMA_CLAW_MODEL", os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest"))
+def _ollama_fast()  : return os.getenv("OLLAMA_FAST_MODEL", _ollama_model())
+def _ollama_smart() : return os.getenv("OLLAMA_SMART_MODEL", os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest"))
+
+# OpenClaw online-Status (wird beim ersten Aufruf gecacht, alle 60s aktualisiert)
+_openclaw_online: bool = False
+_openclaw_last_check: float = 0.0
+_OPENCLAW_CHECK_INTERVAL = 60  # Sekunden zwischen Checks
 
 _OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
 
@@ -247,7 +257,31 @@ async def _probe_all_providers() -> None:
         except Exception:
             pass
 
-    await asyncio.gather(try_groq(), try_deepseek(), try_openrouter(), try_anthropic())
+    async def try_openclaw():
+        """OpenClaw/Ollama Recheck — war offline, jetzt wieder versuchen."""
+        global _openclaw_online, _openclaw_last_check
+        if _openclaw_online:
+            return
+        if time.time() - _openclaw_last_check < _OPENCLAW_CHECK_INTERVAL:
+            return
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
+                async with s.post(
+                    f"{_ollama_base()}/api/chat",
+                    json={"model": _ollama_fast(), "messages": [{"role": "user", "content": "OK"}],
+                          "stream": False, "options": {"num_predict": 3}},
+                ) as r:
+                    if r.status == 200:
+                        _openclaw_online = True
+                        _openclaw_last_check = time.time()
+                        log.info("APIHunt: OpenClaw wieder ONLINE (%s)", _ollama_fast())
+                        await _tg_send(f"✅ OpenClaw wieder online! Modell: {_ollama_fast()}")
+                    else:
+                        _openclaw_last_check = time.time()
+        except Exception:
+            _openclaw_last_check = time.time()
+
+    await asyncio.gather(try_openclaw(), try_groq(), try_deepseek(), try_openrouter(), try_anthropic())
 
 
 def start_health_monitor() -> None:
@@ -269,6 +303,7 @@ def api_status() -> dict:
     """Gibt aktuellen Status aller Provider zurück (für Dashboard-Anzeige)."""
     now = time.time()
     providers = {
+        "OpenClaw":   True,   # Ollama lokal — immer Key vorhanden (kein Key nötig)
         "Groq":       bool(_groq()),
         "DeepSeek":   bool(_deepseek()),
         "OpenRouter":  bool(_openrouter()),
@@ -276,7 +311,6 @@ def api_status() -> dict:
         "Anthropic":  bool(_anthropic()),
         "OpenAI":     bool(_openai()),
         "Perplexity": bool(_perplexity()),
-        "Ollama":     True,
     }
     result = {}
     for name, has_key in providers.items():
@@ -293,14 +327,24 @@ def api_status() -> dict:
                 "total_fails": s.get("total_fails", 0),
             }
         else:
+            provider_key = "Ollama" if name == "OpenClaw" else name
+            is_active = (provider_key == _last_provider) or (name == _last_provider)
             result[name] = {
-                "status": "ok" if name == _last_provider else "standby",
-                "active": name == _last_provider,
+                "status": "ok" if is_active else "standby",
+                "active": is_active,
                 "total_fails": s.get("total_fails", 0),
                 "deactivations": s.get("deactivations", 0),
             }
+
+    # OpenClaw extras
+    result["OpenClaw"]["model"]  = _ollama_model()
+    result["OpenClaw"]["base"]   = _ollama_base()
+    result["OpenClaw"]["online"] = _openclaw_online
+    result["OpenClaw"]["fast_model"]  = _ollama_fast()
+    result["OpenClaw"]["smart_model"] = _ollama_smart()
+
     result["current_provider"] = _last_provider or "unknown"
-    result["monitor_running"] = _monitor_running
+    result["monitor_running"]  = _monitor_running
     return result
 
 
@@ -323,31 +367,53 @@ async def ai_complete(
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    # ── 0. Ollama LOKAL (OpenClaw) — kostenlos, kein Rate-Limit, kurzer Timeout ─
+    # ── 0. OpenClaw / Ollama LOKAL — IMMER ERSTE WAHL ────────────────────────────
+    # Kostenlos, kein Rate-Limit, kein Datenschutzproblem, läuft auf Rudolfs Rechner.
+    # Kurzer Timeout (5s default) damit Cloud-Fallback sofort greift wenn offline.
+    global _openclaw_online, _openclaw_last_check
     _ollama_timeout = int(os.getenv("OLLAMA_TIMEOUT", "5"))
     _ollama_first   = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
+
     if _ollama_first:
-        chosen_model = (
-            os.getenv("OLLAMA_FAST_MODEL", _ollama_model())
-            if model_hint == "fast" else _ollama_model()
-        )
+        # Modell-Auswahl je nach Aufgabe:
+        # model_hint="fast"   → OLLAMA_FAST_MODEL (schnelles kleines Modell)
+        # model_hint="smart"  → OLLAMA_SMART_MODEL (größeres Modell für komplexe Tasks)
+        # model_hint="code"   → OLLAMA_CODE_MODEL (Code-Modell)
+        # sonst               → Standard-Claw-Modell
+        if model_hint == "fast":
+            chosen_model = _ollama_fast()
+        elif model_hint in ("smart", "large", "quality"):
+            chosen_model = _ollama_smart()
+        elif model_hint == "code":
+            chosen_model = os.getenv("OLLAMA_CODE_MODEL", _ollama_model())
+        else:
+            chosen_model = _ollama_model()
+
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=_ollama_timeout)) as s:
                 async with s.post(
                     f"{_ollama_base()}/api/chat",
-                    json={"model": chosen_model, "messages": messages, "stream": False,
-                          "options": {"num_predict": max_tokens}},
+                    json={
+                        "model": chosen_model,
+                        "messages": messages,
+                        "stream": False,
+                        "options": {"num_predict": max_tokens, "temperature": 0.7},
+                    },
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         text = d.get("message", {}).get("content", "")
                         if text:
                             _cb_success("Ollama")
-                            log.debug("Ollama (lokal) OK model=%s", chosen_model)
+                            _openclaw_online = True
+                            _openclaw_last_check = time.time()
+                            log.debug("OpenClaw OK model=%s len=%d", chosen_model, len(text))
                             return text
-                    log.debug("Ollama lokal: HTTP %s — Cloud-Fallback", r.status)
+                    log.debug("OpenClaw: HTTP %s — Cloud-Fallback", r.status)
         except Exception as e:
-            log.debug("Ollama offline: %s — Cloud-Fallback greift", e)
+            log.debug("OpenClaw offline: %s — Cloud greift", e)
+            _openclaw_online = False
+            _openclaw_last_check = time.time()
 
     # ── 1. Groq (llama-3.1-8b-instant — schnell, kostenlos) ───────────────────
     if _groq() and _cb_ok("Groq"):
