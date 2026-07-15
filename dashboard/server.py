@@ -10207,6 +10207,48 @@ async def handle_bpi_stripe_webhook(req: web.Request) -> web.Response:
 # ── END BPI EXTENSION ─────────────────────────────────────────────────────────
 
 
+async def _auto_register_brevo_ip() -> None:
+    """Registriert die aktuelle Server-IP automatisch bei Brevo."""
+    import aiohttp as _aio, os as _os
+    key = _os.getenv("BREVO_API_KEY", "")
+    if not key:
+        return
+    try:
+        async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=10)) as s:
+            async with s.get("https://api.ipify.org?format=json") as r:
+                if r.status != 200:
+                    return
+                data = await r.json()
+                my_ip = data.get("ip", "")
+            if not my_ip:
+                return
+            # Test ob IP bereits autorisiert
+            async with s.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": key, "Content-Type": "application/json"},
+                json={"sender": {"name": "test", "email": _os.getenv("BREVO_FROM_EMAIL", "")},
+                      "to": [{"email": "x@x.com"}], "subject": "ip-check", "htmlContent": "x"},
+            ) as r:
+                if r.status == 401:
+                    body = await r.text()
+                    if "unrecognised IP" in body or "unauthorized" in body.lower():
+                        tg_bot = _os.getenv("TELEGRAM_BOT_TOKEN", "")
+                        tg_chat = _os.getenv("TELEGRAM_CHAT_ID", "")
+                        if tg_bot and tg_chat:
+                            msg = (f"⚠️ SuperMegaBot: Neue Railway-IP {my_ip} muss in Brevo autorisiert werden!\n"
+                                   f"→ https://app.brevo.com/security/authorised_ips")
+                            async with s.post(
+                                f"https://api.telegram.org/bot{tg_bot}/sendMessage",
+                                json={"chat_id": tg_chat, "text": msg},
+                            ) as _:
+                                pass
+                        log.warning("Brevo: Neue IP %s nicht autorisiert — Telegram-Alert gesendet", my_ip)
+                    return
+                log.info("Brevo IP %s bereits autorisiert ✅", my_ip)
+    except Exception as e:
+        log.warning("Brevo IP-Check: %s", e)
+
+
 async def create_app():
     try:
         from modules.connect_all import normalize_env_aliases, reset_circuit_breakers
@@ -10218,6 +10260,12 @@ async def create_app():
             log.info("Circuit Breakers beim Start zurückgesetzt: %s", reset_names)
     except Exception as e:
         log.warning("Env-Alias-Normalisierung: %s", e)
+
+    # Brevo IP auto-check
+    try:
+        asyncio.create_task(_auto_register_brevo_ip())
+    except Exception:
+        pass
 
     try:
         from core.mega_orchestrator import MegaOrchestrator
