@@ -5594,6 +5594,22 @@ async def task_ds24_affiliate_blast() -> str:
         return f"DS24 Affiliate Blast Fehler: {e}"
 
 
+async def task_meta_roas_monitor() -> str:
+    """Meta ROAS Monitor — Budget automatisch skalieren wenn ROAS >= 3x."""
+    try:
+        from modules.meta_roas_monitor import run_roas_monitor
+        results = await run_roas_monitor(dry_run=False)
+        changed = [r for r in results if r.new_budget_eur != r.old_budget_eur]
+        top = next((r for r in results if r.roas >= 3.0), None)
+        if changed:
+            details = ", ".join(f"{r.name[:20]}→€{r.new_budget_eur:.0f}" for r in changed[:3])
+            return f"ROAS Monitor: {len(changed)} Budget-Erhöhungen ({details})"
+        best_roas = max((r.roas for r in results), default=0)
+        return f"ROAS Monitor: {len(results)} Kampagnen, kein Scaling nötig (bester ROAS: {best_roas:.2f})"
+    except Exception as e:
+        return f"ROAS Monitor Fehler: {e}"
+
+
 async def task_revenue_engine() -> str:
     """Revenue Engine Morgen — DS24 Affiliate + Shopify Flash + AIITEC Promo."""
     try:
@@ -7938,6 +7954,7 @@ TASKS = [
     ("affiliate_blast",        task_affiliate_blast,         7200,   75),  # 2h — DS24 Affiliate auf alle Kanäle  # 30min — Live Revenue: Ads+Email+Shopify+IG
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
+    ("meta_roas_monitor",      task_meta_roas_monitor,      21600, 3600), # 6h — ROAS prüfen + Budget skalieren (ab 01:00)
     ("revenue_engine",         task_revenue_engine,         43200,  69),   # 12h Morgen — DS24+Flash+AIITEC
     ("revenue_engine_evening", task_revenue_engine_evening, 43200, 32400), # 12h Abend  — Stripe+B2B+Bericht (9h delay≈18:00)
     ("umsatzmaschine_daily",   task_umsatzmaschine_daily,   7200,   71),  # 2h — Vollautonom (Backup zum Boot-Loop)
