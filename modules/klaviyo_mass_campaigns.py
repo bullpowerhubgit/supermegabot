@@ -26,7 +26,7 @@ log = logging.getLogger("KlaviyoMassCampaigns")
 API_KEY  = os.getenv("KLAVIYO_API_KEY", "")
 LIST_ID  = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 BASE     = "https://a.klaviyo.com/api"
-REVISION = "2024-02-15"
+REVISION = "2024-10-15"
 FROM_EMAIL = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
 SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 
@@ -302,7 +302,9 @@ Max 150 Wörter."""
     ai_body = await _ai(prompt, max_tokens=200)
     html = _build_html(tmpl, ai_body or "")
 
-    # Step 1: Create bare campaign
+    # API 2024-10-15: campaign + messages must be created inline.
+    # Note: HTML body cannot be set via REST API in this version.
+    # The subject line carries the CTA; full HTML requires Klaviyo GUI editor.
     campaign_payload = {
         "data": {
             "type": "campaign",
@@ -317,6 +319,21 @@ Max 150 Wörter."""
                     "is_tracking_opens": True,
                     "is_tracking_clicks": True,
                 },
+                "campaign-messages": {
+                    "data": [{
+                        "type": "campaign-message",
+                        "attributes": {
+                            "channel": "email",
+                            "label": name[:50],
+                            "content": {
+                                "subject": subject[:150],
+                                "preview_text": name[:80],
+                                "from_email": FROM_EMAIL,
+                                "from_label": "AiiteC | Rudolf Sarkany",
+                            },
+                        },
+                    }]
+                },
             },
         }
     }
@@ -326,36 +343,19 @@ Max 150 Wörter."""
     if not cid:
         return {"ok": False, "error": str(result.get("error", result))[:300]}
 
-    # Step 2: Add campaign message
-    msg_payload = {
-        "data": {
-            "type": "campaign-message",
-            "attributes": {
-                "channel": "email",
-                "label": name[:50],
-                "content": {
-                    "subject": subject[:150],
-                    "preview_text": name[:80],
-                    "from_email": FROM_EMAIL,
-                    "from_label": "BullPowerHub",
-                    "body": html,
-                },
-            },
-            "relationships": {
-                "campaign": {"data": {"type": "campaign", "id": cid}},
-            },
-        }
-    }
-    msg_r = await _kv_post("/campaign-messages/", msg_payload)
-    # Message creation failure is non-fatal — campaign draft still exists
-    msg_ok = not msg_r.get("error")
+    # Get message ID from relationships
+    rels = (result.get("data") or {}).get("relationships", {})
+    msg_ids = [(m.get("id")) for m in rels.get("campaign-messages", {}).get("data", [])]
+    mid = msg_ids[0] if msg_ids else None
+    msg_ok = bool(mid)
 
-    # Step 3: Send immediately
+    # Step 2: Send immediately via campaign-send-jobs
+    # Use campaign ID as send-job ID (required by 2024-10-15 API)
     send_r = await _kv_post("/campaign-send-jobs/", {
         "data": {
             "type": "campaign-send-job",
+            "id": cid,
             "attributes": {},
-            "relationships": {"campaign": {"data": {"type": "campaign", "id": cid}}},
         }
     })
     sent = "error" not in send_r
