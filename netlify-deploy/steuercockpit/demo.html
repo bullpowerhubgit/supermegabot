@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SteuercockPit Pro — Live Demo</title>
+<meta name="description" content="Interaktive Demo von SteuercockPit Pro. Case Study und High-Ticket Einstieg.">
+<meta name="robots" content="index,follow">
+<style>
+  :root { --bg:#07070c; --card:#12121c; --line:#2a2a3a; --text:#f1f5f9; --muted:#94a3b8; --acc:#818cf8; --ok:#4ade80; --warn:#facc15; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; min-height:100vh; }
+  nav { display:flex; justify-content:space-between; align-items:center; padding:1rem 1.5rem; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(7,7,12,.92); backdrop-filter:blur(12px); z-index:10; }
+  .logo { font-weight:900; color:var(--acc); }
+  .nav a { color:var(--muted); text-decoration:none; margin-left:1rem; font-weight:600; font-size:.9rem; }
+  .nav a.cta { background:linear-gradient(135deg,#6366f1,#8b5cf6); color:#fff; padding:.55rem 1rem; border-radius:8px; }
+  main { max-width:1100px; margin:0 auto; padding:2rem 1.25rem 4rem; }
+  h1 { font-size:clamp(1.8rem,3vw,2.6rem); font-weight:900; margin-bottom:.5rem; }
+  .sub { color:var(--muted); margin-bottom:1.5rem; line-height:1.6; }
+  .grid { display:grid; grid-template-columns:1.4fr 1fr; gap:1.25rem; }
+  @media(max-width:860px) { .grid { grid-template-columns:1fr; } }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:1.25rem; }
+  .panel h2 { font-size:1rem; margin-bottom:1rem; color:#c7d2fe; }
+  .kpis { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+  .kpi { background:#0a0a12; border:1px solid var(--line); border-radius:12px; padding:.9rem; }
+  .kpi b { display:block; font-size:1.2rem; margin-top:.25rem; }
+  .kpi span { color:var(--muted); font-size:.75rem; font-weight:700; text-transform:uppercase; }
+  .log { font-family:ui-monospace,monospace; font-size:.8rem; color:#94a3b8; background:#0a0a12; border-radius:10px; padding:1rem; max-height:220px; overflow:auto; line-height:1.55; }
+  .log .ok { color:var(--ok); }
+  .log .warn { color:var(--warn); }
+  .btn { display:block; text-align:center; text-decoration:none; font-weight:800; padding:1rem; border-radius:10px; margin-top:.75rem; }
+  .btn-primary { background:linear-gradient(135deg,#4ade80,#22c55e); color:#000; }
+  .btn-ghost { border:1px solid var(--line); color:var(--text); }
+  .tabs { display:flex; gap:.5rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .tab { padding:.45rem .85rem; border-radius:999px; border:1px solid var(--line); color:var(--muted); cursor:pointer; font-size:.82rem; font-weight:700; background:transparent; }
+  .tab.active { background:rgba(129,140,248,.2); color:#c7d2fe; border-color:rgba(129,140,248,.5); }
+  .case { margin-top:1.5rem; padding:1.25rem; border-radius:16px; border:1px solid rgba(74,222,128,.3); background:linear-gradient(160deg,#0f1a14,#10140f); }
+  .case h3 { color:var(--ok); margin-bottom:.5rem; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">SteuercockPit Pro · DEMO</div>
+  <div class="nav">
+    <a href="index.html">← Produkt</a>
+    <a href="https://steuercockpit-production-44c9.up.railway.app" target="_blank" rel="noopener">Live System</a>
+    <a class="cta" href="https://buy.stripe.com/cNi4gBgM23HI1gcfJc4F42Dr">Jetzt kaufen</a>
+  </div>
+</nav>
+<main>
+  <h1>SteuercockPit Pro — interaktive Demo</h1>
+  <p class="sub">KI-Buchhaltung für Selbstständige. Simulierter Operator-View mit Live-Feel. Für den echten Zugang: Live System oder High-Ticket Plan.</p>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-t="overview">Overview</button>
+        <button class="tab" data-t="pipeline">Pipeline</button>
+        <button class="tab" data-t="billing">Billing</button>
+        <button class="tab" data-t="alerts">Alerts</button>
+      </div>
+      <div id="view-overview">
+        <h2>KPI Stream</h2>
+        <div class="kpis">
+          <div class="kpi"><span>Belege/Mo</span><b>420+</b></div>
+<div class="kpi"><span>Fehlerquote</span><b>−91%</b></div>
+<div class="kpi"><span>Zeit/Monat</span><b>14h → 3h</b></div>
+<div class="kpi"><span>Abschluss</span><b>in 2 Tagen</b></div>
+
+        </div>
+      </div>
+      <div id="view-pipeline" style="display:none">
+        <h2>Automation Pipeline</h2>
+        <div class="log" id="pipe-log"></div>
+      </div>
+      <div id="view-billing" style="display:none">
+        <h2>Billing Preview</h2>
+        <div class="log">
+          plan: high-ticket<br>
+          status: <span class="ok">ready_to_charge</span><br>
+          stripe: connected (live)<br>
+          next_action: checkout → thank_you
+        </div>
+        <a class="btn btn-primary" href="https://buy.stripe.com/cNi4gBgM23HI1gcfJc4F42Dr">Checkout öffnen →</a>
+      </div>
+      <div id="view-alerts" style="display:none">
+        <h2>System Alerts</h2>
+        <div class="log">
+          <span class="ok">[ok]</span> health check passed<br>
+          <span class="ok">[ok]</span> webhooks listening<br>
+          <span class="warn">[info]</span> demo mode — no production writes<br>
+          <span class="ok">[ok]</span> high-ticket catalog loaded
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2>Demo Controls</h2>
+        <button class="btn btn-ghost" id="btn-run" style="width:100%;cursor:pointer;background:#1e1e2e;color:#fff;border:1px solid #333">▶ Pipeline simulieren</button>
+        <a class="btn btn-primary" href="https://buy.stripe.com/cNi4gBgM23HI1gcfJc4F42Dr">High-Ticket Plan wählen</a>
+        <a class="btn btn-ghost" href="https://steuercockpit-production-44c9.up.railway.app" target="_blank" rel="noopener">Echtes Live-System ↗</a>
+        <a class="btn btn-ghost" href="index.html#demo-case-study">Case Study auf Landing</a>
+      </div>
+      <div class="case">
+        <h3>Case Study · Freelance Agency (AT)</h3>
+        <div style="font-weight:800;color:#86efac;margin-bottom:.5rem">11h/Monat Steuer-Admin gespart</div>
+        <p style="color:#a1a1aa;line-height:1.6;font-size:.92rem">Selbstständige importieren Bank-CSV und Belege. KI klassifiziert, bereitet USt vor und markiert Risiken vor dem Steuerberater-Export.</p>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+const tabs=[...document.querySelectorAll('.tab')];
+const views={overview:'view-overview',pipeline:'view-pipeline',billing:'view-billing',alerts:'view-alerts'};
+tabs.forEach(t=>t.addEventListener('click',()=>{
+  tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(views[t.dataset.t]).style.display='block';
+}));
+const lines=[
+  '[boot] loading automation graph…',
+  '[ok] connectors: shopify, stripe, telegram',
+  '[ok] scheduler: 140 tasks registered',
+  '[run] content_pipeline → queued',
+  '[run] billing_check → ok',
+  '[run] lead_score → 0.87',
+  '[ok] demo cycle complete — ready for checkout'
+];
+const log=document.getElementById('pipe-log');
+function typeLines(){
+  log.innerHTML='';
+  let i=0;
+  const t=setInterval(()=>{
+    if(i>=lines.length){ clearInterval(t); return; }
+    const el=document.createElement('div');
+    el.innerHTML=lines[i].includes('[ok]')||lines[i].includes('complete')
+      ? '<span class="ok">'+lines[i]+'</span>' : lines[i];
+    log.appendChild(el); log.scrollTop=log.scrollHeight; i++;
+  },280);
+}
+document.getElementById('btn-run').onclick=()=>{
+  tabs.forEach(x=>x.classList.remove('active'));
+  tabs.find(x=>x.dataset.t==='pipeline').classList.add('active');
+  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('view-pipeline').style.display='block';
+  typeLines();
+};
+// auto-run once
+setTimeout(typeLines, 400);
+</script>
+</body>
+</html>
