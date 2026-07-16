@@ -261,12 +261,20 @@ async def check_ai_quality(text: str, platform: str = "default", context: str = 
         )
 
         result = await ai_complete(prompt, max_tokens=60)
-        if result.upper().startswith("OK"):
+        r_upper = result.upper()
+        if r_upper.startswith("OK"):
             return True, ""
-        if "FEHLER" in result.upper():
+        if "FEHLER" in r_upper:
             reason = result.split(":", 1)[-1].strip() if ":" in result else result
             return False, f"KI: {reason[:120]}"
-        return False, "KI: unklare Antwort — BLOCK (fail-safe)"
+        # Unklare Antwort → Keyword-Fallback statt hartem Block
+        tech_kw = ['smart', 'tech', 'e-commerce', 'ecommerce', 'shopify', 'amazon',
+                   'ki ', 'ai ', 'automatisierung', 'automation', 'saas', 'solar',
+                   'supermegabot', 'aiitec', 'ineedit', 'stripe', 'digistore',
+                   'ds24', 'affiliate', 'dropshipping', 'klaviyo', 'revenue']
+        if any(kw in text.lower() for kw in tech_kw):
+            return True, ""
+        return False, "KI: unklare Antwort — kein Tech-Keyword gefunden"
     except Exception as e:
         log.warning("AI-Qualitätsprüfung nicht verfügbar (%s) — Keyword-Fallback", e)
         # Fallback: Keyword-Check wenn AI offline
