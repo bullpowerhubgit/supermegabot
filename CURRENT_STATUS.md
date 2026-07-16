@@ -7,7 +7,6 @@
 |---|---------|---------|-------------|
 | 1 | **Meta App-Domains** | developers.facebook.com → App 1535442684079797 → Grundlegendes → App-Domains → `developers.facebook.com` löschen → `supermegabot-production.up.railway.app` eintragen | — |
 | 2 | **Pinterest API — Appeal gesendet** | ✅ Tickets #16593704 + #16593708 erstellt (16.07 15:03). Antwort binnen 1 Werktag. Danach: developers.pinterest.com → neuer Token | `PINTEREST_ACCESS_TOKEN` |
-| 3 | **Twitter Keys neu** | $5 X Developer Platform bezahlt (16.07 16:30). Gehe zu developer.twitter.com → Dein Projekt → Keys & Tokens → "Regenerate All" → 4 Keys schicken | `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
@@ -48,12 +47,12 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 | Gmail SMTP | ✅ 5/5 OK | alle Konten aktiv, aiitecbuuss App-PW `hvzgpgyufricmenj` ✅ |
 | Telegram Bot | ✅ OK | |
 | Instagram | ✅ 26 Posts heute | @aaiitecc |
-| LinkedIn | ✅ 6 Posts heute | |
+| LinkedIn | ✅ OK | Token Rudolf Sarkany erneuert · Railway gesetzt | |
 | Anthropic API | ✅ OK | claude-haiku-4-5-20251001 antwortet |
 | OpenAI API | ✅ OK | 123 Modelle verfügbar |
 | Resend | ✅ OK | `re_XRHYX...` → HTTP 200 live ✅ |
 | Facebook | ✅ OK | Long-Lived Token (NEVER), 10 Ads AKTIV, €10/Tag DE/AT/CH |
-| Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
+| Twitter | ✅ OK | OAuth 1.0a · rudibot84 · Railway gesetzt |
 | Pinterest | ⏳ APPEAL GESENDET | Tickets #16593704 + #16593708 — Antwort ~17.07 |
 
 ## ✅ RAILWAY ENV VARS SYNCED (2026-07-16)
