@@ -1,0 +1,29 @@
+[[redirects]]
+  from = "/datenschutz"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/datenschutz/"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy/"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/data-deletion"
+  to = "/data-deletion.html"
+  status = 200
+
+[[redirects]]
+  from = "/data-deletion/"
+  to = "/data-deletion.html"
+  status = 200

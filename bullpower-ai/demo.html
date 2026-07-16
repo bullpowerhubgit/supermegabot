@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BullPower AI — Interaktive Demo</title>
+<style>
+:root { --bg:#0a0a0f; --s:#13131a; --s2:#1a1a24; --bd:#2a2a3d; --a:#6c63ff; --a2:#00d4ff; --t:#e8e8f0; --m:#888899; --g:#00ff88; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,'Inter','Segoe UI',sans-serif;min-height:100vh;}
+.header{background:rgba(10,10,15,0.95);border-bottom:1px solid var(--bd);padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.back-btn{color:var(--m);text-decoration:none;font-size:0.9rem;border:1px solid var(--bd);padding:0.4rem 1rem;border-radius:8px;transition:all 0.2s;}
+.back-btn:hover{color:var(--t);border-color:var(--a);}
+.hero{padding:50px 5% 30px;text-align:center;}
+.demo-badge{display:inline-block;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.4);color:var(--a2);padding:0.4rem 1.2rem;border-radius:50px;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;animation:fadein 0.5s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:0.8rem;}
+h1 span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero-sub{color:var(--m);max-width:600px;margin:0 auto 2rem;font-size:1.05rem;}
+.demo-area{max-width:1000px;margin:0 auto;padding:0 5% 60px;}
+.tab-bar{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;background:var(--s);border-radius:12px;padding:0.5rem;border:1px solid var(--bd);}
+.tab-btn{background:transparent;border:none;color:var(--m);padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;transition:all 0.2s;}
+.tab-btn:hover{color:var(--t);background:var(--s2);}
+.tab-btn.active{background:linear-gradient(135deg,var(--a),var(--a2));color:white;}
+.panel{background:var(--s);border:1px solid var(--bd);border-radius:16px;overflow:hidden;}
+.panel-header{padding:1.5rem 2rem;border-bottom:1px solid var(--bd);}
+.panel-header h3{font-size:1.1rem;font-weight:700;margin-bottom:0.4rem;}
+.panel-header p{color:var(--m);font-size:0.9rem;}
+.input-row{padding:1.2rem 2rem;display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap;border-bottom:1px solid var(--bd);}
+.input-row label{color:var(--m);font-size:0.85rem;display:block;margin-bottom:0.4rem;width:100%;}
+.demo-input{flex:1;min-width:200px;background:var(--s2);border:2px solid var(--bd);border-radius:10px;padding:0.8rem 1.2rem;color:var(--t);font-size:0.95rem;outline:none;transition:border-color 0.2s;}
+.demo-input:focus{border-color:var(--a);}
+.run-btn{background:linear-gradient(135deg,var(--a),var(--a2));color:white;border:none;padding:0.8rem 1.5rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.9rem;transition:all 0.2s;white-space:nowrap;}
+.run-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,0.3);}
+.output-box{padding:1.5rem 2rem;}
+.output-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;color:var(--g);font-size:0.85rem;font-weight:600;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 1.5s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.output-text{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;font-size:0.85rem;line-height:1.7;white-space:pre-wrap;font-family:'SF Mono','Fira Code',monospace;color:var(--t);max-height:350px;overflow-y:auto;}
+.cta-section{text-align:center;padding:2rem 5% 4rem;border-top:1px solid var(--bd);}
+.cta-section h2{font-size:1.6rem;font-weight:800;margin-bottom:1rem;}
+.btn{display:inline-block;background:linear-gradient(135deg,var(--a),var(--a2));color:white;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1.05rem;transition:all 0.3s;box-shadow:0 8px 30px rgba(108,99,255,0.3);}
+.btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,99,255,0.4);}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">BullPower AI Demo</div>
+  <a href="index.html" class="back-btn">← Zur Hauptseite</a>
+</header>
+<section class="hero">
+  <div class="demo-badge">🎯 Interaktive Live-Demo — Kein Account nötig</div>
+  <h1><span>BullPower AI</span><br>in Aktion erleben</h1>
+  <p class="hero-sub">Teste alle Features direkt im Browser. Echte Funktionen, echte Daten-Simulation.</p>
+</section>
+<div class="demo-area">
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('Content_Generator', this)">Content Generator</button>
+<button class="tab-btn " onclick="showTab('Lead_Radar', this)">Lead Radar</button>
+<button class="tab-btn " onclick="showTab('Revenue_Dashboard', this)">Revenue Dashboard</button>
+<button class="tab-btn " onclick="showTab('Social_Autopilot', this)">Social Autopilot</button>
+  </div>
+  
+        <div id="panel_Content_Generator" class="panel" style="display:block">
+          <div class="panel-header">
+            <h3>KI Content Generator — Live Demo</h3>
+            <p>Gib ein Thema ein und sieh wie BullPower AI in Sekunden professionellen Content erstellt.</p>
+          </div>
+          <div class="input-row">
+            <label>Thema / Keyword:</label>
+            <input type="text" value="z.B. Shopify Automatisierung 2026" class="demo-input" onchange="simulateAction(this)" />
+            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
+          </div>
+          <div class="output-box">
+            <div class="output-header">
+              <span class="live-dot"></span> Generierter Content (Instagram Post)
+            </div>
+            <pre class="output-text">🚀 Shopify Automatisierung 2026 — So verdienen Top-Seller 10x mehr ohne mehr zu arbeiten
+
+Die Realität: 87% aller Shopify-Stores lassen täglich Geld auf dem Tisch liegen. Nicht wegen schlechter Produkte — sondern wegen fehlender Automatisierung.
+
+Was passiert wenn du automatisierst:
+✅ Produkte werden 24/7 optimiert
+✅ Preise passen sich dem Markt an
+✅ Kunden erhalten personalisierte E-Mails
+✅ Neue Trends werden sofort erkannt
+
+Das Ergebnis? Durchschnittlich +340% Conversion-Rate in 30 Tagen.
+
+Welcher dieser Punkte kostet dich gerade am meisten? 👇
+
+#Shopify #Ecommerce #Automatisierung #OnlineShop #DigitalBusiness</pre>
+          </div>
+        </div>
+        <div id="panel_Lead_Radar" class="panel" style="display:none">
+          <div class="panel-header">
+            <h3>Lead Radar — Live Demo</h3>
+            <p>Der Lead Radar scannt täglich 50.000+ Quellen und liefert kaufbereite Kontakte.</p>
+          </div>
+          <div class="input-row">
+            <label>Zielgruppe:</label>
+            <input type="text" value="z.B. Shopify Merchant, Deutschland, 1M+ Umsatz" class="demo-input" onchange="simulateAction(this)" />
+            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
+          </div>
+          <div class="output-box">
+            <div class="output-header">
+              <span class="live-dot"></span> Gefundene Leads (letzte 24h)
+            </div>
+            <pre class="output-text">LEAD RADAR — 1.247 neue Leads gefunden ✅
+
+Kontakt 1: Thomas M. — CEO @ AutoShop GmbH
+Intent-Signale: "Shopify Skalierung", "Automatisierung suche"
+Kontakt: thomas.m@autoshop-gmbh.de | LinkedIn: /in/thomasm
+Score: 94/100 (SEHR HEISS)
+
+Kontakt 2: Sandra K. — Gründerin @ FashionBoutique
+Intent-Signale: "Shopify App", "mehr Umsatz", "Zeit sparen"
+Kontakt: sk@fashionboutique.de | Tel: +49 172 xxx xxxx
+Score: 87/100 (HEISS)
+
+Kontakt 3: Marcus W. — E-Commerce Manager
+Intent-Signale: B2B-Einkauf, "Automatisierung evaluiert"
+Kontakt: m.weber@techstore-ag.de
+Score: 81/100 (WARM)
+
+[... + 1.244 weitere Leads]
+Ø Cost per Lead: €0,39</pre>
+          </div>
+        </div>
+        <div id="panel_Revenue_Dashboard" class="panel" style="display:none">
+          <div class="panel-header">
+            <h3>Revenue Dashboard — Live Demo</h3>
+            <p>Dein kompletter Revenue-Überblick in Echtzeit. Alle Streams, ein Dashboard.</p>
+          </div>
+          <div class="input-row">
+            <label>Zeitraum:</label>
+            <input type="text" value="Diese Woche" class="demo-input" onchange="simulateAction(this)" />
+            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
+          </div>
+          <div class="output-box">
+            <div class="output-header">
+              <span class="live-dot"></span> Revenue Übersicht
+            </div>
+            <pre class="output-text">REVENUE DASHBOARD — Diese Woche
+
+💰 Gesamt-Revenue: €14.820
+├─ Shopify Store: €8.240 (+34% ggü. Vorwoche)
+├─ Affiliate (DS24): €3.120 (+18%)
+├─ E-Mail Liste: €2.180 (+41%)
+└─ Telegram Subs: €1.280 (+22%)
+
+📈 Top-Produkte:
+1. Smart Home Hub Set — €3.420 (41 Verkäufe)
+2. Solar Powerstation — €2.180 (7 Verkäufe)
+3. DS24 Affiliate: KI-Kurs — €1.840 (23 Sales)
+
+🎯 KI-Empfehlung:
+Produkt "Smart Home Hub" zeigt 3x Conversion-Peak
+Di-Do 18-22h → Erhöhe Budget in diesem Slot um €200/Tag
+Erwarteter Effekt: +€1.400/Woche
+
+⚡ Auto-Aktionen heute:
+• 47 Produkte preisoptimiert
+• 312 Abandoned Carts zurückgeholt
+• 8.400 SEO-Keywords aktualisiert</pre>
+          </div>
+        </div>
+        <div id="panel_Social_Autopilot" class="panel" style="display:none">
+          <div class="panel-header">
+            <h3>Social Autopilot — Live Demo</h3>
+            <p>Automatische Posts auf 7 Plattformen — abgestimmt auf Peak-Zeiten deiner Zielgruppe.</p>
+          </div>
+          <div class="input-row">
+            <label>Plattform + Ziel:</label>
+            <input type="text" value="Instagram — Produkt bewerben" class="demo-input" onchange="simulateAction(this)" />
+            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
+          </div>
+          <div class="output-box">
+            <div class="output-header">
+              <span class="live-dot"></span> Geplante Posts diese Woche
+            </div>
+            <pre class="output-text">SOCIAL AUTOPILOT — 34 Posts geplant ✅
+
+📅 MONTAG 09:15
+Instagram: "Warum 87% der Shopify-Stores scheitern..."
+Predicted Reach: 4.200 | Engagement: 6.8%
+
+📅 MONTAG 18:30
+Facebook: Produktvorstellung Smart Home Hub
+Ad Budget: €12 | Expected ROAS: 4.2x
+
+📅 DIENSTAG 07:45
+LinkedIn: Thought Leadership "Automatisierung 2026"
+Target: 2.400 Impressions | 180 Klicks
+
+📅 DIENSTAG 19:00
+TikTok: Behind-the-Scenes Automatisierung (30s)
+Predicted Views: 8.000 | Saves: 340
+
+[... + 30 weitere Posts]
+
+Performance letzte 7 Tage:
+• 128.000 Gesamtreichweite
+• 6.240 Website-Klicks
+• 312 Leads generiert</pre>
+          </div>
+        </div>
+</div>
+<div class="cta-section">
+  <h2>Überzeugt? Starte noch heute.</h2>
+  <p style="color:var(--m);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto;">30 Tage Geld-zurück-Garantie. Setup in 30 Minuten. Erste Ergebnisse in 7-14 Tagen.</p>
+  <a href="index.html#preise" class="btn">Jetzt starten — Preise ansehen →</a>
+</div>
+<script>
+function showTab(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel_' + id).style.display = 'block';
+  btn.classList.add('active');
+}
+function simulateAction(input) {
+  const output = input.closest('.panel').querySelector('.output-text');
+  const orig = output.textContent;
+  output.textContent = '⏳ KI verarbeitet...';
+  setTimeout(() => { output.textContent = orig; }, 1200);
+}
+</script>
+</body>
+</html>

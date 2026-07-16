@@ -1,0 +1,92 @@
+{
+  "autoincome-ai": {
+    "Starter": "https://buy.stripe.com/00w4gBfHY2DE3okaoS4F469x",
+    "Pro": "https://buy.stripe.com/28E8wRfHY5PQ7EAeF84F469X",
+    "Enterprise DFY": "https://buy.stripe.com/4gMdRbdzQ9221gc8gK4F46ae"
+  },
+  "bullpower-hub": {
+    "Starter": "https://buy.stripe.com/28E4gBfHY2DE9MI7cG4F46ax",
+    "Pro": "https://buy.stripe.com/eVqbJ32Vcguu8IE1Sm4F46aR",
+    "Enterprise DFY": "https://buy.stripe.com/5kQ8wR1R85PQ6Aw54y4F46bh"
+  },
+  "shopify-acquisition-engine": {
+    "Starter": "https://buy.stripe.com/28E28tbrI5PQ7EAaoS4F46bG",
+    "Pro": "https://buy.stripe.com/eVqeVf3Zgbaa3okaoS4F46bW",
+    "Enterprise DFY": "https://buy.stripe.com/8x228t0N4922gb6cx04F46c8"
+  },
+  "shopify-brutal-tuning": {
+    "Starter": "https://buy.stripe.com/5kQ3cx9jAfqqe2YfJc4F46cn",
+    "Pro": "https://buy.stripe.com/9B628tanE922aQMdB44F46cA",
+    "Enterprise DFY": "https://buy.stripe.com/00w4gBeDU2DE8IEdB44F46cV"
+  },
+  "shopify-suite": {
+    "Starter": "https://buy.stripe.com/fZu3cx53kbaacYUbsW4F46dh",
+    "Pro": "https://buy.stripe.com/7sYeVf1R83HI4soeF84F46dr",
+    "Enterprise DFY": "https://buy.stripe.com/00w5kFbrIbaa0c82Wq4F46dQ"
+  },
+  "cognitive-symphony": {
+    "Starter": "https://buy.stripe.com/dRm3cx2Vcdii8IEcx04F46e8",
+    "Pro": "https://buy.stripe.com/bJe4gB7bs4LM3ok2Wq4F46ex",
+    "Enterprise DFY": "https://buy.stripe.com/5kQ14pdzQ0vwgb668C4F46eN"
+  },
+  "creatorai-ultra": {
+    "Starter": "https://buy.stripe.com/7sYfZjdzQ1zA5ws40u4F46eX",
+    "Pro": "https://buy.stripe.com/3cI3cx2Vca66cYU9kO4F46f7",
+    "Enterprise DFY": "https://buy.stripe.com/00wcN767oemm4socx04F46fI"
+  },
+  "creatorstudio-pro": {
+    "Starter": "https://buy.stripe.com/3cI3cx2Vc922bUQ7cG4F46g0",
+    "Pro": "https://buy.stripe.com/28E8wReDU6TUf729kO4F46gH",
+    "Enterprise DFY": "https://buy.stripe.com/cNi8wR7bs1zA4sobsW4F46gU"
+  },
+  "digistore24-suite": {
+    "Starter": "https://buy.stripe.com/3cI4gB1R8922f721Sm4F46h4",
+    "Pro": "https://buy.stripe.com/14AfZj0N45PQbUQbsW4F46hd",
+    "Enterprise DFY": "https://buy.stripe.com/fZuaEZ53k4LM6AwdB44F46ht"
+  },
+  "gumroad-discord": {
+    "Starter": "https://buy.stripe.com/6oU00l1R8cee2kgdB44F46hC",
+    "Pro": "https://buy.stripe.com/aFaaEZeDUemmgb69kO4F46i0",
+    "Enterprise DFY": "https://buy.stripe.com/6oUfZjdzQceecYUcx04F46ig"
+  },
+  "telegram-bot": {
+    "Starter": "https://buy.stripe.com/3cI8wR0N4emm5ws0Oi4F46ir",
+    "Pro": "https://buy.stripe.com/3cIdRb0N4emm7EA1Sm4F46iS",
+    "Enterprise DFY": "https://buy.stripe.com/8x2bJ30N41zA8IEeF84F46j8"
+  },
+  "launcher": {
+    "Starter": "https://buy.stripe.com/dRm14p1R8922aQM8gK4F46jh",
+    "Pro": "https://buy.stripe.com/14AeVfbrI1zA4sofJc4F46ju",
+    "Enterprise DFY": "https://buy.stripe.com/7sY6oJ0N4dii7EA54y4F46jQ"
+  },
+  "lead-capture": {
+    "Starter": "https://buy.stripe.com/4gM8wRdzQ3HI0c87cG4F46kl",
+    "Pro": "https://buy.stripe.com/3cI14panEa66cYU9kO4F46kD",
+    "Enterprise DFY": "https://buy.stripe.com/eVq00l8fw7XY0c80Oi4F46kU"
+  },
+  "steuercockpit": {
+    "Starter": "https://buy.stripe.com/eVq5kF8fw9226Aw7cG4F46la",
+    "Pro": "https://buy.stripe.com/bJe14p3Zg5PQ3okeF84F46lv",
+    "Enterprise DFY": "https://buy.stripe.com/dRm6oJ2VcfqqbUQ2Wq4F46lC"
+  },
+  "icomeauto": {
+    "Starter": "https://buy.stripe.com/fZudRb1R84LM9MI8gK4F46lW",
+    "Pro": "https://buy.stripe.com/9B65kFcvM2DE7EA2Wq4F46ma",
+    "Enterprise DFY": "https://buy.stripe.com/6oU5kF8fw0vw6Aw7cG4F46mb"
+  },
+  "bullpower-ai": {
+    "Starter": "https://buy.stripe.com/9B600lgM26TU8IEgNg4F46mc",
+    "Pro": "https://buy.stripe.com/8x2fZjdzQ3HI7EA0Oi4F46md",
+    "Enterprise DFY": "https://buy.stripe.com/28E6oJbrIcee7EA54y4F46me"
+  },
+  "aiitec-all": {
+    "Starter": "https://buy.stripe.com/9B614p8fwbaa9MIcx04F46mf",
+    "Pro": "https://buy.stripe.com/7sY28t3Zg5PQ1gc1Sm4F46mg",
+    "Enterprise DFY": "https://buy.stripe.com/dRm7sN8fw4LM2kgdB44F46mh"
+  },
+  "aiitec-pinterest-portal": {
+    "Starter": "https://buy.stripe.com/eVq14pdzQ7XY7EA68C4F46mi",
+    "Pro": "https://buy.stripe.com/eVqfZj1R89220c81Sm4F46mj",
+    "Enterprise DFY": "https://buy.stripe.com/4gMfZj7bsbaa8IE2Wq4F46mk"
+  }
+}
