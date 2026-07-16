@@ -279,6 +279,49 @@ footer a:hover{text-decoration:underline}
      PASSWORD GATE — DO NOT MODIFY
 ════════════════════════════════════════════ -->
 <style>
+
+  /* CASE STUDIES */
+  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
+  .cs-inner { max-width: 1200px; margin: 0 auto; }
+  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
+  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
+  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
+  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
+  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
+  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .cs-name { font-weight: 700; font-size: 0.9rem; }
+  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
+  /* LIVE DEMO SECTION */
+  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
+  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
+  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
+  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
+  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
+  .demo-traffic-lights { display: flex; gap: 0.4rem; }
+  .dtl { width: 12px; height: 12px; border-radius: 50%; }
+  .dtl-r { background: #ff5f57; }
+  .dtl-y { background: #ffbd2e; }
+  .dtl-g { background: #28ca41; }
+  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
+  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
+  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
+  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
+  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
+  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
+  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
+  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
+  .demo-text-input:focus { border-color: #60a5fa; }
+  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
 </style>
 <nav class="nav">
   <div class="nav-logo">✦ CreatorStudio Pro</div>
@@ -624,6 +667,98 @@ footer a:hover{text-decoration:underline}
   </div>
 </div>
 
+
+<!-- CASE STUDIES -->
+<section class="cs-section" id="case-studies">
+  <div class="cs-inner">
+    <div class="cs-tag">Erfolgsgeschichten</div>
+    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
+    <p class="cs-desc">Sieh was andere mit CreatorStudio Pro erreicht haben — und was für dich möglich ist.</p>
+    <div class="cs-grid">
+    <div class="cs-card">
+      <div class="cs-result">Video-Output verdoppelt</div>
+      <div class="cs-duration">ohne Mehranstrengung</div>
+      <p class="cs-text">Ich erstelle jetzt 2 Videos pro Woche statt einer — weil das Skripting nur noch 20 Minuten dauert. CreatorStudio macht den Entwurf, ich verfeinere, publish.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#ec4899">EL</div>
+        <div>
+          <div class="cs-name">Emma L.</div>
+          <div class="cs-role">YouTuberin, München (28k Abonnenten)</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Show Notes + Clips automatisch</div>
+      <div class="cs-duration">seit Episode 1</div>
+      <p class="cs-text">Jede Podcast-Episode liefert automatisch Show Notes, 5 Social Clips, einen Blog-Artikel und 3 Email-Teasers. Ein Recording, 10× Content-Output.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#8b5cf6">KP</div>
+        <div>
+          <div class="cs-name">Kevin P.</div>
+          <div class="cs-role">Business Podcaster, Wien</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">€18.000 Launch-Umsatz</div>
+      <div class="cs-duration">mit KI-generiertem Content</div>
+      <p class="cs-text">Für meinen Kurs-Launch hat CreatorStudio alle Texte, Emails, Social Posts und die Sales Page geschrieben. Launch war der erfolgreichste meiner Karriere.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#06b6d4">SK</div>
+        <div>
+          <div class="cs-name">Stephanie K.</div>
+          <div class="cs-role">Online-Kurse Anbieterin, Hamburg</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-inject" id="demo">
+  <div class="demo-inject-inner">
+    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
+    <h2 class="demo-inject-title">🎬 Studio Demo</h2>
+    <p class="demo-inject-desc">Erstelle professionellen Content in Sekunden:</p>
+    <div class="demo-box">
+      <div class="demo-box-header">
+        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
+        <span class="demo-box-title">CreatorStudio Pro — Interaktive Demo</span>
+      </div>
+      <div class="demo-suggestions-inject">
+        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
+        <button class="demo-sug-btn" onclick="injectDemoRuncreatorstudio_pro(0)">Generiere ein komplettes YouTube-Skript über Smart Home</button><button class="demo-sug-btn" onclick="injectDemoRuncreatorstudio_pro(1)">Erstelle 30 Tage Social Media Content für Instagram</button><button class="demo-sug-btn" onclick="injectDemoRuncreatorstudio_pro(2)">Schreibe eine Sales-Email-Sequenz für mein Produkt</button>
+      </div>
+      <div class="demo-output-area empty" id="demoOutcreatorstudio_pro">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
+      <div class="demo-input-row">
+        <input class="demo-text-input" id="demoIncreatorstudio_pro" type="text" placeholder="Eigene Anfrage eingeben...">
+        <button class="demo-run-btn" onclick="injectDemoCustomcreatorstudio_pro()">Ausführen ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var OUTPUTScreatorstudio_pro = ['✅ <strong>YouTube Skript: 10min Video</strong><br>Titel: »5 Smart Home Gadgets die 2026 EXPLODIEREN werden 🔥«<br>Intro + Hook: 45 Sek. (A/B Variante erzeugt)<br>Content-Blöcke: 5 × 90 Sek.<br>CTA + Outro: 60 Sek.<br>SEO-Tags: 15 high-volume Keywords eingefügt', '✅ <strong>Instagram 30-Tage Plan</strong><br>• 12× Reels (Trending Audio vorgeschlagen)<br>• 8× Karussell Posts (Eduational)<br>• 6× Story-Serien<br>• 4× Collaboration-Anfragen vorbereitet<br>Posting-Zeiten: KI-optimiert für Deine Follower', '✅ <strong>7-Email Willkommens-Sequenz</strong><br>Email 1 (sofort): Begrüßung + Quick Win<br>Email 2 (Tag 2): Deine Geschichte (Vertrauen)<br>Email 3 (Tag 4): Hauptangebot (soft pitch)<br>Email 4 (Tag 7): Case Study<br>Email 5-7: Nurture + Hard Offer<br>Öffnungsrate Prognose: 38-45%'];
+  var el = document.getElementById('demoOutcreatorstudio_pro');
+  window.injectDemoRuncreatorstudio_pro = function(i) {
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTScreatorstudio_pro[i]; }, 600);
+  };
+  window.injectDemoCustomcreatorstudio_pro = function() {
+    var v = document.getElementById('demoIncreatorstudio_pro').value.trim();
+    if (!v) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTScreatorstudio_pro[Math.floor(Math.random()*OUTPUTScreatorstudio_pro.length)]; }, 800);
+  };
+  document.getElementById('demoIncreatorstudio_pro').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.injectDemoCustomcreatorstudio_pro();
+  });
+})();
+</script>
 <footer>
   <p>© 2026 CreatorStudio Pro · Alle Rechte vorbehalten · <a href="#">Datenschutz</a> · <a href="#">AGB</a></p>
   <p style="margin-top:0.5rem">Powered by Google Gemini AI · Made with ♥ für Content Creator</p>

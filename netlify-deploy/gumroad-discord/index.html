@@ -431,6 +431,49 @@
 </head>
 <body>
 <style>
+
+  /* CASE STUDIES */
+  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
+  .cs-inner { max-width: 1200px; margin: 0 auto; }
+  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
+  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
+  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
+  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
+  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
+  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .cs-name { font-weight: 700; font-size: 0.9rem; }
+  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
+  /* LIVE DEMO SECTION */
+  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
+  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
+  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
+  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
+  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
+  .demo-traffic-lights { display: flex; gap: 0.4rem; }
+  .dtl { width: 12px; height: 12px; border-radius: 50%; }
+  .dtl-r { background: #ff5f57; }
+  .dtl-y { background: #ffbd2e; }
+  .dtl-g { background: #28ca41; }
+  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
+  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
+  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
+  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
+  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
+  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
+  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
+  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
+  .demo-text-input:focus { border-color: #60a5fa; }
+  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
 </style>
 
 
@@ -743,6 +786,98 @@
 </div>
 
 <!-- FOOTER -->
+
+<!-- CASE STUDIES -->
+<section class="cs-section" id="case-studies">
+  <div class="cs-inner">
+    <div class="cs-tag">Erfolgsgeschichten</div>
+    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
+    <p class="cs-desc">Sieh was andere mit Gumroad Discord Community erreicht haben — und was für dich möglich ist.</p>
+    <div class="cs-grid">
+    <div class="cs-card">
+      <div class="cs-result">€3.200/Monat Community</div>
+      <div class="cs-duration">mit 127 Members</div>
+      <p class="cs-text">Ich dachte eine bezahlte Community wäre schwer aufzubauen. Aber mit dem richtigen System und echtem Mehrwert waren die ersten 50 Members in 3 Wochen da — und die zahlen gerne.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#7c3aed">DH</div>
+        <div>
+          <div class="cs-name">Daniel H.</div>
+          <div class="cs-role">E-Commerce Community, Berlin</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Passives Einkommen + Kunden</div>
+      <div class="cs-duration">die Community bringt beides</div>
+      <p class="cs-text">Meine Community ist mein bester Verkaufskanal. 30% meiner Premium-Coaching-Klienten kommen aus der Discord-Community — die haben mich schon kennengelernt und vertrauen mir.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#10b981">SW</div>
+        <div>
+          <div class="cs-name">Sophie W.</div>
+          <div class="cs-role">Freelance Coach, Wien</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Von gratis zu €49/mo erfolgreich</div>
+      <div class="cs-duration">in 60 Tagen migriert</div>
+      <p class="cs-text">Ich hatte 800 gratis-Member. Nach der Migration zu Gumroad Paid blieben 180 — das macht €8.820/Monat. Die anderen 620 hätten mir sowieso nie etwas gebracht.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#f59e0b">NR</div>
+        <div>
+          <div class="cs-name">Niklas R.</div>
+          <div class="cs-role">Tech Creator, München</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-inject" id="demo">
+  <div class="demo-inject-inner">
+    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
+    <h2 class="demo-inject-title">🎮 Community Demo</h2>
+    <p class="demo-inject-desc">Sieh wie die Community + Monetisierung funktioniert:</p>
+    <div class="demo-box">
+      <div class="demo-box-header">
+        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
+        <span class="demo-box-title">Gumroad Discord Community — Interaktive Demo</span>
+      </div>
+      <div class="demo-suggestions-inject">
+        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
+        <button class="demo-sug-btn" onclick="injectDemoRungumroad_discord(0)">Wie viel verdiene ich mit einer Discord Community?</button><button class="demo-sug-btn" onclick="injectDemoRungumroad_discord(1)">Erstelle einen Membership-Plan für meine Nische</button><button class="demo-sug-btn" onclick="injectDemoRungumroad_discord(2)">Zeige mir die Top-Monetisierungsstrategien</button>
+      </div>
+      <div class="demo-output-area empty" id="demoOutgumroad_discord">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
+      <div class="demo-input-row">
+        <input class="demo-text-input" id="demoIngumroad_discord" type="text" placeholder="Eigene Anfrage eingeben...">
+        <button class="demo-run-btn" onclick="injectDemoCustomgumroad_discord()">Ausführen ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var OUTPUTSgumroad_discord = ['✅ <strong>Community Earnings Kalkulator</strong><br>Angenommen: 200 Members × €29/mo = €5.800/mo<br>Gumroad-Gebühr: 10% = €580<br>Netto: €5.220/mo | Jahresumsatz: €62.640<br>Realistische Wachstumskurve: 200 Members in 4-6 Monaten', '✅ <strong>Membership-Struktur für deine Nische</strong><br>Free (Lead Magnet): Zugang zu #allgemein<br>Starter (€19/mo): 3 exklusive Channels + Ressourcen<br>Pro (€49/mo): VIP Channel + monatlicher Q&A Call<br>Elite (€149/mo): 1:1 Calls + alle Produkte inklusive', '✅ <strong>Top 5 Monetisierungs-Wege</strong><br>1. Membership Tiers (recurring revenue)<br>2. Digitale Produkte im Shop (einmalig)<br>3. Affiliate-Deals mit Partnern (30-50%)<br>4. Gesponserte Posts (€500-2k/post ab 1k Member)<br>5. Exklusive Workshops/Webinare (€97-297/Ticket)'];
+  var el = document.getElementById('demoOutgumroad_discord');
+  window.injectDemoRungumroad_discord = function(i) {
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSgumroad_discord[i]; }, 600);
+  };
+  window.injectDemoCustomgumroad_discord = function() {
+    var v = document.getElementById('demoIngumroad_discord').value.trim();
+    if (!v) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSgumroad_discord[Math.floor(Math.random()*OUTPUTSgumroad_discord.length)]; }, 800);
+  };
+  document.getElementById('demoIngumroad_discord').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.injectDemoCustomgumroad_discord();
+  });
+})();
+</script>
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">

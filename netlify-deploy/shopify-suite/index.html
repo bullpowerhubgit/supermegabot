@@ -287,6 +287,49 @@
 </head>
 <body>
 <style>
+
+  /* CASE STUDIES */
+  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
+  .cs-inner { max-width: 1200px; margin: 0 auto; }
+  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
+  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
+  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
+  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
+  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
+  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .cs-name { font-weight: 700; font-size: 0.9rem; }
+  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
+  /* LIVE DEMO SECTION */
+  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
+  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
+  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
+  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
+  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
+  .demo-traffic-lights { display: flex; gap: 0.4rem; }
+  .dtl { width: 12px; height: 12px; border-radius: 50%; }
+  .dtl-r { background: #ff5f57; }
+  .dtl-y { background: #ffbd2e; }
+  .dtl-g { background: #28ca41; }
+  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
+  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
+  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
+  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
+  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
+  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
+  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
+  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
+  .demo-text-input:focus { border-color: #60a5fa; }
+  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
 </style>
 <nav>
     <div class="nav-logo">⚙️ Shopify Automaton Suite</div>
@@ -701,7 +744,99 @@
   </section>
 
   <!-- FOOTER -->
-  <footer>
+  
+<!-- CASE STUDIES -->
+<section class="cs-section" id="case-studies">
+  <div class="cs-inner">
+    <div class="cs-tag">Erfolgsgeschichten</div>
+    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
+    <p class="cs-desc">Sieh was andere mit Shopify Suite Pro erreicht haben — und was für dich möglich ist.</p>
+    <div class="cs-grid">
+    <div class="cs-card">
+      <div class="cs-result">3h Setup → 10h/Woche gespart</div>
+      <div class="cs-duration">sofort</div>
+      <p class="cs-text">Produktpflege war mein Vollzeitjob. Jetzt läuft alles automatisch: Preise, Beschreibungen, Kategorien, Lagerbestand. 10 Stunden pro Woche zurückgewonnen.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#10b981">CB</div>
+        <div>
+          <div class="cs-name">Christian B.</div>
+          <div class="cs-role">Shopify-Store mit 3.000 Produkten</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">3 Shops, 1 Dashboard</div>
+      <div class="cs-duration">seit Einrichtung</div>
+      <p class="cs-text">Ich manage drei völlig verschiedene Stores von einem einzigen Dashboard. Bestellungen, Lagersyncs, Preise — alles an einem Ort, alles automatisch.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#f59e0b">EK</div>
+        <div>
+          <div class="cs-name">Elena K.</div>
+          <div class="cs-role">Dropshipping Multi-Store, Wien</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Kunden-Onboarding in 2h</div>
+      <div class="cs-duration">statt 2 Tage früher</div>
+      <p class="cs-text">Früher hat ein Store-Setup 2 Tage gedauert. Mit Shopify Suite Pro ist ein neuer Kunde in 2 Stunden live — mit vollständigem Produktkatalog, SEO und Smart Collections.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#8b5cf6">BM</div>
+        <div>
+          <div class="cs-name">Boris M.</div>
+          <div class="cs-role">Shopify Agency, Frankfurt</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-inject" id="demo">
+  <div class="demo-inject-inner">
+    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
+    <h2 class="demo-inject-title">🛒 Shop-Demo</h2>
+    <p class="demo-inject-desc">Automatisiere deinen Shopify-Store:</p>
+    <div class="demo-box">
+      <div class="demo-box-header">
+        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
+        <span class="demo-box-title">Shopify Suite Pro — Interaktive Demo</span>
+      </div>
+      <div class="demo-suggestions-inject">
+        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
+        <button class="demo-sug-btn" onclick="injectDemoRunshopify_suite(0)">Synchronisiere 500 neue Produkte mit Beschreibungen</button><button class="demo-sug-btn" onclick="injectDemoRunshopify_suite(1)">Aktiviere automatische Preisanpassung gegen Konkurrenz</button><button class="demo-sug-btn" onclick="injectDemoRunshopify_suite(2)">Erstelle Smart Collections für alle Kategorien</button>
+      </div>
+      <div class="demo-output-area empty" id="demoOutshopify_suite">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
+      <div class="demo-input-row">
+        <input class="demo-text-input" id="demoInshopify_suite" type="text" placeholder="Eigene Anfrage eingeben...">
+        <button class="demo-run-btn" onclick="injectDemoCustomshopify_suite()">Ausführen ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var OUTPUTSshopify_suite = ['✅ <strong>500 Produkte synchronisiert</strong><br>• Titel optimiert: 500/500 ✓<br>• Beschreibungen generiert: 500/500 ✓<br>• Bilder komprimiert: 1.247 Bilder (-62% Dateigröße)<br>• Tags hinzugefügt: durchschn. 8 Tags/Produkt<br>Dauer: 4 Minuten 12 Sekunden', '✅ <strong>Preisanpassung aktiv</strong><br>Überwachte Konkurrenten: 3 (Amazon.de, eBay, Idealo)<br>Regel: Immer 2-5% unter Bestpreis bleiben<br>Heute angepasst: 23 Produkte<br>Erwartete Conversion-Steigerung: +8-14%', '✅ <strong>12 Smart Collections erstellt</strong><br>Smart Home | Solar & Energie | Gadgets unter €50 | Top-Rated | Sale | Neuheiten | Bundle-Deals | ...<br>Alle Collections mit SEO-Beschreibungen befüllt<br>Google Shopping Feed aktualisiert ✓'];
+  var el = document.getElementById('demoOutshopify_suite');
+  window.injectDemoRunshopify_suite = function(i) {
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSshopify_suite[i]; }, 600);
+  };
+  window.injectDemoCustomshopify_suite = function() {
+    var v = document.getElementById('demoInshopify_suite').value.trim();
+    if (!v) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSshopify_suite[Math.floor(Math.random()*OUTPUTSshopify_suite.length)]; }, 800);
+  };
+  document.getElementById('demoInshopify_suite').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.injectDemoCustomshopify_suite();
+  });
+})();
+</script>
+<footer>
     <div class="footer-inner">
       <div class="footer-logo">🔥 Shopify Power Bundle</div>
       <div class="footer-links">
