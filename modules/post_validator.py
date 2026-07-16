@@ -44,6 +44,55 @@ MIN_TEXT_LEN     = 30    # Mindest-Textlänge
 MAX_TEXT_LEN     = 5000  # Maximum
 DEDUP_WINDOW_H   = 24    # Gleicher Text innerhalb 24h → BLOCK
 
+# ── Layer 0: Off-Topic Hard-Block (vor allem anderen) ─────────────────────────
+# Nische = NUR Smart/Tech/Solar/E-Commerce. Alles andere → sofort blockieren.
+_L0_OFFTOPIC = [
+    # Haushalt/Küche ohne Tech-Bezug
+    r"\bbambus\b", r"\bbamboo\b",
+    r"\bschneidebrett\b", r"\bcutting[\s-]?board\b",
+    r"\bkaffeemühl\b", r"\bcoffee[\s-]?grinder\b",
+    r"\bmöbel\b", r"\bstuhl\b", r"\btisch\b", r"\bchair\b(?!\s*mount|\s*lift|\s*bot)",
+    r"\bsofa\b", r"\bcouch\b", r"\bschrank\b",
+    r"\bgeschirr\b", r"\bbesteck\b", r"\btopf\b(?!\s*\w{0,5}smart)",
+    r"\bkochgeschirr\b",
+    # Kleidung/Mode
+    r"\bkleidung\b", r"\bmode\b(?!\s*\w{0,10}smart)", r"\bschuhe\b", r"\btextil\b",
+    r"\bjacke\b", r"\bhose\b", r"\bhemd\b",
+    # Körperpflege/Wellness ohne Tech
+    r"\bhautpflege\b", r"\bkosmetik\b", r"\bparfüm\b", r"\bperfume\b",
+    r"\bcreme\b", r"\bseife\b", r"\bshampoo\b",
+    r"\byoga[\s-]?matte?\b", r"\byoga\s+mat\b",
+    r"\bkerze\b(?!\s*\w{0,10}smart)", r"\bduftkerze\b", r"\bcandle\b(?!\s*\w{0,10}smart)",
+    # Baby/Spielzeug
+    r"\bkinderwagen\b", r"\bbabybett\b", r"\bspielzeug\b(?!\s*\w{0,10}robot)",
+    r"\bschnuller\b",
+    # Bücher/Print
+    r"\bkochbuch\b", r"\bnoizbuch\b", r"\bnotizbuch\b", r"\btagebu\w+\b",
+    # Haushalt ohne Tech
+    r"\bwäschekorb\b", r"\bbettwäsche\b", r"\bkissen\b(?!\s*\w{0,10}smart)",
+    r"\bvorhang\b", r"\bteppich\b(?!\s*\w{0,10}robot|\s*\w{0,10}auto)",
+    # Lebensmittel
+    r"\bkaffee\b(?!\s*\w{0,10}maschine|\s*\w{0,10}automat)",
+    r"\btee\b(?!\s*\w{0,10}maschine|\s*\w{0,10}automat)",
+    r"\bwein\b", r"\bbier\b", r"\bnahrungsergänzung\b",
+    r"\bprotein\s*pulver\b",
+    # Schmuck/Dekoration
+    r"\bschmuck\b", r"\barmband\b(?!\s*\w{0,10}smart|\s*\w{0,10}fit)",
+    r"\bhalskette\b", r"\bring\b(?!\s*\w{0,10}smart)",
+    r"\bdeko\b(?!\s*\w{0,10}light|\s*\w{0,10}led)",
+    # Ergonomie-Schlagwörter wenn ohne Tech-Kontext
+    r"\bergonomic[\s-]?chair\b", r"\bchair\s+cushion\b", r"\bchair\s+pad\b",
+    r"\berkrankung\b", r"\bgesundheit\b(?!\s*\w{0,10}monitor|\s*\w{0,10}tracker)",
+    # Tiere (außer mit Tech-Bezug)
+    r"\btierfutter\b", r"\bhundehalsband\b(?!\s*\w{0,10}gps|\s*\w{0,10}smart)",
+    r"\bkatzenklo\b", r"\bvogelfutter\b",
+    # Generisch off-niche News/Artikel-Titeln
+    r"\bhacker\s*news\b", r"\bshow\s+hn\b",
+    r"\bblender\b(?!\s*\w{0,10}3d)",  # Blender-Software ok, Mixer → block
+    r"\bvancouver\s+pd\b",
+]
+_L0_RE = [re.compile(p, re.IGNORECASE) for p in _L0_OFFTOPIC]
+
 # ── Layer 1: Verbotene Muster (sofort blockieren) ─────────────────────────────
 _L1_BLOCKED = [
     r"\blorem ipsum\b",
@@ -313,9 +362,17 @@ async def validate_post(
     if len(text_clean) > MAX_TEXT_LEN:
         text_clean = text_clean[:MAX_TEXT_LEN]  # Kürzen, kein Block
 
+    def _remember(reason: str) -> None:
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text_clean, platform, [reason], source_module="post_validator")
+        except Exception:
+            pass
+
     for rx in _L1_RE:
         if rx.search(text_clean):
             reason = f"verbotenes_muster: {rx.pattern[:40]}"
+            _remember(reason)
             await _notify_telegram(text_clean, platform, 1, reason)
             return False, 1, reason
 
@@ -323,6 +380,7 @@ async def validate_post(
     stripped = re.sub(r"#\w+|https?://\S+", "", text_clean).strip()
     if len(stripped) < 20:
         reason = "nur_hashtags_oder_links_kein_text"
+        _remember(reason)
         await _notify_telegram(text_clean, platform, 1, reason)
         return False, 1, reason
 
@@ -331,6 +389,7 @@ async def validate_post(
     for phrase in _L2_SPAM:
         if phrase in text_lower:
             reason = f"spam_phrase: {phrase}"
+            _remember(reason)
             await _notify_telegram(text_clean, platform, 2, reason)
             return False, 2, reason
 
@@ -338,6 +397,7 @@ async def validate_post(
     has_niche = any(rx.search(text_clean) for rx in _L3_RE)
     if not has_niche and content_type == "social":
         reason = "kein_nischen_keyword (Smart Home/Tech/Shop erforderlich)"
+        _remember(reason)
         await _notify_telegram(text_clean, platform, 3, reason)
         return False, 3, reason
 
@@ -345,17 +405,24 @@ async def validate_post(
     score = await _ai_score(text_clean)
     if score < MIN_AI_SCORE:
         reason = f"ki_score_zu_niedrig ({score}/10 < {MIN_AI_SCORE})"
+        _remember(reason)
         await _notify_telegram(text_clean, platform, 4, reason, score)
         return False, 4, reason
 
     # ── Layer 5: Duplikat-Check ──────────────────────────────────────────────
     if not skip_dedup and _is_duplicate(text_clean, platform):
         reason = f"duplikat_innerhalb_{DEDUP_WINDOW_H}h"
+        _remember(reason)
         await _notify_telegram(text_clean, platform, 5, reason, score)
         return False, 5, reason
 
     # Alle Layer bestanden → Hash registrieren
     _register_hash(text_clean, platform)
+    try:
+        from modules.post_never_twice import remember_sent
+        remember_sent(text_clean, platform, source_module="post_validator")
+    except Exception:
+        pass
     log.info("PostValidator ✅ [Score %d/10] %s: %s…", score, platform, text_clean[:60])
     return True, 0, f"ok (score={score})"
 
