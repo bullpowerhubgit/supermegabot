@@ -44,27 +44,35 @@ def _client() -> Anthropic:
     if _CLIENT is None:
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
-            raise RuntimeError(
-                "ANTHROPIC_API_KEY ist nicht gesetzt. "
-                "Key auf console.anthropic.com erzeugen und als Umgebungsvariable setzen."
-            )
-        log.debug("Anthropic-Client wird initialisiert (Modell: %s)", MODEL)
+            raise RuntimeError("ANTHROPIC_API_KEY fehlt → console.anthropic.com → API Keys")
         _CLIENT = Anthropic(api_key=key)
     return _CLIENT
+
+
+def is_available() -> bool:
+    """Schnellcheck ob Anthropic gerade erreichbar ist (kein API-Call)."""
+    return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
 # ---------------------------------------------------------------------------
 # 1. Basis: eine Frage stellen
 # ---------------------------------------------------------------------------
-def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 2000) -> str:
+def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 2000,
+        fallback: str = "") -> str:
     log.debug("ask(): model=%s, prompt_len=%d", model, len(prompt))
-    resp = _client().messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        system=system or "Du bist ein präziser Assistent. Antworte knapp.",
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return resp.content[0].text
+    try:
+        resp = _client().messages.create(
+            model=model,
+            max_tokens=max_tokens,
+            system=system or "Du bist ein präziser Assistent. Antworte knapp.",
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return resp.content[0].text
+    except Exception as e:
+        log.warning("Anthropic ask() fehlgeschlagen (%s) — Fallback genutzt", type(e).__name__)
+        if fallback:
+            return fallback
+        raise
 
 
 # ---------------------------------------------------------------------------
