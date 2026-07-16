@@ -152,6 +152,14 @@ async def _get_twikit_client():
 async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
     """Sendet Tweet: 1) twikit (web, kostenlos) → 2) Make.com Webhook → 3) API v2."""
     import aiohttp
+    try:
+        from modules.post_guardian import validate_post as _gcheck
+        ok, errs = _gcheck(text, platform="twitter")
+        if not ok:
+            log.warning("Tweet blockiert: %s | Preview: %s", errs, text[:80])
+            return {"ok": False, "blocked": True, "errors": errs}
+    except Exception as _e:
+        log.debug("PostGuardian nicht verfügbar: %s", _e)
     text = text[:280]
 
     # Weg 1: twikit (inoffizielle Web-API, KEIN bezahlter Plan nötig)
