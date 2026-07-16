@@ -474,7 +474,7 @@ async def _klaviyo_get_subscribers(limit: int = 100) -> List[Dict]:
         async with aiohttp.ClientSession() as s:
             async with s.get(
                 f"https://a.klaviyo.com/api/lists/{list_id}/profiles/",
-                headers={"Authorization": f"Klaviyo-API-Key {key}", "revision": "2024-07-15"},
+                headers={"Authorization": f"Klaviyo-API-Key {key}", "revision": "2026-04-15"},
                 params={"page[size]": min(limit, 100)},
                 timeout=aiohttp.ClientTimeout(total=12),
             ) as r:
@@ -486,7 +486,7 @@ async def _klaviyo_get_subscribers(limit: int = 100) -> List[Dict]:
                 return [
                     {
                         "email": p.get("attributes", {}).get("email", ""),
-                        "name":  p.get("attributes", {}).get("first_name", ""),
+                        "name":  p.get("attributes", {}).get("first_name") or "",
                     }
                     for p in profiles
                     if p.get("attributes", {}).get("email")
@@ -1155,7 +1155,7 @@ async def build_affiliate_army() -> Dict:
     shop_url = SHOP_URL()
     for sub in candidates[:15]:
         email = sub["email"]
-        name  = sub.get("name", "Partner")
+        name  = sub.get("name") or "Partner"
 
         # Generate unique affiliate code
         try:
