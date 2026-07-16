@@ -38,6 +38,16 @@ REVENUE_MODULES = frozenset({
     "sys37_mieterbrief_ki",
     "partner_channel",
     "compliance_outreach_all",
+    # Social Media Posting — DARF AI für Content-Generierung nutzen
+    "social_autoposter",
+    "autonomous_social_proof",
+    "post_content_generator",
+    "rudibot_post_ai",
+    # Traffic & SEO
+    "brutus_traffic_engine",
+    "mega_seo_engine",
+    "seo_content_engine",
+    "full_seo_blast",
     # B2B Lead Gen → Revenue (Intent Radar + Outreach)
     "b2b_intent_radar",
     "mass_outreach_1000",

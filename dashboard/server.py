@@ -6244,7 +6244,7 @@ async def handle_whatsapp_blast(req):
     """GET /api/whatsapp/blast — promo blast to all configured WA recipients."""
     try:
         from modules.whatsapp_automation import send_whatsapp_blast
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         msg = f"🚀 AIITEC: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
         result = await send_whatsapp_blast(msg)
         return web.json_response({"ok": True, "result": result})
