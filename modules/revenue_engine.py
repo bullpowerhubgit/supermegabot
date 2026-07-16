@@ -201,7 +201,7 @@ async def _fb(message: str, link: str = "") -> bool:
                 d = await r.json()
                 return "id" in d
     except Exception as e:
-        log.warning("FB: %s", e)
+        log.warning("FB: %s", getattr(e, 'message', None) or repr(e))
         return False
 
 
