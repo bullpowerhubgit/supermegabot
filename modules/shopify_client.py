@@ -16,7 +16,17 @@ logger = logging.getLogger(__name__)
 
 # Config aus .env (lazy via helpers — nie bei Import)
 def _store_domain() -> str:
-    return os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    # SHOPIFY_MYSHOPIFY_DOMAIN bevorzugen (Admin API braucht .myshopify.com)
+    # SHOPIFY_SHOP_DOMAIN kann Custom Domain sein (z.B. ineedit.com.co) — nicht für API nutzbar
+    d = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    if d and ".myshopify.com" not in d:
+        # Custom Domain — aus SHOPIFY_STORE_URL extrahieren
+        import re as _re
+        store_url = os.getenv("SHOPIFY_STORE_URL", "")
+        m = _re.search(r'([\w-]+\.myshopify\.com)', store_url)
+        if m:
+            return m.group(1)
+    return d
 
 def _api_version() -> str:
     return os.getenv("SHOPIFY_API_VERSION", "2026-04")
