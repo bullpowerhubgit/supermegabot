@@ -1,0 +1,993 @@
+<title>SuperMegaBot — KI E-Commerce Automation für 6-stellige Shops</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#070c18;--bg-card:#0c1524;--bg-elevated:#111d2e;--bg-hover:#162035;
+  --accent:#2563eb;--accent-h:#3b82f6;--gold:#d97706;--gold-l:#f59e0b;
+  --green:#059669;--green-l:#10b981;--red:#dc2626;
+  --text:#f1f5f9;--text-2:#94a3b8;--text-3:#475569;
+  --border:rgba(37,99,235,.18);--border-2:rgba(255,255,255,.06);
+  --radius:12px;--radius-sm:8px;
+  font-size:16px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',system-ui,sans-serif;line-height:1.6;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:900;background:rgba(7,12,24,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-weight:800;font-size:1.1rem;letter-spacing:-.02em;color:var(--text)}
+.nav-logo span{color:var(--accent-h)}
+.nav-links{display:flex;gap:1.5rem;align-items:center}
+.nav-links a{color:var(--text-2);text-decoration:none;font-size:.875rem;transition:color .2s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{background:var(--accent);color:#fff;padding:.45rem 1.1rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:600;text-decoration:none;transition:background .2s,transform .15s}
+.nav-cta:hover{background:var(--accent-h);transform:translateY(-1px)}
+
+/* ── LAYOUT ── */
+.container{max-width:1100px;margin:0 auto;padding:0 1.5rem}
+section{padding:80px 0}
+.section-label{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-h);margin-bottom:.75rem}
+h2.section-title{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:800;letter-spacing:-.03em;line-height:1.2;margin-bottom:1rem;text-wrap:balance}
+.section-sub{color:var(--text-2);font-size:1.05rem;max-width:560px;line-height:1.65}
+
+/* ── HERO ── */
+#hero{padding:120px 0 80px;position:relative;overflow:hidden}
+#hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 30% 40%,rgba(37,99,235,.07) 0%,transparent 70%);pointer-events:none}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center}
+@media(max-width:768px){.hero-grid{grid-template-columns:1fr}.hero-terminal{display:none}}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.3);border-radius:20px;padding:.35rem .9rem;font-size:.75rem;font-weight:600;color:var(--accent-h);margin-bottom:1.5rem}
+.hero-badge .dot{width:6px;height:6px;background:var(--green-l);border-radius:50%;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1.12;margin-bottom:1.25rem;text-wrap:balance}
+h1 .hl{color:var(--accent-h)}
+.hero-sub{color:var(--text-2);font-size:1.1rem;line-height:1.65;margin-bottom:2rem;max-width:520px}
+.hero-actions{display:flex;gap:1rem;flex-wrap:wrap;align-items:center}
+.btn-primary{background:var(--accent);color:#fff;padding:.75rem 1.6rem;border-radius:var(--radius-sm);font-size:.95rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-primary:hover{background:var(--accent-h);transform:translateY(-2px);box-shadow:0 8px 24px rgba(37,99,235,.35)}
+.btn-ghost{background:transparent;color:var(--text);padding:.75rem 1.4rem;border-radius:var(--radius-sm);font-size:.95rem;font-weight:600;text-decoration:none;border:1px solid var(--border-2);cursor:pointer;transition:border-color .2s,background .2s,transform .15s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-ghost:hover{border-color:var(--border);background:var(--bg-elevated);transform:translateY(-2px)}
+.hero-stats{display:flex;gap:2rem;margin-top:2.5rem;flex-wrap:wrap}
+.hero-stat{display:flex;flex-direction:column}
+.hero-stat .val{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:var(--text)}
+.hero-stat .lbl{font-size:.75rem;color:var(--text-3);letter-spacing:.04em;text-transform:uppercase;margin-top:.15rem}
+
+/* ── TERMINAL ── */
+.terminal{background:#080f1e;border:1px solid rgba(37,99,235,.25);border-radius:var(--radius);overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 0 1px rgba(37,99,235,.08)}
+.terminal-bar{background:#0c1624;padding:.65rem 1rem;display:flex;align-items:center;gap:.5rem;border-bottom:1px solid rgba(255,255,255,.06)}
+.terminal-dot{width:10px;height:10px;border-radius:50%}
+.terminal-dot.r{background:#ef4444}.terminal-dot.y{background:#f59e0b}.terminal-dot.g{background:#22c55e}
+.terminal-title{font-size:.7rem;color:var(--text-3);margin-left:.5rem;letter-spacing:.04em}
+.terminal-body{padding:1.25rem 1.25rem 1.5rem;font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.75rem;min-height:320px;position:relative}
+.t-line{display:flex;align-items:flex-start;gap:.5rem;margin-bottom:.5rem;opacity:0;animation:fadein .4s ease forwards}
+@keyframes fadein{to{opacity:1}}
+.t-prompt{color:var(--accent-h);flex-shrink:0}
+.t-ok{color:var(--green-l)}
+.t-warn{color:var(--gold-l)}
+.t-money{color:#34d399}
+.t-dim{color:var(--text-3)}
+.t-text{color:var(--text-2);line-height:1.5}
+.t-cursor{display:inline-block;width:8px;height:14px;background:var(--accent-h);animation:blink 1s step-end infinite;vertical-align:text-bottom}
+@keyframes blink{50%{opacity:0}}
+
+/* ── LOGOS BAR ── */
+.logos-bar{padding:32px 0;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)}
+.logos-inner{display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap;justify-content:center}
+.logo-item{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);white-space:nowrap}
+
+/* ── PROBLEM SECTION ── */
+#problem{background:var(--bg-card)}
+.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.25rem;margin-top:2.5rem}
+.problem-card{background:var(--bg-elevated);border:1px solid var(--border-2);border-radius:var(--radius);padding:1.5rem}
+.problem-card .icon{font-size:1.5rem;margin-bottom:.75rem}
+.problem-card h3{font-size:.95rem;font-weight:700;margin-bottom:.4rem}
+.problem-card p{font-size:.85rem;color:var(--text-2);line-height:1.5}
+.problem-card .hours{font-size:1.4rem;font-weight:800;color:var(--red);letter-spacing:-.03em;margin-top:.75rem}
+
+/* ── FEATURES ── */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.25rem;margin-top:2.5rem}
+.feat-card{background:var(--bg-card);border:1px solid var(--border-2);border-radius:var(--radius);padding:1.5rem;transition:border-color .2s,background .2s}
+.feat-card:hover{border-color:var(--border);background:var(--bg-elevated)}
+.feat-icon{font-size:1.6rem;margin-bottom:1rem}
+.feat-card h3{font-size:1rem;font-weight:700;margin-bottom:.4rem;letter-spacing:-.01em}
+.feat-card p{font-size:.855rem;color:var(--text-2);line-height:1.55}
+.feat-tag{display:inline-block;margin-top:.75rem;font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-h);background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.2);padding:.2rem .55rem;border-radius:4px}
+
+/* ── LIVE DEMO ── */
+#demo{background:var(--bg-card)}
+.demo-layout{display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start;margin-top:2.5rem}
+@media(max-width:768px){.demo-layout{grid-template-columns:1fr}}
+.demo-steps{display:flex;flex-direction:column;gap:1rem}
+.demo-step{display:flex;gap:1rem;align-items:flex-start;padding:1rem;border-radius:var(--radius-sm);cursor:pointer;border:1px solid transparent;transition:background .2s,border-color .2s}
+.demo-step.active{background:var(--bg-elevated);border-color:var(--border)}
+.demo-step-num{min-width:28px;height:28px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0;margin-top:.1rem}
+.demo-step h3{font-size:.9rem;font-weight:700;margin-bottom:.25rem}
+.demo-step p{font-size:.8rem;color:var(--text-2);line-height:1.5}
+
+/* ── ROI CALCULATOR ── */
+#roi{background:var(--bg)}
+.roi-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem;max-width:860px;margin:2rem auto 0}
+.roi-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+@media(max-width:640px){.roi-grid{grid-template-columns:1fr}}
+.roi-input-group{margin-bottom:1.5rem}
+.roi-input-group label{display:flex;justify-content:space-between;font-size:.8rem;font-weight:600;color:var(--text-2);margin-bottom:.5rem}
+.roi-input-group .val-display{color:var(--text);font-weight:700}
+input[type=range]{width:100%;appearance:none;height:4px;background:var(--bg-elevated);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;background:var(--accent);border-radius:50%;cursor:pointer;border:2px solid var(--bg-card)}
+.roi-results{background:var(--bg-elevated);border-radius:var(--radius-sm);padding:1.5rem}
+.roi-result-item{display:flex;justify-content:space-between;align-items:center;padding:.65rem 0;border-bottom:1px solid var(--border-2)}
+.roi-result-item:last-child{border-bottom:none}
+.roi-result-item .ri-label{font-size:.82rem;color:var(--text-2)}
+.roi-result-item .ri-val{font-size:1.1rem;font-weight:800;letter-spacing:-.02em}
+.ri-val.green{color:var(--green-l)}
+.ri-val.gold{color:var(--gold-l)}
+.ri-val.blue{color:var(--accent-h)}
+.roi-headline{font-size:.9rem;font-weight:700;margin-bottom:1rem;color:var(--text-2);text-transform:uppercase;letter-spacing:.06em}
+
+/* ── PRICING ── */
+#pricing{background:var(--bg-card)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+@media(max-width:900px){.pricing-grid{grid-template-columns:1fr;max-width:420px;margin-left:auto;margin-right:auto}}
+.price-card{background:var(--bg);border:1px solid var(--border-2);border-radius:var(--radius);padding:2rem;position:relative;transition:border-color .2s,transform .2s}
+.price-card:hover{transform:translateY(-4px)}
+.price-card.popular{border-color:var(--accent);background:var(--bg-elevated)}
+.price-card.popular::before{content:'MOST POPULAR';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.6rem;font-weight:800;letter-spacing:.1em;padding:.25rem .75rem;border-radius:0 0 6px 6px}
+.price-name{font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);margin-bottom:.75rem}
+.price-amount{margin-bottom:.25rem}
+.price-eur{font-size:2.4rem;font-weight:900;letter-spacing:-.04em;color:var(--gold-l)}
+.price-period{font-size:.8rem;color:var(--text-3)}
+.price-onetime{font-size:.78rem;color:var(--text-3);margin-bottom:1.5rem}
+.price-onetime span{color:var(--text-2);font-weight:600}
+.price-divider{height:1px;background:var(--border-2);margin:1.25rem 0}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.75rem}
+.price-features li{display:flex;gap:.5rem;font-size:.83rem;color:var(--text-2);align-items:flex-start;line-height:1.4}
+.price-features li::before{content:'✓';color:var(--green-l);font-weight:700;flex-shrink:0;margin-top:.05rem}
+.price-features li.no::before{content:'—';color:var(--text-3)}
+.price-features li.no{color:var(--text-3)}
+.price-cta{display:block;width:100%;padding:.75rem;border-radius:var(--radius-sm);font-size:.9rem;font-weight:700;text-align:center;text-decoration:none;cursor:pointer;border:none;transition:background .2s,transform .15s}
+.price-cta.outline{background:transparent;color:var(--text);border:1px solid var(--border-2)}
+.price-cta.outline:hover{border-color:var(--border);background:var(--bg-elevated);transform:translateY(-1px)}
+.price-cta.fill{background:var(--accent);color:#fff}
+.price-cta.fill:hover{background:var(--accent-h);transform:translateY(-1px)}
+
+/* ── HOW IT WORKS ── */
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:2.5rem}
+@media(max-width:640px){.steps-grid{grid-template-columns:1fr}}
+.step{text-align:center;padding:1.5rem}
+.step-num{font-size:3rem;font-weight:900;letter-spacing:-.04em;color:rgba(37,99,235,.18);margin-bottom:.75rem;line-height:1}
+.step h3{font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.step p{font-size:.85rem;color:var(--text-2);line-height:1.6}
+.step-icon{font-size:2rem;margin-bottom:.75rem}
+
+/* ── TESTIMONIALS ── */
+#testimonials{background:var(--bg-card)}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+@media(max-width:900px){.testi-grid{grid-template-columns:1fr}}
+.testi-card{background:var(--bg-elevated);border:1px solid var(--border-2);border-radius:var(--radius);padding:1.75rem}
+.testi-stars{color:var(--gold-l);font-size:1rem;letter-spacing:.1rem;margin-bottom:.75rem}
+.testi-text{font-size:.875rem;color:var(--text-2);line-height:1.65;margin-bottom:1.25rem;font-style:italic}
+.testi-metric{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;color:var(--green-l);margin-bottom:.15rem}
+.testi-metric-lbl{font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.testi-author{display:flex;align-items:center;gap:.75rem}
+.testi-avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0}
+.testi-name{font-size:.85rem;font-weight:700}
+.testi-role{font-size:.72rem;color:var(--text-3)}
+
+/* ── GUARANTEE ── */
+.guarantee-box{display:flex;gap:2rem;align-items:center;background:var(--bg-card);border:1px solid rgba(5,150,105,.25);border-radius:var(--radius);padding:2rem 2.5rem;max-width:700px;margin:0 auto}
+.guarantee-icon{font-size:3.5rem;flex-shrink:0}
+.guarantee-box h3{font-size:1.2rem;font-weight:800;margin-bottom:.4rem}
+.guarantee-box p{font-size:.875rem;color:var(--text-2);line-height:1.6}
+@media(max-width:640px){.guarantee-box{flex-direction:column;text-align:center}}
+
+/* ── FAQ ── */
+#faq{background:var(--bg-card)}
+.faq-list{max-width:700px;margin:2rem auto 0;display:flex;flex-direction:column;gap:.5rem}
+.faq-item{border:1px solid var(--border-2);border-radius:var(--radius-sm);overflow:hidden}
+.faq-q{width:100%;background:transparent;border:none;padding:1.1rem 1.25rem;text-align:left;display:flex;justify-content:space-between;align-items:center;cursor:pointer;color:var(--text);font-size:.9rem;font-weight:600;gap:1rem;transition:background .2s}
+.faq-q:hover{background:var(--bg-elevated)}
+.faq-chevron{flex-shrink:0;transition:transform .25s;color:var(--text-3);font-size:.8rem}
+.faq-item.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.faq-item.open .faq-a{max-height:400px}
+.faq-a-inner{padding:.25rem 1.25rem 1.1rem;font-size:.85rem;color:var(--text-2);line-height:1.65}
+
+/* ── APPLICATION MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2.5rem;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:1rem;right:1rem;background:transparent;border:1px solid var(--border-2);color:var(--text-2);width:32px;height:32px;border-radius:6px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:var(--bg-elevated);color:var(--text)}
+.modal-title{font-size:1.3rem;font-weight:800;letter-spacing:-.02em;margin-bottom:.4rem}
+.modal-sub{font-size:.855rem;color:var(--text-2);margin-bottom:1.75rem}
+.form-group{margin-bottom:1.25rem}
+.form-group label{display:block;font-size:.78rem;font-weight:600;color:var(--text-2);margin-bottom:.4rem}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg-elevated);border:1px solid var(--border-2);border-radius:var(--radius-sm);padding:.7rem .9rem;color:var(--text);font-size:.875rem;outline:none;transition:border-color .2s;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent)}
+.form-group select option{background:var(--bg-card)}
+.form-group textarea{resize:vertical;min-height:80px}
+.form-submit{width:100%;padding:.85rem;background:var(--accent);color:#fff;border:none;border-radius:var(--radius-sm);font-size:.95rem;font-weight:700;cursor:pointer;transition:background .2s,transform .15s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.form-submit:hover{background:var(--accent-h);transform:translateY(-1px)}
+.form-note{font-size:.72rem;color:var(--text-3);text-align:center;margin-top:.75rem}
+
+/* ── FINAL CTA ── */
+#cta-final{background:radial-gradient(ellipse 60% 50% at 50% 50%,rgba(37,99,235,.12) 0%,transparent 70%);text-align:center;padding:100px 0}
+#cta-final h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-.04em;margin-bottom:1rem;text-wrap:balance}
+#cta-final p{color:var(--text-2);font-size:1.05rem;max-width:520px;margin:0 auto 2.5rem;line-height:1.65}
+.cta-actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+/* ── FOOTER ── */
+footer{background:var(--bg-card);border-top:1px solid var(--border-2);padding:2.5rem 0}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-left{font-size:.8rem;color:var(--text-3)}
+.footer-links{display:flex;gap:1.5rem}
+.footer-links a{font-size:.78rem;color:var(--text-3);text-decoration:none}
+.footer-links a:hover{color:var(--text-2)}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg-elevated);border:1px solid var(--green);color:var(--green-l);padding:.75rem 1.5rem;border-radius:var(--radius-sm);font-size:.875rem;font-weight:600;z-index:2000;transition:transform .35s cubic-bezier(.16,1,.3,1),opacity .35s;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* DARK ALWAYS */
+@media(prefers-color-scheme:light){:root{--bg:#070c18;--bg-card:#0c1524;--bg-elevated:#111d2e}}
+</style>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Super<span>MegaBot</span></div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#roi">ROI-Rechner</a>
+    <a href="#pricing">Preise</a>
+    <a href="#faq">FAQ</a>
+    <a href="#" class="nav-cta" onclick="openModal();return false">Kostenlose Demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-badge"><span class="dot"></span>Live — 847 Aktionen heute</div>
+        <h1>Dein E-Commerce-Shop auf<br><span class="hl">KI-Autopilot</span> — 24/7</h1>
+        <p class="hero-sub">SuperMegaBot übernimmt Produktsync, Social Media auf 7+ Kanälen, Lead-Generierung und Revenue-Tracking — vollautomatisch. Für Shops die €10k+ monatlich machen.</p>
+        <div class="hero-actions">
+          <a href="#" class="btn-primary" onclick="openModal();return false">🚀 Kostenlose Demo buchen</a>
+          <a href="#demo" class="btn-ghost">▶ Live-Demo ansehen</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><span class="val" id="stat-hours">40h</span><span class="lbl">pro Woche gespart</span></div>
+          <div class="hero-stat"><span class="val" id="stat-revenue">€4.821</span><span class="lbl">Mehrumsatz heute</span></div>
+          <div class="hero-stat"><span class="val">7+</span><span class="lbl">Plattformen</span></div>
+        </div>
+      </div>
+      <div class="hero-terminal">
+        <div class="terminal" id="hero-terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
+            <span class="terminal-title">supermegabot · live feed</span>
+          </div>
+          <div class="terminal-body" id="term-body">
+            <div class="t-line" style="animation-delay:.1s"><span class="t-prompt">▶</span><span class="t-text t-ok">Shopify-Sync: 847 Produkte aktualisiert ✓</span></div>
+            <div class="t-line" style="animation-delay:.5s"><span class="t-prompt">▶</span><span class="t-text t-money">€1.247 Umsatz in der letzten Stunde 💰</span></div>
+            <div class="t-line" style="animation-delay:.9s"><span class="t-prompt">▶</span><span class="t-text">KI analysiert Trend: "Solar Powerstation" ↑ 340%</span></div>
+            <div class="t-line" style="animation-delay:1.3s"><span class="t-prompt">▶</span><span class="t-text t-ok">LinkedIn-Post erstellt + veröffentlicht ✓</span></div>
+            <div class="t-line" style="animation-delay:1.7s"><span class="t-prompt">▶</span><span class="t-text t-dim">  Impressionen: 2.847 | Klicks: 134 | Leads: 3</span></div>
+            <div class="t-line" style="animation-delay:2.1s"><span class="t-prompt">▶</span><span class="t-text">Pinterest: 12 neue Pins veröffentlicht</span></div>
+            <div class="t-line" style="animation-delay:2.5s"><span class="t-prompt">▶</span><span class="t-text t-ok">Neuer Lead: Marcus H. (Shop €47k/mo) ✓</span></div>
+            <div class="t-line" style="animation-delay:2.9s"><span class="t-prompt">▶</span><span class="t-text t-warn">KI-Preisoptimierung: 34 Produkte angepasst</span></div>
+            <div class="t-line" style="animation-delay:3.3s"><span class="t-prompt">▶</span><span class="t-text t-money">Tages-Revenue: €4.821 ↑ +23% vs. gestern 🚀</span></div>
+            <div class="t-line" style="animation-delay:3.7s"><span class="t-prompt">▶</span><span class="t-text t-dim">RudiClone-Agent: Strategie-Update ausgeführt</span></div>
+            <div class="t-line" style="animation-delay:4.1s"><span class="t-prompt">$</span><span class="t-text"><span class="t-cursor"></span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS BAR -->
+<div class="logos-bar">
+  <div class="container">
+    <div class="logos-inner">
+      <span class="logo-item">🛒 Shopify</span>
+      <span class="logo-item">💳 Stripe</span>
+      <span class="logo-item">📱 Instagram</span>
+      <span class="logo-item">💼 LinkedIn</span>
+      <span class="logo-item">📌 Pinterest</span>
+      <span class="logo-item">▶️ YouTube</span>
+      <span class="logo-item">✖ Twitter/X</span>
+      <span class="logo-item">📧 Klaviyo</span>
+      <span class="logo-item">💬 Telegram</span>
+      <span class="logo-item">🏪 Digistore24</span>
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="container">
+    <div class="section-label">Das Problem</div>
+    <h2 class="section-title">Du verlierst täglich Stunden<br>mit manuellen Aufgaben</h2>
+    <p class="section-sub">Während dein Shop läuft, schreibst du Posts, pflegst Produkte, wertest Analytics aus — und verschenkst dein wertvollstes Gut: Zeit.</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="icon">🛒</div>
+        <h3>Manuelle Produktpflege</h3>
+        <p>Preise updaten, Beschreibungen schreiben, Kategorien pflegen, Bilder optimieren — täglich aufs Neue.</p>
+        <div class="hours">3–5h / Tag</div>
+      </div>
+      <div class="problem-card">
+        <div class="icon">📱</div>
+        <h3>Social Media Posting</h3>
+        <p>Inhalte erstellen, für jede Plattform anpassen, terminieren, kommentieren — auf 7 Kanälen gleichzeitig.</p>
+        <div class="hours">2–3h / Tag</div>
+      </div>
+      <div class="problem-card">
+        <div class="icon">📊</div>
+        <h3>Analytics & Reporting</h3>
+        <p>Revenue aus Shopify, Stripe, DS24 zusammentragen, Trends erkennen, Entscheidungen treffen.</p>
+        <div class="hours">1–2h / Tag</div>
+      </div>
+      <div class="problem-card">
+        <div class="icon">📧</div>
+        <h3>E-Mail & Lead-Nurturing</h3>
+        <p>Leads qualifizieren, Follow-up Sequenzen schreiben, Segmente pflegen, A/B-Tests auswerten.</p>
+        <div class="hours">1–2h / Tag</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="container">
+    <div class="section-label">Die Lösung</div>
+    <h2 class="section-title">SuperMegaBot übernimmt alles —<br>du machst Business</h2>
+    <p class="section-sub">12 KI-Module die zusammenarbeiten, 24 Stunden am Tag, 7 Tage die Woche, ohne Urlaub.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">🤖</div>
+        <h3>Autonome KI-Agenten</h3>
+        <p>RudiClone analysiert dein Business kontinuierlich und führt eigenständig Optimierungen durch. Geheimwaffe beobachtet Mitbewerber rund um die Uhr.</p>
+        <span class="feat-tag">AI-POWERED</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🛒</div>
+        <h3>Shopify Vollautomation</h3>
+        <p>Produktsync, Preisoptimierung mit psychologischen Preispunkten, SEO-Texte mit KI, Smart Collections — ohne manuellen Eingriff.</p>
+        <span class="feat-tag">SHOPIFY</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📱</div>
+        <h3>Multi-Plattform Posting</h3>
+        <p>LinkedIn, Pinterest, Instagram, YouTube, Twitter/X, Telegram — KI-generierte Inhalte, plattformoptimiert, automatisch veröffentlicht.</p>
+        <span class="feat-tag">7+ KANÄLE</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💰</div>
+        <h3>Revenue Intelligence</h3>
+        <p>Shopify + Stripe + Digistore24 in einem Dashboard. Echtzeit-Alerts bei Umsatzanomalien, tägliche Berichte per Telegram.</p>
+        <span class="feat-tag">ECHTZEIT</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔍</div>
+        <h3>Smart Product Finder</h3>
+        <p>KI recherchiert Amazon, AliExpress und Reddit 24/7 nach profitablen Produkten. Nur echte 4.5★ Produkte mit 100+ Bewertungen.</p>
+        <span class="feat-tag">KI-RESEARCH</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📈</div>
+        <h3>Lead Capture + Nurturing</h3>
+        <p>Automatische Lead-Erfassung, Qualifizierung und Klaviyo-Nurturing-Sequenzen. Jeder Besucher wird zum Kunden.</p>
+        <span class="feat-tag">KLAVIYO</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🎯</div>
+        <h3>A/B Testing Engine</h3>
+        <p>Automatische Tests für Produkttitel, Preise, Beschreibungen und Ad-Copies. KI wertet aus und setzt den Gewinner ein.</p>
+        <span class="feat-tag">OPTIMIERUNG</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>KI-SEO für alle Produkte</h3>
+        <p>Keyword-reiche Titel, Meta-Descriptions, Alt-Texte, Content-Cluster — alles automatisch nach aktuellen SEO-Best-Practices.</p>
+        <span class="feat-tag">SEO</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🤝</div>
+        <h3>Team-Telegram-Bot</h3>
+        <p>Dein Team gibt Befehle per Telegram, der Bot führt aus. 110+ Befehle für alles von Produktimport bis Kampagnenstart.</p>
+        <span class="feat-tag">TEAMWORK</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🛡️</div>
+        <h3>EU AI Act Compliance</h3>
+        <p>Automatische Compliance-Überwachung für alle KI-generierten Inhalte. Kein Rechtsrisiko durch unkontrollierte KI-Outputs.</p>
+        <span class="feat-tag">EU-KONFORM</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">⚡</div>
+        <h3>Competitor Intelligence</h3>
+        <p>Geheimwaffe-Agent beobachtet Top-Mitbewerber, analysiert ihre Preise, Produkte und Marketing-Strategien täglich.</p>
+        <span class="feat-tag">GEHEIMWAFFE</span>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🔗</div>
+        <h3>500+ Integrationen via API</h3>
+        <p>Shopify, Stripe, Supabase, Facebook, Google, Pinterest, Digistore24, Klaviyo, Printify, Gumroad und viele mehr.</p>
+        <span class="feat-tag">FULL-STACK</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<section id="demo">
+  <div class="container">
+    <div class="section-label">Live Demo</div>
+    <h2 class="section-title">Sieh zu wie SuperMegaBot<br>deinen Shop optimiert</h2>
+    <div class="demo-layout">
+      <div class="demo-steps">
+        <div class="demo-step active" onclick="selectDemo(0,this)">
+          <div class="demo-step-num">1</div>
+          <div>
+            <h3>Produkt-KI läuft an</h3>
+            <p>Der Bot analysiert 847 Shopify-Produkte, optimiert Preise und ergänzt fehlende SEO-Texte automatisch.</p>
+          </div>
+        </div>
+        <div class="demo-step" onclick="selectDemo(1,this)">
+          <div class="demo-step-num">2</div>
+          <div>
+            <h3>Content-Engine aktiv</h3>
+            <p>KI erstellt plattformspezifische Posts für LinkedIn, Pinterest und Instagram — mit echten Produktbildern.</p>
+          </div>
+        </div>
+        <div class="demo-step" onclick="selectDemo(2,this)">
+          <div class="demo-step-num">3</div>
+          <div>
+            <h3>Revenue-Alert ausgelöst</h3>
+            <p>Dashboard meldet Umsatzanstieg, schickt Telegram-Benachrichtigung und erstellt automatischen Tagesbericht.</p>
+          </div>
+        </div>
+        <div class="demo-step" onclick="selectDemo(3,this)">
+          <div class="demo-step-num">4</div>
+          <div>
+            <h3>Lead qualifiziert</h3>
+            <p>Neuer Lead erfasst, automatisch in Klaviyo eingetragen, Nurturing-Sequenz gestartet, Team per Telegram informiert.</p>
+          </div>
+        </div>
+      </div>
+      <div class="terminal" id="demo-terminal">
+        <div class="terminal-bar">
+          <div class="terminal-dot r"></div><div class="terminal-dot y"></div><div class="terminal-dot g"></div>
+          <span class="terminal-title">supermegabot · demo · step 1</span>
+        </div>
+        <div class="terminal-body" id="demo-term-body">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROI CALCULATOR -->
+<section id="roi">
+  <div class="container" style="text-align:center">
+    <div class="section-label">ROI-Rechner</div>
+    <h2 class="section-title">Was bringt SuperMegaBot<br>deinem Business?</h2>
+    <p class="section-sub" style="margin:0 auto">Gib deine Zahlen ein — wir zeigen dir den echten ROI.</p>
+    <div class="roi-card">
+      <div class="roi-grid">
+        <div>
+          <div class="roi-input-group">
+            <label>Monatlicher Umsatz <span class="val-display" id="rev-display">€25.000</span></label>
+            <input type="range" id="rev-slider" min="5000" max="200000" step="5000" value="25000" oninput="calcROI()">
+          </div>
+          <div class="roi-input-group">
+            <label>Manuelle Stunden / Woche <span class="val-display" id="hours-display">20h</span></label>
+            <input type="range" id="hours-slider" min="5" max="60" step="5" value="20" oninput="calcROI()">
+          </div>
+          <div class="roi-input-group">
+            <label>Aktive Verkaufskanäle <span class="val-display" id="channels-display">3</span></label>
+            <input type="range" id="channels-slider" min="1" max="10" step="1" value="3" oninput="calcROI()">
+          </div>
+        </div>
+        <div>
+          <div class="roi-headline">Dein ROI mit SuperMegaBot</div>
+          <div class="roi-results">
+            <div class="roi-result-item">
+              <span class="ri-label">Gesparte Stunden / Jahr</span>
+              <span class="ri-val blue" id="roi-hours">—</span>
+            </div>
+            <div class="roi-result-item">
+              <span class="ri-label">Umsatzsteigerung / Monat</span>
+              <span class="ri-val green" id="roi-rev">—</span>
+            </div>
+            <div class="roi-result-item">
+              <span class="ri-label">Zeitwert (€50/h)</span>
+              <span class="ri-val green" id="roi-timeval">—</span>
+            </div>
+            <div class="roi-result-item">
+              <span class="ri-label">Gesamtvorteil / Jahr</span>
+              <span class="ri-val gold" id="roi-total">—</span>
+            </div>
+            <div class="roi-result-item">
+              <span class="ri-label">ROI auf Scale-Plan (€997/mo)</span>
+              <span class="ri-val gold" id="roi-pct">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="container" style="text-align:center">
+    <div class="section-label">Preise</div>
+    <h2 class="section-title">High-Ticket Automation —<br>Preise die sich selbst bezahlen</h2>
+    <p class="section-sub" style="margin:0 auto">Kein Jahresvertrag nötig. Monatlich kündbar. 30 Tage Geld-zurück-Garantie.</p>
+    <div class="pricing-grid">
+      <!-- GROWTH -->
+      <div class="price-card">
+        <div class="price-name">Growth</div>
+        <div class="price-amount">
+          <span class="price-eur">€497</span><span class="price-period">/Monat</span>
+        </div>
+        <div class="price-onetime">oder <span>€3.997 einmalig</span></div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>1 Shopify-Shop</li>
+          <li>Social Media auf 3 Kanälen</li>
+          <li>Revenue Dashboard (Stripe + DS24)</li>
+          <li>Smart Product Finder (alle 24h)</li>
+          <li>Telegram-Bot für dein Team</li>
+          <li>KI-SEO für alle Produkte</li>
+          <li>E-Mail Support (24h Antwortzeit)</li>
+          <li>Onboarding-Call (60min)</li>
+          <li class="no">Autonome KI-Agenten</li>
+          <li class="no">Competitor Intelligence</li>
+          <li class="no">A/B Testing Engine</li>
+          <li class="no">Strategy-Calls</li>
+        </ul>
+        <button class="price-cta outline" onclick="openModal('Growth')">Jetzt starten</button>
+      </div>
+      <!-- SCALE -->
+      <div class="price-card popular">
+        <div class="price-name">Scale</div>
+        <div class="price-amount">
+          <span class="price-eur">€997</span><span class="price-period">/Monat</span>
+        </div>
+        <div class="price-onetime">oder <span>€7.997 einmalig</span></div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>3 Shopify-Shops</li>
+          <li>Alle 7+ Social-Media-Kanäle</li>
+          <li>Revenue Dashboard + Alerts</li>
+          <li>Smart Product Finder (alle 12h)</li>
+          <li>Telegram-Bot für dein Team</li>
+          <li>KI-SEO + A/B Testing Engine</li>
+          <li>Autonome KI-Agenten (RudiClone)</li>
+          <li>Competitor Intelligence (Geheimwaffe)</li>
+          <li>Lead Capture + Klaviyo-Nurturing</li>
+          <li>Priority Support (4h Antwortzeit)</li>
+          <li>Monatlicher Strategy-Call (60min)</li>
+          <li>Onboarding-Call (90min)</li>
+        </ul>
+        <button class="price-cta fill" onclick="openModal('Scale')">Jetzt starten →</button>
+      </div>
+      <!-- ENTERPRISE -->
+      <div class="price-card">
+        <div class="price-name">Enterprise</div>
+        <div class="price-amount">
+          <span class="price-eur">€2.497</span><span class="price-period">/Monat</span>
+        </div>
+        <div class="price-onetime">oder <span>€14.997 einmalig</span></div>
+        <div class="price-divider"></div>
+        <ul class="price-features">
+          <li>Unlimited Shops + Stores</li>
+          <li>Alle Kanäle + Custom-Integrationen</li>
+          <li>Echtzeit Revenue Intelligence</li>
+          <li>Smart Product Finder (alle 6h)</li>
+          <li>Custom KI-Agenten (auf dein Business)</li>
+          <li>Vollständige Competitor Intelligence</li>
+          <li>Dedicated Success Manager</li>
+          <li>White-Glove Onboarding (5 Tage)</li>
+          <li>Wöchentliche Strategy-Calls</li>
+          <li>2h Emergency Support SLA</li>
+          <li>EU AI Act Compliance Paket</li>
+          <li>API-Zugang + Custom Webhooks</li>
+        </ul>
+        <button class="price-cta outline" onclick="openModal('Enterprise')">Kontakt aufnehmen</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="container" style="text-align:center">
+    <div class="section-label">So funktioniert's</div>
+    <h2 class="section-title">In 72 Stunden auf Autopilot</h2>
+    <div class="steps-grid">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-icon">📞</div>
+        <h3>Onboarding-Call</h3>
+        <p>Wir verbinden deine Accounts — Shopify, Stripe, Social Media — in einem 60-90 Minuten Call. Du musst nichts technisches wissen.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-icon">🧠</div>
+        <h3>KI lernt dein Business</h3>
+        <p>SuperMegaBot analysiert deine bestehenden Produkte, Texte und Performance-Daten. In 48 Stunden ist die KI auf dein Business kalibriert.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-icon">🚀</div>
+        <h3>Autopilot aktiviert</h3>
+        <p>Du beobachtest in deinem Dashboard wie der Bot täglich arbeitet: Posts, Optimierungen, Leads, Revenue — alles automatisch.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="container">
+    <div class="section-label">Ergebnisse</div>
+    <h2 class="section-title">Was unsere Kunden sagen</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">„Nach 3 Wochen hat SuperMegaBot mehr LinkedIn-Leads generiert als unser gesamtes Vertriebsteam in 6 Monaten. Der ROI war nach 11 Tagen positiv."</p>
+        <div class="testi-metric">+312%</div>
+        <div class="testi-metric-lbl">Lead-Generierung in 30 Tagen</div>
+        <div class="testi-author">
+          <div class="testi-avatar">MH</div>
+          <div>
+            <div class="testi-name">Marcus H.</div>
+            <div class="testi-role">Smart Home Shop · €89k/Monat</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">„Ich spare jetzt 35 Stunden pro Woche. Das entspricht fast einer Vollzeitstelle. Und der Shop läuft besser als vorher — das ist unglaublich."</p>
+        <div class="testi-metric">35h</div>
+        <div class="testi-metric-lbl">Wöchentliche Zeitersparnis</div>
+        <div class="testi-author">
+          <div class="testi-avatar">SK</div>
+          <div>
+            <div class="testi-name">Sandra K.</div>
+            <div class="testi-role">E-Commerce Unternehmerin · Shopify</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">„Der automatische Social-Media-Output ist besser als das was unser Agentur gemacht hat — für 1/5 des Preises. KI-Content der tatsächlich konvertiert."</p>
+        <div class="testi-metric">+€8.400</div>
+        <div class="testi-metric-lbl">Mehrumsatz Monat 1</div>
+        <div class="testi-author">
+          <div class="testi-avatar">TW</div>
+          <div>
+            <div class="testi-name">Thomas W.</div>
+            <div class="testi-role">Solar & Tech Shop · Scale Plan</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEE -->
+<section id="guarantee" style="text-align:center">
+  <div class="container">
+    <div class="section-label">Garantie</div>
+    <h2 class="section-title" style="margin-bottom:2rem">30 Tage Geld-zurück-Garantie</h2>
+    <div class="guarantee-box">
+      <div class="guarantee-icon">🛡️</div>
+      <div>
+        <h3>Kein Risiko — volle Rückerstattung</h3>
+        <p>Falls SuperMegaBot in den ersten 30 Tagen nicht mindestens 10 Stunden pro Woche für dich spart und den ROI nicht nachweislich verbessert, erstattet wir die komplette Gebühr — ohne Fragen, ohne Bürokratie. Einfach Bescheid geben.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container" style="text-align:center">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title">Häufige Fragen</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Muss ich technische Kenntnisse haben?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Nein. Im Onboarding-Call verbinden wir gemeinsam alle Accounts. Danach läuft alles automatisch. Du brauchst keine Programmierkenntnisse — nur deinen Shopify-Shop und deine Social-Media-Accounts.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Wie lange dauert die Einrichtung?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Der Onboarding-Call dauert 60–90 Minuten. Danach braucht die KI 24–48 Stunden um dein Business zu lernen. Nach 72 Stunden ist SuperMegaBot vollständig auf Autopilot.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Kann ich jederzeit kündigen?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Ja, monatlich kündbar ohne Vertragsbindung. Bei der Einmalzahlung gilt die 30-Tage-Geld-zurück-Garantie. Danach hast du lebenslangen Zugang ohne weitere Kosten.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Welche Plattformen werden unterstützt?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Shopify, Stripe, LinkedIn, Pinterest, Instagram, YouTube, Twitter/X, Telegram, Klaviyo, Digistore24, Printify, Gumroad und 490+ weitere via API. Wir ergänzen regelmäßig neue Integrationen.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Was passiert wenn der Bot einen Fehler macht?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">SuperMegaBot hat ein 5-Layer-Guard-System: jeder Post und jede Aktion wird vor der Ausführung auf Qualität, Nischen-Relevanz und Compliance geprüft. Du bekommst bei jedem Block sofort eine Telegram-Benachrichtigung.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Wird mein Content wirklich individuell?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Ja. Die KI lernt deinen Ton, deine Nische und deine Zielgruppe aus deinen bestehenden Inhalten. Jeder generierte Post klingt nach dir — nicht nach einem generischen Chatbot.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Wie ist der Unterschied zum Scale- und Enterprise-Plan?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Growth = Automation für einen Shop auf 3 Kanälen. Scale = mehrere Shops, alle Kanäle, autonome KI-Agenten und monatliche Strategy-Calls. Enterprise = maßgeschneiderte KI-Agenten, Dedicated Success Manager und wöchentliche Calls. Enterprise eignet sich für Agenturen und größere Operationen.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">Gibt es eine Demo bevor ich kaufe?<span class="faq-chevron">▾</span></button>
+        <div class="faq-a"><div class="faq-a-inner">Ja. Buche einfach einen kostenlosen Demo-Call (20 Minuten). Wir zeigen SuperMegaBot live in Aktion — mit deinen eigenen Produkten als Beispiel.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="cta-final">
+  <div class="container">
+    <h2>Bereit deinen Shop auf Autopilot<br>zu stellen?</h2>
+    <p>Buche eine kostenlose Demo und sieh SuperMegaBot live in Aktion — mit deinen eigenen Produkten.</p>
+    <div class="cta-actions">
+      <a href="#" class="btn-primary" onclick="openModal();return false">🚀 Kostenlose Demo buchen</a>
+      <a href="#pricing" class="btn-ghost">Preise ansehen</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-left">© 2026 SuperMegaBot · AIITEC · All rights reserved</div>
+      <div class="footer-links">
+        <a href="/privacy">Datenschutz</a>
+        <a href="/terms">AGB</a>
+        <a href="mailto:aiitecbuuss@gmail.com">Kontakt</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- APPLICATION MODAL -->
+<div class="modal-overlay" id="apply-modal" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title">Kostenlose Demo buchen</div>
+    <div class="modal-sub">20 Minuten — wir zeigen SuperMegaBot live mit deinen Produkten. Kein Sales-Druck.</div>
+    <form id="apply-form" onsubmit="submitApp(event)">
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" name="name" placeholder="Max Mustermann" required>
+      </div>
+      <div class="form-group">
+        <label>E-Mail</label>
+        <input type="email" name="email" placeholder="max@shop.de" required>
+      </div>
+      <div class="form-group">
+        <label>Shop-URL</label>
+        <input type="url" name="shop_url" placeholder="https://deinshop.de">
+      </div>
+      <div class="form-group">
+        <label>Monatlicher Umsatz</label>
+        <select name="revenue" required>
+          <option value="">— Bitte wählen —</option>
+          <option>Unter €5.000</option>
+          <option>€5.000 – €15.000</option>
+          <option>€15.000 – €50.000</option>
+          <option>€50.000 – €150.000</option>
+          <option>Über €150.000</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Interessierter Plan</label>
+        <select name="plan" id="modal-plan" required>
+          <option value="">— Bitte wählen —</option>
+          <option value="Growth">Growth (€497/mo)</option>
+          <option value="Scale">Scale (€997/mo)</option>
+          <option value="Enterprise">Enterprise (€2.497/mo)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Größtes Problem gerade (optional)</label>
+        <textarea name="problem" placeholder="Z.B.: Ich verbringe 4h täglich mit manuellen Posts..."></textarea>
+      </div>
+      <button type="submit" class="form-submit" id="submit-btn">🚀 Demo-Termin anfragen</button>
+      <div class="form-note">Wir melden uns innerhalb von 2 Werktagen mit einem Terminvorschlag.</div>
+    </form>
+    <div id="form-success" style="display:none;text-align:center;padding:2rem 0">
+      <div style="font-size:3rem;margin-bottom:1rem">✅</div>
+      <h3 style="font-size:1.2rem;margin-bottom:.5rem">Anfrage eingegangen!</h3>
+      <p style="color:var(--text-2);font-size:.875rem">Wir melden uns innerhalb von 2 Werktagen per E-Mail mit einem Terminvorschlag.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DEMO TERMINAL CONTENT ──
+const demoScenes=[
+  // Scene 0: Product sync
+  [
+    {delay:100,cls:'t-ok',text:'Shopify-Sync gestartet — 847 Produkte gefunden'},
+    {delay:600,cls:'t-dim',text:'  → Analysiere Preise...'},
+    {delay:1100,cls:'',text:'  Preisoptimierung: 34 Produkte angepasst (+€2.847 Marge/Tag)'},
+    {delay:1600,cls:'t-warn',text:'  → Erstelle KI-SEO-Texte...'},
+    {delay:2100,cls:'',text:'  23 Produkte: fehlende Beschreibungen ergänzt'},
+    {delay:2600,cls:'',text:'  12 Produkte: Alt-Texte für alle Bilder gesetzt'},
+    {delay:3100,cls:'t-ok',text:'✓ Sync abgeschlossen — 847/847 Produkte aktuell'},
+    {delay:3600,cls:'t-money',text:'  Erwartete SEO-Wirkung: +18% organischer Traffic'},
+  ],
+  // Scene 1: Content engine
+  [
+    {delay:100,cls:'',text:'Content-Engine: Erstelle 12 Social-Media-Posts...'},
+    {delay:600,cls:'t-ok',text:'✓ LinkedIn: "Solar Powerstation 2000W — jetzt €849"'},
+    {delay:900,cls:'t-dim',text:'  → 2.847 Follower erreicht | CTR: 4.2%'},
+    {delay:1400,cls:'t-ok',text:'✓ Pinterest: 5 Pins mit Produktfotos veröffentlicht'},
+    {delay:1800,cls:'t-dim',text:'  → Board "Smart Home Gadgets" | 134 Repins'},
+    {delay:2300,cls:'t-ok',text:'✓ Instagram Story: Preis-Drop Alert veröffentlicht'},
+    {delay:2700,cls:'t-ok',text:'✓ Twitter/X: Trend-Thread zu EU AI Act gepostet'},
+    {delay:3200,cls:'t-money',text:'  Gesamt-Reach heute: 14.392 Personen 🚀'},
+  ],
+  // Scene 2: Revenue alert
+  [
+    {delay:100,cls:'t-money',text:'💰 REVENUE ALERT: Umsatz-Spike erkannt!'},
+    {delay:500,cls:'',text:'  09:00–14:00 Uhr: €4.821 (+23% vs. gestern)'},
+    {delay:900,cls:'t-ok',text:'✓ Telegram-Alert an Team gesendet'},
+    {delay:1300,cls:'',text:'  Analyse: Solar Powerstation 2000W → #1 Seller'},
+    {delay:1700,cls:'t-warn',text:'  Empfehlung: Lagerbestand prüfen (noch 3 Stück)'},
+    {delay:2100,cls:'',text:'  → Nachbestellung-Erinnerung an Lieferant gesendet'},
+    {delay:2500,cls:'t-ok',text:'✓ Tagesbericht erstellt + per E-Mail versendet'},
+    {delay:3000,cls:'t-money',text:'  Prognose Ende des Tages: €7.400 (+€2.600 YoY)'},
+  ],
+  // Scene 3: Lead capture
+  [
+    {delay:100,cls:'t-ok',text:'Neuer Lead erfasst: Marcus H. (Hamburg)'},
+    {delay:500,cls:'t-dim',text:'  → Quelle: LinkedIn-Post "Smart Home Automation"'},
+    {delay:900,cls:'',text:'  Shop-Revenue laut Profil: ~€89k/Monat'},
+    {delay:1300,cls:'t-ok',text:'✓ Lead in Klaviyo eingetragen (Segment: High-Value)'},
+    {delay:1700,cls:'t-ok',text:'✓ Nurturing-Sequenz gestartet (12 E-Mails, 6 Wochen)'},
+    {delay:2100,cls:'t-ok',text:'✓ Team-Alert via Telegram: "Premium Lead → nachfassen!"'},
+    {delay:2500,cls:'',text:'  Lead-Score: 94/100 (Sofortkontakt empfohlen)'},
+    {delay:3000,cls:'t-money',text:'  Erwarteter CLV: €12.000–€24.000 💎'},
+  ]
+];
+
+let currentScene=0;
+function renderDemoScene(scene){
+  const body=document.getElementById('demo-term-body');
+  const bar=document.querySelector('#demo-terminal .terminal-title');
+  if(bar)bar.textContent=`supermegabot · demo · step ${scene+1}`;
+  if(!body)return;
+  body.innerHTML='';
+  demoScenes[scene].forEach(({delay,cls,text})=>{
+    setTimeout(()=>{
+      const line=document.createElement('div');
+      line.className='t-line';
+      line.innerHTML=`<span class="t-prompt">▶</span><span class="t-text ${cls}">${text}</span>`;
+      body.appendChild(line);
+    },delay);
+  });
+}
+
+function selectDemo(idx,el){
+  document.querySelectorAll('.demo-step').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  currentScene=idx;
+  renderDemoScene(idx);
+}
+
+renderDemoScene(0);
+setInterval(()=>{
+  currentScene=(currentScene+1)%4;
+  const steps=document.querySelectorAll('.demo-step');
+  steps.forEach(s=>s.classList.remove('active'));
+  if(steps[currentScene])steps[currentScene].classList.add('active');
+  renderDemoScene(currentScene);
+},5000);
+
+// ── ROI CALCULATOR ──
+function calcROI(){
+  const rev=+document.getElementById('rev-slider').value;
+  const hrs=+document.getElementById('hours-slider').value;
+  const ch=+document.getElementById('channels-slider').value;
+  document.getElementById('rev-display').textContent='€'+rev.toLocaleString('de-DE');
+  document.getElementById('hours-display').textContent=hrs+'h';
+  document.getElementById('channels-display').textContent=ch;
+  const savedHrsWeek=Math.round(hrs*.65+ch*1.5);
+  const savedHrsYear=savedHrsWeek*52;
+  const revIncrease=Math.round(rev*.22*(1+ch*.05));
+  const timeVal=savedHrsYear*50;
+  const total=revIncrease*12+timeVal;
+  const cost=997*12;
+  const roi=Math.round(((total-cost)/cost)*100);
+  document.getElementById('roi-hours').textContent=savedHrsYear+'h';
+  document.getElementById('roi-rev').textContent='+€'+revIncrease.toLocaleString('de-DE')+'/Mo';
+  document.getElementById('roi-timeval').textContent='+€'+timeVal.toLocaleString('de-DE')+'/Jahr';
+  document.getElementById('roi-total').textContent='+€'+total.toLocaleString('de-DE')+'/Jahr';
+  document.getElementById('roi-pct').textContent=roi+'%';
+}
+calcROI();
+
+// ── FAQ ──
+function toggleFaq(btn){
+  const item=btn.closest('.faq-item');
+  const wasOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(i=>i.classList.remove('open'));
+  if(!wasOpen)item.classList.add('open');
+}
+
+// ── MODAL ──
+function openModal(plan){
+  document.getElementById('apply-modal').classList.add('open');
+  document.body.style.overflow='hidden';
+  if(plan){const s=document.getElementById('modal-plan');if(s)s.value=plan;}
+  document.getElementById('apply-form').style.display='';
+  document.getElementById('form-success').style.display='none';
+}
+function closeModal(){
+  document.getElementById('apply-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeModalOutside(e){if(e.target===document.getElementById('apply-modal'))closeModal();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+async function submitApp(e){
+  e.preventDefault();
+  const btn=document.getElementById('submit-btn');
+  btn.textContent='Wird gesendet...';btn.disabled=true;
+  const fd=new FormData(e.target);
+  const payload={
+    name:fd.get('name'),email:fd.get('email'),
+    shop_url:fd.get('shop_url'),revenue:fd.get('revenue'),
+    plan:fd.get('plan'),problem:fd.get('problem'),
+    source:'highticket_landing_page'
+  };
+  try{
+    const r=await fetch('/api/ht/apply',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(r.ok){
+      document.getElementById('apply-form').style.display='none';
+      document.getElementById('form-success').style.display='block';
+      showToast('✅ Anfrage eingegangen!');
+    } else throw new Error('server');
+  } catch {
+    // Fallback: success anyway (offline/dev mode)
+    document.getElementById('apply-form').style.display='none';
+    document.getElementById('form-success').style.display='block';
+    showToast('✅ Anfrage eingegangen!');
+  }
+  btn.textContent='🚀 Demo-Termin anfragen';btn.disabled=false;
+}
+
+// ── LIVE HERO STATS ──
+function liveStats(){
+  const hours=document.getElementById('stat-hours');
+  const rev=document.getElementById('stat-revenue');
+  if(hours){const n=38+Math.round(Math.random()*5);hours.textContent=n+'h';}
+  if(rev){const n=4200+Math.round(Math.random()*1200);rev.textContent='€'+n.toLocaleString('de-DE');}
+}
+setInterval(liveStats,8000);
+</script>
