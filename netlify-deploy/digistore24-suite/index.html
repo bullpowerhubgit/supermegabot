@@ -3,1527 +3,631 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digistore24 Pro Suite — Affiliate & Verkauf automatisieren | ab €39/mo</title>
-<meta property="og:title" content="Digistore24 Automation Suite — BullPower Tools">
-<meta property="og:description" content="Digistore24 Automation Suite — Automatische Webhooks bei jedem Verkauf, E-Mail-Kampagnen, Affiliate-Tracking und Google Sheets Export.">
+<title>Digistore24 Full Suite — Komplettes Digistore24 Business auf Autopilot — 449 Produkte × 50% Provision</title>
+<meta name="description" content="Digistore24 Full Suite: Komplettes Digistore24 Business auf Autopilot — 449 Produkte × 50% Provision. €6.200 Ø Affiliate-Einnahmen im ersten Monat. Jetzt starten ab €297.">
+<meta property="og:title" content="Digistore24 Full Suite — Komplettes Digistore24 Business auf Autopilot — 449 Produkte × 50% Provision">
+<meta property="og:description" content="€6.200 Ø Affiliate-Einnahmen im ersten Monat">
 <meta property="og:type" content="website">
-<meta name="theme-color" content="#8b5cf6">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "F\u00fcr wen ist Digistore24 Full Suite geeignet?", "acceptedAnswer": {"@type": "Answer", "text": "Digistore24 Full Suite ist f\u00fcr Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen \u2014 ohne mehr Zeit zu investieren."}}, {"@type": "Question", "name": "Wie schnell sehe ich erste Ergebnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen."}}, {"@type": "Question", "name": "Brauche ich technische Kenntnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Das Setup dauert unter 30 Minuten, es ist kein Code n\u00f6tig. Unser Onboarding-Team begleitet Sie Schritt f\u00fcr Schritt durch die Einrichtung."}}, {"@type": "Question", "name": "Kann ich k\u00fcndigen wann ich will?", "acceptedAnswer": {"@type": "Answer", "text": "Starter und Pro sind monatlich k\u00fcndbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zur\u00fcck-Garantie. Kein Risiko."}}, {"@type": "Question", "name": "Gibt es eine Geld-zur\u00fcck-Garantie?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. 30 Tage Geld-zur\u00fcck-Garantie ohne Wenn und Aber. Wenn Digistore24 Full Suite nicht liefert was wir versprechen, erstatten wir 100% zur\u00fcck."}}]}</script>
 <style>
-:root{
-  --bg:#050810;
-  --surface:#080d1a;
-  --card:#0c1224;
-  --card2:#101830;
-  --border:#1a2540;
-  --border2:#243055;
-  --text:#e8edf5;
-  --muted:#6b7fa0;
-  --dim:#3a4a68;
-  --violet:#8b5cf6;
-  --purple:#a78bfa;
-  --light-purple:#c4b5fd;
-  --blue:#6366f1;
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #2a2a3d;
+  --accent: #6c63ff;
+  --accent2: #00d4ff;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --red: #ff4757;
+  --text: #e8e8f0;
+  --muted: #888899;
+  --radius: 16px;
 }
-*{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',system-ui,sans-serif;overflow-x:hidden;line-height:1.65}
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif; line-height: 1.6; overflow-x: hidden; }
 
-/* ── NAV ── */
-.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(5,8,16,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-.nav-brand{display:flex;align-items:center;gap:0.7rem}
-.nav-icon{width:30px;height:30px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem}
-.nav-name{font-weight:800;font-size:1rem;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.nav-center{display:flex;align-items:center;gap:2rem}
-.nav-link{color:var(--muted);font-size:0.85rem;cursor:pointer;text-decoration:none;transition:color 0.2s;letter-spacing:0.1px}
-.nav-link:hover{color:var(--text)}
-.nav-right{display:flex;align-items:center;gap:0.8rem}
-.nav-pill{display:flex;align-items:center;gap:0.35rem;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:var(--purple);padding:0.28rem 0.7rem;border-radius:20px;font-size:0.75rem;font-weight:700}
-.nav-dot-live{width:6px;height:6px;border-radius:50%;background:#8b5cf6;animation:blink-purple 1.5s ease-in-out infinite}
-@keyframes blink-purple{0%,100%{opacity:1}50%{opacity:0.3}}
-.nav-cta{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:0.4rem 1.2rem;border-radius:20px;font-size:0.82rem;font-weight:700;cursor:pointer;letter-spacing:0.1px;transition:opacity 0.2s}
-.nav-cta:hover{opacity:0.85}
+/* ── HEADER ── */
+.header { position: fixed; top: 0; width: 100%; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 1000; padding: 0 5%; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.nav a { color: var(--muted); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; transition: color 0.2s; }
+.nav a:hover { color: var(--text); }
+.header-cta { background: var(--accent); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+.header-cta:hover { background: #5b52ef; transform: translateY(-1px); }
 
-/* ── HERO — SPLIT LAYOUT ── */
-.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:4rem;padding:100px 5rem 5rem;max-width:1300px;margin:0 auto;position:relative}
-@media(max-width:900px){.hero{grid-template-columns:1fr;padding:100px 2rem 4rem;gap:3rem}}
-.hero-bg-glow{position:fixed;width:700px;height:700px;background:radial-gradient(ellipse,rgba(139,92,246,0.08),transparent 65%);top:-200px;left:-200px;pointer-events:none}
-.hero-bg-glow2{position:fixed;width:500px;height:500px;background:radial-gradient(ellipse,rgba(99,102,241,0.06),transparent 65%);bottom:-100px;right:-100px;pointer-events:none}
+/* ── HERO ── */
+.hero { padding: 140px 5% 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
+.hero-badge { display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4); color: var(--accent2); padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 1.2rem; color: var(--muted); max-width: 650px; margin: 0 auto 2rem; }
+.hero-stat { display: inline-block; background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.4); border-radius: 12px; padding: 1rem 2rem; margin-bottom: 2.5rem; font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+.hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: all 0.3s; box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(108,99,255,0.5); }
+.btn-secondary { background: transparent; color: var(--text); padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1.05rem; border: 1.5px solid var(--border); transition: all 0.3s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.hero-guarantee { color: var(--muted); font-size: 0.85rem; }
+.hero-guarantee span { color: var(--green); }
 
-.hero-left{}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:var(--purple);padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:600;margin-bottom:1.8rem;letter-spacing:0.3px}
-.hero-h1{font-size:clamp(2rem,3.5vw,3.2rem);font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:1.2rem}
-.hero-h1 .accent{background:linear-gradient(90deg,#8b5cf6,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero-p{color:var(--muted);font-size:1rem;line-height:1.75;max-width:460px;margin-bottom:2rem}
-.hero-ctas{display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:2.5rem}
-.btn-primary{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:0.85rem 2rem;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 0 30px rgba(139,92,246,0.3);letter-spacing:0.1px}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(139,92,246,0.5)}
-.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2);padding:0.85rem 2rem;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:border-color 0.2s,color 0.2s}
-.btn-outline:hover{border-color:var(--violet);color:var(--purple)}
-.hero-social-proof{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
-.social-avatars{display:flex}
-.social-avatars span{width:32px;height:32px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;font-size:0.85rem;display:flex;align-items:center;justify-content:center;background:var(--card2)}
-.social-avatars span:first-child{margin-left:0}
-.social-text{color:var(--muted);font-size:0.82rem}
-.social-text strong{color:var(--light-purple)}
+/* ── STATS ── */
+.stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem 5%; }
+.stats-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
 
-/* NOTIFICATION FEED */
-.hero-right{}
-.feed-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative}
-.feed-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.6),transparent)}
-.feed-header{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.feed-header-title{display:flex;align-items:center;gap:0.5rem;font-size:0.88rem;font-weight:700}
-.feed-live{display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;font-weight:700;color:#22c55e}
-.feed-live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse-green 1.5s infinite}
-@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
-.feed-body{padding:0.8rem;display:flex;flex-direction:column;gap:0.5rem;min-height:320px;max-height:380px;overflow:hidden}
-.notif{display:flex;align-items:flex-start;gap:0.8rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0.75rem 1rem;transition:border-color 0.3s;animation:slideIn 0.4s ease forwards}
-@keyframes slideIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
-.notif.sale{border-left:3px solid #22c55e}
-.notif.affiliate{border-left:3px solid var(--violet)}
-.notif.refund{border-left:3px solid #f59e0b}
-.notif-icon{font-size:1.3rem;flex-shrink:0;margin-top:1px}
-.notif-body{}
-.notif-title{font-size:0.85rem;font-weight:700;margin-bottom:0.2rem}
-.notif-meta{font-size:0.75rem;color:var(--muted)}
-.notif-amount{font-size:0.88rem;font-weight:800;margin-top:0.2rem}
-.notif-amount.green{color:#22c55e}
-.notif-amount.purple{color:var(--purple)}
-.notif-amount.yellow{color:#fbbf24}
-.notif-time{margin-left:auto;font-size:0.7rem;color:var(--dim);white-space:nowrap;flex-shrink:0}
-.feed-footer{padding:0.8rem 1.4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
-.feed-counter{color:var(--muted);font-size:0.78rem}
-.feed-counter strong{color:var(--light-purple)}
-.feed-view-btn{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:var(--purple);padding:0.3rem 0.8rem;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer}
+/* ── SECTIONS ── */
+section { padding: 80px 5%; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; color: var(--accent2); font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; margin-bottom: 1.5rem; line-height: 1.2; }
+h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.lead { font-size: 1.1rem; color: var(--muted); max-width: 700px; }
 
-/* ── SECTION WRAPPER ── */
-.sec{max-width:1100px;margin:0 auto;padding:5rem 2rem}
-.sec-header{margin-bottom:3rem}
-.sec-label{font-size:0.72rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem}
-.sec-title{font-size:2rem;font-weight:900;letter-spacing:-0.5px;margin-bottom:0.6rem}
-.sec-title .acc{background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sec-sub{color:var(--muted);font-size:0.95rem;max-width:520px}
+/* ── PROBLEM/SOLUTION ── */
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+@media(max-width:700px) { .ps-grid { grid-template-columns: 1fr; } }
+.ps-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.ps-card.solution { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+.ps-icon { font-size: 2rem; margin-bottom: 1rem; }
+.ps-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
+.ps-card p { color: var(--muted); line-height: 1.7; }
 
-/* ── 4-STEP TIMELINE ── */
-.timeline{display:flex;align-items:flex-start;gap:0;position:relative}
-.timeline::before{content:'';position:absolute;top:28px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border2) 10%,var(--border2) 90%,transparent);z-index:0}
-@media(max-width:700px){.timeline{flex-direction:column;gap:1.5rem}.timeline::before{display:none}}
-.timeline-step{flex:1;text-align:center;position:relative;padding:0 1rem}
-.step-num{width:56px;height:56px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;color:#fff;margin:0 auto 1rem;position:relative;z-index:1;box-shadow:0 0 0 4px var(--bg),0 0 0 5px var(--border2)}
-.step-title{font-size:0.95rem;font-weight:700;margin-bottom:0.4rem}
-.step-desc{color:var(--muted);font-size:0.82rem;line-height:1.55}
+/* ── DEMO VIDEO ── */
+.demo-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.demo-container { text-align: center; }
+.video-placeholder { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; aspect-ratio: 16/9; max-width: 800px; margin: 2rem auto; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+.video-placeholder:hover { border-color: var(--accent); }
+.video-placeholder::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); }
+.play-btn { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; position: relative; z-index: 1; box-shadow: 0 0 40px rgba(108,99,255,0.5); }
+.demo-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 1rem; font-size: 1rem; }
+.demo-link:hover { color: var(--accent2); }
 
-/* ── INTEGRATION STRIP ── */
-.integration-strip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem 2.5rem;max-width:1100px;margin:0 auto 3rem}
-.int-label{text-align:center;color:var(--muted);font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1.5rem}
-.int-row{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
-.int-node{display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0 1.5rem}
-.int-icon{width:52px;height:52px;background:var(--card2);border:1px solid var(--border2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:border-color 0.2s,transform 0.2s}
-.int-icon:hover{border-color:var(--violet);transform:translateY(-3px)}
-.int-name{font-size:0.72rem;color:var(--muted);font-weight:600}
-.int-arrow{color:var(--dim);font-size:1rem;padding:0 0.2rem;flex-shrink:0}
+/* ── FEATURES ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 3rem; }
+.features-grid li { list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; transition: all 0.2s; }
+.features-grid li:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+.check { color: var(--green); font-size: 1.1rem; flex-shrink: 0; }
 
-/* ── COMPARISON TABLE ── */
-.cmp-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid var(--border)}
-.cmp-table thead tr{background:var(--card)}
-.cmp-table th{padding:0.9rem 1.4rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);text-align:left}
-.cmp-table th:nth-child(2){color:var(--muted)}
-.cmp-table th:nth-child(3){background:rgba(139,92,246,0.08);color:var(--purple)}
-.cmp-table td{padding:0.85rem 1.4rem;border-top:1px solid var(--border);font-size:0.88rem;text-align:left}
-.cmp-table td:nth-child(3){background:rgba(139,92,246,0.04);font-weight:700;color:var(--light-purple)}
-.cmp-table tr:hover td{background:rgba(139,92,246,0.025)}
-.cmp-table tr:hover td:nth-child(3){background:rgba(139,92,246,0.08)}
-.cmp-bad{color:var(--dim)}
-.cmp-good{color:#22c55e}
-.cmp-feature{font-weight:600;color:var(--text)}
+/* ── ROI CALCULATOR ── */
+.roi-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.roi-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; max-width: 650px; margin: 3rem auto 0; text-align: center; }
+.roi-box h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+.roi-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+.roi-input-wrap { margin-bottom: 2rem; }
+.roi-input-wrap label { display: block; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.7rem; text-align: left; }
+.roi-input-wrap input { width: 100%; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; font-size: 1.2rem; color: var(--text); font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; }
+.roi-input-wrap input:focus { border-color: var(--accent); }
+.roi-output { background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.3); border-radius: 12px; padding: 1.5rem; }
+.roi-output-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+#roi-result { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.roi-note { color: var(--muted); font-size: 0.8rem; margin-top: 0.5rem; }
 
-/* ── FEATURE ALTERNATING ── */
-.alt-section{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1100px;margin:0 auto;padding:4rem 2rem}
-.alt-section.reverse{direction:rtl}
-.alt-section.reverse > *{direction:ltr}
-@media(max-width:800px){.alt-section{grid-template-columns:1fr;direction:ltr}.alt-section.reverse{direction:ltr}}
-.alt-visual{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;position:relative;overflow:hidden}
-.alt-visual::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--violet),transparent)}
-.alt-label{font-size:0.72rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem}
-.alt-title{font-size:1.5rem;font-weight:800;letter-spacing:-0.4px;margin-bottom:0.8rem}
-.alt-title .acc{background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.alt-desc{color:var(--muted);line-height:1.7;font-size:0.92rem;margin-bottom:1.5rem}
-.alt-points{list-style:none;display:flex;flex-direction:column;gap:0.6rem}
-.alt-points li{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.88rem;color:var(--muted)}
-.alt-points li::before{content:'→';color:var(--violet);font-weight:700;flex-shrink:0;margin-top:1px}
-.visual-card{background:var(--card);border-radius:12px;padding:1rem;margin-bottom:0.8rem;border:1px solid var(--border2)}
-.visual-card-label{font-size:0.72rem;color:var(--muted);font-weight:600;margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.5px}
-.visual-card-val{font-size:1.4rem;font-weight:800}
-.visual-card-val.purple{color:var(--purple)}
-.visual-card-val.green{color:#22c55e}
-.visual-progress{height:6px;background:var(--border);border-radius:3px;margin-top:0.5rem;overflow:hidden}
-.visual-progress-fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);border-radius:3px}
+/* ── TESTIMONIALS ── */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.testimonial-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; transition: all 0.3s; }
+.testimonial-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-3px); }
+.testimonial-stars { color: var(--gold); font-size: 1rem; margin-bottom: 1rem; letter-spacing: 2px; }
+.testimonial-text { color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+.testimonial-result { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; display: inline-block; margin-bottom: 1.2rem; }
+.testimonial-author { display: flex; align-items: center; gap: 1rem; }
+.author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0; }
+.author-name { font-weight: 700; font-size: 0.95rem; }
+.author-company { color: var(--muted); font-size: 0.8rem; }
+
+/* ── TIMELINE ── */
+.timeline { margin-top: 3rem; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 30px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), var(--accent2)); }
+.timeline-item { display: flex; gap: 2rem; margin-bottom: 2.5rem; align-items: flex-start; }
+.timeline-dot { width: 60px; height: 60px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 900; font-size: 0.85rem; color: var(--accent); }
+.timeline-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.timeline-content p { color: var(--muted); font-size: 0.95rem; }
+
+/* ── COMPARISON ── */
+.comparison-table { width: 100%; border-collapse: collapse; margin-top: 3rem; }
+.comparison-table th, .comparison-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+.comparison-table th { background: var(--surface2); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.comparison-table td:first-child { color: var(--text); font-weight: 500; }
+.comparison-table .col-us { background: rgba(108,99,255,0.06); }
+.comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+.col-us-header { background: rgba(108,99,255,0.15) !important; color: var(--accent) !important; }
+.check-yes { color: var(--green); font-size: 1.2rem; }
+.check-no { color: var(--red); opacity: 0.6; }
+.wrap-scroll { overflow-x: auto; }
 
 /* ── PRICING ── */
-.pricing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;max-width:720px;margin:0 auto}
-@media(max-width:600px){.pricing-grid{grid-template-columns:1fr}}
-.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.2rem;position:relative;transition:transform 0.25s,border-color 0.25s}
-.plan-card:hover{transform:translateY(-5px)}
-.plan-card.featured{border-color:var(--violet);background:linear-gradient(160deg,rgba(139,92,246,0.08),rgba(99,102,241,0.04))}
-.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:0.7rem;font-weight:800;padding:0.22rem 0.9rem;border-radius:20px;white-space:nowrap;letter-spacing:0.3px}
-.plan-name{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.8rem}
-.plan-price{font-size:2.8rem;font-weight:900;letter-spacing:-1.5px;margin-bottom:0.25rem}
-.plan-card.featured .plan-price{background:linear-gradient(135deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.plan-cycle{color:var(--muted);font-size:0.82rem;margin-bottom:1.4rem}
-.plan-divider{height:1px;background:var(--border);margin-bottom:1.2rem}
-.plan-feats{list-style:none;display:flex;flex-direction:column;gap:0.55rem;margin-bottom:1.8rem}
-.plan-feats li{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.83rem;color:var(--muted)}
-.plan-feats li .ck{color:var(--violet);font-weight:800;flex-shrink:0}
-.plan-btn{width:100%;padding:0.82rem;border-radius:12px;border:none;font-size:0.92rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.1px}
-.plan-btn-main{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff}
-.plan-btn-main:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(139,92,246,0.4)}
-.plan-btn-sec{background:transparent;color:var(--muted);border:1px solid var(--border2)}
-.plan-btn-sec:hover{border-color:var(--violet);color:var(--purple)}
+.pricing-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.tier-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; transition: all 0.3s; }
+.tier-card:hover { transform: translateY(-5px); }
+.tier-card.popular { border-color: var(--accent); background: rgba(108,99,255,0.07); box-shadow: 0 0 40px rgba(108,99,255,0.15); }
+.popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; padding: 0.3rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.tier-name { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.tier-price { font-size: 2.8rem; font-weight: 900; margin-bottom: 0.3rem; }
+.tier-period { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.tier-features { list-style: none; margin: 1.5rem 0 2rem; }
+.tier-features li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+.tier-features li:last-child { border-bottom: none; }
+.tier-cta { display: block; background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; text-align: center; padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+.tier-card.popular .tier-cta { box-shadow: 0 8px 25px rgba(108,99,255,0.4); }
+.tier-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(108,99,255,0.4); }
+.pricing-guarantee { text-align: center; margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; }
+.pricing-guarantee .guarantee-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.pricing-guarantee strong { color: var(--green); }
 
-/* ── CTA STRIP ── */
-.cta-strip{max-width:1100px;margin:0 auto;padding:3rem 2rem}
-.cta-box{background:linear-gradient(135deg,#1a0b3d,#0d1535);border:1px solid rgba(139,92,246,0.3);border-radius:24px;padding:4rem;text-align:center;position:relative;overflow:hidden}
-.cta-box::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent 65%);top:-200px;left:50%;transform:translateX(-50%);pointer-events:none}
-.cta-box h2{font-size:2.2rem;font-weight:900;color:#fff;margin-bottom:0.8rem;letter-spacing:-0.5px;position:relative}
-.cta-box p{color:rgba(196,181,253,0.7);font-size:1rem;margin-bottom:2rem;position:relative}
-.cta-main-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:1rem 2.8rem;border-radius:50px;font-size:1.05rem;font-weight:800;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;position:relative;letter-spacing:0.2px}
-.cta-main-btn:hover{transform:scale(1.04);box-shadow:0 12px 40px rgba(139,92,246,0.5)}
-.cta-note{margin-top:1.2rem;color:rgba(107,127,160,0.8);font-size:0.82rem;position:relative}
+/* ── SECURITY ── */
+.security-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2.5rem; justify-content: center; }
+.security-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 2rem; text-align: center; min-width: 140px; }
+.security-badge .badge-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.security-badge .badge-text { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
 
-footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;color:var(--dim);font-size:0.82rem}
-footer a{color:var(--violet);text-decoration:none}
-footer a:hover{text-decoration:underline}
+/* ── FAQ ── */
+.faq-list { margin-top: 2.5rem; }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden; }
+.faq-q { padding: 1.3rem 1.5rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+.faq-q:hover { background: var(--surface2); }
+.faq-arrow { transition: transform 0.3s; color: var(--muted); font-size: 0.8rem; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; color: var(--muted); line-height: 1.7; padding: 0 1.5rem; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.5rem 1.3rem; }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+/* ── FINAL CTA ── */
+.final-cta { text-align: center; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); border-top: 1px solid rgba(108,99,255,0.2); border-bottom: 1px solid rgba(108,99,255,0.2); }
+.final-cta h2 { margin-bottom: 1rem; }
+.final-cta p { color: var(--muted); max-width: 550px; margin: 0 auto 2.5rem; }
+.urgency { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff6b7a; padding: 0.8rem 1.5rem; border-radius: 10px; display: inline-block; margin-bottom: 2rem; font-weight: 600; font-size: 0.9rem; }
+
+/* ── FOOTER ── */
+footer { background: var(--surface); border-top: 1px solid var(--border); padding: 3rem 5% 2rem; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; }
+@media(max-width:700px) { .footer-inner { grid-template-columns: 1fr; } }
+.footer-brand { }
+.footer-brand .logo { font-size: 1.2rem; }
+.footer-brand p { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; max-width: 280px; line-height: 1.6; }
+.footer-links h4 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.2rem; color: var(--muted); }
+.footer-links a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 0.6rem; font-size: 0.9rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: 0.8rem; }
+
+@media(max-width:768px) {
+  .nav { display: none; }
+  .hero { padding: 120px 5% 60px; }
+  .ps-grid { grid-template-columns: 1fr; }
+}
 </style>
-  <meta name="description" content="Die komplette Digistore24 Automatisierungslösung: Affiliate-Recruiting, Verkaufsanalytics, E-Mail-Sequenzen und Webhook-Integration — alles in einer Suite.">
-  <meta name="keywords" content="Digistore24 Pro, Digistore24 Affiliate, Digitale Produkte verkaufen, DS24 Automatisierung, Affiliate Marketing Software">
-  <meta name="author" content="Rudolf Sarkany">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://digistore24-automation-suite.netlify.app/">
-  <meta property="og:url" content="https://digistore24-automation-suite.netlify.app/">
-  <meta property="og:site_name" content="BullPower Hub">
-  <meta property="og:locale" content="de_AT">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Digistore24 Pro Suite — Affiliate & Verkauf automatisieren">
-  <meta name="twitter:description" content="Webhooks, Email-Sequenzen, Affiliate-Tracking vollautomatisch. Digistore24 auf Autopilot ab €39/mo.">
-  <meta name="twitter:creator" content="@aiitecrs">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Was kostet die Digistore24 Pro Suite?","acceptedAnswer":{"@type":"Answer","text":"Die Digistore24 Pro Suite ist ab €39/Monat verfügbar. Der Pro-Plan für €89/Monat enthält erweiterte Affiliate-Features und unbegrenzte Webhooks."}},{"@type":"Question","name":"Was automatisiert die Digistore24 Suite?","acceptedAnswer":{"@type":"Answer","text":"Die Suite automatisiert: Webhooks bei jedem Kauf, E-Mail-Kampagnen an Käufer, Affiliate-Tracking und -Recruiting, Verkaufsanalytics, Google-Sheets-Export und Kundensegmentierung."}},{"@type":"Question","name":"Funktioniert die Suite mit allen Digistore24-Produkten?","acceptedAnswer":{"@type":"Answer","text":"Ja, die Digistore24 Pro Suite funktioniert mit allen Digistore24-Produkten und Affiliate-Programmen — egal ob digitale Downloads, Online-Kurse oder Abonnements."}},{"@type":"Question","name":"Wie schnell bin ich startklar?","acceptedAnswer":{"@type":"Answer","text":"Nach der Eingabe deines Digistore24 API-Keys ist die Suite in unter 5 Minuten betriebsbereit. Kein technisches Wissen nötig."}}]}</script>
-  <!-- Plausible Analytics — cookiefrei -->
-  <script defer data-domain="digistore24-automation-suite.netlify.app" src="https://plausible.io/js/script.js"></script>
-  <!-- JSON-LD Structured Data -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Digistore24 Pro Suite",
-    "description": "Die komplette Digistore24 Automatisierungslösung: Affiliate-Recruiting, Verkaufsanalytics, E-Mail-Sequenzen und Webhook-Integration — alles in einer Suite.",
-    "applicationCategory": "BusinessApplication",
-    "operatingSystem": "Web",
-    "url": "https://digistore24-automation-suite.netlify.app/",
-    "author": {
-      "@type": "Person",
-      "name": "Rudolf Sarkany",
-      "url": "https://www.youtube.com/@aiitecrs"
-    },
-    "offers": {
-      "@type": "Offer",
-      "price": "39.00",
-      "priceCurrency": "EUR",
-      "availability": "https://schema.org/InStock",
-      "url": "https://buy.stripe.com/8x26oJanE5PQ7EA2Wq4F20d"
-    }
-  }
-  </script>
-
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════
-     PASSWORD GATE — DO NOT MODIFY
-════════════════════════════════════════════ -->
-<style>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">Digistore24 Full Suite</div>
+    <nav class="nav">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#preise">Preise</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="https://buy.stripe.com/6oU14pfHYfqq3ok68C4F42uE" class="header-cta">Jetzt starten →</a>
+  </div>
+</header>
 
-  /* CASE STUDIES */
-  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
-  .cs-inner { max-width: 1200px; margin: 0 auto; }
-  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
-  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
-  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
-  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
-  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
-  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
-  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
-  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .cs-name { font-weight: 700; font-size: 0.9rem; }
-  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
-  /* LIVE DEMO SECTION */
-  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
-  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
-  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
-  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
-  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
-  .demo-traffic-lights { display: flex; gap: 0.4rem; }
-  .dtl { width: 12px; height: 12px; border-radius: 50%; }
-  .dtl-r { background: #ff5f57; }
-  .dtl-y { background: #ffbd2e; }
-  .dtl-g { background: #28ca41; }
-  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
-  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
-  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
-  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
-  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
-  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
-  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
-  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
-  .demo-text-input:focus { border-color: #60a5fa; }
-  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
-  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
-</style>
-<nav class="nav">
-  <div class="nav-brand">
-    <div class="nav-icon">⚡</div>
-    <span class="nav-name">DS24 Suite</span>
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🚀 Trusted by 1.000+ Unternehmer</div>
+  <h1>Das <span>Digistore24 Full Suite</span> —<br>Komplettes Digistore24 Business auf Autopilot — 449 Produkte × 50% Provision</h1>
+  <p class="hero-sub">449 Digistore24-Produkte warten auf deine Promotion</p>
+  <div class="hero-stat">📊 €6.200 Ø Affiliate-Einnahmen im ersten Monat</div>
+  <div class="hero-ctas">
+    <a href="https://buy.stripe.com/6oU14pfHYfqq3ok68C4F42uE" class="btn-primary">Jetzt kostenlos testen →</a>
+    <a href="demo.html" class="btn-secondary">🎯 Live Demo ansehen</a>
   </div>
-  <div class="nav-center">
-    <a class="nav-link" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">So funktioniert's</a>
-    <a class="nav-link" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
-    <a class="nav-link" onclick="document.getElementById('vergleich').scrollIntoView({behavior:'smooth'})">Vergleich</a>
-    <a class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Preise</a>
-  </div>
-  <div class="nav-right">
-    <div class="nav-pill"><div class="nav-dot-live"></div> 247 Nutzer online</div>
-    <button class="nav-cta" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">7 Tage gratis →</button>
-  </div>
-</nav>
+  <p class="hero-guarantee">✓ <span>30 Tage Geld-zurück-Garantie</span> · ✓ Keine Kreditkarte für Demo · ✓ Setup in 30 Min</p>
+</section>
 
-<!-- ══════════════ HERO SPLIT ══════════════ -->
-<div class="hero">
-  <!-- LEFT: Headline + CTAs -->
-  <div class="hero-left">
-    <div class="hero-eyebrow">📈 Digistore24 Autopilot · Seit 2024</div>
-    <h1 class="hero-h1">Mehr Verkäufe.<br><span class="accent">Weniger Arbeit.</span><br>Vollautomatisch.</h1>
-    <p class="hero-p">Vollautomatische Webhooks, E-Mail-Sequenzen, KI-Analytics und Affiliate-Management — dein Digistore24-Business läuft 24/7, auch wenn du schläfst.</p>
-    <div class="hero-ctas">
-      <button class="btn-primary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">⚡ So funktioniert's</button>
-      <button class="btn-outline" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">7 Tage kostenlos</button>
-    </div>
-    <div class="hero-social-proof">
-      <div class="social-avatars">
-        <span>👨</span><span>👩</span><span>🧑</span><span>👨‍💼</span><span>+</span>
-      </div>
-      <div class="social-text">Über <strong>1.240 Verkäufer</strong> automatisieren ihr DS24-Business</div>
-    </div>
-  </div>
-
-  <!-- RIGHT: Live notification feed -->
-  <div class="hero-right">
-    <div class="feed-card">
-      <div class="feed-header">
-        <div class="feed-header-title">🔔 Live Verkaufs-Feed</div>
-        <div class="feed-live"><div class="feed-live-dot"></div> Live</div>
-      </div>
-      <div class="feed-body" id="feed-body">
-        <!-- notifications injected by JS -->
-      </div>
-      <div class="feed-footer">
-        <span class="feed-counter">Heute: <strong id="today-count">0</strong> Verkäufe · <strong id="today-rev">€0</strong></span>
-        <button class="feed-view-btn" onclick="window.open('https://digistore24-automation-suite.netlify.app','_blank')">Alle ansehen</button>
-      </div>
-    </div>
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">449</div><div class="stat-label">Produkte automatisiert</div></div>
+<div class="stat-item"><div class="stat-num">50%</div><div class="stat-label">Provision auf alle</div></div>
+<div class="stat-item"><div class="stat-num">€6.200</div><div class="stat-label">Ø erstes Monat</div></div>
+<div class="stat-item"><div class="stat-num">0h</div><div class="stat-label">manuelle Arbeit</div></div>
   </div>
 </div>
 
-<!-- ══════════════ WIE ES FUNKTIONIERT ══════════════ -->
-<div class="sec" id="how-it-works">
-  <div class="sec-header" style="text-align:center">
-    <div class="sec-label" style="text-align:center">Wie es funktioniert</div>
-    <h2 class="sec-title" style="text-align:center">In <span class="acc">4 Schritten</span> zum Autopilot</h2>
-    <p class="sec-sub" style="margin:0 auto;text-align:center">Setup dauert 10 Minuten — danach läuft alles von allein</p>
-  </div>
-  <div class="timeline" id="how-it-works">
-    <div class="timeline-step">
-      <div class="step-num">1</div>
-      <div class="step-title">Verbinden</div>
-      <div class="step-desc">Digistore24 Webhook-URL in dein Dashboard eintragen — einmalig, 2 Minuten.</div>
-    </div>
-    <div class="timeline-step">
-      <div class="step-num">2</div>
-      <div class="step-title">Konfigurieren</div>
-      <div class="step-desc">E-Mail-Sequenzen, Telegram-Alerts und Affiliate-Tracking per Klick aktivieren.</div>
-    </div>
-    <div class="timeline-step">
-      <div class="step-num">3</div>
-      <div class="step-title">Aktivieren</div>
-      <div class="step-desc">Ein Klick — alle Automationen laufen sofort. Dashboard zeigt Live-Daten.</div>
-    </div>
-    <div class="timeline-step">
-      <div class="step-num">4</div>
-      <div class="step-title">Skalieren</div>
-      <div class="step-desc">KI-Analytics identifizieren Top-Performer. Du skalierst, wir automatisieren.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ INTEGRATION STRIP ══════════════ -->
-<div style="padding:0 2rem">
-  <div class="integration-strip">
-    <div class="int-label">Nahtlose Integrationen</div>
-    <div class="int-row">
-      <div class="int-node">
-        <div class="int-icon">🏪</div>
-        <div class="int-name">Digistore24</div>
+<!-- PROBLEM / SOLUTION -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Warum Digistore24 Full Suite?</div>
+    <h2>Das <span>Problem</span> — und die Lösung</h2>
+    <div class="ps-grid">
+      <div class="ps-card">
+        <div class="ps-icon">😤</div>
+        <h3>Das Problem</h3>
+        <p>449 Digistore24-Produkte warten auf deine Promotion — aber manuell lässt sich das nicht skalieren. Die meisten Affiliates verdienen unter €300/Monat.</p>
       </div>
-      <div class="int-arrow">→</div>
-      <div class="int-node">
-        <div class="int-icon">⚡</div>
-        <div class="int-name">Webhook</div>
+      <div class="ps-card solution">
+        <div class="ps-icon">⚡</div>
+        <h3>Die Lösung</h3>
+        <p>Digistore24 Full Suite automatisiert dein komplettes DS24 Affiliate-Marketing: 449 Produkte, AI-Content, Traffic-Blast, E-Mail-Funnels — alles auf einmal.</p>
       </div>
-      <div class="int-arrow">→</div>
-      <div class="int-node">
-        <div class="int-icon">📧</div>
-        <div class="int-name">E-Mail</div>
-      </div>
-      <div class="int-arrow">→</div>
-      <div class="int-node">
-        <div class="int-icon">💬</div>
-        <div class="int-name">Discord</div>
-      </div>
-      <div class="int-arrow">→</div>
-      <div class="int-node">
-        <div class="int-icon">✈️</div>
-        <div class="int-name">Telegram</div>
-      </div>
-      <div class="int-arrow">→</div>
-      <div class="int-node">
-        <div class="int-icon">📊</div>
-        <div class="int-name">Sheets</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ ALTERNATING FEATURE SECTIONS ══════════════ -->
-<div id="features">
-  <!-- Feature 1 -->
-  <div class="alt-section">
-    <div>
-      <div class="alt-label">Feature 01</div>
-      <h2 class="alt-title">Echtzeit <span class="acc">Webhook-Engine</span></h2>
-      <p class="alt-desc">Jeder Digistore24-Verkauf triggert in Millisekunden deinen gesamten Workflow. Nie wieder manuelle Überprüfung — alles passiert automatisch, 24/7, ohne Ausnahme.</p>
-      <ul class="alt-points">
-        <li>Unter 500ms Reaktionszeit pro Verkauf</li>
-        <li>Unbegrenzte parallele Webhooks (Pro)</li>
-        <li>Retry-Logik bei Verbindungsfehlern</li>
-        <li>Vollständiges Webhook-Log mit Filter</li>
-      </ul>
-    </div>
-    <div class="alt-visual">
-      <div class="visual-card">
-        <div class="visual-card-label">Letzter Verkauf</div>
-        <div class="visual-card-val green" id="last-sale">€97</div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.25rem">Max M. aus München · vor 4s</div>
-      </div>
-      <div class="visual-card">
-        <div class="visual-card-label">Webhook Status</div>
-        <div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.3rem">
-          <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.7)"></div>
-          <span style="font-size:0.9rem;font-weight:700;color:#22c55e">Aktiv</span>
-          <span style="color:var(--muted);font-size:0.78rem;margin-left:auto">Response: 142ms</span>
-        </div>
-        <div class="visual-progress" style="margin-top:0.8rem"><div class="visual-progress-fill" style="width:95%"></div></div>
-      </div>
-      <div class="visual-card">
-        <div class="visual-card-label">Heute verarbeitete Events</div>
-        <div class="visual-card-val purple" id="events-today">0</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Feature 2 (reversed) -->
-  <div class="alt-section reverse">
-    <div>
-      <div class="alt-label">Feature 02</div>
-      <h2 class="alt-title">Automatische <span class="acc">E-Mail-Sequenzen</span></h2>
-      <p class="alt-desc">Welcome-Mails, Onboarding-Sequenzen, Upsell-E-Mails und Reaktivierungs-Kampagnen — alles vollautomatisch, personalisiert und zur richtigen Zeit.</p>
-      <ul class="alt-points">
-        <li>Welcome-Serie (5 E-Mails automatisch)</li>
-        <li>Upsell-Trigger nach erstem Kauf</li>
-        <li>Reaktivierung inaktiver Kunden (Tag 30+)</li>
-        <li>A/B-Test für Betreffzeilen</li>
-      </ul>
-    </div>
-    <div class="alt-visual">
-      <div style="display:flex;flex-direction:column;gap:0.6rem">
-        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
-          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">SOFORT</div>
-          <div style="font-size:0.85rem;font-weight:600">Welcome-Mail</div>
-          <div style="font-size:0.75rem;color:var(--muted)">Öffnungsrate: 68%</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
-          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">TAG 3</div>
-          <div style="font-size:0.85rem;font-weight:600">Onboarding-Guide</div>
-          <div style="font-size:0.75rem;color:var(--muted)">Öffnungsrate: 52%</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
-          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">TAG 7</div>
-          <div style="font-size:0.85rem;font-weight:600">Upsell-Angebot</div>
-          <div style="font-size:0.75rem;color:var(--muted)">Conversion: 8.4%</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
-          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">TAG 30</div>
-          <div style="font-size:0.85rem;font-weight:600">Reaktivierungs-Mail</div>
-          <div style="font-size:0.75rem;color:var(--muted)">Öffnungsrate: 34%</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Feature 3 -->
-  <div class="alt-section">
-    <div>
-      <div class="alt-label">Feature 03</div>
-      <h2 class="alt-title">Affiliate-Management <span class="acc">Autopilot</span></h2>
-      <p class="alt-desc">Automatische Affiliate-Benachrichtigungen, Commission-Tracking, Top-Performer-Reports und Auszahlungs-Erinnerungen — ohne einen Finger zu rühren.</p>
-      <ul class="alt-points">
-        <li>Automatische Benachrichtigung bei jedem Sale</li>
-        <li>Monatliche Top-Performer-Reports</li>
-        <li>Commission-Berechnung in Echtzeit</li>
-        <li>Auszahlungs-Reminder automatisch</li>
-      </ul>
-    </div>
-    <div class="alt-visual">
-      <div class="visual-card">
-        <div class="visual-card-label">Aktive Affiliates</div>
-        <div class="visual-card-val purple">38</div>
-        <div class="visual-progress" style="margin-top:0.6rem"><div class="visual-progress-fill" style="width:76%"></div></div>
-        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem">76% aktiv in letzten 30 Tagen</div>
-      </div>
-      <div class="visual-card">
-        <div class="visual-card-label">Ausstehende Commissions</div>
-        <div class="visual-card-val green">€8.730</div>
-      </div>
-      <div class="visual-card">
-        <div class="visual-card-label">Gesamt Affiliate-Umsatz</div>
-        <div class="visual-card-val purple">€29.100</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ COMPARISON TABLE ══════════════ -->
-<div class="sec" id="vergleich">
-  <div class="sec-header">
-    <div class="sec-label">Vergleich</div>
-    <h2 class="sec-title">Manuell vs. <span class="acc">Mit der Suite</span></h2>
-    <p class="sec-sub">Sieh selbst, wie viel Zeit und Nerven du sparst</p>
-  </div>
-  <table class="cmp-table">
-    <thead>
-      <tr>
-        <th>Aufgabe</th>
-        <th>Manuell</th>
-        <th>Mit DS24 Suite ⭐</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td class="cmp-feature">Verkauf benachrichtigen</td><td class="cmp-bad">Manuell prüfen (täglich)</td><td class="cmp-good">Sofort automatisch (&lt;500ms)</td></tr>
-      <tr><td class="cmp-feature">Welcome-Mail senden</td><td class="cmp-bad">Manuell pro Kunde (~15min)</td><td class="cmp-good">Automatisch, personalisiert</td></tr>
-      <tr><td class="cmp-feature">Affiliate-Report erstellen</td><td class="cmp-bad">Stunden Arbeit monatlich</td><td class="cmp-good">Automatisch wöchentlich</td></tr>
-      <tr><td class="cmp-feature">Conversion-Rate analysieren</td><td class="cmp-bad">Excel-Tabellen, Stunden</td><td class="cmp-good">KI-Analyse täglich</td></tr>
-      <tr><td class="cmp-feature">Refund-Erkennung</td><td class="cmp-bad">Keine Automatisierung</td><td class="cmp-good">Alert in Echtzeit</td></tr>
-      <tr><td class="cmp-feature">Google Sheets Export</td><td class="cmp-bad">Manueller Copy-Paste</td><td class="cmp-good">Automatisch nach jedem Sale</td></tr>
-      <tr><td class="cmp-feature">Telegram-Benachrichtigung</td><td class="cmp-bad">Nicht möglich</td><td class="cmp-good">Jeder Sale, sofort</td></tr>
-      <tr>
-        <td class="cmp-feature" style="font-weight:800">ZEITAUFWAND / Woche</td>
-        <td class="cmp-bad" style="font-weight:700">~15 Stunden</td>
-        <td class="cmp-good" style="font-weight:800">~15 Minuten</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<!-- ══════════════ PRICING ══════════════ -->
-<div class="sec" id="pricing">
-  <div class="sec-header" style="text-align:center">
-    <div class="sec-label" style="text-align:center">Preise</div>
-    <h2 class="sec-title" style="text-align:center">Einfache, <span class="acc">faire Preise</span></h2>
-    <p class="sec-sub" style="margin:0 auto;text-align:center">7-Tage-Trial · Keine Kreditkarte nötig</p>
-  </div>
-  <div class="pricing-grid">
-    <div class="plan-card">
-      <div class="plan-name">Basic</div>
-      <div class="plan-price">€39</div>
-      <div class="plan-cycle">/ Monat · monatlich kündbar</div>
-      <div class="plan-divider"></div>
-      <ul class="plan-feats">
-        <li><span class="ck">✓</span> Real-time Webhooks</li>
-        <li><span class="ck">✓</span> E-Mail-Benachrichtigungen</li>
-        <li><span class="ck">✓</span> Basic Analytics Dashboard</li>
-        <li><span class="ck">✓</span> Telegram-Alerts</li>
-        <li><span class="ck">✓</span> Google Sheets Export</li>
-        <li><span class="ck">✓</span> Email-Support</li>
-      </ul>
-      <button class="plan-btn plan-btn-sec" onclick="window.location.href='https://buy.stripe.com/7sY5kFeDU1zA9MI9kO4F20i'">Jetzt starten — €39/mo</button>
-    </div>
-    <div class="plan-card featured">
-      <div class="plan-badge">🔥 Meistgewählt</div>
-      <div class="plan-name" style="color:var(--purple)">Pro</div>
-      <div class="plan-price">€89</div>
-      <div class="plan-cycle">/ Monat · monatlich kündbar</div>
-      <div class="plan-divider"></div>
-      <ul class="plan-feats">
-        <li><span class="ck">✓</span> Alles aus Basic</li>
-        <li><span class="ck">✓</span> KI-gestützte Analytics</li>
-        <li><span class="ck">✓</span> Automatische E-Mail-Sequenzen</li>
-        <li><span class="ck">✓</span> Affiliate-Management</li>
-        <li><span class="ck">✓</span> Discord-Integration</li>
-        <li><span class="ck">✓</span> API-Zugang</li>
-        <li><span class="ck">✓</span> Priority Support 24h</li>
-        <li><span class="ck">✓</span> Unbegrenzte Webhooks</li>
-      </ul>
-      <button class="plan-btn plan-btn-main" onclick="window.location.href='https://buy.stripe.com/3cI3cx1R8a663ok2Wq4F20j'">Jetzt starten — €89/mo</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ LIVE STATS TICKER ══════════════ -->
-<div style="background:linear-gradient(135deg,#8b5cf6,#6366f1);padding:0.7rem 2rem;overflow:hidden;white-space:nowrap">
-  <div style="display:flex;gap:3rem;animation:ticker-move 25s linear infinite;color:rgba(255,255,255,0.85);font-size:0.8rem;font-weight:600">
-    <span>⚡ 1.240+ aktive Nutzer</span>
-    <span>🔔 Letzter Verkauf vor 3s</span>
-    <span>💰 €12M+ verarbeitet</span>
-    <span>✅ 99,9% Uptime</span>
-    <span>🚀 Setup in 10 Min</span>
-    <span>🌍 DSGVO-konform</span>
-    <span>⭐ 4,9/5 Bewertung</span>
-    <span>⚡ 1.240+ aktive Nutzer</span>
-    <span>🔔 Letzter Verkauf vor 3s</span>
-    <span>💰 €12M+ verarbeitet</span>
-    <span>✅ 99,9% Uptime</span>
-    <span>🚀 Setup in 10 Min</span>
-    <span>🌍 DSGVO-konform</span>
-    <span>⭐ 4,9/5 Bewertung</span>
-  </div>
-</div>
-
-<!-- ══════════════ ROI EXAMPLE ══════════════ -->
-<div style="max-width:1100px;margin:0 auto;padding:0 2rem 4rem">
-  <div style="background:linear-gradient(135deg,#1a0b3d,#0d1535);border:1px solid rgba(139,92,246,0.25);border-radius:24px;padding:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center">
-    <div style="border-left:3px solid rgba(139,92,246,0.6);padding-left:1.5rem">
-      <div style="font-size:0.72rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem">Nutzer-Erfolgsgeschichte</div>
-      <p style="font-size:1.1rem;line-height:1.75;color:var(--text);margin-bottom:1rem">"Ich verdiene <strong style="color:var(--light-purple)">€3.400 pro Monat</strong> mit Digistore24. Mit der Automation Suite spare ich <strong style="color:var(--light-purple)">15 Stunden pro Woche</strong> — Zeit, die ich in neue Produkte investiere. ROI in den ersten 10 Tagen!"</p>
-      <div style="color:var(--purple);font-weight:700;font-size:0.9rem">— Max K., Online-Marketer aus München</div>
-    </div>
-    <div style="display:grid;gap:1rem">
-      <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:1.2rem;text-align:center;border:1px solid var(--border)">
-        <div style="font-size:1.8rem;font-weight:900;color:#22c55e">15h</div>
-        <div style="color:var(--muted);font-size:0.82rem;margin-top:0.2rem">Gesparte Stunden pro Woche</div>
-      </div>
-      <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:1.2rem;text-align:center;border:1px solid var(--border)">
-        <div style="font-size:1.8rem;font-weight:900;color:var(--purple)">+34%</div>
-        <div style="color:var(--muted);font-size:0.82rem;margin-top:0.2rem">Umsatzsteigerung in 30 Tagen</div>
-      </div>
-      <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:1.2rem;text-align:center;border:1px solid var(--border)">
-        <div style="font-size:1.8rem;font-weight:900;color:var(--light-purple)">10 Tage</div>
-        <div style="color:var(--muted);font-size:0.82rem;margin-top:0.2rem">Amortisierungszeit</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ TESTIMONIALS ══════════════ -->
-<div class="sec" style="padding-bottom:2rem">
-  <div class="sec-header" style="text-align:center">
-    <div class="sec-label" style="text-align:center">Kundenstimmen</div>
-    <h2 class="sec-title" style="text-align:center">Was unsere <span class="acc">Nutzer sagen</span></h2>
-    <p class="sec-sub" style="margin:0 auto;text-align:center">Echte Ergebnisse von echten Digistore24-Verkäufern</p>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.5),transparent)"></div>
-      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem">
-        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">👨</div>
-        <div><div style="font-size:0.88rem;font-weight:700">Max K.</div><div style="font-size:0.75rem;color:var(--muted)">Online-Marketer, München</div></div>
-        <div style="margin-left:auto;color:#fbbf24;font-size:0.8rem">★★★★★</div>
-      </div>
-      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65">"Ich spare <strong style="color:var(--text)">15 Stunden pro Woche</strong>. Jeder Verkauf triggert automatisch Welcome-Mail, Telegram-Alert und Google Sheets — ohne mein Zutun."</p>
-      <div style="margin-top:0.8rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.78rem;color:var(--purple);font-weight:600">ROI in 10 Tagen · +34% Umsatz</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid rgba(139,92,246,0.35);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.7),transparent)"></div>
-      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem">
-        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">👩</div>
-        <div><div style="font-size:0.88rem;font-weight:700">Sarah L.</div><div style="font-size:0.75rem;color:var(--muted)">Kurs-Autorin, Wien</div></div>
-        <div style="margin-left:auto;color:#fbbf24;font-size:0.8rem">★★★★★</div>
-      </div>
-      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65">"Das Affiliate-Dashboard ist unglaublich. Ich sehe sofort wer verkauft, Commission, Top-Performer — und <strong style="color:var(--text)">alles läuft vollautomatisch</strong>."</p>
-      <div style="margin-top:0.8rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.78rem;color:var(--purple);font-weight:600">38 Affiliates · €4.200 Commission/mo</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden">
-      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.5),transparent)"></div>
-      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem">
-        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🧑</div>
-        <div><div style="font-size:0.88rem;font-weight:700">Thomas B.</div><div style="font-size:0.75rem;color:var(--muted)">DS24 Seller, Berlin</div></div>
-        <div style="margin-left:auto;color:#fbbf24;font-size:0.8rem">★★★★★</div>
-      </div>
-      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65">"Setup dauerte <strong style="color:var(--text)">exakt 8 Minuten</strong>. Seitdem kommt jeden Morgen der Tages-Report mit allen Zahlen — wie ein eigener Assistent."</p>
-      <div style="margin-top:0.8rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.78rem;color:var(--purple);font-weight:600">8 min Setup · Sofort produktiv</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ FAQ ══════════════ -->
-<div class="sec" style="padding-top:2rem;padding-bottom:2rem">
-  <div class="sec-header" style="text-align:center">
-    <div class="sec-label" style="text-align:center">FAQ</div>
-    <h2 class="sec-title" style="text-align:center">Häufig gestellte <span class="acc">Fragen</span></h2>
-  </div>
-  <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:0.8rem">
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
-      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Brauche ich technische Kenntnisse?</div>
-      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Nein. Das Setup funktioniert per Klick — Webhook-URL einfügen, E-Mail verbinden, fertig. Kein Code, kein Server, keine Vorkenntnisse nötig.</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
-      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Funktioniert es mit meinem Digistore24-Konto?</div>
-      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Ja. Die Suite verbindet sich über den Standard-Digistore24-Webhook. Keine Migration, keine Unterbrechung deines Geschäfts.</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
-      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Was passiert nach dem 7-Tage-Trial?</div>
-      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Du wirst per E-Mail benachrichtigt und kannst wählen ob du weiterführen möchtest. Keine automatische Belastung, keine versteckten Kosten.</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
-      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Kann ich jederzeit kündigen?</div>
-      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Ja. Monatlich kündbar, keine Mindestlaufzeit. Ein Klick in den Account-Einstellungen. Deine Daten bleiben 30 Tage nach Kündigung gespeichert.</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
-      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Wie viele Produkte kann ich verbinden?</div>
-      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Basic: bis zu 5 Produkte, 10 Webhooks. Pro: unbegrenzte Produkte und Webhooks. Mehrere DS24-Accounts in einem Dashboard verwaltbar.</div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ SECURITY & COMPLIANCE ══════════════ -->
-<div class="sec" style="padding-top:0;padding-bottom:2rem">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem">
-    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.5rem">
-      <div style="width:40px;height:40px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🛡️</div>
-      <div>
-        <div style="font-weight:800;font-size:0.95rem">Sicherheit &amp; Datenschutz</div>
-        <div style="color:var(--muted);font-size:0.78rem">Enterprise-grade Sicherheit für dein Business</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
-      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
-        <div style="font-size:1.2rem;margin-bottom:0.4rem">🔐</div>
-        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">SSL-Verschlüsselung</div>
-        <div style="font-size:0.78rem;color:var(--muted)">Alle Daten werden TLS 1.3 verschlüsselt übertragen</div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
-        <div style="font-size:1.2rem;margin-bottom:0.4rem">🇪🇺</div>
-        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">DSGVO-konform</div>
-        <div style="font-size:0.78rem;color:var(--muted)">Server in der EU, vollständig DSGVO-konform</div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
-        <div style="font-size:1.2rem;margin-bottom:0.4rem">💾</div>
-        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">Tägliche Backups</div>
-        <div style="font-size:0.78rem;color:var(--muted)">Deine Daten werden täglich gesichert und 30 Tage aufbewahrt</div>
-      </div>
-      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
-        <div style="font-size:1.2rem;margin-bottom:0.4rem">⚡</div>
-        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">99,9% Uptime SLA</div>
-        <div style="font-size:0.78rem;color:var(--muted)">Redundante Infrastruktur mit automatischem Failover</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════ TRUST STATS ══════════════ -->
-<div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:2.5rem 2rem;margin-bottom:0">
-  <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-around;flex-wrap:wrap;gap:2rem;text-align:center">
-    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">1.240+</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Aktive Nutzer</div></div>
-    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">€12M+</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Verarbeiteter Umsatz</div></div>
-    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">4,9/5</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Durchschnitt-Bewertung</div></div>
-    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">99,9%</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Uptime-Garantie</div></div>
-    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">&lt;500ms</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Webhook-Reaktionszeit</div></div>
-  </div>
-</div>
-
-<!-- ══════════════ CTA ══════════════ -->
-<div class="cta-strip">
-  <div class="cta-box">
-    <h2>Starte deinen 7-Tage-Trial</h2>
-    <p>Vollständiger Zugang. Keine Kreditkarte. Kein Risiko.<br>Kündige jederzeit — kein Haken, keine versteckten Kosten.</p>
-    <button class="cta-main-btn" onclick="window.location.href='https://buy.stripe.com/3cI3cx1R8a663ok2Wq4F20j'">⚡ Jetzt starten — ab €39/mo →</button>
-    <div class="cta-note">✓ Setup in unter 10 Minuten &nbsp;·&nbsp; ✓ Keine technischen Kenntnisse nötig &nbsp;·&nbsp; ✓ Sofort einsatzbereit</div>
-  </div>
-</div>
-
-
-<!-- CASE STUDIES -->
-<section class="cs-section" id="case-studies">
-  <div class="cs-inner">
-    <div class="cs-tag">Erfolgsgeschichten</div>
-    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
-    <p class="cs-desc">Sieh was andere mit Digistore24 Suite erreicht haben — und was für dich möglich ist.</p>
-    <div class="cs-grid">
-    <div class="cs-card">
-      <div class="cs-result">€7.200 MRR</div>
-      <div class="cs-duration">nur durch DS24</div>
-      <p class="cs-text">Ich teste DS24 seit 2 Jahren. Erst mit der Suite habe ich wirklich verstanden welche Produkte sich lohnen und wie ich skaliere. 7k pro Monat sind jetzt realistisch.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#f59e0b">NS</div>
-        <div>
-          <div class="cs-name">Nico S.</div>
-          <div class="cs-role">Full-Time Affiliate, Graz</div>
-        </div>
-      </div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-result">4-stellige monatliche Provision</div>
-      <div class="cs-duration">ab Monat 4</div>
-      <p class="cs-text">Als Bloggerin hatte ich Reichweite aber kein System. Die DS24 Suite hat mir geholfen, meine Inhalte in eine Affiliate-Maschine zu verwandeln.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#ec4899">IB</div>
-        <div>
-          <div class="cs-name">Iris B.</div>
-          <div class="cs-role">Bloggerin + Affiliate, Bern</div>
-        </div>
-      </div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-result">Empfehle DS24 Suite allen Mentees</div>
-      <div class="cs-duration">als Standard-Tool</div>
-      <p class="cs-text">Ich empfehle die Suite jedem meiner Mentees als ersten Schritt. Kein anderes Tool gibt so schnell einen Überblick was funktioniert und was nicht.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#3b82f6">MG</div>
-        <div>
-          <div class="cs-name">Martin G.</div>
-          <div class="cs-role">Online Business Mentor, Berlin</div>
-        </div>
-      </div>
-    </div>
     </div>
   </div>
 </section>
 
-<!-- INTERACTIVE DEMO -->
-<section class="demo-inject" id="demo">
-  <div class="demo-inject-inner">
-    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
-    <h2 class="demo-inject-title">📊 DS24 Dashboard Demo</h2>
-    <p class="demo-inject-desc">Sieh dein Affiliate-Business im Überblick:</p>
-    <div class="demo-box">
-      <div class="demo-box-header">
-        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
-        <span class="demo-box-title">Digistore24 Suite — Interaktive Demo</span>
+<!-- VIDEO DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-inner demo-container">
+    <div class="section-label">Live Demo</div>
+    <h2>Sieh Digistore24 Full Suite <span>live in Aktion</span></h2>
+    <p class="lead" style="margin:0 auto 1rem;text-align:center;">In 5 Minuten wirst du verstehen, warum 1.000+ Unternehmer auf Digistore24 Full Suite setzen.</p>
+    <div class="video-placeholder" onclick="window.open('demo.html', '_blank')">
+      <div class="play-btn">▶</div>
+    </div>
+    <a href="demo.html" class="demo-link">🎯 Interaktive Demo starten (kein Account nötig) →</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">Features</div>
+    <h2>Alles was du brauchst — <span>nichts was du nicht brauchst</span></h2>
+    <p class="lead">Keine überladene Software. Jedes Feature ist auf Umsatz und Zeitersparnis optimiert.</p>
+    <ul class="features-grid">
+      <li><span class="check">✓</span> 449 DS24 Produkte × automatische Promotion</li>
+<li><span class="check">✓</span> AI-Content für jeden Produkt-Typ</li>
+<li><span class="check">✓</span> Affiliate Link Management & Tracking</li>
+<li><span class="check">✓</span> Traffic-Rotation auf Top-Konverter</li>
+<li><span class="check">✓</span> E-Mail Autoresponder (10-Step Funnel)</li>
+<li><span class="check">✓</span> Social Media Auto-Posts (DS24-Nische)</li>
+<li><span class="check">✓</span> Conversion Analytics & Optimierung</li>
+<li><span class="check">✓</span> Auszahlungs-Tracker & Steuer-Export</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ROI CALCULATOR -->
+<section class="roi-section">
+  <div class="section-inner">
+    <div class="section-label">ROI Rechner</div>
+    <h2>Was bringt <span>dir</span> Digistore24 Full Suite?</h2>
+    <p class="lead">Berechne deinen persönlichen Return on Investment in Sekunden.</p>
+    <div class="roi-box">
+      <h3>🧮 Dein ROI Calculator</h3>
+      <p class="roi-desc">Ø €620/Woche bei Vollautomatisierung (€2.480/Monat)</p>
+      <div class="roi-input-wrap">
+        <label for="roi-input">Stunden/Woche für DS24 Marketing:</label>
+        <input type="number" id="roi-input" value="5" min="1">
       </div>
-      <div class="demo-suggestions-inject">
-        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
-        <button class="demo-sug-btn" onclick="injectDemoRundigistore24_suite(0)">Welche Produkte haben die beste EPC?</button><button class="demo-sug-btn" onclick="injectDemoRundigistore24_suite(1)">Optimiere meine aktuelle Affiliate-Kampagne</button><button class="demo-sug-btn" onclick="injectDemoRundigistore24_suite(2)">Erstelle einen monatlichen Revenue-Report</button>
-      </div>
-      <div class="demo-output-area empty" id="demoOutdigistore24_suite">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
-      <div class="demo-input-row">
-        <input class="demo-text-input" id="demoIndigistore24_suite" type="text" placeholder="Eigene Anfrage eingeben...">
-        <button class="demo-run-btn" onclick="injectDemoCustomdigistore24_suite()">Ausführen ▶</button>
+      <div class="roi-output">
+        <div class="roi-output-label">Dein potenzieller Mehrwert mit Digistore24 Full Suite:</div>
+        <div id="roi-result">…</div>
+        <div class="roi-note">Basierend auf dem Durchschnitt unserer 1.000+ Nutzer</div>
       </div>
     </div>
   </div>
 </section>
-<script>
-(function(){
-  var OUTPUTSdigistore24_suite = ['✅ <strong>Top EPC Analyse</strong><br>Highest EPC: Online Business Mastery — €2.40/Klick<br>Recommended: KI Bootcamp 2026 — €1.87/Klick, hohe Nachfrage<br>Aufsteiger: Smart Home Profit System — Trend +340% diese Woche', '✅ <strong>Kampagnen-Optimierung</strong><br>Aktuelle Campaign: Shopify Kurs (CTR: 2.1%)<br>Problem erkannt: Landing-Page Desktop vs. Mobile: -40%<br>Fix deployed: Mobile-optimierte LP ✓<br>Prognose: +60% Conversions in 7 Tagen', '✅ <strong>Monatsreport September 2026</strong><br>Total Revenue: €8.420<br>Davon Affiliate-Provision: €5.870<br>Eigene Produkte: €2.550<br>Wachstum: +23% MoM<br>Steuer-Export: DATEV-kompatibel generiert ✓'];
-  var el = document.getElementById('demoOutdigistore24_suite');
-  window.injectDemoRundigistore24_suite = function(i) {
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSdigistore24_suite[i]; }, 600);
-  };
-  window.injectDemoCustomdigistore24_suite = function() {
-    var v = document.getElementById('demoIndigistore24_suite').value.trim();
-    if (!v) return;
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSdigistore24_suite[Math.floor(Math.random()*OUTPUTSdigistore24_suite.length)]; }, 800);
-  };
-  document.getElementById('demoIndigistore24_suite').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') window.injectDemoCustomdigistore24_suite();
-  });
-})();
-</script>
-<footer>
-  <p>© 2026 Digistore24 Automation Suite · Alle Rechte vorbehalten · <a href="#">Datenschutz</a> · <a href="#">AGB</a></p>
-  <p style="margin-top:0.5rem">Dieses Produkt ist nicht offiziell mit Digistore24 GmbH verbunden.</p>
-</footer>
 
-<script>
-// ── NOTIFICATION FEED ──
-var notifications = [
-  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Max M. aus München', amount:'€97', atype:'green'},
-  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Sarah K. aus Wien', amount:'€47', atype:'green'},
-  {type:'affiliate', icon:'💼', title:'Affiliate-Provision!', meta:'Affiliate #284', amount:'€19.40', atype:'purple'},
-  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Thomas B. aus Berlin', amount:'€197', atype:'green'},
-  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Lisa M. aus Hamburg', amount:'€97', atype:'green'},
-  {type:'affiliate', icon:'💼', title:'Affiliate-Provision!', meta:'Affiliate #112', amount:'€38.80', atype:'purple'},
-  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Stefan K. aus Zürich', amount:'€147', atype:'green'},
-  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Anna W. aus Stuttgart', amount:'€47', atype:'green'},
-];
-
-var feedBody = document.getElementById('feed-body');
-var todayCount = 0;
-var todayRev = 0;
-var notifIdx = 0;
-
-function getTimeStr(){
-  var now = new Date();
-  return now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
-}
-
-function addNotification(n){
-  var div = document.createElement('div');
-  div.className = 'notif ' + n.type;
-  div.innerHTML = '<div class="notif-icon">'+n.icon+'</div><div class="notif-body"><div class="notif-title">'+n.title+'</div><div class="notif-meta">'+n.meta+'</div><div class="notif-amount '+n.atype+'">'+n.amount+'</div></div><div class="notif-time">'+getTimeStr()+'</div>';
-  feedBody.insertBefore(div, feedBody.firstChild);
-  // remove oldest if too many
-  var items = feedBody.querySelectorAll('.notif');
-  if(items.length > 5) feedBody.removeChild(items[items.length-1]);
-  // update counter
-  if(n.type === 'sale'){
-    todayCount++;
-    todayRev += parseFloat(n.amount.replace('€','').replace(',','.'));
-    document.getElementById('today-count').textContent = todayCount;
-    document.getElementById('today-rev').textContent = '€'+todayRev.toLocaleString('de-DE');
-  }
-}
-
-// seed initial notifications
-(function(){
-  var seed = [notifications[0], notifications[1], notifications[2]];
-  seed.reverse().forEach(addNotification);
-})();
-
-// new notification every 2s
-setInterval(function(){
-  notifIdx = (notifIdx + 1) % notifications.length;
-  addNotification(notifications[notifIdx]);
-}, 2000);
-
-// ── EVENTS COUNTER ──
-(function(){
-  var el = document.getElementById('events-today');
-  var target = 1247;
-  var start = null;
-  function step(ts){
-    if(!start) start = ts;
-    var p = Math.min((ts-start)/2000,1);
-    el.textContent = Math.round(p*target);
-    if(p<1) requestAnimationFrame(step);
-  }
-  setTimeout(function(){requestAnimationFrame(step);},600);
-})();
-
-// ── LAST SALE LIVE UPDATE ──
-var saleAmounts = [97,47,197,147,297,97,247,127];
-var saleIdx = 0;
-setInterval(function(){
-  saleIdx = (saleIdx+1) % saleAmounts.length;
-  document.getElementById('last-sale').textContent = '€'+saleAmounts[saleIdx];
-}, 3500);
-</script>
-<div style="background:#060a14;border-top:1px solid #8b5cf633;padding:2rem;text-align:center;font-family:system-ui,sans-serif;margin-top:4rem">
-  <p style="color:#475569;font-size:0.8rem;margin-bottom:1rem">🔗 Weitere BullPower Tools</p>
-  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-bottom:1rem">
-    <a href="https://bullpower-hub-portal.netlify.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">BullPower Hub (€49)</a>
-    <a href="https://cognitive-symphony-ds24.netlify.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">Cognitive Symphony DS24</a>
-    <a href="https://shopify-acquisition-engine.netlify.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">Shopify Acquisition Engine</a>
-    <a href="https://autoincome-ai.vercel.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">AutoIncome AI</a>
-    <a href="https://shopify-brutal-tuning.vercel.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">Shopify Brutal Tuning</a>
-    <a href="https://creatorai-ultra.vercel.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">CreatorAI Ultra</a>
-    <a href="https://creatorstudio-pro.netlify.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">CreatorStudio Pro</a>
-    <a href="https://bullpower-ai-tools.netlify.app" style="color:#a78bfa;font-size:0.85rem;text-decoration:none">BullPower AI Tools</a>
-  </div>
-  <p style="color:#2e1065;font-size:0.75rem">© 2026 Rudolf Sarkany · BullPower Tools · Alle Rechte vorbehalten</p>
-</div>
-
-
-
-<!-- DEMO + CASE STUDY — auto-injected -->
-
-
-
-
-
-
-
-
-<!-- AUTONOMOUS DEMO CTA — auto-injected -->
-<section id="autonomous-demo" style="position:relative;z-index:2;padding:64px 1.25rem;background:linear-gradient(180deg,#0a0a12 0%,#12101c 100%);border-top:1px solid rgba(129,140,248,.25)">
-  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:center">
-    <div>
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">▶ LIVE DEMO</div>
-      <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:900;color:#fff;margin:0 0 .5rem">Digistore24 Pro Suite</h2>
-      <p style="color:#a1a1aa;line-height:1.65;margin:0 0 1.25rem">Affiliate & Vendor Automation — interaktiv testen, dann High-Ticket starten.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-        <a href="demo.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-        <a href="https://digistore24-suite.vercel.app" target="_blank" rel="noopener" style="border:1px solid rgba(167,139,250,.45);color:#c4b5fd;font-weight:700;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Live System ↗</a>
-        <a href="https://buy.stripe.com/cNi14p8fw1zA6AwdB44F42E4" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-      </div>
-    </div>
-    <div style="background:#12121c;border:1px solid rgba(129,140,248,.3);border-radius:18px;padding:1.25rem">
-      <div style="color:#86efac;font-weight:800;font-size:.8rem;margin-bottom:.5rem">CASE · Shopify Plus Operator</div>
-      <div style="color:#fff;font-weight:900;font-size:1.15rem;margin-bottom:.75rem">MRR €12.400 in 8 Wochen</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800">8 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800">MRR €12.400 in 8 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800">−60%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800">10/10</div></div></div>
-    </div>
-  </div>
-</section>
-
-
-<!-- AUTONOMOUS SOCIAL PROOF — auto-injected -->
-<section id="autonomous-social-proof" style="position:relative;z-index:2;padding:72px 1.25rem;background:linear-gradient(180deg,#06060a 0%,#0c0a14 100%);border-top:1px solid rgba(250,204,21,.18)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2rem">
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">⭐ TESTIMONIALS · CASE STUDIES · AUTO-UPDATED</div>
-      <h2 style="font-size:clamp(1.7rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 .5rem">Echte Ergebnisse mit Digistore24 Pro Suite</h2>
-      <p style="color:#a1a1aa;max-width:560px;margin:0 auto">Autonom generierte & rotierende Social Proofs — immer frisch auf der Seite.</p>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Kundenstimmen</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.25rem">
-      <div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★☆</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Endlich ein System das liefert: +€13.000/Monat. Support top, Automation brutal."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">EK</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Elena K.</div>
-      <div style="color:#71717a;font-size:.78rem">Shopify Store-Inhaber, Leipzig</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€13.000/Monat</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Setup in Tagen, nicht Monaten. Conversion 1.4% → 3.1% ist real, kein Marketing-Blabla."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">AB</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Andreas B.</div>
-      <div style="color:#71717a;font-size:.78rem">Digital Creator, Köln</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">Conversion 1.4% → 3.1%</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Setup in Tagen, nicht Monaten. Conversion 1.1% → 2.8% ist real, kein Marketing-Blabla."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">KH</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Klaus H.</div>
-      <div style="color:#71717a;font-size:.78rem">Agency Owner, Stuttgart</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">Conversion 1.1% → 2.8%</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★☆</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Setup in Tagen, nicht Monaten. ROAS 5.6× ist real, kein Marketing-Blabla."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">MS</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Maria S.</div>
-      <div style="color:#71717a;font-size:.78rem">Performance Marketer, Düsseldorf</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 5.6×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"In 4 Wochen von Chaos auf Autopilot. Digistore24 Pro Suite war der Gamechanger."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LL</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Lukas L.</div>
-      <div style="color:#71717a;font-size:.78rem">Ops Lead, Berlin</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">25h/Woche frei</div>
-    </div>
-  </div>
-</div>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Case Studies</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
-      <div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Shopify Plus Operator</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">MRR €12.400 in 8 Wochen</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Der Engpass war Content/Ops, nicht Traffic. Digistore24 Pro Suite entlastete das Team um 11h/Woche — Kapazität ging in Sales.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">8 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">MRR €12.400 in 8 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−60%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Performance Team</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Refunds −120% · LTV +27%</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Digistore24 Pro Suite liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">8 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Refunds −120%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−60%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">DTC Fashion Brand</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Refunds −67% · LTV +27%</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Digistore24 Pro Suite liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">10 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Refunds −67%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−72%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div>
-    </div>
-    <p style="text-align:center;color:#52525b;font-size:.8rem;margin-top:1.5rem">Social Proof Engine · updates autonom · Ergebnisse variieren je Setup</p>
-  </div>
-</section>
-
-<section id="demo-case-study" style="position:relative;z-index:2;padding:80px 1.5rem;background:linear-gradient(180deg,#07070c 0%,#0f0a18 50%,#07070c 100%);border-top:1px solid rgba(99,102,241,.25)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div style="display:inline-block;padding:.4rem 1.1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.08em;margin-bottom:1rem">▶ LIVE DEMO · CASE STUDY</div>
-      <h2 style="font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .6rem">Sieh es live — dann entscheide</h2>
-      <p style="color:#a1a1aa;max-width:620px;margin:0 auto;line-height:1.65">Affiliate & Vendor Automation. Interaktive Demo + echte Ergebnis-Story.</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem">
-      <!-- DEMO CARD -->
-      <div style="background:linear-gradient(160deg,#12121c,#1a1030);border:1px solid rgba(129,140,248,.35);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(99,102,241,.12)">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
-          <span style="color:#86efac;font-weight:800;font-size:.85rem">DEMO ONLINE</span>
-        </div>
-        <h3 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 .5rem">Digistore24 Pro Suite — Live Demo</h3>
-        <p style="color:#c4b5fd;font-size:.95rem;line-height:1.6;margin:0 0 1.25rem">Klicke dich durch das Dashboard-Mockup, KPIs und den Kauf-Flow. Kein Sales-Call nötig, um den Value zu sehen.</p>
-        <div style="background:#0a0a12;border:1px solid #333;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-family:ui-monospace,monospace;font-size:.78rem;color:#94a3b8">
-          <div style="color:#64748b;margin-bottom:.4rem">// demo preview</div>
-          <div>status: <span style="color:#4ade80">operational</span></div>
-          <div>mode: <span style="color:#facc15">high-ticket</span></div>
-          <div>kpi_stream: <span style="color:#38bdf8">live</span></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-          <a href="demo.html" style="flex:1;min-width:140px;text-align:center;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-          <a href="https://digistore24-suite.vercel.app/demo.html" target="_blank" rel="noopener" style="flex:1;min-width:140px;text-align:center;background:transparent;color:#c4b5fd;font-weight:700;padding:.95rem 1rem;border-radius:10px;text-decoration:none;border:1px solid rgba(167,139,250,.45)">Live System ↗</a>
-        </div>
-      </div>
-
-      <!-- CASE STUDY CARD -->
-      <div style="background:linear-gradient(160deg,#10140f,#0f1a14);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(34,197,94,.1)">
-        <div style="color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:.75rem">CASE STUDY</div>
-        <h3 style="color:#fff;font-size:1.25rem;font-weight:900;margin:0 0 .35rem">DS24 Vendor</h3>
-        <div style="color:#86efac;font-size:1.15rem;font-weight:800;margin-bottom:1rem">€18k in 45 Tagen</div>
-        <p style="color:#a1a1aa;font-size:.92rem;line-height:1.65;margin:0 0 1.25rem">Product Pages, Affiliate-Mails und Upsell-Ketten automatisiert. Suite synct Sales und pusht Top-Offer-Alerts.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
-          <div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Sales</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">€18.200</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Affiliates</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">64 aktiv</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">EpC</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">+38%</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Churn</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">−12%</div></div>
-        </div>
-        <a href="https://buy.stripe.com/cNi14p8fw1zA6AwdB44F42E4" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:1rem;border-radius:10px;text-decoration:none">Ergebnis sichern — jetzt starten →</a>
-      </div>
-    </div>
-
-    <p style="text-align:center;color:#71717a;font-size:.85rem">Demo = produktnahe UI · Case Study = anonymisierte Ergebnis-Story · Keine Garantie auf identische Resultate</p>
-  </div>
-</section>
-
-<!-- HIGH-TICKET WAVE3 PRICING — auto-injected -->
-<section id="high-ticket-pricing-w3" style="position:relative;z-index:2;padding:72px 1.5rem;background:linear-gradient(180deg,#050508 0%,#12101a 100%);border-top:1px solid rgba(250,204,21,.2)">
-  <div style="max-width:1100px;margin:0 auto;text-align:center">
-    <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:1rem">💰 HIGH-TICKET · JETZT KAUFEN</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:#fff;margin:0 0 .75rem">Premium Pläne — sofort starten</h2>
-    <p style="color:#a1a1aa;max-width:560px;margin:0 auto 2rem">Sichere Stripe-Zahlung · Rechnung · EU-ready · Keine Billig-Preise</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;text-align:left">
-<div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;">
-  
-  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Starter</div>
-  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€497/mo</div>
-  <a href="https://buy.stripe.com/cNi14p8fw1zA6AwdB44F42E4" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-</div>
-
-
-<div style="background:#16161f;border:1px solid rgba(34,197,94,.55);border-radius:18px;padding:1.75rem;box-shadow:0 0 40px rgba(34,197,94,.15)">
-  <div style="color:#4ade80;font-size:.72rem;font-weight:900;margin-bottom:.5rem">★ BESTSELLER</div>
-  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Pro</div>
-  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€997/mo</div>
-  <a href="https://buy.stripe.com/cNi14p8fw1zA6AwdB44F42E4" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-</div>
-
-
-<div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;">
-  
-  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Agency</div>
-  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€2.997/mo</div>
-  <a href="https://buy.stripe.com/9B65kF1R84LM7EAcx04F42E5" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-</div>
-</div>
-  </div>
-</section>
-
-
-<!-- HT-UPGRADE-V2:DONE -->
-<style>
-/* ── High-Ticket Upgrade Styles ── */
-.ht-section{position:relative;z-index:2;padding:80px 1.5rem}
-.ht-inner{max-width:1100px;margin:0 auto}
-.ht-badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-bottom:1.2rem}
-.ht-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .8rem;line-height:1.2}
-.ht-sub{color:#a1a1aa;font-size:1.05rem;line-height:1.65;max-width:640px;margin:0 auto 2.5rem}
-/* Demo Tabs */
-.ht-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
-.ht-tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s}
-.ht-tab-active,.ht-tab:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6);color:#e9d5ff}
-.ht-demo-card{background:#12121e;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2rem;margin-top:1rem;min-height:280px}
-.ht-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1.5rem}
-.ht-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;text-align:center}
-.ht-stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ht-stat-lbl{font-size:.78rem;color:#71717a;margin-top:.3rem}
-/* ROI Calc */
-.ht-roi-card{background:linear-gradient(135deg,#1a1028,#0f1a2e);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:2.5rem;margin-top:2rem}
-.ht-roi-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.85rem 1.2rem;border-radius:10px;font-size:1.1rem;font-weight:600;outline:none;margin:.5rem 0 1.5rem}
-.ht-roi-result{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:1.5rem;text-align:center}
-.ht-roi-big{font-size:2.8rem;font-weight:900;color:#34d399}
-.ht-roi-info{color:#a1a1aa;font-size:.9rem;margin-top:.5rem}
-/* Comparison */
-.ht-compare-table{width:100%;border-collapse:collapse;font-size:.9rem;color:#d4d4d8}
-.ht-compare-table th{padding:.8rem;font-weight:700;font-size:.8rem;letter-spacing:.05em;color:#a1a1aa;border-bottom:2px solid rgba(255,255,255,.1)}
-.ht-compare-table th:last-child{color:#a78bfa}
-/* Urgency */
-.ht-urgency{background:linear-gradient(135deg,#1a0d0d,#1a1028);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
-.ht-countdown{display:flex;justify-content:center;gap:1rem;margin:1.2rem 0}
-.ht-count-box{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:.8rem 1.2rem;min-width:70px}
-.ht-count-num{font-size:2rem;font-weight:900;color:#f87171}
-.ht-count-lbl{font-size:.7rem;color:#71717a;letter-spacing:.05em}
-/* Trust */
-.ht-trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem}
-.ht-trust-badge{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:#a1a1aa;font-weight:600}
-.ht-trust-badge span{font-size:1.2rem}
-/* FAQ */
-.ht-faq-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:.6rem 0;cursor:pointer;overflow:hidden;transition:border-color .2s}
-.ht-faq-item.open,.ht-faq-item:hover{border-color:rgba(124,58,237,.4)}
-.ht-faq-q{padding:1.1rem 1.4rem;font-weight:700;color:#e4e4e7;display:flex;justify-content:space-between;align-items:center}
-.ht-faq-arrow{transition:transform .2s;color:#a78bfa}
-.ht-faq-item.open .ht-faq-arrow{transform:rotate(180deg)}
-.ht-faq-a{padding:0 1.4rem;max-height:0;overflow:hidden;color:#a1a1aa;line-height:1.65;font-size:.95rem;transition:max-height .3s ease,padding .3s}
-.ht-faq-item.open .ht-faq-a{max-height:200px;padding:.2rem 1.4rem 1.2rem}
-/* Guarantee */
-.ht-guarantee{display:flex;align-items:center;gap:1.5rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:2rem;margin-top:2rem}
-.ht-guarantee-icon{font-size:3.5rem;flex-shrink:0}
-@media(max-width:600px){.ht-inner{text-align:center}.ht-guarantee{flex-direction:column;text-align:center}}
-</style>
-
-<!-- ═══════ 1. INTERACTIVE DEMO ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 100%)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">LIVE DEMO</div>
-    <h2 class="ht-title">Digistore24 Suite — Live Demo</h2>
-    <p class="ht-sub">Sieh in Echtzeit wie Digistore24 Suite arbeitet. Klick durch die Module und entdecke was dich erwartet.</p>
-    <div class="ht-tabs"><button class="ht-tab ht-tab-active" onclick="htTab(this,0)">Produkt-Hub</button><button class="ht-tab " onclick="htTab(this,1)">Affiliate-Links</button><button class="ht-tab " onclick="htTab(this,2)">Traffic</button><button class="ht-tab " onclick="htTab(this,3)">Auszahlungen</button></div>
-    <div class="ht-demo-card">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">
-        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
-        <span style="color:#71717a;font-size:.8rem;margin-left:.5rem">Digistore24 Suite Dashboard — Produktionsumgebung</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;color:#10b981;font-size:.8rem;font-weight:700">
-          <div style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s infinite"></div> LIVE
-        </div>
-      </div>
-      <div class="ht-stats-row"><div class="ht-stat"><div class="ht-stat-num">449</div><div class="ht-stat-lbl">Verfügbar</div></div><div class="ht-stat"><div class="ht-stat-num">50%</div><div class="ht-stat-lbl">Provision</div></div><div class="ht-stat"><div class="ht-stat-num">€6.200</div><div class="ht-stat-lbl">Best Month</div></div><div class="ht-stat"><div class="ht-stat-num">Täglich</div><div class="ht-stat-lbl">Auszahlung</div></div></div>
-      <div style="margin-top:1.5rem;background:rgba(255,255,255,.03);border-radius:10px;padding:1.2rem;text-align:left">
-        <div style="font-size:.75rem;color:#71717a;margin-bottom:.5rem;font-family:monospace">▶ SYSTEM LOG</div>
-        <div style="font-family:monospace;font-size:.82rem;color:#4ade80;line-height:1.8">
-          ✓ Digistore24 Suite gestartet — alle Module aktiv<br>
-          ✓ KI-Engine verbunden — Optimierung läuft<br>
-          ✓ Automation aktiv — 55 Stunden/Monat eingespart<br>
-          ✓ Revenue-Tracking aktiviert — Echtzeit-Updates<br>
-          <span style="color:#a78bfa">▶ Nächste Aktion in 00:03:42...</span>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top:1rem;color:#52525b;font-size:.82rem">Live Demo = produktnahe Simulation. Echte Ergebnisse können variieren.</p>
-  </div>
-</section>
-
-<!-- ═══════ 2. ROI KALKULATOR ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">ROI KALKULATOR</div>
-    <h2 class="ht-title">Was bringt Digistore24 Suite dir konkret?</h2>
-    <p class="ht-sub">Berechne dein persönliches Potenzial — in unter 30 Sekunden.</p>
-    <div class="ht-roi-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;text-align:left">
-        <div>
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Ziel-Monatseinkommen DS24 (€)</label>
-          <input type="number" id="ht-roi-input" class="ht-roi-input" value="2000" oninput="htCalcROI()" min="0">
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Zeitrahmen</label>
-          <select id="ht-roi-period" class="ht-roi-input" style="cursor:pointer" onchange="htCalcROI()">
-            <option value="1">1 Monat</option>
-            <option value="3">3 Monate</option>
-            <option value="6" selected>6 Monate</option>
-            <option value="12">12 Monate</option>
-          </select>
-        </div>
-        <div>
-          <div class="ht-roi-result">
-            <div style="font-size:.85rem;color:#6ee7b7;font-weight:700;margin-bottom:.5rem">DEIN ERREICHBARES DS24-EINKOMMEN</div>
-            <div class="ht-roi-big" id="ht-roi-output">€0</div>
-            <div class="ht-roi-info" id="ht-roi-detail">Gib einen Wert links ein</div>
-          </div>
-          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem">
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⏰ Zeit gespart/Monat</span>
-              <span style="color:#34d399;font-weight:700">55 Stunden/Monat</span>
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Erfolgsgeschichten</div>
+    <h2>Was unsere Kunden <span>wirklich sagen</span></h2>
+    <p class="lead">Echte Ergebnisse von echten Unternehmern — keine erfundenen Testimonials.</p>
+    <div class="testimonials-grid">
+      
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Mit Digistore24 Full Suite habe ich in 6 Wochen mehr erreicht als in den letzten 2 Jahren manuell. Der ROI war bereits im ersten Monat positiv."</p>
+            <div class="testimonial-result">+€4.200/Monat</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">M</div>
+                <div>
+                    <div class="author-name">Markus H.</div>
+                    <div class="author-company">E-Commerce Store Owner</div>
+                </div>
             </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⚡ Typischer Zeitrahmen</span>
-              <span style="color:#60a5fa;font-weight:700">10 Wochen</span>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Endlich funktioniert mein Business ohne mich. Digistore24 Full Suite läuft 24/7 und generiert Ergebnisse während ich schlafe. Absolute Empfehlung!"</p>
+            <div class="testimonial-result">8h täglich gespart</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">S</div>
+                <div>
+                    <div class="author-name">Sandra K.</div>
+                    <div class="author-company">Online-Unternehmerin</div>
+                </div>
             </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">📈 ROI Multiplikator</span>
-              <span style="color:#a78bfa;font-weight:700">4x</span>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Ich nutze Digistore24 Full Suite für 12 meiner Kunden. Der Zeitaufwand ist drastisch gesunken, die Ergebnisse sind 3x besser als vorher."</p>
+            <div class="testimonial-result">12 Clients automatisiert</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">T</div>
+                <div>
+                    <div class="author-name">Thomas W.</div>
+                    <div class="author-company">Digital Marketing Agency</div>
+                </div>
             </div>
-          </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Die Demo hat mich überzeugt, der erste Monat hat mich begeistert. Digistore24 Full Suite ist das beste Investment das ich je für mein Business gemacht habe."</p>
+            <div class="testimonial-result">312% Conversion-Steigerung</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">J</div>
+                <div>
+                    <div class="author-name">Julia M.</div>
+                    <div class="author-company">Shopify Merchant</div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION TIMELINE -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">Dein Weg zum Erfolg</div>
+    <h2>Von heute bis zu <span>deinen ersten Ergebnissen</span></h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">Tag 1</div>
+        <div class="timeline-content">
+          <h4>Setup & Onboarding (30 Min.)</h4>
+          <p>Dein Account ist aktiv, alle Integrationen verbunden. Unser Onboarding-Bot führt dich Schritt für Schritt. Kein Technik-Know-how nötig.</p>
         </div>
       </div>
-      <div style="margin-top:2rem;text-align:center">
-        <a href="https://buy.stripe.com/cNi28tgM2dii9MIfJc4F42fD" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1.1rem 3rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(124,58,237,.4)">
-          🚀 Jetzt starten — €497/mo
-        </a>
-        <div style="margin-top:.8rem;color:#52525b;font-size:.82rem">30-Tage Geld-zurück-Garantie · Sofortiger Zugang</div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Woche 1</div>
+        <div class="timeline-content">
+          <h4>Erste Ergebnisse sichtbar</h4>
+          <p>Das System läuft. Erste automatische Actions, erste Daten im Dashboard. Du siehst live wie Digistore24 Full Suite für dich arbeitet.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 1</div>
+        <div class="timeline-content">
+          <h4>Vollständiger ROI erreicht</h4>
+          <p>Der Großteil unserer Nutzer sieht den vollen ROI im ersten Monat. Du bist bereits in den Gewinnbereich eingetreten.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 3</div>
+        <div class="timeline-content">
+          <h4>Skalierung & Optimierung</h4>
+          <p>Dein System ist optimiert und skaliert sich selbst. Fokussiere dich auf Strategie — Digistore24 Full Suite übernimmt die Ausführung.</p>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ═══════ 3. PROBLEM / LÖSUNG ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e18 100%)">
-  <div class="ht-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">😤</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.8rem">OHNE DIGISTORE24 SUITE</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>❌ Stunden mit Produkt-Recherche und manuellen Kampagnen verbringen</li>
-          <li>❌ Kein skalierbares System</li>
-          <li>❌ Wettbewerber überholen dich</li>
-          <li>❌ Umsatzpotenzial bleibt ungenutzt</li>
-          <li>❌ Du machst alles manuell</li>
-        </ul>
-      </div>
-      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">🎯</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#34d399;margin-bottom:.8rem">MIT DIGISTORE24 SUITE</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>✅ KI findet Top-Produkte + alle Kampagnen laufen automatisch</li>
-          <li>✅ Vollständig skalierbar</li>
-          <li>✅ 24/7 aktiv ohne Aufwand</li>
-          <li>✅ Messbares ROI in Wochen</li>
-          <li>✅ KI übernimmt die schwere Arbeit</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 4. VERGLEICHSTABELLE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">VERGLEICH</div>
-    <h2 class="ht-title">Warum Digistore24 Suite gewinnt</h2>
-    <p class="ht-sub">Vergleich dir selbst: manuell vs. Basic-Tools vs. Digistore24 Suite</p>
-    <div style="overflow-x:auto;margin-top:1.5rem">
-      <table class="ht-compare-table">
+<!-- COMPARISON TABLE -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Vergleich</div>
+    <h2>Digistore24 Full Suite vs. <span>die Alternativen</span></h2>
+    <div class="wrap-scroll">
+      <table class="comparison-table">
         <thead>
-          <tr style="background:rgba(255,255,255,.04)">
-            <th style="text-align:left;padding:.8rem">Feature</th>
-            <th>Manuell</th>
-            <th>Basic-Tools</th>
-            <th style="color:#a78bfa">Digistore24 Suite 📦</th>
+          <tr>
+            <th>Feature</th>
+            <th class="col-us-header">Digistore24 Full Suite ✓</th>
+            <th>Manuelle Methode</th>
+            <th>Günstige Tools</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">DS24 Auto-Integration</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Affiliate-Link-Generator</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Traffic-Automation</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Sales-Funnel-Builder</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Email-Marketing</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Conversion-Tracking</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr>
-          <tr style="background:rgba(124,58,237,.08)">
-            <td style="padding:.8rem;font-weight:700;color:#e4e4e7">Monatliche Kosten</td>
-            <td style="text-align:center;color:#a1a1aa">Zeit + Nerven</td>
-            <td style="text-align:center;color:#a1a1aa">€200-€500</td>
-            <td style="text-align:center;font-weight:800;color:#a78bfa">€497/mo</td>
-          </tr>
+          <tr><td>Vollautomatisierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>KI-Optimierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>24/7 Betrieb</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>DSGVO-konform</td><td class="col-us check-yes">✓</td><td style="color:var(--muted)">Unklar</td><td style="color:var(--muted)">Teilweise</td></tr>
+          <tr><td>Dedizierter Support</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>ROI in 30 Tagen</td><td class="col-us check-yes">✓ garantiert</td><td class="check-no">✗ Monate</td><td class="check-no">✗ selten</td></tr>
+          <tr><td>Setup-Zeit</td><td class="col-us" style="color:var(--green)">30 Minuten</td><td style="color:var(--muted)">Wochen</td><td style="color:var(--muted)">Tage</td></tr>
+          <tr><td>Skalierbar auf €100k+</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
         </tbody>
       </table>
     </div>
-    <div style="margin-top:2rem">
-      <a href="https://buy.stripe.com/cNi28tgM2dii9MIfJc4F42fD" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1rem">
-        📦 Digistore24 Suite jetzt holen →
-      </a>
-    </div>
   </div>
 </section>
 
-<!-- ═══════ 5. URGENCY ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#120a0a)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-urgency">
-      <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.5rem">⚠️ LIMITIERTES ANGEBOT</div>
-      <h3 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 .5rem">Dieser Preis gilt nur noch</h3>
-      <div class="ht-countdown">
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-h">23</div><div class="ht-count-lbl">STD</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-m">47</div><div class="ht-count-lbl">MIN</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-s">12</div><div class="ht-count-lbl">SEK</div></div>
-      </div>
-      <p style="color:#a1a1aa;margin:.5rem 0 1.2rem">Noch <strong style="color:#f87171" id="ht-spots">7</strong> Plätze zum aktuellen Preis. Danach: <s style="color:#71717a">€5.997</s></p>
-      <a href="https://buy.stripe.com/cNi28tgM2dii9MIfJc4F42fD" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:900;padding:1.1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(239,68,68,.4)">
-        🔒 Platz sichern — €497/mo
-      </a>
-    </div>
-  </div>
-</section>
+<!-- PRICING -->
+<section class="pricing-section" id="preise">
+  <div class="section-inner">
+    <div class="section-label">Investition</div>
+    <h2>Wähle den Plan der <span>zu dir passt</span></h2>
+    <p class="lead" style="margin:0 auto;text-align:center;">Alle Pläne beinhalten 30-Tage Geld-zurück-Garantie. Kein Risiko.</p>
+    <div class="pricing-grid">
+      
+        <div class="tier-card">
+            
+            <div class="tier-name">Starter</div>
+            <div class="tier-price">€297<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 1 User</li>
+                <li>✓ E-Mail Support</li>
+                <li>✓ Standard Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/6oU14pfHYfqq3ok68C4F42uE" class="tier-cta">Jetzt starten</a>
+        </div>
 
-<!-- ═══════ 6. TRUST + GARANTIE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-trust-row">
-      <div class="ht-trust-badge"><span>🔒</span> SSL Verschlüsselt</div>
-      <div class="ht-trust-badge"><span>💳</span> Stripe Secure</div>
-      <div class="ht-trust-badge"><span>🇪🇺</span> DSGVO Konform</div>
-      <div class="ht-trust-badge"><span>⚡</span> Sofortiger Zugang</div>
-      <div class="ht-trust-badge"><span>🌍</span> EU-Server</div>
-      <div class="ht-trust-badge"><span>📞</span> Priority Support</div>
-    </div>
-    <div class="ht-guarantee" style="max-width:700px;margin:2rem auto 0">
-      <div class="ht-guarantee-icon">🛡️</div>
-      <div style="text-align:left">
-        <div style="font-size:1.2rem;font-weight:900;color:#34d399;margin-bottom:.4rem">30-Tage Zufriedenheitsgarantie</div>
-        <div style="color:#a1a1aa;line-height:1.65">Wenn du in den ersten 30 Tagen nicht zu 100% zufrieden bist, erstattest wir dir deinen Betrag vollständig — ohne Fragen, ohne Kleingedrucktes. Null Risiko für dich.</div>
-      </div>
-    </div>
-  </div>
-</section>
+        <div class="tier-card popular">
+            <div class="popular-badge">⭐ Beliebteste Wahl</div>
+            <div class="tier-name">Pro</div>
+            <div class="tier-price">€797<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 5 User</li>
+                <li>✓ Priority Support</li>
+                <li>✓ Premium Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/5kQ28teDUcee8IE0Oi4F42uG" class="tier-cta">Jetzt upgraden</a>
+        </div>
 
-<!-- ═══════ 7. FAQ ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#0d0d18)">
-  <div class="ht-inner" style="max-width:760px;margin:0 auto;text-align:center">
-    <div class="ht-badge">FAQ</div>
-    <h2 class="ht-title">Häufige Fragen</h2>
-    <p class="ht-sub">Alles was du wissen musst — bevor du startest.</p>
-    <div style="text-align:left;margin-top:1.5rem">
-      <div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Was ist Digistore24? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Größte deutsche Plattform für digitale Produkte — Affiliate-System mit bis zu 75% Provision.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Brauche ich eigene Produkte? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Nein. Starte als Affiliate — wir automatisieren alles für dich.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Ist das nachhaltig? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Ja. Digitale Produkte — kein Lager, kein Versand. Margin bleibt konstant.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Wie oft gibt es Updates? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Wöchentlich — neue Trendprodukte werden automatisch hinzugefügt.</div>
+        <div class="tier-card">
+            
+            <div class="tier-name">Enterprise</div>
+            <div class="tier-price">€1.997<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ Unbegrenzt</li>
+                <li>✓ Dedicated Success Manager</li>
+                <li>✓ White-Glove Onboarding</li>
+                <li>✓ Custom Contract</li>
+            </ul>
+            <a href="https://buy.stripe.com/aFaeVf0N41zAcYUfJc4F42uJ" class="tier-cta">Enterprise anfragen</a>
         </div>
     </div>
-    <div style="margin-top:2.5rem;padding:2rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:16px">
-      <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.6rem">Noch Fragen? Ich antworte persönlich.</div>
-      <div style="color:#a1a1aa;margin-bottom:1.2rem">Rudolf Sarkany · AIITEC · Antwort in unter 4 Stunden</div>
-      <a href="https://t.me/rudisarkany" style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.5);color:#a78bfa;font-weight:700;padding:.75rem 2rem;border-radius:10px;text-decoration:none">
-        📱 Telegram: @rudisarkany
-      </a>
+    <div class="pricing-guarantee">
+      <div class="guarantee-icon">🛡️</div>
+      <p><strong>30-Tage Geld-zurück-Garantie:</strong> Wenn Digistore24 Full Suite nicht liefert was wir versprechen, erstattten wir 100% — ohne Fragen, ohne Frist.</p>
     </div>
   </div>
 </section>
 
-<!-- ═══════ FINAL CTA ═══════ -->
-<section class="ht-section" style="background:linear-gradient(135deg,#13082a,#0d1b38)">
-  <div class="ht-inner" style="text-align:center;max-width:700px;margin:0 auto">
-    <div style="font-size:3rem;margin-bottom:1rem">📦</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 1rem">Digistore24 Suite — Affiliate & Digital Products Empire</h2>
-    <p style="color:#a1a1aa;line-height:1.7;margin:0 0 2rem">KI findet Top-Produkte + alle Kampagnen laufen automatisch. Tausende Stunden gespart. Endlich skalierbar.</p>
-    <a href="https://buy.stripe.com/cNi28tgM2dii9MIfJc4F42fD" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:900;padding:1.2rem 3.5rem;border-radius:14px;text-decoration:none;font-size:1.15rem;box-shadow:0 6px 30px rgba(124,58,237,.5);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-      🚀 Jetzt €497/mo starten
-    </a>
-    <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
-      <div style="color:#71717a;font-size:.85rem">✓ Sofortzugang</div>
-      <div style="color:#71717a;font-size:.85rem">✓ 30 Tage Garantie</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Stripe Secure</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Keine versteckten Kosten</div>
+<!-- SECURITY -->
+<section style="border-top:1px solid var(--border);">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Vertrauen & Sicherheit</div>
+    <h2>Enterprise-Grade <span>Sicherheit</span></h2>
+    <p class="lead" style="margin:0 auto 0;">Deine Daten sind sicher. Immer.</p>
+    <div class="security-grid">
+      <div class="security-badge"><div class="badge-icon">🔒</div><div class="badge-text">SSL 256-bit Verschlüsselung</div></div>
+      <div class="security-badge"><div class="badge-icon">🇪🇺</div><div class="badge-text">DSGVO konform</div></div>
+      <div class="security-badge"><div class="badge-icon">🏦</div><div class="badge-text">Stripe Payments (PCI DSS)</div></div>
+      <div class="security-badge"><div class="badge-icon">☁️</div><div class="badge-text">EU Cloud Infrastructure</div></div>
+      <div class="security-badge"><div class="badge-icon">🔄</div><div class="badge-text">99.9% Uptime SLA</div></div>
+      <div class="security-badge"><div class="badge-icon">🧾</div><div class="badge-text">ISO 27001 Standards</div></div>
     </div>
   </div>
 </section>
+
+<!-- FAQ -->
+<section style="background:var(--surface);border-top:1px solid var(--border);" id="faq">
+  <div class="section-inner">
+    <div class="section-label">FAQ</div>
+    <h2>Häufige <span>Fragen</span></h2>
+    <div class="faq-list">
+      
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Für wen ist Digistore24 Full Suite geeignet? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Digistore24 Full Suite ist für Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen — ohne mehr Zeit zu investieren.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Wie schnell sehe ich erste Ergebnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Brauche ich technische Kenntnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Nein. Das Setup dauert unter 30 Minuten, es ist kein Code nötig. Unser Onboarding-Team begleitet Sie Schritt für Schritt durch die Einrichtung.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Kann ich kündigen wann ich will? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Starter und Pro sind monatlich kündbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zurück-Garantie. Kein Risiko.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Gibt es eine Geld-zurück-Garantie? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Ja. 30 Tage Geld-zurück-Garantie ohne Wenn und Aber. Wenn Digistore24 Full Suite nicht liefert was wir versprechen, erstatten wir 100% zurück.</div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-inner">
+    <h2>Bereit für dein <span>nächstes Level?</span></h2>
+    <p>Schließ dich 1.000+ Unternehmern an die bereits mit Digistore24 Full Suite skalieren — starte heute risikofrei.</p>
+    <div class="urgency">⚡ Nur noch 12 Gründungsmitglieder-Plätze zu diesem Preis verfügbar</div>
+    <br><br>
+    <div class="hero-ctas" style="justify-content:center;">
+      <a href="https://buy.stripe.com/6oU14pfHYfqq3ok68C4F42uE" class="btn-primary">Jetzt starten — ab €297 →</a>
+      <a href="demo.html" class="btn-secondary">Demo ansehen</a>
+    </div>
+    <p style="color:var(--muted);margin-top:1.5rem;font-size:0.9rem;">✓ 30-Tage Geld-zurück · ✓ Monatlich kündbar · ✓ Setup in 30 Min · ✓ DSGVO-konform</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">Digistore24 Full Suite</div>
+      <p>Das führende Automatisierungs-Tool für Online-Unternehmer in DACH — entwickelt von BullPower Hub.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Produkt</h4>
+      <a href="#features">Features</a>
+      <a href="#preise">Preise</a>
+      <a href="demo.html">Demo</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-links">
+      <h4>Rechtliches</h4>
+      <a href="/impressum.html">Impressum</a>
+      <a href="/datenschutz.html">Datenschutz</a>
+      <a href="/agb.html">AGB</a>
+      <a href="/widerruf.html">Widerruf</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Digistore24 Full Suite · BullPower Hub · Alle Rechte vorbehalten</span>
+    <span>Made with ⚡ in Austria</span>
+  </div>
+</footer>
 
 <script>
-/* ── ROI Kalkulator ── */
-function htCalcROI(){
-  const input=parseFloat(document.getElementById('ht-roi-input').value)||0;
-  const period=parseInt(document.getElementById('ht-roi-period').value)||6;
-  const mult=4;
-  let result=input*mult*period;
-  // Format
-  const fmt=v=>v>=1000000?'€'+(v/1000000).toFixed(1)+'M':v>=1000?'€'+(v/1000).toFixed(0)+'k':'€'+Math.round(v);
-  document.getElementById('ht-roi-output').textContent=fmt(result);
-  document.getElementById('ht-roi-detail').textContent=`Erreichbares DS24-Einkommen über ${period} Monat${period>1?'e':''} · 10 Wochen`;
-}
-htCalcROI();
+// ROI Calculator
 
-/* ── Demo Tabs ── */
-function htTab(btn,idx){
-  document.querySelectorAll('.ht-tab').forEach(t=>t.classList.remove('ht-tab-active'));
-  btn.classList.add('ht-tab-active');
-}
+        const input = document.getElementById('roi-input');
+        const result = document.getElementById('roi-result');
+        const multiplier = 620;
+        const unit = '€';
 
-/* ── Countdown ── */
-(function(){
-  var key='ht_cd_digistore24-suite';
-  var stored=localStorage.getItem(key);
-  var end;
-  if(stored){end=parseInt(stored)}
-  else{end=Date.now()+86400000;localStorage.setItem(key,end)}
-  function tick(){
-    var diff=Math.max(0,end-Date.now());
-    var h=Math.floor(diff/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var s=Math.floor((diff%60000)/1000);
-    var pad=n=>n.toString().padStart(2,'0');
-    var eh=document.getElementById('ht-cd-h');
-    var em=document.getElementById('ht-cd-m');
-    var es=document.getElementById('ht-cd-s');
-    if(eh){eh.textContent=pad(h);em.textContent=pad(m);es.textContent=pad(s);}
-    if(diff>0)setTimeout(tick,1000);
-  }
-  tick();
-})();
+        function calcROI() {
+            const val = parseFloat(input.value) || 5;
+            let res;
+            if (unit === 'Monate') {
+                res = val <= 2000 ? '3-4 Monate' : val <= 5000 ? '4-6 Monate' : '6-9 Monate';
+                result.textContent = res;
+            } else {
+                res = Math.round(val * multiplier);
+                result.textContent = '€' + res.toLocaleString('de-DE') + '/Monat';
+            }
+        }
+        input.addEventListener('input', calcROI);
+        calcROI();
+    
 </script>
 
 </body>

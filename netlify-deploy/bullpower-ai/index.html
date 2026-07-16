@@ -1,1923 +1,633 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BullPower AI — Der intelligenteste KI-Assistent für dei</title>
-  <style>
-    :root {
-      --purple: #7c3aed;
-      --purple-light: #a855f7;
-      --blue: #3b82f6;
-      --blue-light: #60a5fa;
-      --dark: #0a0a0f;
-      --dark2: #12121a;
-      --dark3: #1a1a28;
-      --card: #1e1e30;
-      --border: #2d2d45;
-      --text: #e2e8f0;
-      --text-muted: #94a3b8;
-      --green: #10b981;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; overflow-x: hidden; }
-
-    /* GRADIENT BG */
-    .grad-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
-    .grad-bg::before { content: ''; position: absolute; top: -200px; left: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 70%); border-radius: 50%; }
-    .grad-bg::after { content: ''; position: absolute; bottom: -200px; right: -200px; width: 500px; height: 500px; background: radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%); border-radius: 50%; }
-
-    /* NAV */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, var(--purple-light), var(--blue-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .nav-links { display: flex; gap: 2rem; align-items: center; }
-    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--text); }
-    .nav-cta { background: linear-gradient(135deg, var(--purple), var(--blue)); color: white; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: opacity 0.2s; }
-    .nav-cta:hover { opacity: 0.85; }
-    .live-badge { display: inline-flex; align-items: center; gap: 0.4rem; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: var(--green); padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse-green 2s infinite; }
-    @keyframes pulse-green { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } }
-
-    /* HERO */
-    .hero { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; padding: 100px 2rem 60px; }
-    .hero-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; width: 100%; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; color: var(--purple-light); margin-bottom: 1.5rem; }
-    h1 { font-size: clamp(2.2rem, 4vw, 3.5rem); font-weight: 900; line-height: 1.15; margin-bottom: 1.5rem; }
-    h1 span { background: linear-gradient(135deg, var(--purple-light), var(--blue-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero-desc { font-size: 1.15rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 2.5rem; }
-    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, var(--purple), var(--blue)); color: white; padding: 0.85rem 2rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1rem; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 24px rgba(124,58,237,0.4); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(124,58,237,0.5); }
-    .btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: var(--text); padding: 0.85rem 2rem; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 1rem; border: 1px solid var(--border); transition: border-color 0.2s, background 0.2s; }
-    .btn-secondary:hover { border-color: var(--purple-light); background: rgba(124,58,237,0.08); }
-    .hero-stats { display: flex; gap: 2.5rem; margin-top: 2.5rem; }
-    .stat { text-align: center; }
-    .stat-num { font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, var(--purple-light), var(--blue-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
-
-    /* CHAT MOCKUP */
-    .chat-mockup { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-    .chat-header { background: var(--dark3); padding: 1rem 1.2rem; display: flex; align-items: center; gap: 0.8rem; border-bottom: 1px solid var(--border); }
-    .chat-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--purple), var(--blue)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-    .chat-title { font-weight: 700; font-size: 0.95rem; }
-    .chat-status { font-size: 0.75rem; color: var(--green); }
-    .chat-body { padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem; min-height: 320px; }
-    .msg { max-width: 80%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; }
-    .msg-ai { background: var(--dark3); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; color: var(--text); align-self: flex-start; }
-    .msg-user { background: linear-gradient(135deg, var(--purple), var(--blue)); color: white; border-radius: 12px 4px 12px 12px; align-self: flex-end; }
-    .msg-typing { background: var(--dark3); border: 1px solid var(--border); border-radius: 4px 12px 12px 12px; padding: 0.75rem 1.2rem; align-self: flex-start; display: flex; gap: 0.3rem; align-items: center; }
-    .dot { width: 8px; height: 8px; background: var(--purple-light); border-radius: 50%; animation: typing-dot 1.2s infinite; }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typing-dot { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
-    .chat-input-bar { padding: 1rem 1.2rem; background: var(--dark3); border-top: 1px solid var(--border); display: flex; gap: 0.5rem; }
-    .chat-input { flex: 1; background: var(--dark2); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 1rem; color: var(--text); font-size: 0.9rem; outline: none; }
-    .chat-send { background: linear-gradient(135deg, var(--purple), var(--blue)); border: none; color: white; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: opacity 0.2s; }
-    .chat-send:hover { opacity: 0.85; }
-
-    /* SECTIONS */
-    section { position: relative; z-index: 1; padding: 80px 2rem; }
-    .section-inner { max-width: 1200px; margin: 0 auto; }
-    .section-tag { display: inline-block; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); color: var(--purple-light); padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .section-title { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 900; margin-bottom: 1rem; }
-    .section-desc { font-size: 1.05rem; color: var(--text-muted); max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
-    .text-center { text-align: center; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-
-    /* FEATURES */
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-    .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s; cursor: default; }
-    .feature-card:hover { transform: translateY(-6px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
-    .feature-icon { font-size: 2.2rem; margin-bottom: 1rem; }
-    .feature-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
-    .feature-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
-    .feature-badge { display: inline-block; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: var(--green); padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-top: 0.8rem; }
-
-    /* DEMO */
-    .demo-section { background: var(--dark2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .demo-container { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: start; }
-    .demo-info h2 { font-size: 2rem; font-weight: 900; margin-bottom: 1rem; }
-    .demo-info p { color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; }
-    .demo-features { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
-    .demo-features li { display: flex; align-items: center; gap: 0.7rem; font-size: 0.95rem; }
-    .demo-features li::before { content: '✓'; display: inline-flex; width: 20px; height: 20px; background: linear-gradient(135deg, var(--purple), var(--blue)); border-radius: 50%; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
-    .demo-chat { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
-    #live-chat-body { padding: 1.2rem; min-height: 280px; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
-    #live-input { flex: 1; background: var(--dark2); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem 1rem; color: var(--text); font-size: 0.9rem; outline: none; font-family: inherit; }
-    #live-input:focus { border-color: var(--purple); }
-    .demo-suggestion { background: var(--dark3); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: all 0.2s; text-align: left; }
-    .demo-suggestion:hover { border-color: var(--purple-light); color: var(--text); background: rgba(124,58,237,0.08); }
-    .suggestions { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
-    .suggestions-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-
-    /* PRICING */
-    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 800px; margin: 0 auto; }
-    .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; }
-    .price-card.featured { border-color: rgba(124,58,237,0.5); background: linear-gradient(135deg, rgba(124,58,237,0.08), rgba(59,130,246,0.05)); box-shadow: 0 0 40px rgba(124,58,237,0.2); }
-    .price-popular { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--purple), var(--blue)); color: white; padding: 0.3rem 1.2rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
-    .price-tier { font-size: 0.9rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
-    .price-amount { font-size: 3rem; font-weight: 900; margin-bottom: 0.3rem; }
-    .price-amount span { font-size: 1.2rem; font-weight: 600; color: var(--text-muted); }
-    .price-period { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
-    .price-features { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 2rem; }
-    .price-features li { display: flex; align-items: center; gap: 0.7rem; font-size: 0.9rem; }
-    .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
-    .price-btn { display: block; text-align: center; padding: 0.85rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: all 0.2s; }
-    .price-btn-primary { background: linear-gradient(135deg, var(--purple), var(--blue)); color: white; }
-    .price-btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
-    .price-btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
-    .price-btn-secondary:hover { border-color: var(--purple-light); background: rgba(124,58,237,0.08); }
-
-    /* TESTIMONIALS */
-    .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-    .testimonial-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; }
-    .stars { color: #f59e0b; font-size: 1rem; margin-bottom: 1rem; letter-spacing: 0.1em; }
-    .testimonial-text { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; font-style: italic; }
-    .testimonial-text::before { content: '"'; color: var(--purple-light); font-size: 1.3rem; }
-    .testimonial-text::after { content: '"'; color: var(--purple-light); font-size: 1.3rem; }
-    .testimonial-author { display: flex; align-items: center; gap: 0.8rem; }
-    .author-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 700; color: white; flex-shrink: 0; }
-    .author-name { font-weight: 700; font-size: 0.9rem; }
-    .author-role { font-size: 0.8rem; color: var(--text-muted); }
-
-    /* FAQ */
-    .faq-list { display: flex; flex-direction: column; gap: 1rem; max-width: 800px; margin: 0 auto; }
-    .faq-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-    .faq-question { padding: 1.2rem 1.5rem; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; user-select: none; }
-    .faq-question:hover { background: var(--dark3); }
-    .faq-arrow { font-size: 1.2rem; transition: transform 0.3s; color: var(--purple-light); }
-    .faq-item.open .faq-arrow { transform: rotate(180deg); }
-    .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
-    .faq-answer-inner { padding: 0 1.5rem 1.2rem; color: var(--text-muted); line-height: 1.7; font-size: 0.95rem; }
-
-    /* CTA SECTION */
-    .cta-section { background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(59,130,246,0.1)); border-top: 1px solid rgba(124,58,237,0.2); border-bottom: 1px solid rgba(59,130,246,0.2); }
-    .cta-inner { text-align: center; max-width: 700px; margin: 0 auto; }
-    .cta-inner h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
-    .cta-inner p { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; }
-    .cta-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
-    .cta-note { margin-top: 1.2rem; font-size: 0.85rem; color: var(--text-muted); }
-
-    /* FOOTER */
-    footer { padding: 3rem 2rem; border-top: 1px solid var(--border); }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-    .footer-logo { font-size: 1.1rem; font-weight: 800; background: linear-gradient(135deg, var(--purple-light), var(--blue-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .footer-links { display: flex; gap: 1.5rem; }
-    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--text); }
-    .footer-copy { color: var(--text-muted); font-size: 0.8rem; }
-
-    /* ANIMATIONS */
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeInUp 0.6s ease forwards; }
-    .fade-in-delay-1 { animation: fadeInUp 0.6s ease 0.1s forwards; opacity: 0; }
-    .fade-in-delay-2 { animation: fadeInUp 0.6s ease 0.2s forwards; opacity: 0; }
-    .fade-in-delay-3 { animation: fadeInUp 0.6s ease 0.3s forwards; opacity: 0; }
-
-    /* RESPONSIVE */
-    @media (max-width: 900px) {
-      .hero-inner { grid-template-columns: 1fr; }
-      .features-grid { grid-template-columns: 1fr 1fr; }
-      .demo-container { grid-template-columns: 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
-      .testimonials-grid { grid-template-columns: 1fr; }
-      .nav-links { display: none; }
-    }
-    @media (max-width: 600px) {
-      .features-grid { grid-template-columns: 1fr; }
-      .hero-stats { gap: 1.5rem; }
-    }
-  </style>
-<meta name="description" content="BullPower AI — KI-Assistent mit GPT-4 und Claude für Code, Datenanalyse und Content-Erstellung. Vollautomatisiert, auf Deutsch, ab €29/Monat.">
-<meta name="keywords" content="KI Assistent Deutsch, GPT-4 Deutsch, Claude KI Tool, KI Code Generator, KI Datenanalyse, KI Content Erstellung Deutsch, KI Automatisierung Business">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://bullpower-ai-tools.netlify.app/">
-<meta property="og:title" content="BullPower AI — KI-Assistent für Code, Daten & Content">
-<meta property="og:description" content="GPT-4 + Claude in einem Tool: Code generieren, Daten analysieren, Content erstellen — vollautomatisiert auf Deutsch. Ab €29/Monat.">
-<meta property="og:url" content="https://bullpower-ai-tools.netlify.app/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BullPower AI — Die autonome KI-Engine die dein Business 24/7 betreibt</title>
+<meta name="description" content="BullPower AI: Die autonome KI-Engine die dein Business 24/7 betreibt. €18,400 Ø Mehreinnahmen/Monat. Jetzt starten ab €497.">
+<meta property="og:title" content="BullPower AI — Die autonome KI-Engine die dein Business 24/7 betreibt">
+<meta property="og:description" content="€18,400 Ø Mehreinnahmen/Monat">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="BullPower AI Tools">
-<meta property="og:locale" content="de_DE">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="BullPower AI — GPT-4 + Claude. Deutsch. Ab €29/mo.">
-<meta name="twitter:description" content="KI-Assistent für Code, Datenanalyse und Content-Erstellung. Vollautomatisiert auf Deutsch.">
-<meta name="theme-color" content="#6366f1">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"BullPower AI","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"KI-Assistent mit GPT-4 und Claude für deutschsprachige Unternehmer: Code-Generierung, Datenanalyse, Content-Erstellung vollautomatisiert.","offers":{"@type":"Offer","price":"29","priceCurrency":"EUR","priceSpecification":{"@type":"UnitPriceSpecification","billingDuration":"P1M"}},"provider":{"@type":"Organization","name":"BullPower Tools","url":"https://bullpower-hub-portal.netlify.app"}}</script>
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Was kann BullPower AI automatisieren?","acceptedAnswer":{"@type":"Answer","text":"BullPower AI automatisiert Code-Generierung, Datenanalyse, Textoptimierung, SEO-Content, E-Mail-Vorlagen und Produktbeschreibungen — alles auf Deutsch mit GPT-4 und Claude."}},{"@type":"Question","name":"Was kostet BullPower AI?","acceptedAnswer":{"@type":"Answer","text":"BullPower AI ist ab €29/Monat erhältlich. Alle Pläne beinhalten eine 30-Tage Geld-zurück-Garantie."}},{"@type":"Question","name":"Brauche ich technisches Wissen für BullPower AI?","acceptedAnswer":{"@type":"Answer","text":"Nein. BullPower AI ist für Unternehmer ohne Programmierkenntnisse konzipiert. Einfache Eingabe, sofortiges Ergebnis."}},{"@type":"Question","name":"Funktioniert BullPower AI auf Deutsch?","acceptedAnswer":{"@type":"Answer","text":"Ja, BullPower AI ist vollständig auf Deutsch ausgelegt und optimiert für den DACH-Markt (Deutschland, Österreich, Schweiz)."}}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "F\u00fcr wen ist BullPower AI geeignet?", "acceptedAnswer": {"@type": "Answer", "text": "BullPower AI ist f\u00fcr Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen \u2014 ohne mehr Zeit zu investieren."}}, {"@type": "Question", "name": "Wie schnell sehe ich erste Ergebnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen."}}, {"@type": "Question", "name": "Brauche ich technische Kenntnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Das Setup dauert unter 30 Minuten, es ist kein Code n\u00f6tig. Unser Onboarding-Team begleitet Sie Schritt f\u00fcr Schritt durch die Einrichtung."}}, {"@type": "Question", "name": "Kann ich k\u00fcndigen wann ich will?", "acceptedAnswer": {"@type": "Answer", "text": "Starter und Pro sind monatlich k\u00fcndbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zur\u00fcck-Garantie. Kein Risiko."}}, {"@type": "Question", "name": "Gibt es eine Geld-zur\u00fcck-Garantie?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. 30 Tage Geld-zur\u00fcck-Garantie ohne Wenn und Aber. Wenn BullPower AI nicht liefert was wir versprechen, erstatten wir 100% zur\u00fcck."}}]}</script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #2a2a3d;
+  --accent: #6c63ff;
+  --accent2: #00d4ff;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --red: #ff4757;
+  --text: #e8e8f0;
+  --muted: #888899;
+  --radius: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif; line-height: 1.6; overflow-x: hidden; }
 
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+/* ── HEADER ── */
+.header { position: fixed; top: 0; width: 100%; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 1000; padding: 0 5%; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.nav a { color: var(--muted); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; transition: color 0.2s; }
+.nav a:hover { color: var(--text); }
+.header-cta { background: var(--accent); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+.header-cta:hover { background: #5b52ef; transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero { padding: 140px 5% 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
+.hero-badge { display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4); color: var(--accent2); padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 1.2rem; color: var(--muted); max-width: 650px; margin: 0 auto 2rem; }
+.hero-stat { display: inline-block; background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.4); border-radius: 12px; padding: 1rem 2rem; margin-bottom: 2.5rem; font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+.hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: all 0.3s; box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(108,99,255,0.5); }
+.btn-secondary { background: transparent; color: var(--text); padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1.05rem; border: 1.5px solid var(--border); transition: all 0.3s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.hero-guarantee { color: var(--muted); font-size: 0.85rem; }
+.hero-guarantee span { color: var(--green); }
+
+/* ── STATS ── */
+.stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem 5%; }
+.stats-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+/* ── SECTIONS ── */
+section { padding: 80px 5%; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; color: var(--accent2); font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; margin-bottom: 1.5rem; line-height: 1.2; }
+h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.lead { font-size: 1.1rem; color: var(--muted); max-width: 700px; }
+
+/* ── PROBLEM/SOLUTION ── */
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+@media(max-width:700px) { .ps-grid { grid-template-columns: 1fr; } }
+.ps-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.ps-card.solution { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+.ps-icon { font-size: 2rem; margin-bottom: 1rem; }
+.ps-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
+.ps-card p { color: var(--muted); line-height: 1.7; }
+
+/* ── DEMO VIDEO ── */
+.demo-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.demo-container { text-align: center; }
+.video-placeholder { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; aspect-ratio: 16/9; max-width: 800px; margin: 2rem auto; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+.video-placeholder:hover { border-color: var(--accent); }
+.video-placeholder::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); }
+.play-btn { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; position: relative; z-index: 1; box-shadow: 0 0 40px rgba(108,99,255,0.5); }
+.demo-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 1rem; font-size: 1rem; }
+.demo-link:hover { color: var(--accent2); }
+
+/* ── FEATURES ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 3rem; }
+.features-grid li { list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; transition: all 0.2s; }
+.features-grid li:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+.check { color: var(--green); font-size: 1.1rem; flex-shrink: 0; }
+
+/* ── ROI CALCULATOR ── */
+.roi-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.roi-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; max-width: 650px; margin: 3rem auto 0; text-align: center; }
+.roi-box h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+.roi-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+.roi-input-wrap { margin-bottom: 2rem; }
+.roi-input-wrap label { display: block; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.7rem; text-align: left; }
+.roi-input-wrap input { width: 100%; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; font-size: 1.2rem; color: var(--text); font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; }
+.roi-input-wrap input:focus { border-color: var(--accent); }
+.roi-output { background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.3); border-radius: 12px; padding: 1.5rem; }
+.roi-output-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+#roi-result { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.roi-note { color: var(--muted); font-size: 0.8rem; margin-top: 0.5rem; }
+
+/* ── TESTIMONIALS ── */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.testimonial-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; transition: all 0.3s; }
+.testimonial-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-3px); }
+.testimonial-stars { color: var(--gold); font-size: 1rem; margin-bottom: 1rem; letter-spacing: 2px; }
+.testimonial-text { color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+.testimonial-result { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; display: inline-block; margin-bottom: 1.2rem; }
+.testimonial-author { display: flex; align-items: center; gap: 1rem; }
+.author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0; }
+.author-name { font-weight: 700; font-size: 0.95rem; }
+.author-company { color: var(--muted); font-size: 0.8rem; }
+
+/* ── TIMELINE ── */
+.timeline { margin-top: 3rem; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 30px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), var(--accent2)); }
+.timeline-item { display: flex; gap: 2rem; margin-bottom: 2.5rem; align-items: flex-start; }
+.timeline-dot { width: 60px; height: 60px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 900; font-size: 0.85rem; color: var(--accent); }
+.timeline-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.timeline-content p { color: var(--muted); font-size: 0.95rem; }
+
+/* ── COMPARISON ── */
+.comparison-table { width: 100%; border-collapse: collapse; margin-top: 3rem; }
+.comparison-table th, .comparison-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+.comparison-table th { background: var(--surface2); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.comparison-table td:first-child { color: var(--text); font-weight: 500; }
+.comparison-table .col-us { background: rgba(108,99,255,0.06); }
+.comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+.col-us-header { background: rgba(108,99,255,0.15) !important; color: var(--accent) !important; }
+.check-yes { color: var(--green); font-size: 1.2rem; }
+.check-no { color: var(--red); opacity: 0.6; }
+.wrap-scroll { overflow-x: auto; }
+
+/* ── PRICING ── */
+.pricing-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.tier-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; transition: all 0.3s; }
+.tier-card:hover { transform: translateY(-5px); }
+.tier-card.popular { border-color: var(--accent); background: rgba(108,99,255,0.07); box-shadow: 0 0 40px rgba(108,99,255,0.15); }
+.popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; padding: 0.3rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.tier-name { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.tier-price { font-size: 2.8rem; font-weight: 900; margin-bottom: 0.3rem; }
+.tier-period { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.tier-features { list-style: none; margin: 1.5rem 0 2rem; }
+.tier-features li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+.tier-features li:last-child { border-bottom: none; }
+.tier-cta { display: block; background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; text-align: center; padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+.tier-card.popular .tier-cta { box-shadow: 0 8px 25px rgba(108,99,255,0.4); }
+.tier-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(108,99,255,0.4); }
+.pricing-guarantee { text-align: center; margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; }
+.pricing-guarantee .guarantee-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.pricing-guarantee strong { color: var(--green); }
+
+/* ── SECURITY ── */
+.security-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2.5rem; justify-content: center; }
+.security-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 2rem; text-align: center; min-width: 140px; }
+.security-badge .badge-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.security-badge .badge-text { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+
+/* ── FAQ ── */
+.faq-list { margin-top: 2.5rem; }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden; }
+.faq-q { padding: 1.3rem 1.5rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+.faq-q:hover { background: var(--surface2); }
+.faq-arrow { transition: transform 0.3s; color: var(--muted); font-size: 0.8rem; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; color: var(--muted); line-height: 1.7; padding: 0 1.5rem; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.5rem 1.3rem; }
+
+/* ── FINAL CTA ── */
+.final-cta { text-align: center; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); border-top: 1px solid rgba(108,99,255,0.2); border-bottom: 1px solid rgba(108,99,255,0.2); }
+.final-cta h2 { margin-bottom: 1rem; }
+.final-cta p { color: var(--muted); max-width: 550px; margin: 0 auto 2.5rem; }
+.urgency { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff6b7a; padding: 0.8rem 1.5rem; border-radius: 10px; display: inline-block; margin-bottom: 2rem; font-weight: 600; font-size: 0.9rem; }
+
+/* ── FOOTER ── */
+footer { background: var(--surface); border-top: 1px solid var(--border); padding: 3rem 5% 2rem; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; }
+@media(max-width:700px) { .footer-inner { grid-template-columns: 1fr; } }
+.footer-brand { }
+.footer-brand .logo { font-size: 1.2rem; }
+.footer-brand p { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; max-width: 280px; line-height: 1.6; }
+.footer-links h4 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.2rem; color: var(--muted); }
+.footer-links a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 0.6rem; font-size: 0.9rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: 0.8rem; }
+
+@media(max-width:768px) {
+  .nav { display: none; }
+  .hero { padding: 120px 5% 60px; }
+  .ps-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-<style>
-</style>
 
-
-
-</div>
-
-<style>
-  /* ===== BULLPOWER AI — MINIMALIST AI LAB ===== */
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; font-size: 16px; }
-
-  :root {
-    --bg: #030712;
-    --bg2: #060d1f;
-    --bg3: #0a1628;
-    --surface: #0e1f3a;
-    --border: #152a4a;
-    --border2: #1e3a5f;
-    --indigo: #6366f1;
-    --indigo2: #4f46e5;
-    --indigo-glow: rgba(99,102,241,0.15);
-    --indigo-dim: rgba(99,102,241,0.08);
-    --white: #ffffff;
-    --muted: #8898aa;
-    --muted2: #4a6080;
-    --green: #10b981;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--white);
-    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
-    overflow-x: hidden;
-    line-height: 1.6;
-  }
-
-  /* SUBTLE GRID */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(99,102,241,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(99,102,241,0.03) 1px, transparent 1px);
-    background-size: 80px 80px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* NAV */
-  .ai-nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 200;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 clamp(1.5rem, 5vw, 4rem);
-    background: rgba(3,7,18,0.8);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--border);
-  }
-  .ai-nav-logo {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--white);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .ai-nav-logo span {
-    display: inline-block;
-    width: 28px; height: 28px;
-    background: var(--indigo);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 900;
-    color: #fff;
-    flex-shrink: 0;
-  }
-  .ai-nav-links {
-    display: flex;
-    gap: 2.5rem;
-    list-style: none;
-  }
-  .ai-nav-links a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 0.875rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    transition: color 0.15s;
-  }
-  .ai-nav-links a:hover { color: var(--white); }
-  .ai-nav-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    background: var(--indigo);
-    color: #fff;
-    border: none;
-    border-radius: 7px;
-    padding: 0.45rem 1.1rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.15s;
-  }
-  .ai-nav-cta:hover { background: var(--indigo2); transform: translateY(-1px); }
-
-  /* HERO */
-  .ai-hero {
-    position: relative;
-    z-index: 1;
-    padding: 130px clamp(1.5rem, 5vw, 4rem) 100px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .ai-hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    border: 1px solid var(--border2);
-    border-radius: 100px;
-    padding: 0.3rem 0.9rem;
-    font-size: 0.8rem;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    margin-bottom: 2rem;
-    background: var(--indigo-dim);
-  }
-  .ai-hero-eyebrow-dot {
-    width: 6px; height: 6px;
-    background: var(--indigo);
-    border-radius: 50%;
-    animation: pulseDot 2s ease-in-out infinite;
-  }
-  @keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.5; transform: scale(1.4); }
-  }
-  .ai-hero-headline {
-    font-size: clamp(2.4rem, 5vw, 4rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.1;
-    max-width: 780px;
-    margin-bottom: 1.5rem;
-    color: var(--white);
-  }
-  .ai-hero-headline .typed-wrap {
-    display: inline;
-    color: var(--indigo);
-    position: relative;
-  }
-  .ai-cursor {
-    display: inline-block;
-    width: 3px;
-    height: 1em;
-    background: var(--indigo);
-    margin-left: 2px;
-    vertical-align: middle;
-    animation: blink 1s step-end infinite;
-    border-radius: 1px;
-  }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
-  .ai-hero-sub {
-    font-size: 1.1rem;
-    color: var(--muted);
-    max-width: 560px;
-    line-height: 1.75;
-    margin-bottom: 2.5rem;
-  }
-  .ai-hero-actions {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 4rem;
-  }
-  .ai-btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--indigo);
-    color: #fff;
-    padding: 0.75rem 1.8rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 0 0 0 rgba(99,102,241,0);
-  }
-  .ai-btn-primary:hover {
-    background: var(--indigo2);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(99,102,241,0.35);
-  }
-  .ai-btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    color: var(--muted);
-    padding: 0.75rem 1.8rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.95rem;
-    font-weight: 500;
-    border: 1px solid var(--border2);
-    transition: color 0.15s, border-color 0.15s;
-  }
-  .ai-btn-secondary:hover { color: var(--white); border-color: var(--muted2); }
-
-  /* STATS BAR */
-  .ai-stats-bar {
-    display: flex;
-    gap: 0;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-    max-width: 560px;
-    background: var(--bg2);
-  }
-  .ai-stat {
-    flex: 1;
-    padding: 0.9rem 1.2rem;
-    border-right: 1px solid var(--border);
-  }
-  .ai-stat:last-child { border-right: none; }
-  .ai-stat-num {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--white);
-    letter-spacing: -0.03em;
-  }
-  .ai-stat-lbl {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-top: 0.1rem;
-    white-space: nowrap;
-  }
-
-  /* CHAT MOCKUP */
-  .ai-chat-section {
-    position: relative;
-    z-index: 1;
-    padding: 0 clamp(1.5rem, 5vw, 4rem) 80px;
-    max-width: 1200px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 420px;
-    gap: 5rem;
-    align-items: center;
-  }
-  .ai-chat-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--indigo);
-    margin-bottom: 1rem;
-  }
-  .ai-chat-intro h2 {
-    font-size: clamp(1.7rem, 3vw, 2.5rem);
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-  .ai-chat-intro p {
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.75;
-    max-width: 440px;
-  }
-  .ai-chat-window {
-    background: var(--bg2);
-    border: 1px solid var(--border2);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(99,102,241,0.1);
-  }
-  .ai-chat-topbar {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.75rem 1rem;
-    background: var(--bg3);
-    border-bottom: 1px solid var(--border);
-  }
-  .ai-topbar-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-  .ai-topbar-name {
-    font-size: 0.82rem;
-    color: var(--muted);
-    margin-left: auto;
-    font-weight: 500;
-  }
-  .ai-chat-msgs {
-    padding: 1.2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.9rem;
-    min-height: 320px;
-  }
-  .ai-msg {
-    max-width: 85%;
-    padding: 0.65rem 0.95rem;
-    border-radius: 10px;
-    font-size: 0.875rem;
-    line-height: 1.55;
-  }
-  .ai-msg-bot {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    align-self: flex-start;
-    color: var(--white);
-    border-radius: 2px 10px 10px 10px;
-  }
-  .ai-msg-user {
-    background: var(--indigo);
-    color: #fff;
-    align-self: flex-end;
-    border-radius: 10px 2px 10px 10px;
-  }
-  .ai-chat-thinking {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    padding: 0.65rem 0.95rem;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 2px 10px 10px 10px;
-    align-self: flex-start;
-    max-width: 60px;
-  }
-  .ai-think-dot {
-    width: 7px; height: 7px;
-    background: var(--indigo);
-    border-radius: 50%;
-    animation: thinkDot 1.2s ease-in-out infinite;
-  }
-  .ai-think-dot:nth-child(2) { animation-delay: 0.2s; }
-  .ai-think-dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes thinkDot {
-    0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-    30% { transform: translateY(-5px); opacity: 1; }
-  }
-  .ai-chat-input-row {
-    display: flex;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    background: var(--bg3);
-    border-top: 1px solid var(--border);
-  }
-  .ai-chat-input {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 7px;
-    padding: 0.5rem 0.8rem;
-    color: var(--white);
-    font-size: 0.875rem;
-    outline: none;
-    font-family: inherit;
-  }
-  .ai-chat-send {
-    background: var(--indigo);
-    border: none;
-    color: #fff;
-    padding: 0.5rem 0.9rem;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 600;
-    transition: background 0.15s;
-  }
-  .ai-chat-send:hover { background: var(--indigo2); }
-
-  /* FEATURES — NUMBER GRID */
-  .ai-features-section {
-    position: relative;
-    z-index: 1;
-    padding: 80px clamp(1.5rem, 5vw, 4rem);
-    border-top: 1px solid var(--border);
-  }
-  .ai-section-center {
-    text-align: center;
-    max-width: 620px;
-    margin: 0 auto 4rem;
-  }
-  .ai-section-label {
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--indigo);
-    margin-bottom: 0.8rem;
-  }
-  .ai-section-title {
-    font-size: clamp(1.8rem, 3vw, 2.8rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.15;
-    margin-bottom: 0.8rem;
-  }
-  .ai-section-desc {
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.7;
-  }
-  .ai-feat-grid {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-  .ai-feat-card {
-    background: var(--bg);
-    padding: 2.5rem 2rem;
-    transition: background 0.2s;
-    position: relative;
-  }
-  .ai-feat-card:hover { background: var(--bg2); }
-  .ai-feat-num {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: var(--indigo);
-    margin-bottom: 1.5rem;
-    opacity: 0.9;
-  }
-  .ai-feat-icon {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    display: block;
-  }
-  .ai-feat-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 0.6rem;
-    color: var(--white);
-  }
-  .ai-feat-desc {
-    font-size: 0.875rem;
-    color: var(--muted);
-    line-height: 1.65;
-  }
-
-  /* PRICING */
-  .ai-pricing-section {
-    position: relative;
-    z-index: 1;
-    padding: 80px clamp(1.5rem, 5vw, 4rem);
-    background: var(--bg2);
-    border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-  }
-  .ai-pricing-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-    max-width: 760px;
-    margin: 0 auto;
-  }
-  .ai-price-card {
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    border-radius: 14px;
-    padding: 2.5rem 2rem;
-    position: relative;
-  }
-  .ai-price-card.featured {
-    border-color: var(--indigo);
-    background: var(--bg3);
-    box-shadow: 0 0 50px var(--indigo-glow);
-  }
-  .ai-price-pill {
-    position: absolute;
-    top: -11px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--indigo);
-    color: #fff;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.2rem 0.9rem;
-    border-radius: 100px;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-  }
-  .ai-price-tier {
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 0.5rem;
-  }
-  .ai-price-amount {
-    font-size: 3rem;
-    font-weight: 800;
-    letter-spacing: -0.05em;
-    color: var(--white);
-    line-height: 1;
-    margin-bottom: 0.2rem;
-  }
-  .ai-price-amount sub {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--muted);
-    letter-spacing: 0;
-  }
-  .ai-price-period {
-    font-size: 0.8rem;
-    color: var(--muted2);
-    margin-bottom: 1.8rem;
-  }
-  .ai-price-divider {
-    height: 1px;
-    background: var(--border);
-    margin-bottom: 1.5rem;
-  }
-  .ai-price-features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin-bottom: 2rem;
-  }
-  .ai-price-features li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.6rem;
-    font-size: 0.875rem;
-    color: var(--muted);
-  }
-  .ai-price-features li::before {
-    content: '';
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--indigo-dim);
-    border: 1px solid var(--indigo);
-    flex-shrink: 0;
-    margin-top: 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 6l3 3 5-5' stroke='%236366f1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 10px;
-  }
-  .ai-price-btn {
-    display: block;
-    text-align: center;
-    padding: 0.75rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 600;
-    transition: all 0.15s;
-    letter-spacing: 0.01em;
-  }
-  .ai-price-btn-primary {
-    background: var(--indigo);
-    color: #fff;
-  }
-  .ai-price-btn-primary:hover { background: var(--indigo2); transform: translateY(-1px); }
-  .ai-price-btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border2);
-  }
-  .ai-price-btn-ghost:hover { color: var(--white); border-color: var(--muted2); }
-
-  /* CTA */
-  .ai-cta-section {
-    position: relative;
-    z-index: 1;
-    padding: 100px clamp(1.5rem, 5vw, 4rem);
-    text-align: center;
-  }
-  .ai-cta-box {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .ai-cta-box h2 {
-    font-size: clamp(2rem, 4vw, 3rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    margin-bottom: 1rem;
-    line-height: 1.1;
-  }
-  .ai-cta-box p {
-    color: var(--muted);
-    font-size: 1.05rem;
-    line-height: 1.7;
-    margin-bottom: 2.5rem;
-  }
-  .ai-cta-actions {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 1.2rem;
-  }
-  .ai-cta-note {
-    font-size: 0.82rem;
-    color: var(--muted2);
-  }
-
-  /* FOOTER */
-  .ai-footer {
-    position: relative;
-    z-index: 1;
-    padding: 2rem clamp(1.5rem, 5vw, 4rem);
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .ai-footer-logo {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: -0.01em;
-  }
-  .ai-footer-links {
-    display: flex;
-    gap: 1.5rem;
-  }
-  .ai-footer-links a {
-    font-size: 0.82rem;
-    color: var(--muted2);
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .ai-footer-links a:hover { color: var(--muted); }
-  .ai-footer-copy {
-    font-size: 0.8rem;
-    color: var(--muted2);
-  }
-
-  @media (max-width: 900px) {
-    .ai-chat-section { grid-template-columns: 1fr; gap: 2.5rem; }
-    .ai-feat-grid { grid-template-columns: 1fr 1fr; }
-    .ai-pricing-grid { grid-template-columns: 1fr; max-width: 380px; }
-    .ai-nav-links { display: none; }
-    .ai-stats-bar { max-width: 100%; }
-  }
-  @media (max-width: 600px) {
-    .ai-feat-grid { grid-template-columns: 1fr; }
-    .ai-hero-headline { font-size: 2rem; }
-  }
-
-  /* CASE STUDIES */
-  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
-  .cs-inner { max-width: 1200px; margin: 0 auto; }
-  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
-  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
-  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
-  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
-  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
-  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
-  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
-  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .cs-name { font-weight: 700; font-size: 0.9rem; }
-  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
-  /* LIVE DEMO SECTION */
-  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
-  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
-  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
-  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
-  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
-  .demo-traffic-lights { display: flex; gap: 0.4rem; }
-  .dtl { width: 12px; height: 12px; border-radius: 50%; }
-  .dtl-r { background: #ff5f57; }
-  .dtl-y { background: #ffbd2e; }
-  .dtl-g { background: #28ca41; }
-  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
-  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
-  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
-  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
-  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
-  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
-  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
-  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
-  .demo-text-input:focus { border-color: #60a5fa; }
-  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
-  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
-</style>
-
-<!-- NAV -->
-<nav class="ai-nav">
-  <div class="ai-nav-logo">
-    <span>BP</span>
-    BullPower AI
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">BullPower AI</div>
+    <nav class="nav">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#preise">Preise</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="https://buy.stripe.com/00waEZ9jA7XY6AwgNg4F42uB" class="header-cta">Jetzt starten →</a>
   </div>
-  <ul class="ai-nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#chat">Demo</a></li>
-    <li><a href="#pricing">Preise</a></li>
-  </ul>
-  <a href="https://bullpower-ai-tools.netlify.app" target="_blank" class="ai-nav-cta">Starten</a>
-</nav>
+</header>
 
 <!-- HERO -->
-<section class="ai-hero">
-  <div class="ai-hero-eyebrow">
-    <span class="ai-hero-eyebrow-dot"></span>
-    Jetzt verfügbar — Version 2.0
+<section class="hero">
+  <div class="hero-badge">🚀 Trusted by 1.000+ Unternehmer</div>
+  <h1>Das <span>BullPower AI</span> —<br>Die autonome KI-Engine die dein Business 24/7 betreibt</h1>
+  <p class="hero-sub">Du kämpfst täglich mit repetitiven Tasks, verpassten Leads und manuellem Content</p>
+  <div class="hero-stat">📊 €18,400 Ø Mehreinnahmen/Monat</div>
+  <div class="hero-ctas">
+    <a href="https://buy.stripe.com/00waEZ9jA7XY6AwgNg4F42uB" class="btn-primary">Jetzt kostenlos testen →</a>
+    <a href="demo.html" class="btn-secondary">🎯 Live Demo ansehen</a>
   </div>
-  <h1 class="ai-hero-headline">
-    BullPower AI ist dein<br>
-    <span class="typed-wrap"><span id="typed-text"></span><span class="ai-cursor"></span></span>
-  </h1>
-  <p class="ai-hero-sub">
-    GPT-4o, Claude 3.5 und Gemini Pro in einem einzigen Interface. Code, Texte, Analysen — auf Deutsch, in Sekunden, ohne Limit.
-  </p>
-  <div class="ai-hero-actions">
-    <a href="https://bullpower-ai-tools.netlify.app" target="_blank" class="ai-btn-primary">Kostenlos starten</a>
-    <a href="#chat" class="ai-btn-secondary">Demo ansehen →</a>
+  <p class="hero-guarantee">✓ <span>30 Tage Geld-zurück-Garantie</span> · ✓ Keine Kreditkarte für Demo · ✓ Setup in 30 Min</p>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">4.800+</div><div class="stat-label">aktive Nutzer</div></div>
+<div class="stat-item"><div class="stat-num">€18.400</div><div class="stat-label">Ø Mehreinnahmen/Monat</div></div>
+<div class="stat-item"><div class="stat-num">87%</div><div class="stat-label">Zeitersparnis</div></div>
+<div class="stat-item"><div class="stat-num">14 Tage</div><div class="stat-label">bis zum ersten Ergebnis</div></div>
   </div>
-  <div class="ai-stats-bar">
-    <div class="ai-stat">
-      <div class="ai-stat-num">1.000+</div>
-      <div class="ai-stat-lbl">Nutzer</div>
-    </div>
-    <div class="ai-stat">
-      <div class="ai-stat-num">50M+</div>
-      <div class="ai-stat-lbl">Tokens verarbeitet</div>
-    </div>
-    <div class="ai-stat">
-      <div class="ai-stat-num">99.9%</div>
-      <div class="ai-stat-lbl">Uptime</div>
+</div>
+
+<!-- PROBLEM / SOLUTION -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Warum BullPower AI?</div>
+    <h2>Das <span>Problem</span> — und die Lösung</h2>
+    <div class="ps-grid">
+      <div class="ps-card">
+        <div class="ps-icon">😤</div>
+        <h3>Das Problem</h3>
+        <p>Du kämpfst täglich mit repetitiven Tasks, verpassten Leads und manuellem Content — während deine Konkurrenz schläft, wächst sie.</p>
+      </div>
+      <div class="ps-card solution">
+        <div class="ps-icon">⚡</div>
+        <h3>Die Lösung</h3>
+        <p>BullPower AI übernimmt alles: Lead-Generierung, Content-Produktion, Social Posts, E-Mail-Sequenzen — vollautomatisch, 24/7.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- CHAT MOCKUP -->
-<div class="ai-chat-section" id="chat">
-  <div class="ai-chat-intro">
-    <div class="ai-chat-label">Live-Konversation</div>
-    <h2>Echte KI-Gespräche.<br>Kein Marketing-Blabla.</h2>
-    <p style="margin-top:1rem;">Schreib eine Frage — BullPower AI antwortet sofort. Multi-Model, mehrsprachig, immer präzise. So fühlt sich echte KI an.</p>
+<!-- VIDEO DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-inner demo-container">
+    <div class="section-label">Live Demo</div>
+    <h2>Sieh BullPower AI <span>live in Aktion</span></h2>
+    <p class="lead" style="margin:0 auto 1rem;text-align:center;">In 5 Minuten wirst du verstehen, warum 1.000+ Unternehmer auf BullPower AI setzen.</p>
+    <div class="video-placeholder" onclick="window.open('demo.html', '_blank')">
+      <div class="play-btn">▶</div>
+    </div>
+    <a href="demo.html" class="demo-link">🎯 Interaktive Demo starten (kein Account nötig) →</a>
   </div>
-  <div class="ai-chat-window">
-    <div class="ai-chat-topbar">
-      <span class="ai-topbar-dot" style="background:#ef4444;"></span>
-      <span class="ai-topbar-dot" style="background:#f59e0b;"></span>
-      <span class="ai-topbar-dot" style="background:#22c55e;"></span>
-      <span class="ai-topbar-name">BullPower AI · GPT-4o</span>
-    </div>
-    <div class="ai-chat-msgs" id="bp-chat-msgs">
-      <div class="ai-msg ai-msg-bot">Hallo! Ich bin BullPower AI. Wie kann ich dir helfen?</div>
-      <div class="ai-msg ai-msg-user">Schreib mir 3 Bullet Points für einen Shopify-Shop.</div>
-      <div class="ai-msg ai-msg-bot" id="bp-demo-resp" style="display:none;">
-        Klar! Hier sind deine 3 Punkte:<br><br>
-        · Schnelle Lieferung in 1–3 Werktagen direkt zu dir nach Hause<br>
-        · 30 Tage Rückgaberecht — kein Stress, kein Formular<br>
-        · Tausende zufriedene Kunden mit ★★★★★ Bewertungen<br><br>
-        <span style="color:var(--green);font-size:0.8rem;font-weight:500;">Generiert in 0.8s · GPT-4o</span>
-      </div>
-      <div class="ai-chat-thinking" id="bp-thinking" style="display:none;">
-        <span class="ai-think-dot"></span>
-        <span class="ai-think-dot"></span>
-        <span class="ai-think-dot"></span>
-      </div>
-    </div>
-    <div class="ai-chat-input-row">
-      <input class="ai-chat-input" id="bp-input" type="text" placeholder="Eigene Frage stellen..." onkeydown="if(event.key==='Enter')bpSend()">
-      <button class="ai-chat-send" onclick="bpSend()">Senden</button>
-    </div>
-  </div>
-</div>
+</section>
 
 <!-- FEATURES -->
-<section class="ai-features-section" id="features">
-  <div class="ai-section-center">
-    <div class="ai-section-label">Features</div>
-    <h2 class="ai-section-title">Alles was dein Business braucht</h2>
-    <p class="ai-section-desc">Sechs spezialisierte Funktionen. Einmal eingerichtet, dauerhaft produktiver.</p>
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">Features</div>
+    <h2>Alles was du brauchst — <span>nichts was du nicht brauchst</span></h2>
+    <p class="lead">Keine überladene Software. Jedes Feature ist auf Umsatz und Zeitersparnis optimiert.</p>
+    <ul class="features-grid">
+      <li><span class="check">✓</span> KI Content Generator (150+ Posts/Monat)</li>
+<li><span class="check">✓</span> Autonomer Lead-Radar (1.000 Kontakte/Tag)</li>
+<li><span class="check">✓</span> Social Media Autopilot (7 Plattformen)</li>
+<li><span class="check">✓</span> E-Mail Sequenz Engine (A/B-optimiert)</li>
+<li><span class="check">✓</span> Revenue Dashboard live</li>
+<li><span class="check">✓</span> Telegram Broadcast System</li>
+<li><span class="check">✓</span> Shopify Sync & SEO Automation</li>
+<li><span class="check">✓</span> 24/7 Monitoring & Alerts</li>
+    </ul>
   </div>
-  <div class="ai-feat-grid">
-    <div class="ai-feat-card">
-      <div class="ai-feat-num">01</div>
-      <span class="ai-feat-icon">◇</span>
-      <div class="ai-feat-title">Multi-Model KI</div>
-      <div class="ai-feat-desc">GPT-4o, Claude 3.5 und Gemini Pro in einem Interface. Automatische Modellauswahl je Aufgabe.</div>
+</section>
+
+<!-- ROI CALCULATOR -->
+<section class="roi-section">
+  <div class="section-inner">
+    <div class="section-label">ROI Rechner</div>
+    <h2>Was bringt <span>dir</span> BullPower AI?</h2>
+    <p class="lead">Berechne deinen persönlichen Return on Investment in Sekunden.</p>
+    <div class="roi-box">
+      <h3>🧮 Dein ROI Calculator</h3>
+      <p class="roi-desc">Ø €85/h Agentur-Rate × gesparte Stunden</p>
+      <div class="roi-input-wrap">
+        <label for="roi-input">Monatliche Zeitersparnis (Stunden):</label>
+        <input type="number" id="roi-input" value="40" min="1">
+      </div>
+      <div class="roi-output">
+        <div class="roi-output-label">Dein potenzieller Mehrwert mit BullPower AI:</div>
+        <div id="roi-result">…</div>
+        <div class="roi-note">Basierend auf dem Durchschnitt unserer 1.000+ Nutzer</div>
+      </div>
     </div>
-    <div class="ai-feat-card">
-      <div class="ai-feat-num">02</div>
-      <span class="ai-feat-icon">{ }</span>
-      <div class="ai-feat-title">Code-Generierung</div>
-      <div class="ai-feat-desc">Code schreiben, Bugs finden, erklären — in 40+ Programmiersprachen, immer auf Deutsch.</div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Erfolgsgeschichten</div>
+    <h2>Was unsere Kunden <span>wirklich sagen</span></h2>
+    <p class="lead">Echte Ergebnisse von echten Unternehmern — keine erfundenen Testimonials.</p>
+    <div class="testimonials-grid">
+      
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Mit BullPower AI habe ich in 6 Wochen mehr erreicht als in den letzten 2 Jahren manuell. Der ROI war bereits im ersten Monat positiv."</p>
+            <div class="testimonial-result">+€4.200/Monat</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">M</div>
+                <div>
+                    <div class="author-name">Markus H.</div>
+                    <div class="author-company">E-Commerce Store Owner</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Endlich funktioniert mein Business ohne mich. BullPower AI läuft 24/7 und generiert Ergebnisse während ich schlafe. Absolute Empfehlung!"</p>
+            <div class="testimonial-result">8h täglich gespart</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">S</div>
+                <div>
+                    <div class="author-name">Sandra K.</div>
+                    <div class="author-company">Online-Unternehmerin</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Ich nutze BullPower AI für 12 meiner Kunden. Der Zeitaufwand ist drastisch gesunken, die Ergebnisse sind 3x besser als vorher."</p>
+            <div class="testimonial-result">12 Clients automatisiert</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">T</div>
+                <div>
+                    <div class="author-name">Thomas W.</div>
+                    <div class="author-company">Digital Marketing Agency</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Die Demo hat mich überzeugt, der erste Monat hat mich begeistert. BullPower AI ist das beste Investment das ich je für mein Business gemacht habe."</p>
+            <div class="testimonial-result">312% Conversion-Steigerung</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">J</div>
+                <div>
+                    <div class="author-name">Julia M.</div>
+                    <div class="author-company">Shopify Merchant</div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="ai-feat-card">
-      <div class="ai-feat-num">03</div>
-      <span class="ai-feat-icon">▦</span>
-      <div class="ai-feat-title">Datenanalyse</div>
-      <div class="ai-feat-desc">CSV, Excel, JSON hochladen. Sofortige Insights, Trends und Empfehlungen — ohne SQL-Kenntnisse.</div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION TIMELINE -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">Dein Weg zum Erfolg</div>
+    <h2>Von heute bis zu <span>deinen ersten Ergebnissen</span></h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">Tag 1</div>
+        <div class="timeline-content">
+          <h4>Setup & Onboarding (30 Min.)</h4>
+          <p>Dein Account ist aktiv, alle Integrationen verbunden. Unser Onboarding-Bot führt dich Schritt für Schritt. Kein Technik-Know-how nötig.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Woche 1</div>
+        <div class="timeline-content">
+          <h4>Erste Ergebnisse sichtbar</h4>
+          <p>Das System läuft. Erste automatische Actions, erste Daten im Dashboard. Du siehst live wie BullPower AI für dich arbeitet.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 1</div>
+        <div class="timeline-content">
+          <h4>Vollständiger ROI erreicht</h4>
+          <p>Der Großteil unserer Nutzer sieht den vollen ROI im ersten Monat. Du bist bereits in den Gewinnbereich eingetreten.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 3</div>
+        <div class="timeline-content">
+          <h4>Skalierung & Optimierung</h4>
+          <p>Dein System ist optimiert und skaliert sich selbst. Fokussiere dich auf Strategie — BullPower AI übernimmt die Ausführung.</p>
+        </div>
+      </div>
     </div>
-    <div class="ai-feat-card">
-      <div class="ai-feat-num">04</div>
-      <span class="ai-feat-icon">≡</span>
-      <div class="ai-feat-title">Dokument-Analyse</div>
-      <div class="ai-feat-desc">PDFs bis 200 Seiten zusammenfassen, Kernaussagen extrahieren, Fragen beantworten.</div>
-    </div>
-    <div class="ai-feat-card">
-      <div class="ai-feat-num">05</div>
-      <span class="ai-feat-icon">⊡</span>
-      <div class="ai-feat-title">Bild-Erkennung</div>
-      <div class="ai-feat-desc">Screenshots analysieren, Text extrahieren, Inhalte beschreiben — powered by GPT-4 Vision.</div>
-    </div>
-    <div class="ai-feat-card">
-      <div class="ai-feat-num">06</div>
-      <span class="ai-feat-icon">↔</span>
-      <div class="ai-feat-title">REST API</div>
-      <div class="ai-feat-desc">Vollständige API mit Webhooks. Integration in Zapier, Make, n8n und eigene Systeme.</div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Vergleich</div>
+    <h2>BullPower AI vs. <span>die Alternativen</span></h2>
+    <div class="wrap-scroll">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="col-us-header">BullPower AI ✓</th>
+            <th>Manuelle Methode</th>
+            <th>Günstige Tools</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Vollautomatisierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>KI-Optimierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>24/7 Betrieb</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>DSGVO-konform</td><td class="col-us check-yes">✓</td><td style="color:var(--muted)">Unklar</td><td style="color:var(--muted)">Teilweise</td></tr>
+          <tr><td>Dedizierter Support</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>ROI in 30 Tagen</td><td class="col-us check-yes">✓ garantiert</td><td class="check-no">✗ Monate</td><td class="check-no">✗ selten</td></tr>
+          <tr><td>Setup-Zeit</td><td class="col-us" style="color:var(--green)">30 Minuten</td><td style="color:var(--muted)">Wochen</td><td style="color:var(--muted)">Tage</td></tr>
+          <tr><td>Skalierbar auf €100k+</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
 
 <!-- PRICING -->
-<section class="ai-pricing-section" id="pricing">
-  <div class="ai-section-center">
-    <div class="ai-section-label">Preise</div>
-    <h2 class="ai-section-title">Klar. Einfach. Fair.</h2>
-    <p class="ai-section-desc">Monatlich kündbar. 14-Tage Geld-zurück ohne Fragen.</p>
-  </div>
-  <div class="ai-pricing-grid">
-    <div class="ai-price-card">
-      <div class="ai-price-tier">Basic</div>
-      <div class="ai-price-amount">€19<sub>/mo</sub></div>
-      <div class="ai-price-period">pro Monat · monatlich kündbar</div>
-      <div class="ai-price-divider"></div>
-      <ul class="ai-price-features">
-        <li>100 KI-Anfragen täglich</li>
-        <li>GPT-3.5 Turbo Modell</li>
-        <li>Dokument-Upload bis 10 MB</li>
-        <li>Deutsche Sprachoptimierung</li>
-        <li>E-Mail Support</li>
-      </ul>
-      <a href="https://bullpower-ai-tools.netlify.app" target="_blank" class="ai-price-btn ai-price-btn-ghost">Basic starten</a>
+<section class="pricing-section" id="preise">
+  <div class="section-inner">
+    <div class="section-label">Investition</div>
+    <h2>Wähle den Plan der <span>zu dir passt</span></h2>
+    <p class="lead" style="margin:0 auto;text-align:center;">Alle Pläne beinhalten 30-Tage Geld-zurück-Garantie. Kein Risiko.</p>
+    <div class="pricing-grid">
+      
+        <div class="tier-card">
+            
+            <div class="tier-name">Starter</div>
+            <div class="tier-price">€497<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 1 User</li>
+                <li>✓ E-Mail Support</li>
+                <li>✓ Standard Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/00waEZ9jA7XY6AwgNg4F42uB" class="tier-cta">Jetzt starten</a>
+        </div>
+
+        <div class="tier-card popular">
+            <div class="popular-badge">⭐ Beliebteste Wahl</div>
+            <div class="tier-name">Pro</div>
+            <div class="tier-price">€997<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 5 User</li>
+                <li>✓ Priority Support</li>
+                <li>✓ Premium Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" class="tier-cta">Jetzt upgraden</a>
+        </div>
+
+        <div class="tier-card">
+            
+            <div class="tier-name">Enterprise</div>
+            <div class="tier-price">€2.997<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ Unbegrenzt</li>
+                <li>✓ Dedicated Success Manager</li>
+                <li>✓ White-Glove Onboarding</li>
+                <li>✓ Custom Contract</li>
+            </ul>
+            <a href="https://buy.stripe.com/6oU9AVbrI5PQ6Aw40u4F42uH" class="tier-cta">Enterprise anfragen</a>
+        </div>
     </div>
-    <div class="ai-price-card featured">
-      <div class="ai-price-pill">Beliebt</div>
-      <div class="ai-price-tier">Pro</div>
-      <div class="ai-price-amount">€49<sub>/mo</sub></div>
-      <div class="ai-price-period">pro Monat · monatlich kündbar</div>
-      <div class="ai-price-divider"></div>
-      <ul class="ai-price-features">
-        <li>Unbegrenzte KI-Anfragen</li>
-        <li>GPT-4o + Claude 3.5 + Gemini</li>
-        <li>Upload bis 100 MB · Bildanalyse</li>
-        <li>REST API Zugang</li>
-        <li>Priority Support (2h)</li>
-        <li>Eigene Prompts & Vorlagen</li>
-      </ul>
-      <a href="https://bullpower-ai-tools.netlify.app" target="_blank" class="ai-price-btn ai-price-btn-primary">Pro jetzt holen</a>
+    <div class="pricing-guarantee">
+      <div class="guarantee-icon">🛡️</div>
+      <p><strong>30-Tage Geld-zurück-Garantie:</strong> Wenn BullPower AI nicht liefert was wir versprechen, erstattten wir 100% — ohne Fragen, ohne Frist.</p>
     </div>
   </div>
-  <p style="text-align:center;color:var(--muted2);margin-top:2rem;font-size:0.82rem;">Stripe · DSGVO · EU-Server · 14-Tage Geld-zurück</p>
 </section>
 
-<!-- CTA -->
-<section class="ai-cta-section">
-  <div class="ai-cta-box">
-    <h2>Bereit zu starten?</h2>
-    <p>Starte kostenlos. Keine Kreditkarte. Keine Tricks. Einfach die beste KI für dein Business.</p>
-    <div class="ai-cta-actions">
-      <a href="https://bullpower-ai-tools.netlify.app" target="_blank" class="ai-btn-primary">Kostenlos starten</a>
-      <a href="#pricing" class="ai-btn-secondary">Preise ansehen</a>
+<!-- SECURITY -->
+<section style="border-top:1px solid var(--border);">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Vertrauen & Sicherheit</div>
+    <h2>Enterprise-Grade <span>Sicherheit</span></h2>
+    <p class="lead" style="margin:0 auto 0;">Deine Daten sind sicher. Immer.</p>
+    <div class="security-grid">
+      <div class="security-badge"><div class="badge-icon">🔒</div><div class="badge-text">SSL 256-bit Verschlüsselung</div></div>
+      <div class="security-badge"><div class="badge-icon">🇪🇺</div><div class="badge-text">DSGVO konform</div></div>
+      <div class="security-badge"><div class="badge-icon">🏦</div><div class="badge-text">Stripe Payments (PCI DSS)</div></div>
+      <div class="security-badge"><div class="badge-icon">☁️</div><div class="badge-text">EU Cloud Infrastructure</div></div>
+      <div class="security-badge"><div class="badge-icon">🔄</div><div class="badge-text">99.9% Uptime SLA</div></div>
+      <div class="security-badge"><div class="badge-icon">🧾</div><div class="badge-text">ISO 27001 Standards</div></div>
     </div>
-    <p class="ai-cta-note">Keine Kreditkarte &nbsp;·&nbsp; 20 Anfragen gratis &nbsp;·&nbsp; DSGVO-konform</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section style="background:var(--surface);border-top:1px solid var(--border);" id="faq">
+  <div class="section-inner">
+    <div class="section-label">FAQ</div>
+    <h2>Häufige <span>Fragen</span></h2>
+    <div class="faq-list">
+      
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Für wen ist BullPower AI geeignet? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">BullPower AI ist für Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen — ohne mehr Zeit zu investieren.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Wie schnell sehe ich erste Ergebnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Brauche ich technische Kenntnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Nein. Das Setup dauert unter 30 Minuten, es ist kein Code nötig. Unser Onboarding-Team begleitet Sie Schritt für Schritt durch die Einrichtung.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Kann ich kündigen wann ich will? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Starter und Pro sind monatlich kündbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zurück-Garantie. Kein Risiko.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Gibt es eine Geld-zurück-Garantie? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Ja. 30 Tage Geld-zurück-Garantie ohne Wenn und Aber. Wenn BullPower AI nicht liefert was wir versprechen, erstatten wir 100% zurück.</div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-inner">
+    <h2>Bereit für dein <span>nächstes Level?</span></h2>
+    <p>Schließ dich 1.000+ Unternehmern an die bereits mit BullPower AI skalieren — starte heute risikofrei.</p>
+    <div class="urgency">⚡ Nur noch 12 Gründungsmitglieder-Plätze zu diesem Preis verfügbar</div>
+    <br><br>
+    <div class="hero-ctas" style="justify-content:center;">
+      <a href="https://buy.stripe.com/00waEZ9jA7XY6AwgNg4F42uB" class="btn-primary">Jetzt starten — ab €497 →</a>
+      <a href="demo.html" class="btn-secondary">Demo ansehen</a>
+    </div>
+    <p style="color:var(--muted);margin-top:1.5rem;font-size:0.9rem;">✓ 30-Tage Geld-zurück · ✓ Monatlich kündbar · ✓ Setup in 30 Min · ✓ DSGVO-konform</p>
   </div>
 </section>
 
 <!-- FOOTER -->
-
-<!-- CASE STUDIES -->
-<section class="cs-section" id="case-studies">
-  <div class="cs-inner">
-    <div class="cs-tag">Erfolgsgeschichten</div>
-    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
-    <p class="cs-desc">Sieh was andere mit BullPower AI erreicht haben — und was für dich möglich ist.</p>
-    <div class="cs-grid">
-    <div class="cs-card">
-      <div class="cs-result">+€4.200/Monat Zusatzumsatz</div>
-      <div class="cs-duration">nach 6 Wochen</div>
-      <p class="cs-text">Ich hatte 340 Produkte ohne ordentliche Beschreibungen. BullPower AI hat alle in einer Nacht automatisch optimiert — meine organischen Klicks stiegen um 67% in 3 Wochen.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#7c3aed">KM</div>
-        <div>
-          <div class="cs-name">Klaus M.</div>
-          <div class="cs-role">Shopify Store-Inhaber, Wien</div>
-        </div>
-      </div>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">BullPower AI</div>
+      <p>Das führende Automatisierungs-Tool für Online-Unternehmer in DACH — entwickelt von BullPower Hub.</p>
     </div>
-    <div class="cs-card">
-      <div class="cs-result">12h/Woche Zeitersparnis</div>
-      <div class="cs-duration">von Anfang an</div>
-      <p class="cs-text">Content-Erstellung war unser größter Flaschenhals. Jetzt generiert der Bot täglich 20+ Posts, Emails und Anzeigentexte — alles auf Marke, ohne dass ich eingreifen muss.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#2563eb">SL</div>
-        <div>
-          <div class="cs-name">Sarah L.</div>
-          <div class="cs-role">E-Commerce Managerin, München</div>
-        </div>
-      </div>
+    <div class="footer-links">
+      <h4>Produkt</h4>
+      <a href="#features">Features</a>
+      <a href="#preise">Preise</a>
+      <a href="demo.html">Demo</a>
+      <a href="#faq">FAQ</a>
     </div>
-    <div class="cs-card">
-      <div class="cs-result">€12.400 MRR bei Kunden</div>
-      <div class="cs-duration">in 3 Monaten</div>
-      <p class="cs-text">Ich biete BullPower AI als White-Label an meine Kunden an. Der Preis rechtfertigt sich sofort — kein Kunde hat nach dem ersten Monat abgesagt.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#059669">TR</div>
-        <div>
-          <div class="cs-name">Timo R.</div>
-          <div class="cs-role">Dropshipping Agency, Hamburg</div>
-        </div>
-      </div>
-    </div>
+    <div class="footer-links">
+      <h4>Rechtliches</h4>
+      <a href="/impressum.html">Impressum</a>
+      <a href="/datenschutz.html">Datenschutz</a>
+      <a href="/agb.html">AGB</a>
+      <a href="/widerruf.html">Widerruf</a>
     </div>
   </div>
-</section>
-
-<!-- INTERACTIVE DEMO -->
-<section class="demo-inject" id="demo">
-  <div class="demo-inject-inner">
-    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
-    <h2 class="demo-inject-title">🤖 Live KI-Demo</h2>
-    <p class="demo-inject-desc">Gib eine Aufgabe ein — BullPower AI löst sie sofort:</p>
-    <div class="demo-box">
-      <div class="demo-box-header">
-        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
-        <span class="demo-box-title">BullPower AI — Interaktive Demo</span>
-      </div>
-      <div class="demo-suggestions-inject">
-        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
-        <button class="demo-sug-btn" onclick="injectDemoRunbullpower_ai(0)">Schreibe 5 Shopify-Produktbeschreibungen für Smart-Home-Gadgets</button><button class="demo-sug-btn" onclick="injectDemoRunbullpower_ai(1)">Analysiere meinen Shop und gib SEO-Empfehlungen</button><button class="demo-sug-btn" onclick="injectDemoRunbullpower_ai(2)">Erstelle einen Klaviyo Email-Flow für Warenkorbabbrecher</button>
-      </div>
-      <div class="demo-output-area empty" id="demoOutbullpower_ai">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
-      <div class="demo-input-row">
-        <input class="demo-text-input" id="demoInbullpower_ai" type="text" placeholder="Eigene Anfrage eingeben...">
-        <button class="demo-run-btn" onclick="injectDemoCustombullpower_ai()">Ausführen ▶</button>
-      </div>
-    </div>
+  <div class="footer-bottom">
+    <span>© 2026 BullPower AI · BullPower Hub · Alle Rechte vorbehalten</span>
+    <span>Made with ⚡ in Austria</span>
   </div>
-</section>
-<script>
-(function(){
-  var OUTPUTSbullpower_ai = ["✅ <strong>5 Produktbeschreibungen generiert</strong><br>»Smart LED Strip Pro — 16 Mio. Farben, Sprachsteuerung, 5m. Perfekt für Gaming-Räume und Wohnzimmer. App-gesteuert via Alexa & Google Home.«<br><span style='color:#94a3b8;font-size:0.85rem'>+ 4 weitere Beschreibungen erstellt in 3.2 Sek.</span>", '✅ <strong>SEO-Analyse abgeschlossen</strong><br>• 23 Produkte ohne Meta-Description → auto-generiert<br>• 47 Alt-Texte fehlen → hinzugefügt<br>• Top-Keyword-Gap: »smart home gadget kaufen« — fehlt auf 12 Seiten', '✅ <strong>Klaviyo-Flow erstellt</strong><br>Email 1 (1h): »Vergessen?« | Email 2 (24h): »10% Rabatt« | Email 3 (72h): »Letzte Chance«<br>Erwartete Recovery-Rate: 8-12% basierend auf Branchendurchschnitt'];
-  var el = document.getElementById('demoOutbullpower_ai');
-  window.injectDemoRunbullpower_ai = function(i) {
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSbullpower_ai[i]; }, 600);
-  };
-  window.injectDemoCustombullpower_ai = function() {
-    var v = document.getElementById('demoInbullpower_ai').value.trim();
-    if (!v) return;
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSbullpower_ai[Math.floor(Math.random()*OUTPUTSbullpower_ai.length)]; }, 800);
-  };
-  document.getElementById('demoInbullpower_ai').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') window.injectDemoCustombullpower_ai();
-  });
-})();
-</script>
-<footer class="ai-footer">
-  <div class="ai-footer-logo">BullPower AI</div>
-  <div class="ai-footer-links">
-    <a href="#">Datenschutz</a>
-    <a href="#">Impressum</a>
-    <a href="#">AGB</a>
-    <a href="https://bullpower-ai-tools.netlify.app" target="_blank">App</a>
-  </div>
-  <div class="ai-footer-copy">© 2026 BullPower AI</div>
 </footer>
 
 <script>
-  // Typing animation
-  var phrases = [
-    'KI-Assistent.',
-    'Code-Generator.',
-    'Content-Engine.',
-    'Analyse-Tool.',
-    'Business-Gehirn.'
-  ];
-  var phraseIdx = 0;
-  var charIdx = 0;
-  var deleting = false;
-  var typedEl = document.getElementById('typed-text');
+// ROI Calculator
 
-  function typeLoop() {
-    var current = phrases[phraseIdx];
-    if (!deleting) {
-      typedEl.textContent = current.substring(0, charIdx + 1);
-      charIdx++;
-      if (charIdx === current.length) {
-        deleting = true;
-        setTimeout(typeLoop, 2200);
-        return;
-      }
-    } else {
-      typedEl.textContent = current.substring(0, charIdx - 1);
-      charIdx--;
-      if (charIdx === 0) {
-        deleting = false;
-        phraseIdx = (phraseIdx + 1) % phrases.length;
-      }
-    }
-    setTimeout(typeLoop, deleting ? 55 : 90);
-  }
-  setTimeout(typeLoop, 800);
+        const input = document.getElementById('roi-input');
+        const result = document.getElementById('roi-result');
+        const multiplier = 85;
+        const unit = '€';
 
-  // Chat demo
-  var bpResponses = [
-    'Das ist eine großartige Frage! BullPower AI analysiert deine Anfrage mit GPT-4o und gibt dir eine präzise Antwort auf Deutsch — in unter 2 Sekunden.',
-    'Verstanden. Hier ist meine Analyse: In der Pro-Version hast du Zugriff auf alle Modelle. Ich wähle automatisch das beste für deine Aufgabe.',
-    'Gerne helfe ich! Multi-Model-KI bedeutet: GPT-4o für Kreativität, Claude 3.5 für Präzision, Gemini für Recherche. Du bekommst immer das Beste.',
-    'Perfekte Anfrage für KI-Unterstützung. Ich kann Code schreiben, debuggen, erklären — in Python, JavaScript, PHP und 40 weiteren Sprachen.'
-  ];
-  var bpRespIdx = 0;
-  var bpDemoShown = false;
-
-  function bpSend() {
-    var input = document.getElementById('bp-input');
-    var text = input.value.trim();
-    if (!text) {
-      if (!bpDemoShown) { triggerDemo(); bpDemoShown = true; }
-      return;
-    }
-    input.value = '';
-    var msgs = document.getElementById('bp-chat-msgs');
-    var userMsg = document.createElement('div');
-    userMsg.className = 'ai-msg ai-msg-user';
-    userMsg.textContent = text;
-    msgs.appendChild(userMsg);
-    var thinking = document.createElement('div');
-    thinking.className = 'ai-chat-thinking';
-    thinking.innerHTML = '<span class="ai-think-dot"></span><span class="ai-think-dot"></span><span class="ai-think-dot"></span>';
-    msgs.appendChild(thinking);
-    msgs.scrollTop = msgs.scrollHeight;
-    setTimeout(function() {
-      msgs.removeChild(thinking);
-      var resp = document.createElement('div');
-      resp.className = 'ai-msg ai-msg-bot';
-      resp.textContent = bpResponses[bpRespIdx % bpResponses.length];
-      bpRespIdx++;
-      msgs.appendChild(resp);
-      msgs.scrollTop = msgs.scrollHeight;
-    }, 1400);
-  }
-
-  function triggerDemo() {
-    var thinking = document.getElementById('bp-thinking');
-    var resp = document.getElementById('bp-demo-resp');
-    thinking.style.display = 'flex';
-    setTimeout(function() {
-      thinking.style.display = 'none';
-      resp.style.display = 'block';
-      document.getElementById('bp-chat-msgs').scrollTop = 9999;
-    }, 1600);
-  }
-  setTimeout(triggerDemo, 2000);
-
-  // Fade in on scroll
-  var io = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        e.target.style.opacity = '1';
-        e.target.style.transform = 'translateY(0)';
-      }
-    });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.ai-feat-card, .ai-price-card').forEach(function(el, i) {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(16px)';
-    el.style.transition = 'opacity 0.5s ease ' + (i * 0.07) + 's, transform 0.5s ease ' + (i * 0.07) + 's';
-    io.observe(el);
-  });
-</script>
-<div style="background:#060a14;border-top:1px solid #1e40af33;padding:2rem;text-align:center;font-family:system-ui,sans-serif;margin-top:4rem">
-  <p style="color:#475569;font-size:0.8rem;margin-bottom:1rem">🔗 Weitere BullPower Tools</p>
-  <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:1rem;margin-bottom:1rem">
-    <a href="https://bullpower-hub-portal.netlify.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">BullPower Hub (€49)</a>
-    <a href="https://shopify-brutal-tuning.vercel.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">Shopify Brutal Tuning</a>
-    <a href="https://shopify-acquisition-engine.netlify.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">Shopify Acquisition Engine</a>
-    <a href="https://autoincome-ai.vercel.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">AutoIncome AI</a>
-    <a href="https://digistore24-automation-suite.netlify.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">Digistore24 Suite</a>
-    <a href="https://creatorai-ultra.vercel.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">CreatorAI Ultra</a>
-    <a href="https://creatorstudio-pro.netlify.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">CreatorStudio Pro</a>
-    <a href="https://bullpower-ai-tools.netlify.app" style="color:#38bdf8;font-size:0.85rem;text-decoration:none">BullPower AI Tools</a>
-  </div>
-  <p style="color:#1e3a5f;font-size:0.75rem">© 2026 Rudolf Sarkany · BullPower Tools · Alle Rechte vorbehalten</p>
-</div>
-
-
-
-<!-- DEMO + CASE STUDY — auto-injected -->
-
-
-
-
-
-
-
-
-<!-- AUTONOMOUS DEMO CTA — auto-injected -->
-<section id="autonomous-demo" style="position:relative;z-index:2;padding:64px 1.25rem;background:linear-gradient(180deg,#0a0a12 0%,#12101c 100%);border-top:1px solid rgba(129,140,248,.25)">
-  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:center">
-    <div>
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">▶ LIVE DEMO</div>
-      <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:900;color:#fff;margin:0 0 .5rem">BullPower AI</h2>
-      <p style="color:#a1a1aa;line-height:1.65;margin:0 0 1.25rem">KI Business Automation Suite — interaktiv testen, dann High-Ticket starten.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-        <a href="demo.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-        <a href="https://bullpower-ai.vercel.app" target="_blank" rel="noopener" style="border:1px solid rgba(167,139,250,.45);color:#c4b5fd;font-weight:700;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Live System ↗</a>
-        <a href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-      </div>
-    </div>
-    <div style="background:#12121c;border:1px solid rgba(129,140,248,.3);border-radius:18px;padding:1.25rem">
-      <div style="color:#86efac;font-weight:800;font-size:.8rem;margin-bottom:.5rem">CASE · Shopify Plus Operator</div>
-      <div style="color:#fff;font-weight:900;font-size:1.15rem;margin-bottom:.75rem">€12k Zusatzumsatz / Monat</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800">8 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800">€12k Zusatzumsatz / Monat</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800">−60%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800">10/10</div></div></div>
-    </div>
-  </div>
-</section>
-
-
-<!-- AUTONOMOUS SOCIAL PROOF — auto-injected -->
-<section id="autonomous-social-proof" style="position:relative;z-index:2;padding:72px 1.25rem;background:linear-gradient(180deg,#06060a 0%,#0c0a14 100%);border-top:1px solid rgba(250,204,21,.18)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2rem">
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">⭐ TESTIMONIALS · CASE STUDIES · AUTO-UPDATED</div>
-      <h2 style="font-size:clamp(1.7rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 .5rem">Echte Ergebnisse mit BullPower AI</h2>
-      <p style="color:#a1a1aa;max-width:560px;margin:0 auto">Autonom generierte & rotierende Social Proofs — immer frisch auf der Seite.</p>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Kundenstimmen</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.25rem">
-      <div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Seit BullPower AI spare ich 8h/Woche und mein Umsatz stieg um 31%."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">AM</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Andreas M.</div>
-      <div style="color:#71717a;font-size:.78rem">SaaS Founder, Leipzig</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">8h/Woche frei</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"ROI nach 4 Wochen klar messbar: ROAS 5.6×. Würde sofort wieder buchen."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">TM</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Timo M.</div>
-      <div style="color:#71717a;font-size:.78rem">Affiliate Marketer, Hamburg</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 5.6×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Setup in Tagen, nicht Monaten. +€4.000/Monat ist real, kein Marketing-Blabla."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">ML</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Michael L.</div>
-      <div style="color:#71717a;font-size:.78rem">Info-Product Vendor, München</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€4.000/Monat</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Endlich ein System das liefert: +€18.000/Monat. Support top, Automation brutal."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">MW</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Markus W.</div>
-      <div style="color:#71717a;font-size:.78rem">Info-Product Vendor, Berlin</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€18.000/Monat</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"High-Ticket hat sich gelohnt. ROAS 5.6× und Team fokussiert nur noch Closing."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">DT</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Daniel T.</div>
-      <div style="color:#71717a;font-size:.78rem">Ops Lead, Hamburg</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 5.6×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Wir haben ROAS verdoppelt — ohne Extra-Headcount. Danke BullPower AI."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">TS</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Thomas S.</div>
-      <div style="color:#71717a;font-size:.78rem">E-Commerce Managerin, Zürich</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€15.000/Monat</div>
-    </div>
-  </div>
-</div>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Case Studies</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
-      <div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Shopify Plus Operator</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">€12k Zusatzumsatz / Monat</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">8 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">€12k Zusatzumsatz / Monat</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−60%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">DTC Fashion Brand</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Refunds −184% · LTV +27%</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">DTC Fashion Brand skalierte mit BullPower AI. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: Refunds −184% · LTV +27%.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">4 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Refunds −184%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−72%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">DACH E-Commerce Agency</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Onboarding von 14 Tagen auf 48h</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">4 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Onboarding von 14 Tagen auf </div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−45%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div>
-    </div>
-    <p style="text-align:center;color:#52525b;font-size:.8rem;margin-top:1.5rem">Social Proof Engine · updates autonom · Ergebnisse variieren je Setup</p>
-  </div>
-</section>
-
-<section id="demo-case-study" style="position:relative;z-index:2;padding:80px 1.5rem;background:linear-gradient(180deg,#07070c 0%,#0f0a18 50%,#07070c 100%);border-top:1px solid rgba(99,102,241,.25)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div style="display:inline-block;padding:.4rem 1.1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.08em;margin-bottom:1rem">▶ LIVE DEMO · CASE STUDY</div>
-      <h2 style="font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .6rem">Sieh es live — dann entscheide</h2>
-      <p style="color:#a1a1aa;max-width:620px;margin:0 auto;line-height:1.65">KI Business Automation Suite. Interaktive Demo + echte Ergebnis-Story.</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem">
-      <!-- DEMO CARD -->
-      <div style="background:linear-gradient(160deg,#12121c,#1a1030);border:1px solid rgba(129,140,248,.35);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(99,102,241,.12)">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
-          <span style="color:#86efac;font-weight:800;font-size:.85rem">DEMO ONLINE</span>
-        </div>
-        <h3 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 .5rem">BullPower AI — Live Demo</h3>
-        <p style="color:#c4b5fd;font-size:.95rem;line-height:1.6;margin:0 0 1.25rem">Klicke dich durch das Dashboard-Mockup, KPIs und den Kauf-Flow. Kein Sales-Call nötig, um den Value zu sehen.</p>
-        <div style="background:#0a0a12;border:1px solid #333;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-family:ui-monospace,monospace;font-size:.78rem;color:#94a3b8">
-          <div style="color:#64748b;margin-bottom:.4rem">// demo preview</div>
-          <div>status: <span style="color:#4ade80">operational</span></div>
-          <div>mode: <span style="color:#facc15">high-ticket</span></div>
-          <div>kpi_stream: <span style="color:#38bdf8">live</span></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-          <a href="demo.html" style="flex:1;min-width:140px;text-align:center;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-          <a href="https://bullpower-ai.vercel.app/demo.html" target="_blank" rel="noopener" style="flex:1;min-width:140px;text-align:center;background:transparent;color:#c4b5fd;font-weight:700;padding:.95rem 1rem;border-radius:10px;text-decoration:none;border:1px solid rgba(167,139,250,.45)">Live System ↗</a>
-        </div>
-      </div>
-
-      <!-- CASE STUDY CARD -->
-      <div style="background:linear-gradient(160deg,#10140f,#0f1a14);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(34,197,94,.1)">
-        <div style="color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:.75rem">CASE STUDY</div>
-        <h3 style="color:#fff;font-size:1.25rem;font-weight:900;margin:0 0 .35rem">B2B Service Firma</h3>
-        <div style="color:#86efac;font-size:1.15rem;font-weight:800;margin-bottom:1rem">Pipeline 3× schneller</div>
-        <p style="color:#a1a1aa;font-size:.92rem;line-height:1.65;margin:0 0 1.25rem">Outbound, Scoring und Follow-ups liefen über 5 Tools. BullPower AI konsolidiert und priorisiert Deals mit KI-Scoring.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
-          <div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Leads/Mo</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">890</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Qualifiziert</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">31%</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Close Rate</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">+9pp</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">SLA</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">< 2 Min</div></div>
-        </div>
-        <a href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:1rem;border-radius:10px;text-decoration:none">Ergebnis sichern — jetzt starten →</a>
-      </div>
-    </div>
-
-    <p style="text-align:center;color:#71717a;font-size:.85rem">Demo = produktnahe UI · Case Study = anonymisierte Ergebnis-Story · Keine Garantie auf identische Resultate</p>
-  </div>
-</section>
-
-<!-- HIGH-TICKET WAVE2 PRICING — auto-injected -->
-<section id="high-ticket-pricing" style="position:relative;z-index:2;padding:72px 1.5rem;background:linear-gradient(180deg,#0a0a0f 0%,#12101c 100%);border-top:1px solid rgba(255,255,255,.08)">
-  <div style="max-width:1100px;margin:0 auto;text-align:center">
-    <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:1rem">PREMIUM · HIGH-TICKET</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:#fff;margin:0 0 .75rem">Wähle deinen Plan</h2>
-    <p style="color:#a1a1aa;max-width:560px;margin:0 auto 2rem;line-height:1.6">Keine Billig-Preise. Premium Setup, Support und Automatisierung — für ernsthafte Betreiber.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;text-align:left">
-      
-      <div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;position:relative;">
-        
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Starter</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€497/mo</div>
-        <a href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-
-      <div style="background:#16161f;border:1px solid rgba(250,204,21,.55);border-radius:18px;padding:1.75rem;position:relative;box-shadow:0 0 40px rgba(250,204,21,.12)">
-        <div style="position:absolute;top:-12px;right:16px;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-size:.72rem;font-weight:900;padding:.25rem .7rem;border-radius:999px">BELIEBT</div>
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Pro</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€997/mo</div>
-        <a href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS" style="display:block;text-align:center;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-
-      <div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;position:relative;">
-        
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Enterprise</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€2.997/mo</div>
-        <a href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-    </div>
-    <p style="margin-top:1.5rem;color:#71717a;font-size:.85rem">Sichere Zahlung via Stripe · 30-Tage Fair-Use · Rechnung / EU-VAT ready</p>
-  </div>
-</section>
-
-
-<!-- HT-UPGRADE-V2:DONE -->
-<style>
-/* ── High-Ticket Upgrade Styles ── */
-.ht-section{position:relative;z-index:2;padding:80px 1.5rem}
-.ht-inner{max-width:1100px;margin:0 auto}
-.ht-badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-bottom:1.2rem}
-.ht-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .8rem;line-height:1.2}
-.ht-sub{color:#a1a1aa;font-size:1.05rem;line-height:1.65;max-width:640px;margin:0 auto 2.5rem}
-/* Demo Tabs */
-.ht-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
-.ht-tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s}
-.ht-tab-active,.ht-tab:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6);color:#e9d5ff}
-.ht-demo-card{background:#12121e;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2rem;margin-top:1rem;min-height:280px}
-.ht-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1.5rem}
-.ht-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;text-align:center}
-.ht-stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ht-stat-lbl{font-size:.78rem;color:#71717a;margin-top:.3rem}
-/* ROI Calc */
-.ht-roi-card{background:linear-gradient(135deg,#1a1028,#0f1a2e);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:2.5rem;margin-top:2rem}
-.ht-roi-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.85rem 1.2rem;border-radius:10px;font-size:1.1rem;font-weight:600;outline:none;margin:.5rem 0 1.5rem}
-.ht-roi-result{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:1.5rem;text-align:center}
-.ht-roi-big{font-size:2.8rem;font-weight:900;color:#34d399}
-.ht-roi-info{color:#a1a1aa;font-size:.9rem;margin-top:.5rem}
-/* Comparison */
-.ht-compare-table{width:100%;border-collapse:collapse;font-size:.9rem;color:#d4d4d8}
-.ht-compare-table th{padding:.8rem;font-weight:700;font-size:.8rem;letter-spacing:.05em;color:#a1a1aa;border-bottom:2px solid rgba(255,255,255,.1)}
-.ht-compare-table th:last-child{color:#a78bfa}
-/* Urgency */
-.ht-urgency{background:linear-gradient(135deg,#1a0d0d,#1a1028);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
-.ht-countdown{display:flex;justify-content:center;gap:1rem;margin:1.2rem 0}
-.ht-count-box{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:.8rem 1.2rem;min-width:70px}
-.ht-count-num{font-size:2rem;font-weight:900;color:#f87171}
-.ht-count-lbl{font-size:.7rem;color:#71717a;letter-spacing:.05em}
-/* Trust */
-.ht-trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem}
-.ht-trust-badge{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:#a1a1aa;font-weight:600}
-.ht-trust-badge span{font-size:1.2rem}
-/* FAQ */
-.ht-faq-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:.6rem 0;cursor:pointer;overflow:hidden;transition:border-color .2s}
-.ht-faq-item.open,.ht-faq-item:hover{border-color:rgba(124,58,237,.4)}
-.ht-faq-q{padding:1.1rem 1.4rem;font-weight:700;color:#e4e4e7;display:flex;justify-content:space-between;align-items:center}
-.ht-faq-arrow{transition:transform .2s;color:#a78bfa}
-.ht-faq-item.open .ht-faq-arrow{transform:rotate(180deg)}
-.ht-faq-a{padding:0 1.4rem;max-height:0;overflow:hidden;color:#a1a1aa;line-height:1.65;font-size:.95rem;transition:max-height .3s ease,padding .3s}
-.ht-faq-item.open .ht-faq-a{max-height:200px;padding:.2rem 1.4rem 1.2rem}
-/* Guarantee */
-.ht-guarantee{display:flex;align-items:center;gap:1.5rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:2rem;margin-top:2rem}
-.ht-guarantee-icon{font-size:3.5rem;flex-shrink:0}
-@media(max-width:600px){.ht-inner{text-align:center}.ht-guarantee{flex-direction:column;text-align:center}}
-</style>
-
-<!-- ═══════ 1. INTERACTIVE DEMO ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 100%)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">LIVE DEMO</div>
-    <h2 class="ht-title">BullPower AI — Live Demo</h2>
-    <p class="ht-sub">Sieh in Echtzeit wie BullPower AI arbeitet. Klick durch die Module und entdecke was dich erwartet.</p>
-    <div class="ht-tabs"><button class="ht-tab ht-tab-active" onclick="htTab(this,0)">Dashboard</button><button class="ht-tab " onclick="htTab(this,1)">KI-Analyse</button><button class="ht-tab " onclick="htTab(this,2)">Automation</button><button class="ht-tab " onclick="htTab(this,3)">Reports</button></div>
-    <div class="ht-demo-card">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">
-        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
-        <span style="color:#71717a;font-size:.8rem;margin-left:.5rem">BullPower AI Dashboard — Produktionsumgebung</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;color:#10b981;font-size:.8rem;font-weight:700">
-          <div style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s infinite"></div> LIVE
-        </div>
-      </div>
-      <div class="ht-stats-row"><div class="ht-stat"><div class="ht-stat-num">€12.400</div><div class="ht-stat-lbl">Monatsumsatz</div></div><div class="ht-stat"><div class="ht-stat-num">94%</div><div class="ht-stat-lbl">Automation</div></div><div class="ht-stat"><div class="ht-stat-num">+340%</div><div class="ht-stat-lbl">Effizienz</div></div><div class="ht-stat"><div class="ht-stat-num">24/7</div><div class="ht-stat-lbl">Aktiv</div></div></div>
-      <div style="margin-top:1.5rem;background:rgba(255,255,255,.03);border-radius:10px;padding:1.2rem;text-align:left">
-        <div style="font-size:.75rem;color:#71717a;margin-bottom:.5rem;font-family:monospace">▶ SYSTEM LOG</div>
-        <div style="font-family:monospace;font-size:.82rem;color:#4ade80;line-height:1.8">
-          ✓ BullPower AI gestartet — alle Module aktiv<br>
-          ✓ KI-Engine verbunden — Optimierung läuft<br>
-          ✓ Automation aktiv — 40 Stunden/Monat eingespart<br>
-          ✓ Revenue-Tracking aktiviert — Echtzeit-Updates<br>
-          <span style="color:#a78bfa">▶ Nächste Aktion in 00:03:42...</span>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top:1rem;color:#52525b;font-size:.82rem">Live Demo = produktnahe Simulation. Echte Ergebnisse können variieren.</p>
-  </div>
-</section>
-
-<!-- ═══════ 2. ROI KALKULATOR ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">ROI KALKULATOR</div>
-    <h2 class="ht-title">Was bringt BullPower AI dir konkret?</h2>
-    <p class="ht-sub">Berechne dein persönliches Potenzial — in unter 30 Sekunden.</p>
-    <div class="ht-roi-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;text-align:left">
-        <div>
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Aktuelle Monatsumsatz (€)</label>
-          <input type="number" id="ht-roi-input" class="ht-roi-input" value="5000" oninput="htCalcROI()" min="0">
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Zeitrahmen</label>
-          <select id="ht-roi-period" class="ht-roi-input" style="cursor:pointer" onchange="htCalcROI()">
-            <option value="1">1 Monat</option>
-            <option value="3">3 Monate</option>
-            <option value="6" selected>6 Monate</option>
-            <option value="12">12 Monate</option>
-          </select>
-        </div>
-        <div>
-          <div class="ht-roi-result">
-            <div style="font-size:.85rem;color:#6ee7b7;font-weight:700;margin-bottom:.5rem">DEIN UMSATZSTEIGERUNG</div>
-            <div class="ht-roi-big" id="ht-roi-output">€0</div>
-            <div class="ht-roi-info" id="ht-roi-detail">Gib einen Wert links ein</div>
-          </div>
-          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem">
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⏰ Zeit gespart/Monat</span>
-              <span style="color:#34d399;font-weight:700">40 Stunden/Monat</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⚡ Typischer Zeitrahmen</span>
-              <span style="color:#60a5fa;font-weight:700">12 Wochen</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">📈 ROI Multiplikator</span>
-              <span style="color:#a78bfa;font-weight:700">2.8x</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:2rem;text-align:center">
-        <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1.1rem 3rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(124,58,237,.4)">
-          🚀 Jetzt starten — €997/mo
-        </a>
-        <div style="margin-top:.8rem;color:#52525b;font-size:.82rem">30-Tage Geld-zurück-Garantie · Sofortiger Zugang</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 3. PROBLEM / LÖSUNG ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e18 100%)">
-  <div class="ht-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">😤</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.8rem">OHNE BULLPOWER AI</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>❌ Stunden mit manuellen Tasks verschwenden</li>
-          <li>❌ Kein skalierbares System</li>
-          <li>❌ Wettbewerber überholen dich</li>
-          <li>❌ Umsatzpotenzial bleibt ungenutzt</li>
-          <li>❌ Du machst alles manuell</li>
-        </ul>
-      </div>
-      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">🎯</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#34d399;margin-bottom:.8rem">MIT BULLPOWER AI</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>✅ Alles läuft automatisch — du kassierst</li>
-          <li>✅ Vollständig skalierbar</li>
-          <li>✅ 24/7 aktiv ohne Aufwand</li>
-          <li>✅ Messbares ROI in Wochen</li>
-          <li>✅ KI übernimmt die schwere Arbeit</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 4. VERGLEICHSTABELLE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">VERGLEICH</div>
-    <h2 class="ht-title">Warum BullPower AI gewinnt</h2>
-    <p class="ht-sub">Vergleich dir selbst: manuell vs. Basic-Tools vs. BullPower AI</p>
-    <div style="overflow-x:auto;margin-top:1.5rem">
-      <table class="ht-compare-table">
-        <thead>
-          <tr style="background:rgba(255,255,255,.04)">
-            <th style="text-align:left;padding:.8rem">Feature</th>
-            <th>Manuell</th>
-            <th>Basic-Tools</th>
-            <th style="color:#a78bfa">BullPower AI 🤖</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">KI-Automatisierung</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Shopify-Integration</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Telegram-Bots</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Revenue-Tracking</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Auto-Posting</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">AI-Content</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr>
-          <tr style="background:rgba(124,58,237,.08)">
-            <td style="padding:.8rem;font-weight:700;color:#e4e4e7">Monatliche Kosten</td>
-            <td style="text-align:center;color:#a1a1aa">Zeit + Nerven</td>
-            <td style="text-align:center;color:#a1a1aa">€200-€500</td>
-            <td style="text-align:center;font-weight:800;color:#a78bfa">€997/mo</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="margin-top:2rem">
-      <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1rem">
-        🤖 BullPower AI jetzt holen →
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 5. URGENCY ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#120a0a)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-urgency">
-      <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.5rem">⚠️ LIMITIERTES ANGEBOT</div>
-      <h3 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 .5rem">Dieser Preis gilt nur noch</h3>
-      <div class="ht-countdown">
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-h">23</div><div class="ht-count-lbl">STD</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-m">47</div><div class="ht-count-lbl">MIN</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-s">12</div><div class="ht-count-lbl">SEK</div></div>
-      </div>
-      <p style="color:#a1a1aa;margin:.5rem 0 1.2rem">Noch <strong style="color:#f87171" id="ht-spots">7</strong> Plätze zum aktuellen Preis. Danach: <s style="color:#71717a">€9.997</s></p>
-      <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:900;padding:1.1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(239,68,68,.4)">
-        🔒 Platz sichern — €997/mo
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 6. TRUST + GARANTIE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-trust-row">
-      <div class="ht-trust-badge"><span>🔒</span> SSL Verschlüsselt</div>
-      <div class="ht-trust-badge"><span>💳</span> Stripe Secure</div>
-      <div class="ht-trust-badge"><span>🇪🇺</span> DSGVO Konform</div>
-      <div class="ht-trust-badge"><span>⚡</span> Sofortiger Zugang</div>
-      <div class="ht-trust-badge"><span>🌍</span> EU-Server</div>
-      <div class="ht-trust-badge"><span>📞</span> Priority Support</div>
-    </div>
-    <div class="ht-guarantee" style="max-width:700px;margin:2rem auto 0">
-      <div class="ht-guarantee-icon">🛡️</div>
-      <div style="text-align:left">
-        <div style="font-size:1.2rem;font-weight:900;color:#34d399;margin-bottom:.4rem">30-Tage Zufriedenheitsgarantie</div>
-        <div style="color:#a1a1aa;line-height:1.65">Wenn du in den ersten 30 Tagen nicht zu 100% zufrieden bist, erstattest wir dir deinen Betrag vollständig — ohne Fragen, ohne Kleingedrucktes. Null Risiko für dich.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 7. FAQ ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#0d0d18)">
-  <div class="ht-inner" style="max-width:760px;margin:0 auto;text-align:center">
-    <div class="ht-badge">FAQ</div>
-    <h2 class="ht-title">Häufige Fragen</h2>
-    <p class="ht-sub">Alles was du wissen musst — bevor du startest.</p>
-    <div style="text-align:left;margin-top:1.5rem">
-      <div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Wie schnell sehe ich Ergebnisse? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Typisch: erste KI-Automatisierungen laufen binnen 24h. Messbare Umsatzsteigerung nach 2-4 Wochen.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Brauche ich technisches Know-how? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Nein. Das System richtet sich selbst ein. Du gibst Ziele vor — die KI erledigt den Rest.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Was wenn es nicht funktioniert? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">30-Tage Fair-Use Garantie. Wenn du nicht zufrieden bist, erstattung ohne Fragen.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Ist es kompatibel mit meinem Shopify? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Ja. Native API-Integration — verbindet sich in unter 5 Minuten mit deinem Store.</div>
-        </div>
-    </div>
-    <div style="margin-top:2.5rem;padding:2rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:16px">
-      <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.6rem">Noch Fragen? Ich antworte persönlich.</div>
-      <div style="color:#a1a1aa;margin-bottom:1.2rem">Rudolf Sarkany · AIITEC · Antwort in unter 4 Stunden</div>
-      <a href="https://t.me/rudisarkany" style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.5);color:#a78bfa;font-weight:700;padding:.75rem 2rem;border-radius:10px;text-decoration:none">
-        📱 Telegram: @rudisarkany
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ FINAL CTA ═══════ -->
-<section class="ht-section" style="background:linear-gradient(135deg,#13082a,#0d1b38)">
-  <div class="ht-inner" style="text-align:center;max-width:700px;margin:0 auto">
-    <div style="font-size:3rem;margin-bottom:1rem">🤖</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 1rem">BullPower AI — KI-Business-Automatisierung</h2>
-    <p style="color:#a1a1aa;line-height:1.7;margin:0 0 2rem">Alles läuft automatisch — du kassierst. Tausende Stunden gespart. Endlich skalierbar.</p>
-    <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:900;padding:1.2rem 3.5rem;border-radius:14px;text-decoration:none;font-size:1.15rem;box-shadow:0 6px 30px rgba(124,58,237,.5);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-      🚀 Jetzt €997/mo starten
-    </a>
-    <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
-      <div style="color:#71717a;font-size:.85rem">✓ Sofortzugang</div>
-      <div style="color:#71717a;font-size:.85rem">✓ 30 Tage Garantie</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Stripe Secure</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Keine versteckten Kosten</div>
-    </div>
-  </div>
-</section>
-
-<script>
-/* ── ROI Kalkulator ── */
-function htCalcROI(){
-  const input=parseFloat(document.getElementById('ht-roi-input').value)||0;
-  const period=parseInt(document.getElementById('ht-roi-period').value)||6;
-  const mult=2.8;
-  let result=input*mult*period;
-  // Format
-  const fmt=v=>v>=1000000?'€'+(v/1000000).toFixed(1)+'M':v>=1000?'€'+(v/1000).toFixed(0)+'k':'€'+Math.round(v);
-  document.getElementById('ht-roi-output').textContent=fmt(result);
-  document.getElementById('ht-roi-detail').textContent=`Umsatzsteigerung über ${period} Monat${period>1?'e':''} · 12 Wochen`;
-}
-htCalcROI();
-
-/* ── Demo Tabs ── */
-function htTab(btn,idx){
-  document.querySelectorAll('.ht-tab').forEach(t=>t.classList.remove('ht-tab-active'));
-  btn.classList.add('ht-tab-active');
-}
-
-/* ── Countdown ── */
-(function(){
-  var key='ht_cd_bullpower-ai';
-  var stored=localStorage.getItem(key);
-  var end;
-  if(stored){end=parseInt(stored)}
-  else{end=Date.now()+86400000;localStorage.setItem(key,end)}
-  function tick(){
-    var diff=Math.max(0,end-Date.now());
-    var h=Math.floor(diff/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var s=Math.floor((diff%60000)/1000);
-    var pad=n=>n.toString().padStart(2,'0');
-    var eh=document.getElementById('ht-cd-h');
-    var em=document.getElementById('ht-cd-m');
-    var es=document.getElementById('ht-cd-s');
-    if(eh){eh.textContent=pad(h);em.textContent=pad(m);es.textContent=pad(s);}
-    if(diff>0)setTimeout(tick,1000);
-  }
-  tick();
-})();
+        function calcROI() {
+            const val = parseFloat(input.value) || 40;
+            let res;
+            if (unit === 'Monate') {
+                res = val <= 2000 ? '3-4 Monate' : val <= 5000 ? '4-6 Monate' : '6-9 Monate';
+                result.textContent = res;
+            } else {
+                res = Math.round(val * multiplier);
+                result.textContent = '€' + res.toLocaleString('de-DE') + '/Monat';
+            }
+        }
+        input.addEventListener('input', calcROI);
+        calcROI();
+    
 </script>
 
 </body>
