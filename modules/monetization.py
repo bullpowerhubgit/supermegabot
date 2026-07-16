@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 """
-Monetization — Subscription tiers, Stripe Checkout, trial management.
+Monetization — High-Ticket Subscription tiers, Stripe Checkout, trial management.
 
-Tiers:
-  Starter   €49/mo  — Shopify sync, basic AI
-  Pro       €99/mo  — All integrations, advanced AI
-  Enterprise €299/mo — Unlimited, white-label, priority support
+Tiers (High-Ticket — Wave 13, 2026-07-16):
+  Growth     €497/mo  — Shopify Vollautomatisierung, Social Autopilot, Onboarding-Call
+  Scale      €997/mo  — Alles + CSM, DS24, QBR, Priority <4h
+  Enterprise €2.497/mo — Alles + White-Label, Custom API, SLA 99.99%
+
+AIITEC Tiers:
+  Professional €797/mo  — Lead Agent 15+ Leads/Tag
+  Business     €1.497/mo — Lead + Compliance Wächter + CSM
+  Enterprise   €2.997/mo — Intelligence Suite + White-Label
 
 Env vars needed:
   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET
@@ -27,30 +32,61 @@ log = logging.getLogger("monetization")
 STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 PLANS = {
-    "starter": {
-        "name": "Starter",
-        "price_eur": 49,
-        "stripe_price_id": os.getenv("STRIPE_PRICE_STARTER", ""),
-        "features": ["shopify_sync", "basic_ai", "telegram_bot"],
-        "ai_calls_per_day": 50,
-        "shopify_products_limit": 500,
-    },
-    "pro": {
-        "name": "Pro",
-        "price_eur": 99,
-        "stripe_price_id": os.getenv("STRIPE_PRICE_PRO", ""),
-        "features": ["shopify_sync", "advanced_ai", "telegram_bot", "digistore24", "analytics", "seo"],
+    # ── SuperMegaBot High-Ticket ──────────────────────────────────────────────
+    "growth": {
+        "name": "Growth",
+        "price_eur": 497,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_HT_GROWTH_MONTHLY", ""),
+        "features": ["shopify_sync_full", "social_autopilot_3", "telegram_bot",
+                     "onboarding_call", "priority_support_8h", "demo_14d"],
         "ai_calls_per_day": 500,
         "shopify_products_limit": 5000,
+        "support_sla_h": 8,
+    },
+    "scale": {
+        "name": "Scale",
+        "price_eur": 997,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_HT_SCALE_MONTHLY", ""),
+        "features": ["shopify_sync_unlimited", "social_autopilot_all", "telegram_bot",
+                     "csm", "digistore24", "affiliate", "qbr", "priority_support_4h", "demo_14d"],
+        "ai_calls_per_day": -1,
+        "shopify_products_limit": -1,
+        "support_sla_h": 4,
     },
     "enterprise": {
         "name": "Enterprise",
-        "price_eur": 299,
-        "stripe_price_id": os.getenv("STRIPE_PRICE_ENTERPRISE", ""),
-        "features": ["all", "white_label", "priority_support", "custom_agents"],
+        "price_eur": 2497,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_HT_ENTERPRISE_MONTHLY", ""),
+        "features": ["all", "white_label", "custom_api", "dedicated_railway",
+                     "sla_9999", "strategy_calls_monthly", "priority_support_1h", "demo_14d"],
         "ai_calls_per_day": -1,
         "shopify_products_limit": -1,
+        "support_sla_h": 1,
     },
+    # ── AIITEC B2B ───────────────────────────────────────────────────────────
+    "professional": {
+        "name": "AIITEC Professional",
+        "price_eur": 797,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_HT_AIITEC_MONITORING", ""),
+        "features": ["lead_agent_15_per_day", "crm_integration", "telegram_alerts",
+                     "onboarding_call", "priority_support_8h"],
+        "ai_calls_per_day": 200,
+        "shopify_products_limit": 0,
+        "support_sla_h": 8,
+    },
+    "business": {
+        "name": "AIITEC Business",
+        "price_eur": 1497,
+        "stripe_price_id": os.getenv("STRIPE_PRICE_HT_AIITEC_RETAINER", ""),
+        "features": ["lead_agent_30_per_day", "compliance_scan", "disclosure_banner",
+                     "csm", "qbr", "unlimited_api", "priority_support_4h"],
+        "ai_calls_per_day": -1,
+        "shopify_products_limit": -1,
+        "support_sla_h": 4,
+    },
+    # ── Backwards-compat aliases (redirect to new tiers) ─────────────────────
+    "starter":    {"_alias": "growth"},
+    "pro":        {"_alias": "scale"},
 }
 
 TRIAL_DAYS = 14
@@ -84,11 +120,15 @@ def _stripe_request(method: str, path: str, data: dict | None = None) -> dict:
 
 def create_checkout_session(plan: str, customer_email: str, success_url: str, cancel_url: str) -> dict:
     """Create Stripe Checkout session for the given plan."""
-    plan_info = PLANS.get(plan)
+    plan_info = PLANS.get(plan, {})
+    # Resolve backwards-compat aliases
+    if plan_info.get("_alias"):
+        plan = plan_info["_alias"]
+        plan_info = PLANS.get(plan, {})
     if not plan_info:
         raise ValueError(f"Unknown plan: {plan}")
 
-    price_id = plan_info["stripe_price_id"]
+    price_id = plan_info.get("stripe_price_id", "")
     if not price_id:
         raise RuntimeError(f"Stripe price ID not configured for plan '{plan}'. Set STRIPE_PRICE_{plan.upper()}")
 

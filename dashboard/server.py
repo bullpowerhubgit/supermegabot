@@ -167,6 +167,7 @@ _INDEX_HTML = Path(__file__).parent / 'index.html'
 # ---------------------------------------------------------------------------
 
 _MONEY_MACHINES_HTML = Path(__file__).parent / "static" / "money_machines.html"
+_HT_SALES_HTML = Path(__file__).parent / "highticket.html"
 
 
 async def handle_money_machines(req):
@@ -176,6 +177,73 @@ async def handle_money_machines(req):
     except Exception:
         html = "<h1>money_machines.html nicht gefunden</h1>"
     return web.Response(text=html, content_type="text/html")
+
+
+async def handle_highticket(req):
+    """GET /highticket — High-Ticket Sales Page (€497/€997/€2.497)."""
+    try:
+        html = _HT_SALES_HTML.read_text(encoding="utf-8")
+    except Exception:
+        html = "<h1>highticket.html nicht gefunden</h1>"
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_ht_demo_data(req):
+    """GET /api/ht/demo — Personalisierte Demo-Metriken."""
+    from modules.ht_demo_system import get_demo_data, track_demo_view
+    try:
+        revenue = int(req.rel_url.query.get("revenue", "25000"))
+        plan = req.rel_url.query.get("plan", "")
+        referrer = req.headers.get("Referer", "")
+        await track_demo_view(referrer=referrer, plan=plan)
+        data = await get_demo_data(revenue)
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_ht_apply(req):
+    """POST /api/ht/apply — Demo-Anfrage verarbeiten."""
+    from modules.ht_application import save_application
+    try:
+        data = await req.json()
+        result = await save_application(data)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("HT apply error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ht_onboarding(req):
+    """GET /api/ht/onboarding — Onboarding-Status."""
+    from modules.ht_onboarding import get_onboarding_dashboard
+    try:
+        data = await get_onboarding_dashboard()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_ht_stats(req):
+    """GET /api/ht/stats — Demo-View-Statistiken."""
+    from modules.ht_demo_system import get_demo_stats
+    try:
+        data = await get_demo_stats()
+        plans = {
+            "growth":     {"monthly": os.getenv("STRIPE_PRICE_HT_GROWTH_MONTHLY", ""),
+                           "onetime": os.getenv("STRIPE_PRICE_HT_GROWTH_ONETIME", ""),
+                           "price": 497},
+            "scale":      {"monthly": os.getenv("STRIPE_PRICE_HT_SCALE_MONTHLY", ""),
+                           "onetime": os.getenv("STRIPE_PRICE_HT_SCALE_ONETIME", ""),
+                           "price": 997},
+            "enterprise": {"monthly": os.getenv("STRIPE_PRICE_HT_ENTERPRISE_MONTHLY", ""),
+                           "onetime": os.getenv("STRIPE_PRICE_HT_ENTERPRISE_ONETIME", ""),
+                           "price": 2497},
+        }
+        data["stripe_plans"] = plans
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 
 # ── Compliance Tool Landing Pages (SYS-17 bis SYS-42) ────────────────────────
@@ -2627,7 +2695,7 @@ async def handle_mailchimp_campaign(req):
   </div>
   <a href="https://bullpowerhubgit.github.io/bullpower-lead" class="cta">Kostenlosen Audit anfordern →</a>
   <p>Keine Kosten, kein Abo, kein Risiko. Nur ein ehrliches Audit was dir zeigt wo dein Shop Geld verliert.</p>
-  <p>Wenn dir der Audit gefällt und du die Tools nutzen willst: BullPower Hub gibt dir alle 8 KI-Automatisierungs-Tools für €49/Monat — 14 Tage kostenlos testen.</p>
+  <p>Wenn dir der Audit gefällt und du die Tools nutzen willst: SuperMegaBot gibt dir die komplette KI-Automatisierungs-Plattform ab €497/Monat — 14 Tage kostenlose Demo, kein Credit Card, 90-Tage ROI-Garantie.</p>
   <a href="https://bullpowerhubgit.github.io/bullpower-lead" style="color:#8b5cf6">→ Alle Tools ansehen</a>
   <div class="footer">
     Rudolf Sarkany · Wien, Österreich<br>
@@ -4155,24 +4223,32 @@ async def handle_stripe_subscriptions(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
-_PLANS_MSG = """💰 *RudiBot Premium Pläne*
+_PLANS_MSG = """💰 *SuperMegaBot High-Ticket Pläne*
 
-🥉 *Starter — €49/Monat*
-• Shopify Produkt-Automation
-• AI-Antworten unbegrenzt
-• Tägliche Trend-Analyse
+🚀 *Growth — €497/Monat*
+• Shopify Vollautomatisierung (bis 5.000 SKU)
+• Social Autopilot (3 Plattformen)
+• Telegram Bot + Revenue-Reports
+• 60-min Onboarding-Call
+• Priority Support <8h
 
-🥈 *Pro — €99/Monat*
-• Alles aus Starter
-• Digistore24 Integration
-• Stripe Revenue Tracking
-• Priority Support
+⚡ *Scale — €997/Monat* _(beliebteste Wahl)_
+• Alles aus Growth + unbegrenzte SKUs
+• Social Autopilot alle Plattformen
+• Dedicated Customer Success Manager
+• Digistore24 + Affiliate-Automation
+• Quarterly Business Reviews (QBR)
+• Priority Support <4h
 
-🏆 *Enterprise — €299/Monat*
-• Alles aus Pro
-• Eigene Agent Teams
-• White-Label Branding
-• Dedizierter Support
+🏆 *Enterprise — €2.497/Monat*
+• Alles aus Scale
+• White-Label für Agentur-Kunden
+• Custom API + dedizierte Railway-Instanz
+• SLA 99.99% schriftlich
+• Unbegrenzte Team-Zugänge
+• Priority Support <1h
+
+✅ 14-Tage Demo kostenlos · 90-Tage ROI-Garantie · DSGVO-konform
 
 👇 Jetzt starten:"""
 
@@ -4397,9 +4473,10 @@ async def handle_telegram_webhook(req):
 
         if text in ("/premium", "/kaufen", "/plans", "/preise", "/buy"):
             keyboard = {"inline_keyboard": [
-                [{"text": "🥉 Starter €49/Mo", "url": f"{base_url}/checkout?plan=starter&chat_id={chat_id}"}],
-                [{"text": "🥈 Pro €99/Mo", "url": f"{base_url}/checkout?plan=pro&chat_id={chat_id}"}],
-                [{"text": "🏆 Enterprise €299/Mo", "url": f"{base_url}/checkout?plan=enterprise&chat_id={chat_id}"}],
+                [{"text": "🚀 Growth €497/Mo", "url": f"{base_url}/checkout?plan=growth&chat_id={chat_id}"}],
+                [{"text": "⚡ Scale €997/Mo ← Beliebt", "url": f"{base_url}/checkout?plan=scale&chat_id={chat_id}"}],
+                [{"text": "🏆 Enterprise €2.497/Mo", "url": f"{base_url}/checkout?plan=enterprise&chat_id={chat_id}"}],
+                [{"text": "📅 14-Tage Demo buchen", "url": f"{base_url}/demo?chat_id={chat_id}"}],
             ]}
             await _tg_send(bot_token, chat_id, _PLANS_MSG, reply_markup=keyboard)
             return web.Response(status=200)
@@ -4417,7 +4494,7 @@ async def handle_telegram_webhook(req):
                 system=(
                     "Du bist RudiBot, ein KI-Assistent für E-Commerce und Business Automation. "
                     "Antworte auf Deutsch, kurz und hilfreich. "
-                    "Wenn jemand nach Preisen, Abo oder Kauf fragt, sage: 'Tippe /premium für unsere Pläne ab €49/Monat.'"
+                    "Wenn jemand nach Preisen, Abo oder Kauf fragt, sage: 'Tippe /premium für unsere High-Ticket Pläne ab €497/Monat — mit 14-Tage Demo und 90-Tage ROI-Garantie.'"
                 ),
                 messages=[{"role": "user", "content": text or "(leere Nachricht)"}]
             )
@@ -9222,12 +9299,15 @@ async def handle_rss_run(req: web.Request) -> web.Response:
 
 async def handle_stripe_plans_info(req):
     return web.json_response({"plans": [
-        {"id": os.getenv("STRIPE_PRICE_STARTER","price_1TtfRvRJECiV6vSmX3T1Kjn2"),         "name": "Starter",          "price_eur": 49,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_PRO","price_1TtfRwRJECiV6vSmbNBlDUzo"),             "name": "Pro",              "price_eur": 99,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_ENTERPRISE","price_1TtfRyRJECiV6vSmwUgvoj0x"),      "name": "Enterprise",       "price_eur": 299, "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_STARTER","price_1TjodoRJECiV6vSmL726jLd3"),"name": "Telegram Starter", "price_eur": 29,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_PRO","price_1TjodoRJECiV6vSmcWkhHtWz"),    "name": "Telegram Pro",     "price_eur": 79,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_AGENCY","price_1TjodpRJECiV6vSmFVtPj8yb"), "name": "Telegram Agency",  "price_eur": 199, "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_HT_GROWTH_MONTHLY",""),    "name": "Growth",     "price_eur": 497,  "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_HT_SCALE_MONTHLY",""),    "name": "Scale",      "price_eur": 997,  "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_HT_ENTERPRISE_MONTHLY",""),"name": "Enterprise","price_eur": 2497, "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_HT_GROWTH_YEARLY",""),    "name": "Growth Yearly",     "price_eur": 4970,  "interval": "year"},
+        {"id": os.getenv("STRIPE_PRICE_HT_SCALE_YEARLY",""),     "name": "Scale Yearly",      "price_eur": 9970,  "interval": "year"},
+        {"id": os.getenv("STRIPE_PRICE_HT_ENTERPRISE_YEARLY",""),"name": "Enterprise Yearly", "price_eur": 24970, "interval": "year"},
+        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_GROWTH",""),     "name": "Telegram Growth",   "price_eur": 97,    "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_SCALE",""),      "name": "Telegram Scale",    "price_eur": 197,   "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_AGENCY","price_1TjodpRJECiV6vSmFVtPj8yb"), "name": "Telegram Agency", "price_eur": 497, "interval": "month"},
     ]})
 
 async def handle_shopify_inventory_live(req):
@@ -10476,6 +10556,131 @@ async def handle_social_proof(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ─── High-Ticket Demo System ─────────────────────────────────────────────────
+
+async def handle_demo_book(req: web.Request) -> web.Response:
+    """POST /api/demo/book — Demo-Buchung, Telegram-Alert an Rudolf, SQLite-Session anlegen."""
+    try:
+        data = await req.json()
+        name    = data.get("name", "").strip()
+        email   = data.get("email", "").strip()
+        phone   = data.get("phone", "").strip()
+        company = data.get("company", "").strip()
+        product = data.get("product", "supermegabot").strip()
+        revenue = data.get("revenue_range", "").strip()
+        plan    = data.get("plan", "").strip()
+        if not name or not email:
+            return web.json_response({"ok": False, "error": "Name und E-Mail erforderlich"}, status=400)
+        from modules.demo_system import create_demo_session, schedule_demo_call
+        session_id = await create_demo_session(email=email, name=name, company=company, product_id=product)
+        await schedule_demo_call(
+            name=name, email=email, phone=phone, company=company,
+            product=product, revenue_range=revenue, plan_interest=plan,
+        )
+        return web.json_response({
+            "ok": True,
+            "session_id": session_id,
+            "message": "Demo-Anfrage eingegangen! Rudolf meldet sich innerhalb von 4 Stunden.",
+            "demo_url": f"/demo?session={session_id}",
+        })
+    except Exception as e:
+        log.error("Demo book error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_demo_session_status(req: web.Request) -> web.Response:
+    """GET /api/demo/session/{sid} — Demo-Session-Status abrufen."""
+    try:
+        sid = req.match_info.get("sid", "")
+        from modules.demo_system import get_demo_session
+        session = get_demo_session(sid)
+        if not session:
+            return web.json_response({"ok": False, "error": "Session nicht gefunden"}, status=404)
+        return web.json_response({"ok": True, "session": session})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_demo_page(req: web.Request) -> web.Response:
+    """GET /demo — High-Ticket Demo Landing Page mit Buchungsformular."""
+    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'supermegabot-production.up.railway.app')}"
+    html = f"""<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SuperMegaBot — Kostenlose Demo buchen</title>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{background:#080C14;color:#E8F0FF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}}
+.card{{background:#0D1525;border:1px solid #1B2640;border-radius:12px;padding:48px;max-width:560px;width:100%}}
+h1{{font-size:1.8rem;font-weight:900;margin-bottom:8px;letter-spacing:-.01em}}
+h1 span{{color:#1BFFAA}}
+p{{color:#7A92B8;margin-bottom:24px;line-height:1.6}}
+.field{{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}}
+label{{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7A92B8}}
+input,select{{background:#080C14;border:1px solid #243554;color:#E8F0FF;padding:10px 14px;border-radius:6px;font-size:.9rem;outline:none;font-family:inherit}}
+input:focus,select:focus{{border-color:#1BFFAA}}
+select option{{background:#0D1525}}
+.row{{display:grid;grid-template-columns:1fr 1fr;gap:12px}}
+.btn{{width:100%;padding:14px;background:#1BFFAA;color:#000;border:none;border-radius:6px;font-size:1rem;font-weight:700;cursor:pointer;margin-top:8px}}
+.btn:hover{{opacity:.88}}
+.trust{{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px;justify-content:center}}
+.trust-item{{font-size:.75rem;color:#3D5070}}
+.success{{display:none;text-align:center;color:#1BFFAA;padding:20px;border:1px solid #1BFFAA;border-radius:8px;margin-top:16px}}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>14-Tage Demo<br><span>kostenlos starten</span></h1>
+  <p>Kein Credit Card. Kein Risiko. Rudolf meldet sich persönlich innerhalb von 4 Stunden.</p>
+  <form id="f">
+    <div class="row">
+      <div class="field"><label>Vorname</label><input id="fn" placeholder="Max" required></div>
+      <div class="field"><label>Nachname</label><input id="ln" placeholder="Mustermann"></div>
+    </div>
+    <div class="field"><label>E-Mail</label><input id="em" type="email" placeholder="max@deinshop.de" required></div>
+    <div class="field"><label>Telefon</label><input id="ph" placeholder="+49 123 ..."></div>
+    <div class="field"><label>Unternehmen</label><input id="co" placeholder="Mein Shop GmbH"></div>
+    <div class="row">
+      <div class="field"><label>Monatlicher Umsatz</label>
+        <select id="rv"><option value="">Bitte wählen</option>
+        <option>€5K–€20K</option><option>€20K–€50K</option>
+        <option>€50K–€150K</option><option>€150K–€500K</option><option>€500K+</option>
+        </select>
+      </div>
+      <div class="field"><label>Interesse</label>
+        <select id="pl"><option value="">Noch offen</option>
+        <option>Growth (€497/mo)</option><option>Scale (€997/mo)</option>
+        <option>Enterprise (€2.497/mo)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn" type="submit">Demo buchen — kostenlos →</button>
+  </form>
+  <div class="success" id="ok">✅ Anfrage gesendet! Rudolf meldet sich in &lt;4h.</div>
+  <div class="trust">
+    <span class="trust-item">✓ 90-Tage ROI-Garantie</span>
+    <span class="trust-item">✓ DSGVO · EU-Server</span>
+    <span class="trust-item">✓ Kein Spam</span>
+  </div>
+</div>
+<script>
+document.getElementById('f').addEventListener('submit',async e=>{{
+  e.preventDefault();
+  const b={{name:document.getElementById('fn').value+' '+document.getElementById('ln').value,
+    email:document.getElementById('em').value,phone:document.getElementById('ph').value,
+    company:document.getElementById('co').value,revenue_range:document.getElementById('rv').value,
+    plan:document.getElementById('pl').value,product:'supermegabot'}};
+  const r=await fetch('{base_url}/api/demo/book',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(b)}});
+  const j=await r.json();
+  if(j.ok){{document.getElementById('f').style.display='none';document.getElementById('ok').style.display='block';}}
+  else alert('Fehler: '+j.error);
+}});
+</script>
+</body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
 # ─── Auto-Sorter Handlers ─────────────────────────────────────────────────────
 
 async def handle_sort_shopify(request: web.Request) -> web.Response:
@@ -11248,6 +11453,11 @@ async def create_app():
     # Existing routes
     app.router.add_get("/", handle_index)
     app.router.add_get("/money-machines", handle_money_machines)
+    app.router.add_get("/highticket", handle_highticket)
+    app.router.add_get("/api/ht/demo", handle_ht_demo_data)
+    app.router.add_post("/api/ht/apply", handle_ht_apply)
+    app.router.add_get("/api/ht/onboarding", handle_ht_onboarding)
+    app.router.add_get("/api/ht/stats", handle_ht_stats)
     app.router.add_post("/api/chat", handle_chat)
     # Telegram Hub Bridge endpoints
     app.router.add_post("/api/bot/execute", handle_bot_execute)
@@ -12070,6 +12280,10 @@ async def create_app():
     app.router.add_get( "/api/case-studies",             handle_case_studies)
     app.router.add_get( "/api/demos",                    handle_demos)
     app.router.add_get( "/api/social-proof",             handle_social_proof)
+    # ── High-Ticket Demo System ───────────────────────────────────────────────
+    app.router.add_post("/api/demo/book",                handle_demo_book)
+    app.router.add_get( "/api/demo/session/{sid}",       handle_demo_session_status)
+    app.router.add_get( "/demo",                         handle_demo_page)
     app.router.add_post("/api/social-proof/run",         handle_social_proof)
 
     # ── Auto-Sorter ───────────────────────────────────────────────────────────

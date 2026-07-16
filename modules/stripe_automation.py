@@ -379,12 +379,14 @@ async def handle_webhook_event(event: Dict) -> str:
         # nicht ankommt oder customer_email dort leer ist.
         if mode == "subscription" and email and "@" in email:
             pkg = meta.get("package") or meta.get("plan", "")
-            if pkg in ("starter", "pro", "enterprise"):
+            _plan_aliases = {"starter": "growth", "pro": "scale"}
+            pkg = _plan_aliases.get(pkg, pkg)
+            if pkg in ("growth", "scale", "enterprise", "professional", "business"):
                 tier = pkg
-            elif amount <= 55:
-                tier = "starter"
-            elif amount <= 110:
-                tier = "pro"
+            elif amount <= 600:
+                tier = "growth"
+            elif amount <= 1200:
+                tier = "scale"
             else:
                 tier = "enterprise"
             try:
@@ -431,11 +433,11 @@ async def handle_webhook_event(event: Dict) -> str:
             amount = (price.get("unit_amount", 0) or 0) / 100
             cur    = price.get("currency", "eur").upper()
             plan   = f"{amount:.2f} {cur}/{price.get('recurring', {}).get('interval', '')}"
-        # Map amount to subscription tier (matches checkout.session.completed tiers)
-        if amount <= 55:
-            tier_from_amount = "starter"
-        elif amount <= 110:
-            tier_from_amount = "pro"
+        # Map amount to subscription tier (High-Ticket: Growth €497, Scale €997, Enterprise €2497)
+        if amount <= 600:
+            tier_from_amount = "growth"
+        elif amount <= 1200:
+            tier_from_amount = "scale"
         else:
             tier_from_amount = "enterprise"
         await _tg(
@@ -573,11 +575,11 @@ async def handle_webhook_event(event: Dict) -> str:
             new_amount = (price.get("unit_amount", 0) or 0) / 100
             interval = price.get("recurring", {}).get("interval", "month")
             new_plan = f"{new_amount:.2f} EUR/{interval}"
-            # Map amount to tier name
-            if new_amount <= 55:
-                tier = "starter"
-            elif new_amount <= 110:
-                tier = "pro"
+            # Map amount to tier name (High-Ticket pricing)
+            if new_amount <= 600:
+                tier = "growth"
+            elif new_amount <= 1200:
+                tier = "scale"
             else:
                 tier = "enterprise"
         else:

@@ -73,68 +73,86 @@ _revenue = {"total_mrr": 0, "subscribers": {}}
 
 # ── Pläne ─────────────────────────────────────────────────────────────────────
 PLANS = {
-    "starter": {
-        "name": "Lead Agent",
-        "price_eur": 500,
-        "tagline": "KI findet täglich 10 neue Kunden für dich",
+    "professional": {
+        "name": "Lead Agent Professional",
+        "price_eur": 797,
+        "tagline": "KI findet täglich 10 neue Kunden für dich — automatisch.",
         "color": "#6366f1",
         "features": [
-            "KI-Agent scannt täglich 50+ B2B-Firmen",
-            "10+ qualifizierte Leads pro Tag",
+            "KI-Agent scannt täglich 100+ B2B-Firmen",
+            "15+ qualifizierte Leads pro Tag",
             "Personalisierte Outreach-Emails (automatisch)",
             "Antwort-Tracking + CRM-Integration",
             "Telegram-Alert bei heißen Leads",
+            "60-min Onboarding-Call mit AIITEC Team",
+            "Priority Support <8h",
+            "14-Tage kostenlose Demo",
         ],
         "stripe_price_data": {
             "currency": "eur",
-            "unit_amount": 50000,
+            "unit_amount": 79700,
             "recurring": {"interval": "month"},
-            "product_data": {"name": "AIITEC Lead Agent — KI-B2B-Vertrieb"},
+            "product_data": {"name": "AIITEC Lead Agent Professional — KI-B2B-Vertrieb"},
         },
     },
-    "pro": {
-        "name": "Compliance Wächter",
-        "price_eur": 1500,
-        "tagline": "EU AI Act konform in 24h. Kein Bußgeld.",
+    "business": {
+        "name": "Compliance + Lead Business",
+        "price_eur": 1497,
+        "tagline": "EU AI Act konform in 24h + täglich neue Leads. Kein Risiko.",
         "color": "#f59e0b",
         "features": [
+            "Alles aus Professional",
             "Täglicher Compliance-Scan (AI Act Art. 50 + DSGVO)",
-            "Automatisches Disclosure-Banner für deinen Shop",
-            "Bußgeld-Früherkennung (bis €15 Mio. Risiko)",
+            "Automatisches Disclosure-Banner für deine Website",
+            "Bußgeld-Früherkennung (bis €30 Mio. Risiko abgesichert)",
             "Rechtssicherer Bericht für Dokumentationspflicht",
-            "Unbegrenzte Shops + API-Zugang",
+            "Unbegrenzte Shops + API-Vollzugang",
+            "Dedicated Customer Success Manager",
+            "Quarterly Business Reviews (QBR)",
+            "Priority Support <4h",
         ],
         "stripe_price_data": {
             "currency": "eur",
-            "unit_amount": 150000,
+            "unit_amount": 149700,
             "recurring": {"interval": "month"},
-            "product_data": {"name": "AIITEC Compliance Wächter — EU AI Act + DSGVO"},
+            "product_data": {"name": "AIITEC Business — Lead Agent + Compliance Wächter"},
         },
     },
     "enterprise": {
-        "name": "Intelligence Suite",
-        "price_eur": 2000,
-        "tagline": "Wettbewerber-Radar. Täglich. Automatisch.",
+        "name": "Intelligence Suite Enterprise",
+        "price_eur": 2997,
+        "tagline": "Wettbewerber-Radar + Compliance + Leads. Vollständige KI-Automatisierung.",
         "color": "#10b981",
         "features": [
-            "Alles aus Lead Agent + Compliance Wächter",
+            "Alles aus Business",
             "Täglicher Wettbewerber-Scan (Preise, Produkte, Kampagnen)",
             "Google Trends + Reddit Sentiment deiner Branche",
-            "KI-generierte Handlungsempfehlungen",
-            "Telegram-Push täglich 07:00 + API-Vollzugang",
+            "KI-generierte Handlungsempfehlungen täglich 07:00",
+            "White-Label für Agentur-Kunden",
+            "Custom API-Integrationen (HubSpot, Salesforce, Pipedrive)",
+            "SLA 99.9% schriftlich garantiert",
+            "Monatliche Strategy-Calls",
+            "Priority Support <1h",
+            "ROI-Garantie: 90 Tage oder Geld zurück",
         ],
         "stripe_price_data": {
             "currency": "eur",
-            "unit_amount": 200000,
+            "unit_amount": 299700,
             "recurring": {"interval": "month"},
-            "product_data": {"name": "AIITEC Intelligence Suite — Full Automation"},
+            "product_data": {"name": "AIITEC Intelligence Suite Enterprise — Full Automation"},
         },
     },
+    # Backwards compat aliases
+    "starter": None,
+    "pro": None,
 }
 
 
 # ── Stripe ────────────────────────────────────────────────────────────────────
+_PLAN_ALIASES = {"starter": "professional", "pro": "business"}
+
 async def create_stripe_session(plan_key: str, email: str, success_url: str, cancel_url: str) -> str:
+    plan_key = _PLAN_ALIASES.get(plan_key, plan_key)
     plan = PLANS.get(plan_key)
     if not plan:
         raise ValueError(f"Unbekannter Plan: {plan_key}")
@@ -483,7 +501,7 @@ footer{{border-top:1px solid #1e1e3a;padding:32px 0;text-align:center;color:#444
     </div>
     <div class="faq-item">
       <div class="faq-q">Was kostet der Einstieg wirklich?</div>
-      <div class="faq-a">Lead Agent: €500/mo · Compliance Wächter: €1.500/mo · Intelligence Suite: €2.000/mo. Keine Einrichtungsgebühr, keine versteckten Kosten. Stripe-Rechnung monatlich.</div>
+      <div class="faq-a">Professional: €797/mo · Business: €1.497/mo · Enterprise: €2.997/mo. Keine Einrichtungsgebühr, keine versteckten Kosten. 14-Tage Demo kostenlos. 90-Tage ROI-Garantie. Stripe-Rechnung monatlich.</div>
     </div>
   </div>
 </div>
@@ -510,7 +528,7 @@ footer{{border-top:1px solid #1e1e3a;padding:32px 0;text-align:center;color:#444
 let _plan = 'starter';
 function checkout(plan) {{
   _plan = plan;
-  const names = {{starter:'Lead Agent — €500/mo',pro:'Compliance Wächter — €1.500/mo',enterprise:'Intelligence Suite — €2.000/mo'}};
+  const names = {{professional:'Lead Agent Professional — €797/mo',business:'Compliance + Lead Business — €1.497/mo',enterprise:'Intelligence Suite Enterprise — €2.997/mo'}};
   document.getElementById('modal-title').textContent = names[plan] || plan;
   document.getElementById('checkout-modal').classList.add('open');
   document.getElementById('modal-email').focus();
