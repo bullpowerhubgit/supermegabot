@@ -152,14 +152,31 @@ async def _get_twikit_client():
 async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
     """Sendet Tweet: 1) twikit (web, kostenlos) → 2) Make.com Webhook → 3) API v2."""
     import aiohttp
+    # NEVER-TWICE first — fail-closed
+    try:
+        from modules.post_never_twice import check_never_twice, remember_block
+        nt_ok, nt_errs = check_never_twice(text, "twitter")
+        if not nt_ok:
+            remember_block(text, "twitter", nt_errs, source_module="twitter_autoposter")
+            log.warning("Tweet NeverTwice BLOCK: %s | %s", nt_errs, text[:80])
+            return {"ok": False, "blocked": True, "errors": nt_errs}
+    except Exception as e:
+        log.error("NeverTwice fail-closed: %s", e)
+        return {"ok": False, "blocked": True, "errors": [f"NeverTwice fail-closed: {e}"]}
     try:
         from modules.post_guardian import validate_post as _gcheck
         ok, errs = _gcheck(text, platform="twitter")
         if not ok:
+            try:
+                from modules.post_never_twice import remember_block
+                remember_block(text, "twitter", errs, source_module="twitter_autoposter")
+            except Exception:
+                pass
             log.warning("Tweet blockiert: %s | Preview: %s", errs, text[:80])
             return {"ok": False, "blocked": True, "errors": errs}
     except Exception as _e:
-        log.debug("PostGuardian nicht verfügbar: %s", _e)
+        log.error("PostGuardian fail-closed: %s", _e)
+        return {"ok": False, "blocked": True, "errors": [f"PostGuardian fail-closed: {_e}"]}
     text = text[:280]
 
     # Weg 1: twikit (inoffizielle Web-API, KEIN bezahlter Plan nötig)

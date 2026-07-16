@@ -64,13 +64,37 @@ def main() -> int:
     else:
         print("PASS  post_gateway bans myshopify")
 
+    # NEVER-TWICE engine
+    try:
+        from modules.post_never_twice import (
+            check_never_twice,
+            import_legacy_blocks,
+            remember_block,
+            self_check,
+        )
+        import_legacy_blocks()
+        nt = self_check()
+        print(f"{'PASS' if nt.get('ok') else 'FAIL'}  NeverTwice self_check → {nt}")
+        if not nt.get("ok"):
+            fails.append(f"NeverTwice self_check failed: {nt}")
+        # same content twice
+        bad = "NEVER TWICE SAMPLE [PLACEHOLDER] myshopify.com Hallo None"
+        remember_block(bad, "facebook", ["placeholder", "myshopify"], source_module="audit")
+        ok2, e2 = check_never_twice(bad, "facebook")
+        print(f"{'PASS' if not ok2 else 'FAIL'}  same content blocked again → {e2[:1]}")
+        if ok2:
+            fails.append("NeverTwice allowed previously blocked content")
+    except Exception as e:
+        fails.append(f"NeverTwice import/run failed: {e}")
+        print(f"FAIL  NeverTwice: {e}")
+
     print("---")
     if fails:
         print(f"AUDIT FAILED: {len(fails)} issues")
         for f in fails:
             print(" -", f)
         return 1
-    print("AUDIT OK — posting guards block faulty content")
+    print("AUDIT OK — posting guards + never-twice block faulty content")
     return 0
 
 

@@ -347,6 +347,20 @@ async def check_post(
     # Auto-Truncate für Twitter (280 Zeichen) und andere Plattformen
     text = auto_truncate(text, platform)
 
+    # NEVER-TWICE — gleicher Fehler/Content nie wieder
+    try:
+        from modules.post_never_twice import check_never_twice, remember_block
+        nt_ok, nt_errs = check_never_twice(text, platform)
+        if not nt_ok:
+            try:
+                remember_block(text, platform, nt_errs, source_module="post_guard")
+            except Exception:
+                pass
+            return False, nt_errs
+    except Exception as e:
+        log.error("NeverTwice fail-closed in post_guard: %s", e)
+        return False, [f"NeverTwice fail-closed: {e}"]
+
     ok, r = check_forbidden_patterns(text)
     if not ok:
         errors.append(r)
@@ -380,6 +394,11 @@ async def check_post(
     passed = len(errors) == 0
     if not passed:
         log.warning("PostGuard BLOCKIERT [%s]: %s | Text: %s...", platform, errors, text[:60])
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text, platform, errors, source_module="post_guard")
+        except Exception:
+            pass
     else:
         log.debug("PostGuard OK [%s]: %s...", platform, text[:40])
 
