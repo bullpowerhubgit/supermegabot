@@ -7,6 +7,7 @@
 |---|---------|------|-------------|
 | 1 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings | — |
 | 2 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API → Appeal Draft in Gmail bereit | `PINTEREST_ACCESS_TOKEN` |
+| 3 | **Twitter OAuth 401** | developer.twitter.com → Token erneuern | `TWITTER_ACCESS_TOKEN` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
@@ -35,13 +36,13 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 | Shopify API | ✅ OK | Shop: "I Want That! I Need It!", 10.752 Produkte |
 | Stripe | ✅ OK | Account: bullpowersrtkennels@gmail.com, 75+ Links |
 | SendGrid | ✅ OK | |
-| Gmail SMTP | ✅ 4/5 OK | aiitecbuuss App-PW abgelaufen (1 Konto tot) |
+| Gmail SMTP | ✅ 5/5 OK | alle Konten aktiv, aiitecbuuss App-PW `hvzgpgyufricmenj` ✅ |
 | Telegram Bot | ✅ OK | |
 | Instagram | ✅ 26 Posts heute | @aaiitecc |
 | LinkedIn | ✅ 6 Posts heute | |
 | Anthropic API | ✅ OK | claude-haiku-4-5-20251001 antwortet |
 | OpenAI API | ✅ OK | 123 Modelle verfügbar |
-| Resend | ❌ BEIDE Keys ungültig | → resend.com → API Keys neu generieren |
+| Resend | ✅ OK | `re_XRHYX...` → HTTP 200 live ✅ |
 | Facebook | ⚠️ Rate Limit | Reset 17.07 ~06:00 |
 | Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
 | Pinterest | ❌ API ABGELEHNT | Email 07.07 bestätigt — Appeal + neuer Token nötig |
@@ -53,7 +54,8 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 - SENDGRID_API_KEY ✅
 - TWITTER_API_KEY + alle Twitter-Vars ✅
 - PINTEREST_ACCESS_TOKEN ✅
-- ANTHROPIC_API_KEY, OPENAI_API_KEY — gesetzt aber **revoked** (neuen Key brauchen)
+- ANTHROPIC_API_KEY, OPENAI_API_KEY — ✅ beide gültig (claude-haiku + 123 OpenAI-Modelle live)
+- RESEND_API_KEY, GMAIL_APP_PASSWORD_5 — ✅ erneuert + gesetzt
 
 ## Email-Konten Status (2026-07-16)
 | Konto | App-Password | SMTP | Status |
@@ -62,11 +64,9 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 | dragonadnp@gmail.com | GMAIL_APP_PASSWORD_1 | Port 587 | ✅ FUNKTIONIERT |
 | rudolf.sarkany.aiitec@gmail.com | GMAIL_APP_PASSWORD_7 | Port 587 | ✅ FUNKTIONIERT |
 | rudolfsarkany1984@gmail.com | GMAIL_APP_PASSWORD_8 | Port 587 | ✅ FUNKTIONIERT |
-| aiitecbuuss@gmail.com | GMAIL_APP_PASSWORD_5 | Port 587 | ❌ App-PW abgelaufen → neu generieren! |
+| aiitecbuuss@gmail.com | GMAIL_APP_PASSWORD_5 | Port 587 | ✅ FUNKTIONIERT (`hvzgpgyufricmenj`) |
 
-**Aktion benötigt:** Rudolf muss aiitecbuuss@gmail.com App Password neu generieren
-→ accounts.google.com → Sicherheit → 2-Schritt-Bestätigung → App-Passwörter → SuperMegaBot
-→ Dann .env + Railway: GMAIL_APP_PASSWORD_5=<neues_passwort> setzen
+**Alle 5 Gmail-Konten aktiv.** aiitecbuuss@gmail.com App-PW erneuert + Railway gesetzt ✅
 
 ## Posts-Fixes (2026-07-16)
 - ✅ autopost_full.py: ContentGuard (Tech-Keywords), Dedup 8h/Handle, Bild-Pflicht
