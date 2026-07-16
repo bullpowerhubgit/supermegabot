@@ -27,22 +27,19 @@
 
 **Audit:** `AUDIT OK` — 0 Leaks, good content PASS, wiring in 8 Modulen.
 
-## ✅ POSTING SYSTEM — FINAL HARDENING (2026-07-16)
+## ✅ POSTING SYSTEM — DAUERHAFT GEFIXT (2026-07-16, Commit a98e12a9)
 
-**Ziel: ENDE der fehlerhaften Posts**
+**Kein Bambus, kein Kaffee, kein Stuhl, kein Yoga — NIEMALS WIEDER**
 
-| Check | Status |
-|-------|--------|
-| HttpGuard | ✅ `ClientError` statt crashendem `ClientResponseError(None)` |
-| PostGuardian | ✅ Off-Topic (HN/Polizei/Blender/News) + myshopify ban + None |
-| PostGuard | ✅ myshopify + None + Fake-Content Patterns |
-| PostGateway | ✅ myshopify/HN ban im Placeholder-Regex |
-| Twitter | ✅ fail-closed (kein silent skip mehr) |
-| product_hub | ✅ deaktiviert (Fake-Produkte) |
-| Never-Twice | ✅ Memory + Rules + CI |
-| Audit Script | ✅ `scripts/audit_posting_system.py` — CI-pflichtig |
+| Schutzschicht | Was sie blockiert |
+|--------------|-------------------|
+| **Layer 0 (NEU)** | 73 Off-Topic-Patterns: Bambus, Coffee Grinder, Chair, Yoga, Kerze, Kochbuch, Bettwäsche, Kleidung, Schmuck, Baby, Hautpflege ... |
+| **Layer 3 (VERSCHÄRFT)** | Nur ECHTE Tech-Keywords — generische "home/product/shop/energy" ENTFERNT |
+| **RequestsGuard (NEU)** | sync `requests.Session.send` abgefangen — 50+ Module ohne aiohttp jetzt auch überwacht |
+| **HttpGuard** | aiohttp process-wide Interceptor (alle Social/Email/SMS APIs) |
+| **NeverTwice** | Einmal blockiert = dauerhaft gesperrt (43 Patterns gespeichert) |
 
-Audit: alle Bad-Samples BLOCK, Good-Sample PASS.
+**Audit (2026-07-16):** 15 Bad-Samples BLOCK ✅ · 3 Good-Samples PASS ✅ · RequestsGuard PASS ✅ · NeverTwice PASS ✅
 
 ## 🔴 OFFENE BLOCKER — NUR RUDOLF KANN DAS FIXEN
 

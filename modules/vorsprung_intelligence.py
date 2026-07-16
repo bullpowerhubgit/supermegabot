@@ -752,8 +752,20 @@ Kein Eigenlob — Fakten und Methode erklären. CTA am Ende für Beta-Zugang."""
     return await ai_complete(prompt, system=system, max_tokens=800)
 
 
+def _vi_guard(text: str, platform: str) -> tuple[bool, list]:
+    try:
+        from modules.post_guardian import validate_post
+        return validate_post(text, platform)
+    except Exception:
+        return True, []
+
+
 async def _post_linkedin(content: str) -> dict:
     """Postet auf LinkedIn via Rudolf's existierendes Access Token."""
+    ok, errs = _vi_guard(content, "linkedin")
+    if not ok:
+        log.warning("VORSPRUNG LinkedIn BLOCK: %s | %s", errs, content[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     if not LINKEDIN_TOKEN:
         return {"ok": False, "error": "LINKEDIN_ACCESS_TOKEN fehlt"}
 
@@ -810,6 +822,10 @@ async def _post_linkedin(content: str) -> dict:
 
 async def _post_twitter(tweet_text: str) -> dict:
     """Postet Tweet via OAuth 1.0a (Rudolf's @rudibot84 Account)."""
+    ok, errs = _vi_guard(tweet_text, "twitter")
+    if not ok:
+        log.warning("VORSPRUNG Twitter BLOCK: %s | %s", errs, tweet_text[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     if not all([TWITTER_API_KEY, TWITTER_SECRET, TWITTER_TOKEN, TWITTER_TOKEN_SECRET]):
         return {"ok": False, "error": "Twitter OAuth Keys fehlen"}
     import hmac
