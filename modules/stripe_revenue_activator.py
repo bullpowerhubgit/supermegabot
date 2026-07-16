@@ -20,15 +20,23 @@ import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import quote as urlquote
-
 import aiohttp
 from aiohttp import web
+
+from modules.stripe_guards import (
+    build_thank_you_url,
+    filter_prices_by_type,
+    resolve_stripe_key,
+    sanitize_get_params,
+    sanitize_post_data,
+    sanitize_prices_params,
+)
 
 log = logging.getLogger(__name__)
 
 # ── Config ─────────────────────────────────────────────────────────────────────
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+# FULL-Key hat Priorität — live-safe Key-Resolution
+STRIPE_SECRET_KEY = resolve_stripe_key() or os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_API_BASE   = "https://api.stripe.com/v1"
 WEBHOOK_URL       = "https://supermegabot-production.up.railway.app/api/stripe/webhook"
 THANK_YOU_BASE    = os.getenv("STRIPE_THANK_YOU_URL", "https://ineedit.com.co/pages/danke")
@@ -105,9 +113,11 @@ def _auth_header() -> dict:
 
 
 async def _get(session: aiohttp.ClientSession, path: str, params: dict = None) -> dict:
+    # Dauerhaft: type aus /prices strippen, andere GET-Params sanitizen
+    safe_params = sanitize_get_params(path, params)
     async with session.get(
         f"{STRIPE_API_BASE}{path}",
-        params=params,
+        params=safe_params,
         headers=_auth_header(),
     ) as resp:
         body = await resp.json()
@@ -117,9 +127,11 @@ async def _get(session: aiohttp.ClientSession, path: str, params: dict = None) -
 
 
 async def _post(session: aiohttp.ClientSession, path: str, data: dict) -> dict:
+    # Dauerhaft: Redirect-URLs in payment_links/checkout immer URL-safe
+    safe_data = sanitize_post_data(path, data)
     async with session.post(
         f"{STRIPE_API_BASE}{path}",
-        data=data,
+        data=safe_data,
         headers=_auth_header(),
     ) as resp:
         body = await resp.json()
@@ -131,7 +143,7 @@ async def _post(session: aiohttp.ClientSession, path: str, data: dict) -> dict:
 async def _paginate_all(session: aiohttp.ClientSession, path: str, params: dict = None) -> list:
     """Collect all items from a paginated Stripe list endpoint."""
     items = []
-    p = dict(params or {})
+    p = sanitize_get_params(path, params)
     p.setdefault("limit", "100")
     while True:
         result = await _get(session, path, p)
@@ -194,8 +206,8 @@ async def create_all_payment_links() -> list:
             recurring    = price.get("recurring") or {}
             billing_type = recurring.get("interval", "one_time") if recurring else "one_time"
 
-            safe_name    = urlquote(product_name, safe="")[:120]
-            redirect_url = f"{THANK_YOU_BASE}?product={safe_name}"
+            # Dauerhaft: urlquote via stripe_guards (verhindert url_invalid)
+            redirect_url = build_thank_you_url(THANK_YOU_BASE, product_name=product_name)
 
             payload = {
                 "line_items[0][price]":            pid,
@@ -261,8 +273,11 @@ async def create_subscription_checkout() -> list:
         all_products = await _paginate_all(session, "/products", {"active": "true"})
         product_map  = {p["name"]: p["id"] for p in all_products}
 
-        all_prices_raw = await _paginate_all(session, "/prices", {"active": "true"})
-        all_prices = [p for p in all_prices_raw if p.get("recurring")]
+        # Dauerhaft: KEIN type=recurring in Query — lokal filtern
+        all_prices_raw = await _paginate_all(
+            session, "/prices", sanitize_prices_params({"active": "true"})
+        )
+        all_prices = filter_prices_by_type(all_prices_raw, "recurring")
 
         for tier in SAAS_TIERS:
             tier_name   = tier["name"]

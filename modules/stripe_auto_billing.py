@@ -17,7 +17,9 @@ import aiohttp
 
 log = logging.getLogger("StripeAutoBilling")
 
-STRIPE_KEY      = os.getenv("STRIPE_SECRET_KEY", "")
+from modules.stripe_guards import resolve_stripe_key, sanitize_get_params, sanitize_post_data
+
+STRIPE_KEY      = resolve_stripe_key() or os.getenv("STRIPE_SECRET_KEY", "")
 FROM_EMAIL      = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
 TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -32,11 +34,12 @@ async def _stripe_get(path: str, params: dict = None) -> dict:
     if not STRIPE_KEY:
         return {}
     try:
+        safe_params = sanitize_get_params(path, params)
         async with aiohttp.ClientSession() as s:
             async with s.get(
                 f"{STRIPE_BASE}{path}",
                 headers=_stripe_headers(),
-                params=params or {},
+                params=safe_params,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 return await r.json() if r.status < 400 else {}
@@ -48,12 +51,13 @@ async def _stripe_post(path: str, data: dict) -> dict:
     if not STRIPE_KEY:
         return {}
     try:
+        safe_data = sanitize_post_data(path, data)
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 f"{STRIPE_BASE}{path}",
                 headers={**_stripe_headers(),
                          "Content-Type": "application/x-www-form-urlencoded"},
-                data=data,
+                data=safe_data,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 return await r.json() if r.status < 400 else {}

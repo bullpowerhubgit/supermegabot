@@ -79,37 +79,62 @@ async def test_stripe_payment() -> dict:
     """
     Erstellt einen echten Stripe Test-PaymentIntent (kein echtes Geld).
     Testet ob Stripe-Verbindung funktioniert.
+
+    Dauerhaft: pm_card_visa und andere Test-PMs werden im Live-Modus
+    über modules.stripe_guards blockiert (nie an die API gesendet).
     """
+    from modules.stripe_guards import (
+        guard_payment_method,
+        is_live_key,
+        is_test_key,
+        resolve_stripe_key,
+        sanitize_payment_intent_data,
+        stripe_mode,
+    )
+
     result = {"name": "Stripe Test-Zahlung", "ok": False, "details": ""}
-    key = os.getenv("STRIPE_SECRET_KEY", "")
+    key = resolve_stripe_key() or os.getenv("STRIPE_SECRET_KEY", "")
     if not key:
         result["details"] = "STRIPE_SECRET_KEY fehlt"
         return result
-    if not key.startswith("sk_test_") and not key.startswith("sk_live_"):
+    if not is_test_key(key) and not is_live_key(key):
         result["details"] = f"Stripe Key ungültig (beginnt mit: {key[:8]}...)"
         return result
 
-    # pm_card_visa is a test-only token — skip the PaymentIntent test in live mode
-    if key.startswith("sk_live_"):
+    test_pm = "pm_card_visa"
+    allowed, reason = guard_payment_method(key, test_pm)
+    if not allowed:
+        # Live (oder unknown): nie Test-PM senden → 0 invalid_request_error
         result["ok"] = True
-        result["details"] = "Live-Modus: PaymentIntent-Test übersprungen (pm_card_visa nur im Test-Modus)"
+        result["details"] = (
+            f"{stripe_mode(key).capitalize()}-Modus: PaymentIntent-Test übersprungen "
+            f"({test_pm} nur im Test-Modus; stripe_guards)"
+        )
         return result
 
     # Erstelle Test-PaymentIntent über Stripe API (nur im Test-Modus)
     try:
         import aiohttp
+        pi_data = {
+            "amount": "499",       # 4,99 € Test
+            "currency": "eur",
+            "payment_method": test_pm,
+            "confirm": "false",
+            "description": "SuperMegaBot Test-Zahlung",
+            "metadata[test]": "true",
+            "metadata[source]": "auto_test",
+        }
+        # Zweite Guard-Schicht: sanitize würde skip_reason setzen
+        pi_data, skip = sanitize_payment_intent_data(key, pi_data)
+        if skip:
+            result["ok"] = True
+            result["details"] = f"PaymentIntent-Test übersprungen: {skip}"
+            return result
+
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 "https://api.stripe.com/v1/payment_intents",
-                data={
-                    "amount": "499",       # 4,99 € Test
-                    "currency": "eur",
-                    "payment_method": "pm_card_visa",  # Stripe Test-Karte (nur sk_test_!)
-                    "confirm": "false",
-                    "description": "SuperMegaBot Test-Zahlung",
-                    "metadata[test]": "true",
-                    "metadata[source]": "auto_test",
-                },
+                data=pi_data,
                 headers={"Authorization": f"Bearer {key}"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
@@ -348,6 +373,17 @@ async def run_test_purchase() -> dict:
     """Vollständiger Funnel-Test: Stripe + Shopify + Webhooks + DS24 + Email."""
     log.info("🧪 Test-Verkauf-Zyklus gestartet")
     started = time.time()
+
+    # Offline-Guard-Self-Check (keine Stripe-API) — Regression der 3 Fehlerklassen
+    try:
+        from modules.stripe_guards import self_check as _guards_check
+        _gc = _guards_check()
+        if not _gc.get("ok"):
+            log.error("stripe_guards self_check FAILED: %s", _gc)
+        else:
+            log.info("stripe_guards self_check OK (live-safe)")
+    except Exception as _ge:
+        log.warning("stripe_guards self_check error: %s", _ge)
 
     tests = [
         test_stripe_payment(),
