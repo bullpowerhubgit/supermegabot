@@ -198,6 +198,10 @@ def _extract_text(url: str, content_type: str, kwargs: dict) -> str:
         return ""
 
     body = _parse_body_kwargs(kwargs)
+    # Auch URL-Query-Params prüfen (manche Module nutzen params= statt data=/json=)
+    _params = kwargs.get("params") if isinstance(kwargs.get("params"), dict) else {}
+    if not body and _params:
+        body = _params
     data = kwargs.get("data") if isinstance(kwargs.get("data"), dict) else {}
 
     if isinstance(body, dict) and body:
