@@ -96,8 +96,17 @@ _OFFTOPIC_PATTERNS = re.compile(
     r'impfung|impfstoff|vaccine|covid|corona|pandemie|pandemic|'
     r'erdbeben|earthquake|hurricane|tornado|flut|flood|'
     r'skandal|korruption|prozess|urteil|gericht|klage|anklage|'
-    r'hacker.news|show hn:|ask hn:|hn top|'
-    r'quick escape button|wiped? from history|wipes? itself)\b',
+    r'hacker\.?news|show\s*hn:?|ask\s*hn:?|hn\s+top|'
+    r'quick escape button|wiped?\s+from\s+history|wipes?\s+(itself|history)|'
+    r'blender|3d\s*modellierung|vancouver|pd\s+website|'
+    r'reddit\.com/r/|github\.com/.*/issues)\b',
+    re.IGNORECASE,
+)
+
+# Verbotene Store-URLs (nur Public-Domain ineedit.com.co)
+_BANNED_URLS = re.compile(
+    r'myshopify\.com|checkout-ds24\.com/product/668035|'
+    r'localhost|127\.0\.0\.1|yourstore|example\.com',
     re.IGNORECASE,
 )
 
@@ -199,6 +208,14 @@ def validate_post(content: str, platform: str = "default",
     m = _OFFTOPIC_PATTERNS.search(text)
     if m:
         errors.append(f"Off-Topic blockiert: '{m.group()[:40]}' — kein Nachrichten/Polizei/Politik-Inhalt erlaubt")
+
+    # 9b. Verbotene URLs (myshopify, alte DS24-IDs, localhost)
+    if _BANNED_URLS.search(text):
+        errors.append("Verbotene URL (myshopify/localhost/alte DS24) — nutze ineedit.com.co")
+
+    # 9c. Python None im Post
+    if re.search(r'(?i)\bNone\b|Hallo\s+None|—\s*None', text):
+        errors.append("None-Placeholder im Post-Text")
 
     # 10. Nischen-Relevanz für Social-Posts
     if platform_key in _NICHE_SOCIAL_PLATFORMS:

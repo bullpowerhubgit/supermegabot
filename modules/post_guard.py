@@ -41,8 +41,11 @@ _FORBIDDEN = re.compile(
     r'\[INSERT\]|\[PLACEHOLDER\]|undefined|NoneType|None\b|'
     r'TODO|FIXME|LOREM IPSUM|lorem ipsum|<br>|'
     r'example\.com|yourstore\.com|YOUR_DOMAIN|http://localhost|'
+    r'myshopify\.com|'  # immer Public Domain ineedit.com.co
     r'your-shop\.myshopify\.com|'
     r'checkout-ds24\.com/product/668035|'
+    r'Hallo\s+None|—\s*None\b|für\s+None\b|'
+    r'blender|3d\s*modellierung|vancouver\s+pd|'
     # ── Unersetztes Template: {variable} ohne Ziffern ──────────────────────────
     r'\{[a-z_]+\}(?!\d)|'                    # {name}, {produkt}, {link} etc.
     r'\{\{.*?\}\}|'                           # {{doppelte Klammern}}

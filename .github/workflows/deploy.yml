@@ -39,5 +39,8 @@ jobs:
           assert not missing, f"missing checks: {missing}"
           print("StripeGuard self_check OK:", len(r["checks"]), "checks")
           PY
+      - name: Posting system audit
+        run: |
+          python3 scripts/audit_posting_system.py
       - name: Deploy note
         run: echo "✅ Syntax OK — Railway GitHub App deployt automatisch auf push zu main"

@@ -376,13 +376,8 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
             except Exception:
                 pass
 
-            # Wirft ClientResponseError — rufendes Modul bekommt Fehler
-            raise ClientResponseError(
-                request_info=None,
-                history=(),
-                status=403,
-                message=f"HttpGuard blocked: {reason}",
-            )
+            # ClientError (NICHT ClientResponseError(None) — crasht bei str(e)!)
+            raise aiohttp.ClientError(f"HttpGuard blocked [{content_type}]: {reason}")
 
     return await _original_request(self, method, str_or_url, **kwargs)
 
