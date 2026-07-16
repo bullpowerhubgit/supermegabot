@@ -64,13 +64,14 @@ def main() -> int:
     else:
         print("PASS  post_gateway bans myshopify")
 
-    # NEVER-TWICE engine
+    # NEVER-TWICE engine + wiring across all posting paths
     try:
         from modules.post_never_twice import (
             check_never_twice,
             import_legacy_blocks,
             remember_block,
             self_check,
+            stats,
         )
         import_legacy_blocks()
         nt = self_check()
@@ -84,6 +85,27 @@ def main() -> int:
         print(f"{'PASS' if not ok2 else 'FAIL'}  same content blocked again → {e2[:1]}")
         if ok2:
             fails.append("NeverTwice allowed previously blocked content")
+
+        # Wiring must exist in all critical modules
+        for mod_name, needle in (
+            ("modules/post_gateway.py", "check_never_twice"),
+            ("modules/post_guardian.py", "check_never_twice"),
+            ("modules/post_guard.py", "check_never_twice"),
+            ("modules/post_validator.py", "check_never_twice"),
+            ("modules/post_watchdog.py", "check_never_twice"),
+            ("modules/http_guard.py", "check_never_twice"),
+            ("modules/twitter_auto_poster.py", "check_never_twice"),
+            ("modules/twitter_autoposter.py", "check_never_twice"),
+        ):
+            src = (ROOT / mod_name).read_text()
+            if needle not in src:
+                fails.append(f"{mod_name} missing {needle}")
+                print(f"FAIL  {mod_name} missing {needle}")
+            else:
+                print(f"PASS  {mod_name} wired")
+
+        st = stats()
+        print(f"INFO  NeverTwice stats: {st}")
     except Exception as e:
         fails.append(f"NeverTwice import/run failed: {e}")
         print(f"FAIL  NeverTwice: {e}")

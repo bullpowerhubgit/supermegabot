@@ -304,6 +304,11 @@ def record_sent(text: str, platform: str) -> None:
 def record_blocked(text: str, platform: str, reasons: List[str]) -> None:
     """Speichert einen blockierten Post mit Gründen."""
     try:
+        from modules.post_never_twice import remember_block
+        remember_block(text, platform, reasons or ["blocked"], source_module="post_watchdog")
+    except Exception:
+        pass
+    try:
         with _db() as conn:
             conn.execute(
                 "INSERT INTO blocked_posts (platform, text_short, reasons) VALUES (?,?,?)",

@@ -1,5 +1,31 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 17:35 UTC (Wave 9 — Alle Keys gesetzt + Tests OK)**
+**Stand: 2026-07-16 19:45 UTC (Wave 10 — NEVER-TWICE LIVE · Posting-Thema ENDE)**
+
+## ✅ POSTING NEVER-TWICE — DAUERHAFT GESCHLOSSEN (2026-07-16)
+
+**Ziel erreicht: Derselbe Posting-Fehler darf NIE zweimal vorkommen.**
+
+| Layer | Modul | Never-Twice |
+|-------|--------|-------------|
+| Memory Engine | `modules/post_never_twice.py` | SQLite `data/post_never_twice.db` — Content-Blacklist + Error-Classes + Permanent Rules |
+| Gateway | `post_gateway.safe_post` | check vor Send + remember bei Block/Fail |
+| Guardian | `post_guardian.validate_post` | check first + remember |
+| PostGuard | `post_guard.check_post` | check first + remember |
+| Validator | `post_validator` Layer 0 | check + remember on every fail |
+| Watchdog | `post_watchdog` | check + `record_blocked` → remember |
+| HttpGuard | process-wide aiohttp | check in `_guard_check` + remember on block |
+| Twitter API | `twitter_auto_poster` | check fail-closed |
+| Twitter Web | `twitter_autoposter` | check fail-closed |
+| CI Audit | `scripts/audit_posting_system.py` | self_check + wiring check + bad samples |
+
+**Mechanik:**
+1. Seed-Rules (myshopify, Hallo None, Placeholder, AI-Disclosure, HN/News, Fake-Product, Traceback, localhost, old DS24)
+2. Exakter Content nach Block → lifetime blacklist
+3. Gleiche Fehlerklasse 2× → auto-promote permanent rule
+4. Legacy-Blocks aus gateway/guardian DBs importiert (~35)
+5. Fail-closed: NeverTwice-Exception = BLOCK (nie durchlassen)
+
+**Audit:** `AUDIT OK` — 0 Leaks, good content PASS, wiring in 8 Modulen.
 
 ## ✅ POSTING SYSTEM — FINAL HARDENING (2026-07-16)
 
@@ -13,6 +39,7 @@
 | PostGateway | ✅ myshopify/HN ban im Placeholder-Regex |
 | Twitter | ✅ fail-closed (kein silent skip mehr) |
 | product_hub | ✅ deaktiviert (Fake-Produkte) |
+| Never-Twice | ✅ Memory + Rules + CI |
 | Audit Script | ✅ `scripts/audit_posting_system.py` — CI-pflichtig |
 
 Audit: alle Bad-Samples BLOCK, Good-Sample PASS.
