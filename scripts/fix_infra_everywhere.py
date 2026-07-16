@@ -293,6 +293,8 @@ def main() -> int:
     ap.add_argument("--json", action="store_true")
     args = ap.parse_args()
 
+    # Always normalize process env first so local audit reflects AiiteC canonical
+    apply_aiitec_aliases_to_process()
     report = {"local_audit": audit_aliases()}
 
     if not args.skip_railway:
@@ -307,12 +309,15 @@ def main() -> int:
         report["landing_probe"] = probe_landing_urls()
     else:
         report["vercel_public"] = {"skipped": True}
+        report["landing_probe"] = {"skipped": True}
 
-    report["ok"] = all(
-        bool(report.get(k, {}).get("ok", True) or report.get(k, {}).get("skipped"))
-        for k in ("facebook_railway", "groq_railway", "vercel_public", "landing_probe")
-        if k in report and not report[k].get("skipped")
-    )
+    checks = []
+    for k in ("local_audit", "facebook_railway", "groq_railway", "vercel_public", "landing_probe"):
+        v = report.get(k) or {}
+        if v.get("skipped"):
+            continue
+        checks.append(bool(v.get("ok")))
+    report["ok"] = all(checks) if checks else False
 
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
