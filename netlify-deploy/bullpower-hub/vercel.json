@@ -3,12 +3,7 @@
   "builds": [
     {"src": "*.html", "use": "@vercel/static"},
     {"src": "*.xml", "use": "@vercel/static"},
-    {"src": "*.txt", "use": "@vercel/static"}
-  ],
-  "routes": [
-    {
-      "src": "/bullpower2026indexnow",
-      "dest": "/bullpower2026indexnow.txt"
-    }
+    {"src": "*.txt", "use": "@vercel/static"},
+    {"src": "bullpower2026indexnow", "use": "@vercel/static"}
   ]
 }
