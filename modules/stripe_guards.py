@@ -50,15 +50,14 @@ TEST_ONLY_PAYMENT_METHODS: frozenset[str] = frozenset({
 
 _TEST_PM_PREFIXES = ("pm_card_", "tok_")
 
-# Stripe secret key env names, priority order (FULL first)
+# Stripe secret key env names — NUR bullpowersrtkennels@gmail.com Konto!
+# NIEMALS STRIPE_SECRET_KEY_AIITEC verwenden (401, falsches Konto)
 _KEY_ENV_NAMES = (
     "STRIPE_SECRET_KEY_FULL",
-    "STRIPE_SECRET_KEY",
-    "STRIPE_SECRET_KEY_AIITEC",
+    "STRIPE_SECRET_KEY",   # bullpowersrtkennels@gmail.com — IMMER diese!
     "STRIPE_API_KEY",
     "STRIPE_SECRET",
     "STRIPE_TEST_SECRET_KEY",
-    "STRIPE_TEST_SECRET_KEY_AIITEC",
 )
 
 DEFAULT_THANK_YOU = "https://ineedit.com.co/pages/danke"
