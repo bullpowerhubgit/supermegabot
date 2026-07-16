@@ -985,8 +985,22 @@ SMB_COMPANIES_DB = [
     {"name": "Babymarkt.de GmbH",           "domain": "babymarkt.de",         "email": "info@babymarkt.de",             "branche": "E-Commerce",      "land": "DE"},
 ]
 
+# Bekannte Bounce-Domains (generische info@-Adressen die nicht zustellbar sind)
+_KNOWN_BOUNCE_DOMAINS = {
+    "oracle.com", "microsoft.com", "ibm.com", "bakermckenzie.com",
+    "saupe-communication.com", "handelskraft.de", "explido.de",
+    "bullpower.de", "accenture.com", "capgemini.com", "salesforce.com",
+    "cliffordchance.com", "allenovery.com", "lw.com", "dentons.com",
+    "taylorwessing.com", "fieldfisher.com", "dlapiper.com",
+    "pinsentmasons.com", "eversheds-sutherland.com",
+}
+
 # Kombinierte DB = Enterprises + SMBs (SMBs zuerst für bessere Delivery-Rate)
-EXTENDED_COMPANIES_DB = SMB_COMPANIES_DB + EXTENDED_COMPANIES_DB
+# Bekannte Bounce-Domains werden herausgefiltert
+EXTENDED_COMPANIES_DB = [
+    c for c in (SMB_COMPANIES_DB + EXTENDED_COMPANIES_DB)
+    if c.get("domain") not in _KNOWN_BOUNCE_DOMAINS
+]
 
 
 async def discover_new_companies(count: int = 60) -> int:

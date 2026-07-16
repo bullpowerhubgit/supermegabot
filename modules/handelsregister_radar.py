@@ -414,8 +414,18 @@ async def run_cycle() -> Dict:
         await tg("ℹ️ Handelsregister Radar: Keine neuen Leads heute.")
         return results
 
-    # An Lead-Käufer senden (max 3 Käufer pro Tag um Spam zu vermeiden)
+    # An Lead-Käufer senden (max 3 Käufer pro Tag, jeder Buyer NUR 1x pro Tag)
+    today_start = int(datetime.combine(date.today(), datetime.min.time()).timestamp())
     for buyer in LEAD_BUYERS[:3]:
+        # Tages-Dedup: buyer bereits heute kontaktiert?
+        with sqlite3.connect(str(_DB_PATH)) as conn:
+            already = conn.execute(
+                "SELECT 1 FROM hr_outreach WHERE buyer_email=? AND sent_at>=? LIMIT 1",
+                (buyer["email"], today_start)
+            ).fetchone()
+        if already:
+            log.info("HR-Radar: %s heute bereits kontaktiert — überspringe", buyer["email"])
+            continue
         subject = f"[HR-Radar] {len(new_leads)} neue GmbH-Gründungen heute — {datetime.now().strftime('%d.%m.%Y')}"
         body    = build_email_body(new_leads, buyer)
         ok = send_email(buyer["email"], subject, body)
