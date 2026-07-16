@@ -11360,6 +11360,10 @@ async def create_app():
     app.router.add_get( "/api/discord/status",        handle_discord_status)
     # Circuit Breaker management
     app.router.add_post("/api/circuit-breaker/reset", handle_circuit_breaker_reset)
+    # SHOPIFY A/B TESTING
+    app.router.add_get( "/api/shopify/ab-tests",         handle_shopify_ab_tests)
+    app.router.add_post("/api/shopify/ab-tests/run",     handle_shopify_ab_run)
+    app.router.add_post("/api/shopify/ab-tests/analyze", handle_shopify_ab_analyze)
     # CONVERSION MAXIMIZER
     app.router.add_get( "/api/conversion/stats",      handle_conversion_stats)
     app.router.add_post("/api/conversion/ab-test",    handle_conversion_ab_test)
@@ -15785,6 +15789,36 @@ async def handle_conversion_stats(req):
     from modules.conversion_engine import analyze_funnel, score_all_leads
     funnel, leads = await asyncio.gather(analyze_funnel(), score_all_leads())
     return web.json_response({"funnel": funnel, "leads": leads})
+
+
+async def handle_shopify_ab_tests(req):
+    """GET /api/shopify/ab-tests — aktive und abgeschlossene Shopify A/B Tests."""
+    try:
+        from modules.shopify_ab_tester import get_ab_test_status
+        data = await get_ab_test_status()
+        return web.json_response({"ok": True, **data})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)}, status=500)
+
+
+async def handle_shopify_ab_run(req):
+    """POST /api/shopify/ab-tests/run — neue A/B Tests manuell starten."""
+    try:
+        from modules.shopify_ab_tester import run_shopify_ab_tests
+        result = await run_shopify_ab_tests()
+        return web.json_response({"ok": True, **result})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)}, status=500)
+
+
+async def handle_shopify_ab_analyze(req):
+    """POST /api/shopify/ab-tests/analyze — Gewinner sofort auswerten."""
+    try:
+        from modules.shopify_ab_tester import analyze_shopify_ab_winners
+        result = await analyze_shopify_ab_winners()
+        return web.json_response({"ok": True, **result})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)}, status=500)
 
 
 async def handle_conversion_ab_test(req):
