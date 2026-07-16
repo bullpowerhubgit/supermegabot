@@ -1183,10 +1183,31 @@ _OWN_EMAILS = {
     "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com", "looopwave@gmail.com",
 }
 
+_SKIP_PREFIXES = (
+    "noreply@", "no-reply@", "no_reply@", "donotreply@", "do-not-reply@",
+    "mailer-daemon@", "postmaster@", "bounce@", "bounces@", "notification@",
+    "notifications@", "info-noreply@", "auto@", "automated@",
+)
+
+def _is_valid_recipient(addr: str) -> bool:
+    a = addr.lower().strip()
+    if not a or "@" not in a:
+        return False
+    local = a.split("@")[0]
+    if any(a.startswith(p) for p in _SKIP_PREFIXES):
+        return False
+    if local in ("noreply", "no-reply", "no_reply", "donotreply", "bounce",
+                 "bounces", "postmaster", "mailer-daemon", "auto", "automated"):
+        return False
+    return True
+
 def _send_email(to: str, subject: str, body: str) -> bool:
     """Sendet Email: SendGrid primary (beste IP-Reputation) → Gmail-Pool Fallback."""
     if to.lower() in _OWN_EMAILS:
         log.warning("Eigene Adresse übersprungen: %s", to)
+        return False
+    if not _is_valid_recipient(to):
+        log.warning("Ungültige/Noreply-Adresse übersprungen: %s", to)
         return False
     _reset_smtp_if_new_day()
 
