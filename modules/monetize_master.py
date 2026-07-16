@@ -292,8 +292,9 @@ def _build_campaign_html(title: str, body: str, products: list) -> str:
 
 async def run_cart_recovery() -> dict:
     try:
-        from modules.abandoned_cart_emails import run_cart_recovery_emails
-        return await run_cart_recovery_emails()
+        from modules.abandoned_cart_emails import run_cart_recovery_cycle
+        result = await run_cart_recovery_cycle()
+        return {"ok": True, "result": result}
     except ImportError:
         pass
     try:

@@ -48,14 +48,14 @@ _OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
 
 # ── Kostenlose OpenRouter-Modelle (Fallback-Rotation) ──────────────────────────
 _OR_FREE_MODELS = [
-    "google/gemma-4-26b-a4b-it:free",
-    "meta-llama/llama-3.1-8b-instruct:free",
-    "mistralai/mistral-7b-instruct:free",
-    "qwen/qwen3-0.6b:free",
-    "microsoft/phi-3-mini-128k-instruct:free",
-    "google/gemma-3-12b-it:free",
+    "google/gemma-4-31b-it:free",
+    "openai/gpt-oss-20b:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
     "deepseek/deepseek-r1-0528:free",
     "tngtech/deepseek-r1t-chimera:free",
+    "qwen/qwen3-0.6b:free",
 ]
 
 # ── Cerebras Modelle (kostenlos, sehr schnell) ─────────────────────────────────

@@ -855,8 +855,8 @@ def _collect_leads_from_all_dbs(max_per_db: int = 200) -> List[Dict]:
             conn = sqlite3.connect(str(outreach_db))
             conn.row_factory = sqlite3.Row
             rows = conn.execute("""
-                SELECT email, name as name, '' as company, 'b2b' as niche,
-                       'industrie_outreach' as source, 'de' as language, industry as tags
+                SELECT email, company as name, company, 'b2b' as niche,
+                       'industrie_outreach' as source, 'de' as language, branche as tags
                 FROM industrie_outreach
                 WHERE status='new' OR status='pending'
                 LIMIT ?
