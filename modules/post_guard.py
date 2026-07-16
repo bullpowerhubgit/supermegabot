@@ -43,6 +43,14 @@ _FORBIDDEN = re.compile(
     r'example\.com|yourstore\.com|YOUR_DOMAIN|http://localhost|'
     r'your-shop\.myshopify\.com|'
     r'checkout-ds24\.com/product/668035|'
+    # ── Unersetztes Template: {variable} ohne Ziffern ──────────────────────────
+    r'\{[a-z_]+\}(?!\d)|'                    # {name}, {produkt}, {link} etc.
+    r'\{\{.*?\}\}|'                           # {{doppelte Klammern}}
+    # ── Python-Fehler im Post ──────────────────────────────────────────────────
+    r'Traceback\s*\(most\s+recent\s+call|'   # Python traceback
+    r'File\s+".*",\s+line\s+\d+|'            # File "x.py", line 42
+    r'SyntaxError:|NameError:|TypeError:|'    # Python exceptions
+    r'AttributeError:|ImportError:|KeyError:|' # more exceptions
     # ── Spam / Generic Life-Coach-Phrasen ──────────────────────────────────────
     r'nutzt? nur \d+\s*%\s*de\w*|'            # "nutzt nur 44% deines/des/dein"
     r'weniger als \d+\s*%\s*ihr|'             # "weniger als 30% ihres"
@@ -54,6 +62,17 @@ _FORBIDDEN = re.compile(
     r'Ergebnisse\s+garantiert|'               # fake guarantees
     r'klinisch\s+getestet\s+und|'            # fake medical claims
     r'\d+\s*%\s*Erfolgsquote',               # "98% Erfolgsquote"
+    re.IGNORECASE
+)
+
+# ── KI-Offenbarungs-Muster ────────────────────────────────────────────────────
+_AI_DISCLOSURE = re.compile(
+    r'als\s+ki[- ]sprachmodell|'
+    r'als\s+k[üu]nstliche\s+intelligenz|'
+    r'as\s+an\s+ai\s+(language\s+)?model|'
+    r'i\s+am\s+an\s+ai\b|'
+    r'ich\s+bin\s+(eine\s+)?ki\b|'
+    r'generated\s+by\s+(claude|gpt|openai)',
     re.IGNORECASE
 )
 
@@ -124,8 +143,22 @@ def _prune_cache() -> None:
 def check_forbidden_patterns(text: str) -> Tuple[bool, str]:
     m = _FORBIDDEN.search(text)
     if m:
-        return False, f"Verbotener Platzhalter gefunden: '{m.group()}'"
+        return False, f"Placeholder-Text gefunden: '{m.group()}'"
+    m2 = _AI_DISCLOSURE.search(text)
+    if m2:
+        return False, f"KI-Offenbarung im Post erkannt: '{m2.group()[:60]}'"
     return True, ""
+
+
+def auto_truncate(text: str, platform: str) -> str:
+    """Kürzt Posts die zu lang sind — Twitter bei 280, sauberer Wortschnitt."""
+    max_c = _MAX_CHARS.get(platform, _MAX_CHARS["default"])
+    if len(text) <= max_c:
+        return text
+    # Platz für "…" reservieren
+    cut = max_c - 1
+    truncated = text[:cut].rsplit(" ", 1)[0]  # am letzten Wort schneiden
+    return truncated + "…"
 
 
 def check_length(text: str, platform: str = "default") -> Tuple[bool, str]:
@@ -307,6 +340,9 @@ async def check_post(
     """
     _load_cache()
     errors = []
+
+    # Auto-Truncate für Twitter (280 Zeichen) und andere Plattformen
+    text = auto_truncate(text, platform)
 
     ok, r = check_forbidden_patterns(text)
     if not ok:
