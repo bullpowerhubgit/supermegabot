@@ -910,10 +910,18 @@ def _send_via_gmail(user: str, password: str, to_email: str,
             return "daily_limit"
         log.error("Gmail error (%s): %s", user, e)
         return "error"
+    except (ConnectionResetError, BrokenPipeError, EOFError, OSError) as e:
+        log.warning("Gmail Verbindung getrennt (%s) — als Tageslimit markiert: %s", user, e)
+        _GMAIL_DAILY_EXHAUSTED.add(user)
+        return "daily_limit"
     except Exception as e:
         err_str = str(e)
         if "5.4.5" in err_str or "Daily user sending limit" in err_str:
             log.warning("Gmail Tageslimit erreicht: %s", user)
+            _GMAIL_DAILY_EXHAUSTED.add(user)
+            return "daily_limit"
+        if "unexpectedly closed" in err_str or "Connection reset" in err_str or "EOF" in err_str:
+            log.warning("Gmail Verbindung unerwartet getrennt (%s) — übersprungen: %s", user, e)
             _GMAIL_DAILY_EXHAUSTED.add(user)
             return "daily_limit"
         log.error("Gmail error (%s): %s", user, e)

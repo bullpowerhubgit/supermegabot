@@ -21,7 +21,8 @@ TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")
 EBAY_APP_ID   = os.getenv("EBAY_CLIENT_ID", "IRV7wFsqtKC76676391G2237LhVpgNCRZ1")
 AMZN_TAG      = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
-STORE_URL     = f"https://{SHOP_DOMAIN}" if SHOP_DOMAIN else ""
+PUBLIC_DOMAIN = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
+STORE_URL     = f"https://{PUBLIC_DOMAIN}"
 
 # Smart Home / Smart Garden / AI Gadgets — NUR für eBay/Amazon/AliExpress
 SMART_HOME_KW = [
