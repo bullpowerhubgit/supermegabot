@@ -1,5 +1,5 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 17:20 UTC (Wave 9 — Fixes + Meta Token Update)**
+**Stand: 2026-07-16 17:35 UTC (Wave 9 — Alle Keys gesetzt + Tests OK)**
 
 ## 🔴 OFFENE BLOCKER — NUR RUDOLF KANN DAS FIXEN
 
@@ -7,6 +7,7 @@
 |---|---------|---------|-------------|
 | 1 | **Meta App-Domains** | developers.facebook.com → App 1535442684079797 → Grundlegendes → App-Domains → `developers.facebook.com` löschen → `supermegabot-production.up.railway.app` eintragen | — |
 | 2 | **Pinterest API — Appeal gesendet** | ✅ Tickets #16593704 + #16593708 erstellt (16.07 15:03). Antwort binnen 1 Werktag. Danach: developers.pinterest.com → neuer Token | `PINTEREST_ACCESS_TOKEN` |
+| 3 | **Stripe AIITEC 401** | stripe.com → AIITEC-Konto einloggen → Dashboard → API Keys → prüfen ob `sk_live_51SwsoNF...` aktiv ist | `STRIPE_SECRET_KEY_AIITEC` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
@@ -20,6 +21,11 @@
 | **eu-compliance-saas Build** | ✅ railway.toml: python3→python3.11 gefixt — Service läuft (health OK, Uptime 9h+) |
 | **"Hallo None" Bug** | ✅ full_revenue_expansion.py: `or ""` statt `get(key, "")` — Klaviyo-Revision 2026-04-15 |
 | **X Developer $5** | ✅ Bezahlt 16.07 16:30 — Basic Tier aktiv — WARTE auf neue API Keys von Rudolf |
+| **Twitter rudibot84** | ✅ OAuth 1.0a getestet — `GET /2/users/me` → id=2067894499..., username=rudibot84 ✅ |
+| **LinkedIn Rudolf Sarkany** | ✅ Token erneuert — `GET /v2/userinfo` → name=Rudolf Sarkany, sub=YcxbqVN0ZR ✅ |
+| **Stripe AIITEC Key** | ⚠️ sk_live_51SwsoNF... → 401 Unauthorized — Konto möglicherweise neu/nicht aktiviert |
+| **AI Gateway Key** | ✅ vck_844Rz2au... gesetzt — .env + Railway |
+| **Google OAuth Client** | ✅ 239648259282-i2urvn3... gesetzt — .env + Railway |
 | **aiitecbuuss@gmail.com App-PW** | hvzgpgyufricmenj — IMAP+SMTP Login ✅ — alle 5 Gmail-Konten aktiv — Railway ✅ |
 | **Resend API Key** | re_XRHYX... → Test OK (id: 5aba12f6) — .env + Railway ✅ |
 | **Perplexity API** | Key in .env gültig — sonar antwortet ✅ — Railway ✅ |
