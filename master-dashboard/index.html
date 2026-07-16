@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BullPower MEGA Dashboard — Command Center</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #141428;
+    --border: #1e1e3a;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #059669;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --green: #10b981;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated bg */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 10% 20%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(0,212,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 20px; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(0,212,255,0.08));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--glow);
+  }
+  .logo h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo h1 span { color: var(--accent); }
+  .logo p { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  .refresh-info { color: var(--muted); font-size: 12px; }
+
+  /* REVENUE STRIP */
+  .revenue-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .rev-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .rev-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .rev-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+  .rev-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .rev-value { font-size: 28px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .rev-value.green { color: var(--green); }
+  .rev-value.purple { color: #a78bfa; }
+  .rev-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .wide { grid-column: span 2; }
+  .full { grid-column: span 3; }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .card-title span { font-size: 16px; }
+  .card-body { padding: 16px 18px; }
+
+  /* SERVICE STATUS */
+  .service-list { display: flex; flex-direction: column; gap: 10px; }
+  .service-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .service-item:hover { border-color: var(--border); }
+  .service-name { font-size: 13px; font-weight: 600; }
+  .service-url { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .status-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .status-ok { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .status-warn { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+  .status-error { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+  .status-loading { background: rgba(148,163,184,0.1); color: var(--muted); border: 1px solid rgba(148,163,184,0.2); }
+
+  /* OMEGA MODULES */
+  .omega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .omega-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .omega-icon { font-size: 20px; flex-shrink: 0; }
+  .omega-name { font-size: 12px; font-weight: 600; }
+  .omega-status { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .omega-indicator {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .ind-green { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  .ind-yellow { background: var(--warn); }
+  .ind-gray { background: var(--muted); }
+
+  /* SCHEDULER TASKS */
+  .task-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+  .task-list::-webkit-scrollbar { width: 4px; }
+  .task-list::-webkit-scrollbar-track { background: transparent; }
+  .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg3);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .task-name { color: var(--text); font-weight: 500; }
+  .task-time { color: var(--muted); font-size: 11px; }
+  .task-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 8px; }
+
+  /* VERCEL SITES */
+  .sites-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .site-item {
+    padding: 10px 12px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, background 0.2s;
+    display: block;
+  }
+  .site-item:hover {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+  .site-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+  .site-url { font-size: 10px; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .site-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(124,58,237,0.2);
+    color: #a78bfa;
+  }
+  .badge.seo { background: rgba(5,150,105,0.2); color: #34d399; }
+  .badge.faq { background: rgba(0,212,255,0.15); color: var(--accent); }
+  .badge.stripe { background: rgba(99,102,241,0.2); color: #818cf8; }
+
+  /* ACTION BUTTONS */
+  .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .action-btn {
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    text-decoration: none;
+    justify-content: center;
+  }
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent2), var(--accent)); border-color: transparent; color: white; }
+  .btn-green { background: linear-gradient(135deg, #059669, #10b981); border-color: transparent; color: white; }
+  .btn-orange { background: linear-gradient(135deg, #d97706, #f59e0b); border-color: transparent; color: white; }
+  .btn-blue { background: linear-gradient(135deg, #1d4ed8, #3b82f6); border-color: transparent; color: white; }
+
+  /* TWITTER STATUS */
+  .twitter-box {
+    padding: 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .twitter-status { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .twitter-icon { font-size: 24px; }
+  .twitter-info h3 { font-size: 14px; font-weight: 700; }
+  .twitter-info p { font-size: 12px; color: var(--muted); }
+  .twitter-action {
+    display: block;
+    padding: 8px 14px;
+    background: rgba(29,155,240,0.15);
+    border: 1px solid rgba(29,155,240,0.3);
+    border-radius: 8px;
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .twitter-action:hover { background: rgba(29,155,240,0.25); }
+
+  /* LOG VIEWER */
+  .log-box {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #080810;
+    border-radius: 8px;
+    padding: 12px;
+    line-height: 1.6;
+  }
+  .log-box::-webkit-scrollbar { width: 4px; }
+  .log-box::-webkit-scrollbar-thumb { background: var(--border); }
+  .log-line { margin-bottom: 2px; }
+  .log-time { color: var(--accent2); margin-right: 8px; }
+  .log-ok { color: var(--green); }
+  .log-err { color: var(--danger); }
+  .log-info { color: var(--accent); }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .fill-green { background: linear-gradient(90deg, #059669, #10b981); }
+  .fill-blue { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+
+  /* Tooltip */
+  .tip { font-size: 11px; color: var(--warn); padding: 6px 10px; background: rgba(245,158,11,0.1); border-radius: 6px; border-left: 3px solid var(--warn); }
+
+  /* Counter animation */
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .count-anim { animation: countUp 0.5s ease; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1100px) {
+    .main-grid { grid-template-columns: 1fr 1fr; }
+    .wide { grid-column: span 1; }
+    .full { grid-column: span 2; }
+    .revenue-strip { grid-template-columns: repeat(3, 1fr); }
+    .action-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .full, .wide { grid-column: span 1; }
+    .revenue-strip { grid-template-columns: 1fr 1fr; }
+    .sites-grid { grid-template-columns: 1fr 1fr; }
+    .omega-grid { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* CASE STUDIES */
+  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
+  .cs-inner { max-width: 1200px; margin: 0 auto; }
+  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
+  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
+  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
+  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
+  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
+  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .cs-name { font-weight: 700; font-size: 0.9rem; }
+  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
+  /* LIVE DEMO SECTION */
+  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
+  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
+  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
+  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
+  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
+  .demo-traffic-lights { display: flex; gap: 0.4rem; }
+  .dtl { width: 12px; height: 12px; border-radius: 50%; }
+  .dtl-r { background: #ff5f57; }
+  .dtl-y { background: #ffbd2e; }
+  .dtl-g { background: #28ca41; }
+  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
+  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
+  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
+  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
+  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
+  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
+  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
+  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
+  .demo-text-input:focus { border-color: #60a5fa; }
+  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
+</style>
+
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="BullPower MEGA Dashboard">
+  <meta property="og:description" content="Command Center für alle KI-Tools — E-Commerce Automatisierung auf einem Blick.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://bullpower-hub-portal.netlify.app">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BullPower MEGA Dashboard">
+  <meta name="twitter:description" content="Command Center für alle KI-Tools — E-Commerce Automatisierung auf einem Blick.">
+  <link rel="canonical" href="https://bullpower-hub-portal.netlify.app">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "BullPower MEGA Dashboard", "url": "https://bullpower-hub-portal.netlify.app", "description": "Command Center für alle KI-Tools — E-Commerce Automatisierung auf einem Blick.", "publisher": {"@type": "Organization", "name": "BullPower Hub", "url": "https://bullpower-hub-portal.netlify.app"}, "potentialAction": {"@type": "SearchAction", "target": "https://bullpower-hub-portal.netlify.app/?q={search_term_string}", "query-input": "required name=search_term_string"}}</script>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h1>BullPower <span>MEGA</span> Dashboard</h1>
+        <p>Command Center — Vollautomatisches E-Commerce System</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+      <div class="refresh-info">🔄 Auto-Refresh <span id="countdown">30</span>s</div>
+    </div>
+  </header>
+
+  <!-- REVENUE STRIP -->
+  <div class="revenue-strip">
+    <div class="rev-card">
+      <div class="rev-label">Digistore24 Revenue</div>
+      <div class="rev-value green" id="ds24-revenue">€111</div>
+      <div class="rev-sub">3 Bestellungen • Produkt 669750</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Stripe Revenue</div>
+      <div class="rev-value" id="stripe-revenue">€0</div>
+      <div class="rev-sub">Checkouts aktiv — wartet auf Kunden</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Railway Services</div>
+      <div class="rev-value purple" id="services-count">4/4</div>
+      <div class="rev-sub" id="services-sub">Alle Online</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Scheduler Tasks</div>
+      <div class="rev-value" id="task-count">116</div>
+      <div class="rev-sub">Aktive Automatisierungen</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Vercel Sites</div>
+      <div class="rev-value green">13</div>
+      <div class="rev-sub">Full SEO + Cross-Links</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- Railway Services -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>🚂</span> Railway Services</div>
+        <div id="services-refresh" style="font-size:11px;color:var(--muted)">Prüfe...</div>
+      </div>
+      <div class="card-body">
+        <div class="service-list">
+          <div class="service-item">
+            <div>
+              <div class="service-name">⚡ SuperMegaBot</div>
+              <div class="service-url">dudirudibot-mega-production.up.railway.app</div>
+            </div>
+            <div id="smb-status" class="status-pill status-loading">...</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">💳 IcomeAuto</div>
+              <div class="service-url">icomeauto-production-e4e5.up.railway.app</div>
+            </div>
+            <div id="icome-status" class="status-pill status-loading">...</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">📊 Steuercockpit</div>
+              <div class="service-url">steuercockpit-production-44c9.up.railway.app</div>
+            </div>
+            <div id="steuer-status" class="status-pill status-loading">...</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">📢 AdPoster Engine</div>
+              <div class="service-url">adposter-engine-production.up.railway.app</div>
+            </div>
+            <div id="adposter-status" class="status-pill status-loading">...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OMEGA Engine -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>🔥</span> OMEGA Traffic Engine</div>
+        <div style="font-size:11px;color:var(--green)">10 Module aktiv</div>
+      </div>
+      <div class="card-body">
+        <div class="omega-grid">
+          <div class="omega-item">
+            <div class="omega-icon">🔍</div>
+            <div>
+              <div class="omega-name">Google Index</div>
+              <div class="omega-status">Stündlich • 28 URLs</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🦁</div>
+            <div>
+              <div class="omega-name">Bing IndexNow</div>
+              <div class="omega-status">12h • Alle Sitemaps</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">✍️</div>
+            <div>
+              <div class="omega-name">KI Blog Engine</div>
+              <div class="omega-status">Täglich • 1500 Wörter</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🕵️</div>
+            <div>
+              <div class="omega-name">Competitor Spy</div>
+              <div class="omega-status">6h • 5 Keywords</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">📺</div>
+            <div>
+              <div class="omega-name">YouTube SEO</div>
+              <div class="omega-status">Täglich • Title+Tags</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">📧</div>
+            <div>
+              <div class="omega-name">Email Re-engage</div>
+              <div class="omega-status">Mailchimp Winback</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🌐</div>
+            <div>
+              <div class="omega-name">Syndication</div>
+              <div class="omega-status">Dev.to + Hashnode</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🔗</div>
+            <div>
+              <div class="omega-name">Backlink Bomber</div>
+              <div class="omega-status">17 RSS Pings • 2h</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Twitter + Social -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>🐦</span> Social Media</div>
+      </div>
+      <div class="card-body">
+        <div class="twitter-box">
+          <div class="twitter-status">
+            <div class="twitter-icon">𝕏</div>
+            <div class="twitter-info">
+              <h3>@AIITEC Twitter</h3>
+              <p id="twitter-status-text">Tokens gesetzt — Permission prüfen</p>
+            </div>
+            <div id="twitter-pill" class="status-pill status-warn" style="margin-left:auto">R+W?</div>
+          </div>
+          <div class="tip">developer.twitter.com → App → User Auth Settings → Read and Write → Speichern</div>
+        </div>
+        <div class="service-list" style="gap:8px">
+          <div class="service-item">
+            <div>
+              <div class="service-name">📢 Telegram @BullPowerHub</div>
+              <div class="service-url">Alle 30min • Produktposts</div>
+            </div>
+            <div class="status-pill status-ok">AKTIV</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">💼 LinkedIn BRUTUS</div>
+              <div class="service-url">1h Auto-Post</div>
+            </div>
+            <div class="status-pill status-ok">AKTIV</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">📝 Dev.to + Hashnode</div>
+              <div class="service-url">6h Syndication • Keys gesetzt</div>
+            </div>
+            <div class="status-pill status-ok">AKTIV</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vercel Sites -->
+    <div class="card wide">
+      <div class="card-header">
+        <div class="card-title"><span>▲</span> Vercel Sites (13 Live)</div>
+        <div style="font-size:11px;color:var(--accent)">Full SEO + FAQ Schema</div>
+      </div>
+      <div class="card-body">
+        <div class="sites-grid">
+          <a class="site-item" href="https://shopify-brutal-tuning.vercel.app" target="_blank">
+            <div class="site-name">Shopify Brutal Tuning</div>
+            <div class="site-url">shopify-brutal-tuning.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge stripe">STRIPE</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://bullpower-hub-portal.netlify.app" target="_blank">
+            <div class="site-name">🌟 BullPower Hub Portal</div>
+            <div class="site-url">bullpower-hub-portal.netlify.app</div>
+            <div class="site-badges"><span class="badge stripe">€49 STRIPE LINK</span></div>
+          </a>
+          <a class="site-item" href="https://creatorai-ultra.vercel.app" target="_blank">
+            <div class="site-name">CreatorAI Ultra</div>
+            <div class="site-url">creatorai-ultra.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://autoincome-ai.vercel.app" target="_blank">
+            <div class="site-name">AutoIncome AI</div>
+            <div class="site-url">autoincome-ai.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://bullpower-hub.vercel.app" target="_blank">
+            <div class="site-name">BullPower Hub</div>
+            <div class="site-url">bullpower-hub.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://shopify-acquisition-engine.vercel.app" target="_blank">
+            <div class="site-name">Shopify Acquisition</div>
+            <div class="site-url">shopify-acquisition-engine.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span></div>
+          </a>
+          <a class="site-item" href="https://bullpower-ai.vercel.app" target="_blank">
+            <div class="site-name">BullPower AI</div>
+            <div class="site-url">bullpower-ai.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://creatorstudio-pro.vercel.app" target="_blank">
+            <div class="site-name">CreatorStudio Pro</div>
+            <div class="site-url">creatorstudio-pro.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://digistore24-suite.vercel.app" target="_blank">
+            <div class="site-name">Digistore24 Suite</div>
+            <div class="site-url">digistore24-suite.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://cognitive-symphony.vercel.app" target="_blank">
+            <div class="site-name">Cognitive Symphony</div>
+            <div class="site-url">cognitive-symphony.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://gumroad-discord.vercel.app" target="_blank">
+            <div class="site-name">Gumroad Discord</div>
+            <div class="site-url">gumroad-discord.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span></div>
+          </a>
+          <a class="site-item" href="https://lead-capture-gamma-nine.vercel.app" target="_blank">
+            <div class="site-name">Lead Capture</div>
+            <div class="site-url">lead-capture-gamma-nine.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scheduler Tasks -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>⚙️</span> Live Task Runner</div>
+        <div id="task-live-count" style="font-size:11px;color:var(--green)">Lädt...</div>
+      </div>
+      <div class="card-body">
+        <div class="task-list" id="task-list">
+          <div class="task-item"><div class="task-dot"></div><div class="task-name">Lädt Tasks...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="card full">
+      <div class="card-header">
+        <div class="card-title"><span>🎯</span> Quick Actions</div>
+      </div>
+      <div class="card-body">
+        <div class="action-grid">
+          <button class="action-btn btn-primary" onclick="triggerOmega()">⚡ OMEGA Full Cycle starten</button>
+          <button class="action-btn btn-green" onclick="triggerIndex()">🔍 Alle URLs indexieren</button>
+          <button class="action-btn btn-orange" onclick="triggerArticle()">✍️ SEO-Artikel generieren</button>
+          <button class="action-btn btn-blue" onclick="triggerTwitter()">🐦 Tweet jetzt senden</button>
+          <a class="action-btn" href="https://dudirudibot-mega-production.up.railway.app/master" target="_blank">📊 Rudi Dashboard öffnen</a>
+          <a class="action-btn" href="https://dashboard.railway.app" target="_blank">🚂 Railway Dashboard</a>
+          <a class="action-btn" href="https://app.netlify.com" target="_blank">▲ Netlify Dashboard</a>
+          <a class="action-btn" href="https://vercel.com/bullpowerhubgits-projects" target="_blank">▲ Vercel Dashboard</a>
+        </div>
+        <div id="action-result" style="margin-top:12px;min-height:24px;font-size:12px;color:var(--green)"></div>
+      </div>
+    </div>
+
+    <!-- Live Log -->
+    <div class="card full">
+      <div class="card-header">
+        <div class="card-title"><span>📋</span> Activity Log</div>
+        <button onclick="clearLog()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;color:var(--muted)">Leeren</button>
+      </div>
+      <div class="card-body" style="padding: 12px 18px;">
+        <div class="log-box" id="log-box">
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-ok">✅</span> Dashboard gestartet — BullPower MEGA Command Center</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-info">ℹ️</span> Prüfe Railway Services...</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-ok">✅</span> OMEGA Engine: 10 Module aktiv</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-info">ℹ️</span> Twitter: Access Token gesetzt — warte auf R+W Permission</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-ok">✅</span> Dev.to + Hashnode API Keys aktiv — FreeSyndicationNetwork läuft</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const RAILWAY_BASE = 'https://dudirudibot-mega-production.up.railway.app';
+const SERVICES = [
+  { id: 'smb', url: RAILWAY_BASE + '/health', name: 'SuperMegaBot' },
+  { id: 'icome', url: 'https://icomeauto-production-e4e5.up.railway.app/health', name: 'IcomeAuto' },
+  { id: 'steuer', url: 'https://steuercockpit-production-44c9.up.railway.app/health', name: 'Steuercockpit' },
+  { id: 'adposter', url: 'https://adposter-engine-production.up.railway.app/health', name: 'AdPoster' },
+];
+
+function log(msg, type = 'info') {
+  const box = document.getElementById('log-box');
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const icons = { ok: '✅', err: '❌', info: 'ℹ️' };
+  const classes = { ok: 'log-ok', err: 'log-err', info: 'log-info' };
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">[${time}]</span> <span class="${classes[type]}">${icons[type]}</span> ${msg}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('log-box').innerHTML = '';
+}
+
+async function checkServices() {
+  let ok = 0;
+  for (const s of SERVICES) {
+    const el = document.getElementById(s.id + '-status');
+    try {
+      const r = await fetch(s.url, { signal: AbortSignal.timeout(5000) });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) {
+        el.className = 'status-pill status-ok';
+        el.textContent = 'ONLINE';
+        ok++;
+      } else {
+        el.className = 'status-pill status-error';
+        el.textContent = 'ERROR';
+      }
+    } catch(e) {
+      el.className = 'status-pill status-warn';
+      el.textContent = 'TIMEOUT';
+    }
+  }
+  document.getElementById('services-count').textContent = ok + '/4';
+  document.getElementById('services-sub').textContent = ok === 4 ? 'Alle Online ✅' : ok + ' Online';
+  document.getElementById('services-refresh').textContent = 'Aktualisiert ' + new Date().toLocaleTimeString('de');
+  log(`Services: ${ok}/4 online`, ok === 4 ? 'ok' : 'err');
+}
+
+async function loadTasks() {
+  try {
+    const r = await fetch(RAILWAY_BASE + '/api/scheduler/status', { signal: AbortSignal.timeout(8000) });
+    const data = await r.json();
+    const tasks = data.tasks || [];
+    document.getElementById('task-count').textContent = tasks.length;
+    document.getElementById('task-live-count').textContent = tasks.length + ' Tasks aktiv';
+    const list = document.getElementById('task-list');
+    list.innerHTML = '';
+    const recent = tasks.slice(0, 25);
+    for (const t of recent) {
+      const div = document.createElement('div');
+      div.className = 'task-item';
+      const lastRun = t.last_run ? new Date(t.last_run).toLocaleTimeString('de', {hour:'2-digit',minute:'2-digit'}) : 'Nie';
+      div.innerHTML = `<div class="task-dot"></div><div class="task-name">${t.name}</div><div class="task-time">${lastRun}</div>`;
+      list.appendChild(div);
+    }
+  } catch(e) {
+    document.getElementById('task-live-count').textContent = 'Verbindungsfehler';
+  }
+}
+
+async function triggerAction(endpoint, label) {
+  const res = document.getElementById('action-result');
+  res.textContent = '⏳ ' + label + '...';
+  res.style.color = 'var(--warn)';
+  try {
+    const r = await fetch(RAILWAY_BASE + endpoint, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}', signal: AbortSignal.timeout(15000) });
+    const data = await r.json().catch(() => ({}));
+    res.textContent = '✅ ' + label + ' gestartet!';
+    res.style.color = 'var(--green)';
+    log(label + ' ausgelöst', 'ok');
+  } catch(e) {
+    res.textContent = '❌ Fehler: ' + e.message;
+    res.style.color = 'var(--danger)';
+    log(label + ' Fehler: ' + e.message, 'err');
+  }
+  setTimeout(() => { res.textContent = ''; }, 5000);
+}
+
+function triggerOmega() { triggerAction('/api/omega/full', 'OMEGA Full Cycle'); }
+function triggerIndex() { triggerAction('/api/omega/index', 'URL Indexierung'); }
+function triggerArticle() { triggerAction('/api/omega/article', 'SEO-Artikel'); }
+function triggerTwitter() { triggerAction('/api/omega/social_proof', 'Twitter Post'); }
+
+// Countdown & auto-refresh
+let countdown = 30;
+setInterval(() => {
+  countdown--;
+  document.getElementById('countdown').textContent = countdown;
+  if (countdown <= 0) {
+    countdown = 30;
+    checkServices();
+  }
+}, 1000);
+
+// Initial load
+checkServices();
+loadTasks();
+setTimeout(loadTasks, 5000);
+</script>
+
+
+
+<!-- DEMO + CASE STUDY — auto-injected -->
+
+
+
+
+
+
+
+
+<!-- AUTONOMOUS DEMO CTA — auto-injected -->
+<section id="autonomous-demo" style="position:relative;z-index:2;padding:64px 1.25rem;background:linear-gradient(180deg,#0a0a12 0%,#12101c 100%);border-top:1px solid rgba(129,140,248,.25)">
+  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:center">
+    <div>
+      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">▶ LIVE DEMO</div>
+      <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:900;color:#fff;margin:0 0 .5rem">Master Command Center</h2>
+      <p style="color:#a1a1aa;line-height:1.65;margin:0 0 1.25rem">Revenue · Tasks · Alerts live — interaktiv testen, dann High-Ticket starten.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+        <a href="demo.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
+        <a href="https://supermegabot-production.up.railway.app" target="_blank" rel="noopener" style="border:1px solid rgba(167,139,250,.45);color:#c4b5fd;font-weight:700;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Live System ↗</a>
+        <a href="https://buy.stripe.com/3cI28t67oa663ok0Oi4F42Ed" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
+      </div>
+    </div>
+    <div style="background:#12121c;border:1px solid rgba(129,140,248,.3);border-radius:18px;padding:1.25rem">
+      <div style="color:#86efac;font-weight:800;font-size:.8rem;margin-bottom:.5rem">CASE · Shopify Plus Operator</div>
+      <div style="color:#fff;font-weight:900;font-size:1.15rem;margin-bottom:.75rem">€4k Zusatzumsatz / Monat</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800">6 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800">€4k Zusatzumsatz / Monat</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800">−85%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800">9/10</div></div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- AUTONOMOUS SOCIAL PROOF — auto-injected -->
+<section id="autonomous-social-proof" style="position:relative;z-index:2;padding:72px 1.25rem;background:linear-gradient(180deg,#06060a 0%,#0c0a14 100%);border-top:1px solid rgba(250,204,21,.18)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:2rem">
+      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">⭐ TESTIMONIALS · CASE STUDIES · AUTO-UPDATED</div>
+      <h2 style="font-size:clamp(1.7rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 .5rem">Echte Ergebnisse mit Master Command Center</h2>
+      <p style="color:#a1a1aa;max-width:560px;margin:0 auto">Autonom generierte & rotierende Social Proofs — immer frisch auf der Seite.</p>
+    </div>
+    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Kundenstimmen</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.25rem">
+      <div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
+  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
+  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"ROI nach 3 Wochen klar messbar: +€2.000/Monat. Würde sofort wieder buchen."</p>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LW</div>
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:.9rem">Lisa W.</div>
+      <div style="color:#71717a;font-size:.78rem">Digital Creator, Düsseldorf</div>
+      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€2.000/Monat</div>
+    </div>
+  </div>
+</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
+  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
+  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"In 3 Wochen von Chaos auf Autopilot. Master Command Center war der Gamechanger."</p>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">KK</div>
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:.9rem">Klaus K.</div>
+      <div style="color:#71717a;font-size:.78rem">Dropshipping Operator, Linz</div>
+      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€15.000/Monat</div>
+    </div>
+  </div>
+</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
+  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
+  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"High-Ticket hat sich gelohnt. +€5.000/Monat und Team fokussiert nur noch Closing."</p>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LP</div>
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:.9rem">Lisa P.</div>
+      <div style="color:#71717a;font-size:.78rem">Agency Owner, München</div>
+      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€5.000/Monat</div>
+    </div>
+  </div>
+</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
+  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
+  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Vorher 5 Tools, jetzt eins: Master Command Center. 34% weniger manuelle Arbeit."</p>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LK</div>
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:.9rem">Lisa K.</div>
+      <div style="color:#71717a;font-size:.78rem">Shopify Store-Inhaber, Frankfurt</div>
+      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">Conversion 0.9% → 2.4%</div>
+    </div>
+  </div>
+</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
+  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★☆</div>
+  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Endlich ein System das liefert: ROAS 5.6×. Support top, Automation brutal."</p>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LR</div>
+    <div>
+      <div style="color:#fff;font-weight:800;font-size:.9rem">Laura R.</div>
+      <div style="color:#71717a;font-size:.78rem">Shopify Store-Inhaber, Wien</div>
+      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 5.6×</div>
+    </div>
+  </div>
+</div>
+    </div>
+    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Case Studies</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
+      <div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
+  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
+  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Shopify Plus Operator</div>
+  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">€4k Zusatzumsatz / Monat</div>
+  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Shopify Plus Operator skalierte mit Master Command Center. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 6 Wochen: €4k Zusatzumsatz / Monat.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">6 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">€4k Zusatzumsatz / Monat</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−85%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
+</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
+  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
+  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">DACH E-Commerce Agency</div>
+  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Onboarding von 14 Tagen auf 48h</div>
+  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Der Engpass war Content/Ops, nicht Traffic. Master Command Center entlastete das Team um 22h/Woche — Kapazität ging in Sales.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">6 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Onboarding von 14 Tagen auf </div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−60%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
+</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
+  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
+  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Shopify Plus Operator</div>
+  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">11h/Woche Zeitersparnis</div>
+  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Shopify Plus Operator skalierte mit Master Command Center. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: 11h/Woche Zeitersparnis.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">12 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">11h/Woche Zeitersparnis</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−45%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
+</div>
+    </div>
+    <p style="text-align:center;color:#52525b;font-size:.8rem;margin-top:1.5rem">Social Proof Engine · updates autonom · Ergebnisse variieren je Setup</p>
+  </div>
+</section>
+
+<section id="demo-case-study" style="position:relative;z-index:2;padding:80px 1.5rem;background:linear-gradient(180deg,#07070c 0%,#0f0a18 50%,#07070c 100%);border-top:1px solid rgba(99,102,241,.25)">
+  <div style="max-width:1100px;margin:0 auto">
+    <div style="text-align:center;margin-bottom:2.5rem">
+      <div style="display:inline-block;padding:.4rem 1.1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.08em;margin-bottom:1rem">▶ LIVE DEMO · CASE STUDY</div>
+      <h2 style="font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .6rem">Sieh es live — dann entscheide</h2>
+      <p style="color:#a1a1aa;max-width:620px;margin:0 auto;line-height:1.65">Revenue · Tasks · Alerts live. Interaktive Demo + echte Ergebnis-Story.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem">
+      <!-- DEMO CARD -->
+      <div style="background:linear-gradient(160deg,#12121c,#1a1030);border:1px solid rgba(129,140,248,.35);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(99,102,241,.12)">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
+          <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
+          <span style="color:#86efac;font-weight:800;font-size:.85rem">DEMO ONLINE</span>
+        </div>
+        <h3 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 .5rem">Master Command Center — Live Demo</h3>
+        <p style="color:#c4b5fd;font-size:.95rem;line-height:1.6;margin:0 0 1.25rem">Klicke dich durch das Dashboard-Mockup, KPIs und den Kauf-Flow. Kein Sales-Call nötig, um den Value zu sehen.</p>
+        <div style="background:#0a0a12;border:1px solid #333;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-family:ui-monospace,monospace;font-size:.78rem;color:#94a3b8">
+          <div style="color:#64748b;margin-bottom:.4rem">// demo preview</div>
+          <div>status: <span style="color:#4ade80">operational</span></div>
+          <div>mode: <span style="color:#facc15">high-ticket</span></div>
+          <div>kpi_stream: <span style="color:#38bdf8">live</span></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
+          <a href="demo.html" style="flex:1;min-width:140px;text-align:center;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
+          <a href="https://supermegabot-production.up.railway.app" target="_blank" rel="noopener" style="flex:1;min-width:140px;text-align:center;background:transparent;color:#c4b5fd;font-weight:700;padding:.95rem 1rem;border-radius:10px;text-decoration:none;border:1px solid rgba(167,139,250,.45)">Live System ↗</a>
+        </div>
+      </div>
+
+      <!-- CASE STUDY CARD -->
+      <div style="background:linear-gradient(160deg,#10140f,#0f1a14);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(34,197,94,.1)">
+        <div style="color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:.75rem">CASE STUDY</div>
+        <h3 style="color:#fff;font-size:1.25rem;font-weight:900;margin:0 0 .35rem">Portfolio Operator</h3>
+        <div style="color:#86efac;font-size:1.15rem;font-weight:800;margin-bottom:1rem">Alle Streams auf einem Screen</div>
+        <p style="color:#a1a1aa;font-size:.92rem;line-height:1.65;margin:0 0 1.25rem">Statt 15 Tabs: ein Dashboard mit Stripe, DS24, Shopify und Bot-Health. Operator steuert Budget nach Live-KPIs.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
+          <div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Streams</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">8</div></div>
+<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Alerts/Tag</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">12</div></div>
+<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Missed Failures</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">0</div></div>
+<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Decision Time</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">−60%</div></div>
+        </div>
+        <a href="https://buy.stripe.com/3cI28t67oa663ok0Oi4F42Ed" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:1rem;border-radius:10px;text-decoration:none">Ergebnis sichern — jetzt starten →</a>
+      </div>
+    </div>
+
+    <p style="text-align:center;color:#71717a;font-size:.85rem">Demo = produktnahe UI · Case Study = anonymisierte Ergebnis-Story · Keine Garantie auf identische Resultate</p>
+  </div>
+</section>
+
+<!-- HIGH-TICKET WAVE3 PRICING — auto-injected -->
+<section id="high-ticket-pricing-w3" style="position:relative;z-index:2;padding:72px 1.5rem;background:linear-gradient(180deg,#050508 0%,#12101a 100%);border-top:1px solid rgba(250,204,21,.2)">
+  <div style="max-width:1100px;margin:0 auto;text-align:center">
+    <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:1rem">💰 HIGH-TICKET · JETZT KAUFEN</div>
+    <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:#fff;margin:0 0 .75rem">Premium Pläne — sofort starten</h2>
+    <p style="color:#a1a1aa;max-width:560px;margin:0 auto 2rem">Sichere Stripe-Zahlung · Rechnung · EU-ready · Keine Billig-Preise</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;text-align:left">
+<div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;">
+  
+  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Operator</div>
+  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€997/mo</div>
+  <a href="https://buy.stripe.com/3cI28t67oa663ok0Oi4F42Ed" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
+</div>
+
+
+<div style="background:#16161f;border:1px solid rgba(34,197,94,.55);border-radius:18px;padding:1.75rem;box-shadow:0 0 40px rgba(34,197,94,.15)">
+  <div style="color:#4ade80;font-size:.72rem;font-weight:900;margin-bottom:.5rem">★ BESTSELLER</div>
+  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Agency</div>
+  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€2.497/mo</div>
+  <a href="https://buy.stripe.com/3cI28t67oa663ok0Oi4F42Ed" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
+</div>
+
+
+<div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;">
+  
+  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">White-Label</div>
+  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€4.997/mo</div>
+  <a href="https://buy.stripe.com/28E14p1R83HI4so2Wq4F42Ee" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
+</div>
+</div>
+  </div>
+</section>
+
+<!-- MONEY MAP WAVE3 -->
+<section id="money-map" style="padding:48px 1.5rem;background:#0a0a0a"><div style="max-width:900px;margin:0 auto"><h2 style="color:#fff;margin-bottom:1rem">💰 Alle High-Ticket Angebote — Jetzt verkaufen</h2><a href="https://buy.stripe.com/8x228t1R8guu4soeF84F42Es" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">AiiteC Agency OS — Full Stack Automation</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€2.497/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/28E6oJ67o9220c80Oi4F42Ep" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Analytics Marketing Intelligence Suite</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">AutoIncome AI — Passive Income Machine</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€2.997 einmalig → KAUFEN</span></a>
+<a href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">BullPower AI — KI Business Automation</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/fZueVf9jAguu1gc9kO4F42Ev" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">BullPower Full-Stack Empire Bundle</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€4.997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/cNicN7cvM2DE2kg0Oi4F42DV" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">BullPower Hub — 12 KI-Tools Empire</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€2.997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/00wcN71R87XYcYU8gK4F42DJ" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">BullPower Launcher — All-Tools Command Center</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€2.997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/3cI28t67oa663ok0Oi4F42Ed" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">BullPower Master Command Center</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€2.497/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/fZu14peDUdii3okbsW4F42E7" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Cognitive Symphony — DS24 Automation OS</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/8x228t3Zg2DE4soaoS4F42EB" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Content Empire Bundle — CreatorAI+Studio</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€1.997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/cNiaEZ2Vc1zAgb6bsW4F42DY" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">CreatorAI Ultra — KI Content Empire</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/9B63cx0N44LM4so7cG4F42E1" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">CreatorStudio Pro — Premium Content Engine</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€797/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/cNi14p8fw1zA6AwdB44F42E4" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Digistore24 Pro Suite — Affiliate Empire</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/7sY5kFeDUa665ws7cG4F42Eg" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">EU Compliance SaaS — DSGVO & AI Act Pack</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/eVq28t8fw7XY9MIgNg4F42DD" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Gumroad Discord Automation Suite</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€797/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/dRm7sNanE5PQ3ok1Sm4F42DG" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">IcomeAuto — Passive Income OS</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/aFacN7anEbaacYUaoS4F42DM" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Lead Capture & Shop Audit Pro</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/3cI4gB2Vc3HI2kgfJc4F42Em" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">SEO Turbo Tools — Traffic & Ranking Engine</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€797/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/cNi28t2Vc5PQ4so1Sm4F42Dx" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Shopify Acquisition Engine — Growth OS</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Shopify Brutal Tuning — Performance Empire</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/eVq6oJeDU922f72fJc4F42Ey" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Shopify Empire Bundle — Acq+Brutal+Suite</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€2.997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/bJedRbcvM9227EA9kO4F42Ea" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Shopify Suite Pro — Full Automaton</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/cNi4gBgM23HI1gcfJc4F42Dr" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">SteuercockPit Pro — KI-Steuer & Buchhaltung</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€997/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/9B66oJ8fw2DEf72fJc4F42Ej" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Stripe Connect SaaS — Multi-Vendor Platform</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€1.497/mo → KAUFEN</span></a>
+<a href="https://buy.stripe.com/7sY6oJ3Zg5PQ4sofJc4F42DA" style="display:flex;justify-content:space-between;gap:1rem;padding:.9rem 1rem;background:#111;border:1px solid #333;border-radius:10px;color:#fff;text-decoration:none;margin-bottom:.5rem"><span style="font-weight:700">Telegram Marketing Bot — Agency Suite</span><span style="color:#4ade80;font-weight:800;white-space:nowrap">€797/mo → KAUFEN</span></a></div></section>
+
+<!-- CASE STUDIES -->
+<section class="cs-section" id="case-studies">
+  <div class="cs-inner">
+    <div class="cs-tag">Erfolgsgeschichten</div>
+    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
+    <p class="cs-desc">Sieh was andere mit Master Dashboard erreicht haben — und was für dich möglich ist.</p>
+    <div class="cs-grid">
+    <div class="cs-card">
+      <div class="cs-result">Stille Verluste entdeckt: €4.200/Monat</div>
+      <div class="cs-duration">sofort sichtbar</div>
+      <p class="cs-text">Ich dachte mein Business läuft gut. Das Master Dashboard hat in der ersten Woche einen Warenkorb-Abbruchproblem gefunden das mich €4.200 pro Monat kostet — jetzt ist es gefixt.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#3b82f6">AF</div>
+        <div>
+          <div class="cs-name">Andreas F.</div>
+          <div class="cs-role">E-Commerce Unternehmer, Wien</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Churn von 8% auf 2.1% reduziert</div>
+      <div class="cs-duration">in 6 Wochen</div>
+      <p class="cs-text">Das Dashboard hat mir gezeigt welche Nutzer kurz vor dem Churn stehen. Wir haben automatische Eingriffe eingebaut — Churn um 75% reduziert in 6 Wochen.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#8b5cf6">CS</div>
+        <div>
+          <div class="cs-name">Christine S.</div>
+          <div class="cs-role">SaaS-Gründerin, München</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Revenue-Mix optimiert</div>
+      <div class="cs-duration">von 1 auf 5 Quellen</div>
+      <p class="cs-text">Früher war alles auf Shopify konzentriert. Das Dashboard hat mir gezeigt, dass DS24 und Telegram fast nichts kosten aber enorm performen — jetzt sind es 5 Revenue-Quellen.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#059669">FW</div>
+        <div>
+          <div class="cs-name">Florian W.</div>
+          <div class="cs-role">Multi-Channel Händler, Zürich</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-inject" id="demo">
+  <div class="demo-inject-inner">
+    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
+    <h2 class="demo-inject-title">📊 Dashboard Demo</h2>
+    <p class="demo-inject-desc">Sieh dein gesamtes Business auf einen Blick:</p>
+    <div class="demo-box">
+      <div class="demo-box-header">
+        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
+        <span class="demo-box-title">Master Dashboard — Interaktive Demo</span>
+      </div>
+      <div class="demo-suggestions-inject">
+        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
+        <button class="demo-sug-btn" onclick="injectDemoRunmaster_dashboard(0)">Zeige mir meinen Business Health Score</button><button class="demo-sug-btn" onclick="injectDemoRunmaster_dashboard(1)">Was sind meine Top Revenue-Quellen diese Woche?</button><button class="demo-sug-btn" onclick="injectDemoRunmaster_dashboard(2)">Wo verliere ich am meisten Geld?</button>
+      </div>
+      <div class="demo-output-area empty" id="demoOutmaster_dashboard">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
+      <div class="demo-input-row">
+        <input class="demo-text-input" id="demoInmaster_dashboard" type="text" placeholder="Eigene Anfrage eingeben...">
+        <button class="demo-run-btn" onclick="injectDemoCustommaster_dashboard()">Ausführen ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var OUTPUTSmaster_dashboard = ['✅ <strong>Business Health Score: 84/100</strong><br>✅ Revenue-Wachstum: +23% (sehr gut)<br>⚠️ Email-Öffnungsrate: 21% (unter Benchmark 34%)<br>✅ Churn-Rate: 2.1% (gut)<br>❌ Warenkorbabbrüche: 78% (kritisch → Sofort-Fix verfügbar)', '✅ <strong>Top Revenue-Quellen diese Woche</strong><br>1. Shopify: €3.847 (52%)<br>2. Affiliate DS24: €1.240 (17%)<br>3. Telegram Subscriptions: €890 (12%)<br>4. Gumroad Produkte: €640 (9%)<br>5. B2B Outreach: €800 (11%)', '✅ <strong>Verlust-Analyse</strong><br>🔴 Warenkorbabbrüche: €4.200/Monat verloren (78% Rate)<br>🔴 Ungeöffnete Emails: €890/Monat verpasst<br>🔴 Ungenutzter Traffic (Bounce): €1.240/Monat Potenzial<br>Quick-Wins: 3 Fixes → geschätzte Verbesserung +€3.100/Monat'];
+  var el = document.getElementById('demoOutmaster_dashboard');
+  window.injectDemoRunmaster_dashboard = function(i) {
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSmaster_dashboard[i]; }, 600);
+  };
+  window.injectDemoCustommaster_dashboard = function() {
+    var v = document.getElementById('demoInmaster_dashboard').value.trim();
+    if (!v) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSmaster_dashboard[Math.floor(Math.random()*OUTPUTSmaster_dashboard.length)]; }, 800);
+  };
+  document.getElementById('demoInmaster_dashboard').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.injectDemoCustommaster_dashboard();
+  });
+})();
+</script>
+
+<!-- HT-UPGRADE-V2:DONE -->
+<style>
+/* ── High-Ticket Upgrade Styles ── */
+.ht-section{position:relative;z-index:2;padding:80px 1.5rem}
+.ht-inner{max-width:1100px;margin:0 auto}
+.ht-badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-bottom:1.2rem}
+.ht-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .8rem;line-height:1.2}
+.ht-sub{color:#a1a1aa;font-size:1.05rem;line-height:1.65;max-width:640px;margin:0 auto 2.5rem}
+/* Demo Tabs */
+.ht-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
+.ht-tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s}
+.ht-tab-active,.ht-tab:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6);color:#e9d5ff}
+.ht-demo-card{background:#12121e;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2rem;margin-top:1rem;min-height:280px}
+.ht-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1.5rem}
+.ht-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;text-align:center}
+.ht-stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ht-stat-lbl{font-size:.78rem;color:#71717a;margin-top:.3rem}
+/* ROI Calc */
+.ht-roi-card{background:linear-gradient(135deg,#1a1028,#0f1a2e);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:2.5rem;margin-top:2rem}
+.ht-roi-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.85rem 1.2rem;border-radius:10px;font-size:1.1rem;font-weight:600;outline:none;margin:.5rem 0 1.5rem}
+.ht-roi-result{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:1.5rem;text-align:center}
+.ht-roi-big{font-size:2.8rem;font-weight:900;color:#34d399}
+.ht-roi-info{color:#a1a1aa;font-size:.9rem;margin-top:.5rem}
+/* Comparison */
+.ht-compare-table{width:100%;border-collapse:collapse;font-size:.9rem;color:#d4d4d8}
+.ht-compare-table th{padding:.8rem;font-weight:700;font-size:.8rem;letter-spacing:.05em;color:#a1a1aa;border-bottom:2px solid rgba(255,255,255,.1)}
+.ht-compare-table th:last-child{color:#a78bfa}
+/* Urgency */
+.ht-urgency{background:linear-gradient(135deg,#1a0d0d,#1a1028);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
+.ht-countdown{display:flex;justify-content:center;gap:1rem;margin:1.2rem 0}
+.ht-count-box{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:.8rem 1.2rem;min-width:70px}
+.ht-count-num{font-size:2rem;font-weight:900;color:#f87171}
+.ht-count-lbl{font-size:.7rem;color:#71717a;letter-spacing:.05em}
+/* Trust */
+.ht-trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem}
+.ht-trust-badge{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:#a1a1aa;font-weight:600}
+.ht-trust-badge span{font-size:1.2rem}
+/* FAQ */
+.ht-faq-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:.6rem 0;cursor:pointer;overflow:hidden;transition:border-color .2s}
+.ht-faq-item.open,.ht-faq-item:hover{border-color:rgba(124,58,237,.4)}
+.ht-faq-q{padding:1.1rem 1.4rem;font-weight:700;color:#e4e4e7;display:flex;justify-content:space-between;align-items:center}
+.ht-faq-arrow{transition:transform .2s;color:#a78bfa}
+.ht-faq-item.open .ht-faq-arrow{transform:rotate(180deg)}
+.ht-faq-a{padding:0 1.4rem;max-height:0;overflow:hidden;color:#a1a1aa;line-height:1.65;font-size:.95rem;transition:max-height .3s ease,padding .3s}
+.ht-faq-item.open .ht-faq-a{max-height:200px;padding:.2rem 1.4rem 1.2rem}
+/* Guarantee */
+.ht-guarantee{display:flex;align-items:center;gap:1.5rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:2rem;margin-top:2rem}
+.ht-guarantee-icon{font-size:3.5rem;flex-shrink:0}
+@media(max-width:600px){.ht-inner{text-align:center}.ht-guarantee{flex-direction:column;text-align:center}}
+</style>
+
+<!-- ═══════ 1. INTERACTIVE DEMO ═══════ -->
+<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 100%)">
+  <div class="ht-inner" style="text-align:center">
+    <div class="ht-badge">LIVE DEMO</div>
+    <h2 class="ht-title">Master Revenue Dashboard — Live Demo</h2>
+    <p class="ht-sub">Sieh in Echtzeit wie Master Revenue Dashboard arbeitet. Klick durch die Module und entdecke was dich erwartet.</p>
+    <div class="ht-tabs"><button class="ht-tab ht-tab-active" onclick="htTab(this,0)">Übersicht</button><button class="ht-tab " onclick="htTab(this,1)">Kanalanalyse</button><button class="ht-tab " onclick="htTab(this,2)">KI-Insights</button><button class="ht-tab " onclick="htTab(this,3)">Forecasts</button></div>
+    <div class="ht-demo-card">
+      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">
+        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
+        <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
+        <span style="color:#71717a;font-size:.8rem;margin-left:.5rem">Master Revenue Dashboard Dashboard — Produktionsumgebung</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;color:#10b981;font-size:.8rem;font-weight:700">
+          <div style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s infinite"></div> LIVE
+        </div>
+      </div>
+      <div class="ht-stats-row"><div class="ht-stat"><div class="ht-stat-num">12</div><div class="ht-stat-lbl">Revenue-Kanäle</div></div><div class="ht-stat"><div class="ht-stat-num">Echtzeit</div><div class="ht-stat-lbl">Updates</div></div><div class="ht-stat"><div class="ht-stat-num">KI</div><div class="ht-stat-lbl">Prognosen</div></div><div class="ht-stat"><div class="ht-stat-num">+42%</div><div class="ht-stat-lbl">Optimierung</div></div></div>
+      <div style="margin-top:1.5rem;background:rgba(255,255,255,.03);border-radius:10px;padding:1.2rem;text-align:left">
+        <div style="font-size:.75rem;color:#71717a;margin-bottom:.5rem;font-family:monospace">▶ SYSTEM LOG</div>
+        <div style="font-family:monospace;font-size:.82rem;color:#4ade80;line-height:1.8">
+          ✓ Master Revenue Dashboard gestartet — alle Module aktiv<br>
+          ✓ KI-Engine verbunden — Optimierung läuft<br>
+          ✓ Automation aktiv — 20 Stunden/Monat eingespart<br>
+          ✓ Revenue-Tracking aktiviert — Echtzeit-Updates<br>
+          <span style="color:#a78bfa">▶ Nächste Aktion in 00:03:42...</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top:1rem;color:#52525b;font-size:.82rem">Live Demo = produktnahe Simulation. Echte Ergebnisse können variieren.</p>
+  </div>
+</section>
+
+<!-- ═══════ 2. ROI KALKULATOR ═══════ -->
+<section class="ht-section" style="background:#0a0a0f">
+  <div class="ht-inner" style="text-align:center">
+    <div class="ht-badge">ROI KALKULATOR</div>
+    <h2 class="ht-title">Was bringt Master Revenue Dashboard dir konkret?</h2>
+    <p class="ht-sub">Berechne dein persönliches Potenzial — in unter 30 Sekunden.</p>
+    <div class="ht-roi-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;text-align:left">
+        <div>
+          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Anzahl aktiver Revenue-Kanäle</label>
+          <input type="number" id="ht-roi-input" class="ht-roi-input" value="3" oninput="htCalcROI()" min="0">
+          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Zeitrahmen</label>
+          <select id="ht-roi-period" class="ht-roi-input" style="cursor:pointer" onchange="htCalcROI()">
+            <option value="1">1 Monat</option>
+            <option value="3">3 Monate</option>
+            <option value="6" selected>6 Monate</option>
+            <option value="12">12 Monate</option>
+          </select>
+        </div>
+        <div>
+          <div class="ht-roi-result">
+            <div style="font-size:.85rem;color:#6ee7b7;font-weight:700;margin-bottom:.5rem">DEIN ÜBERSICHT REVENUE (€/MO)</div>
+            <div class="ht-roi-big" id="ht-roi-output">€0</div>
+            <div class="ht-roi-info" id="ht-roi-detail">Gib einen Wert links ein</div>
+          </div>
+          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem">
+            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
+              <span style="color:#a1a1aa">⏰ Zeit gespart/Monat</span>
+              <span style="color:#34d399;font-weight:700">20 Stunden/Monat</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
+              <span style="color:#a1a1aa">⚡ Typischer Zeitrahmen</span>
+              <span style="color:#60a5fa;font-weight:700">Sofort</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
+              <span style="color:#a1a1aa">📈 ROI Multiplikator</span>
+              <span style="color:#a78bfa;font-weight:700">1800x</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:2rem;text-align:center">
+        <a href="https://buy.stripe.com/8x2aEZ2Vc1zA1gceF84F42uR" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1.1rem 3rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(124,58,237,.4)">
+          🚀 Jetzt starten — €497/mo
+        </a>
+        <div style="margin-top:.8rem;color:#52525b;font-size:.82rem">30-Tage Geld-zurück-Garantie · Sofortiger Zugang</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 3. PROBLEM / LÖSUNG ═══════ -->
+<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e18 100%)">
+  <div class="ht-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:18px;padding:2rem">
+        <div style="font-size:2rem;margin-bottom:1rem">😤</div>
+        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.8rem">OHNE MASTER REVENUE DASHBOARD</div>
+        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
+          <li>❌ Umsatzdaten aus 10 Quellen manuell zusammenführen</li>
+          <li>❌ Kein skalierbares System</li>
+          <li>❌ Wettbewerber überholen dich</li>
+          <li>❌ Umsatzpotenzial bleibt ungenutzt</li>
+          <li>❌ Du machst alles manuell</li>
+        </ul>
+      </div>
+      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:18px;padding:2rem">
+        <div style="font-size:2rem;margin-bottom:1rem">🎯</div>
+        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#34d399;margin-bottom:.8rem">MIT MASTER REVENUE DASHBOARD</div>
+        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
+          <li>✅ Alle Revenue-Daten in Echtzeit — KI zeigt wo Geld liegt</li>
+          <li>✅ Vollständig skalierbar</li>
+          <li>✅ 24/7 aktiv ohne Aufwand</li>
+          <li>✅ Messbares ROI in Wochen</li>
+          <li>✅ KI übernimmt die schwere Arbeit</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 4. VERGLEICHSTABELLE ═══════ -->
+<section class="ht-section" style="background:#0a0a0f">
+  <div class="ht-inner" style="text-align:center">
+    <div class="ht-badge">VERGLEICH</div>
+    <h2 class="ht-title">Warum Master Revenue Dashboard gewinnt</h2>
+    <p class="ht-sub">Vergleich dir selbst: manuell vs. Basic-Tools vs. Master Revenue Dashboard</p>
+    <div style="overflow-x:auto;margin-top:1.5rem">
+      <table class="ht-compare-table">
+        <thead>
+          <tr style="background:rgba(255,255,255,.04)">
+            <th style="text-align:left;padding:.8rem">Feature</th>
+            <th>Manuell</th>
+            <th>Basic-Tools</th>
+            <th style="color:#a78bfa">Master Revenue Dashboard 📈</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Multi-Kanal-Dashboard</td>
+          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
+          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
+          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
+        </tr><tr>
+          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">KI-Prognosen</td>
+          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
+          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
+          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
+        </tr><tr>
+          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Anomalie-Erkennung</td>
+          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
+          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
+          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
+        </tr><tr>
+          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">P&L Reporting</td>
+          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
+          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
+          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
+        </tr><tr>
+          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Benchmark-Vergleich</td>
+          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
+          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
+          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
+        </tr><tr>
+          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Custom Alerts</td>
+          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
+          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
+          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
+        </tr>
+          <tr style="background:rgba(124,58,237,.08)">
+            <td style="padding:.8rem;font-weight:700;color:#e4e4e7">Monatliche Kosten</td>
+            <td style="text-align:center;color:#a1a1aa">Zeit + Nerven</td>
+            <td style="text-align:center;color:#a1a1aa">€200-€500</td>
+            <td style="text-align:center;font-weight:800;color:#a78bfa">€497/mo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="margin-top:2rem">
+      <a href="https://buy.stripe.com/8x2aEZ2Vc1zA1gceF84F42uR" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1rem">
+        📈 Master Revenue Dashboard jetzt holen →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 5. URGENCY ═══════ -->
+<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#120a0a)">
+  <div class="ht-inner" style="text-align:center">
+    <div class="ht-urgency">
+      <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.5rem">⚠️ LIMITIERTES ANGEBOT</div>
+      <h3 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 .5rem">Dieser Preis gilt nur noch</h3>
+      <div class="ht-countdown">
+        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-h">23</div><div class="ht-count-lbl">STD</div></div>
+        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-m">47</div><div class="ht-count-lbl">MIN</div></div>
+        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-s">12</div><div class="ht-count-lbl">SEK</div></div>
+      </div>
+      <p style="color:#a1a1aa;margin:.5rem 0 1.2rem">Noch <strong style="color:#f87171" id="ht-spots">7</strong> Plätze zum aktuellen Preis. Danach: <s style="color:#71717a">€3.997</s></p>
+      <a href="https://buy.stripe.com/8x2aEZ2Vc1zA1gceF84F42uR" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:900;padding:1.1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(239,68,68,.4)">
+        🔒 Platz sichern — €497/mo
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 6. TRUST + GARANTIE ═══════ -->
+<section class="ht-section" style="background:#0a0a0f">
+  <div class="ht-inner" style="text-align:center">
+    <div class="ht-trust-row">
+      <div class="ht-trust-badge"><span>🔒</span> SSL Verschlüsselt</div>
+      <div class="ht-trust-badge"><span>💳</span> Stripe Secure</div>
+      <div class="ht-trust-badge"><span>🇪🇺</span> DSGVO Konform</div>
+      <div class="ht-trust-badge"><span>⚡</span> Sofortiger Zugang</div>
+      <div class="ht-trust-badge"><span>🌍</span> EU-Server</div>
+      <div class="ht-trust-badge"><span>📞</span> Priority Support</div>
+    </div>
+    <div class="ht-guarantee" style="max-width:700px;margin:2rem auto 0">
+      <div class="ht-guarantee-icon">🛡️</div>
+      <div style="text-align:left">
+        <div style="font-size:1.2rem;font-weight:900;color:#34d399;margin-bottom:.4rem">30-Tage Zufriedenheitsgarantie</div>
+        <div style="color:#a1a1aa;line-height:1.65">Wenn du in den ersten 30 Tagen nicht zu 100% zufrieden bist, erstattest wir dir deinen Betrag vollständig — ohne Fragen, ohne Kleingedrucktes. Null Risiko für dich.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ 7. FAQ ═══════ -->
+<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#0d0d18)">
+  <div class="ht-inner" style="max-width:760px;margin:0 auto;text-align:center">
+    <div class="ht-badge">FAQ</div>
+    <h2 class="ht-title">Häufige Fragen</h2>
+    <p class="ht-sub">Alles was du wissen musst — bevor du startest.</p>
+    <div style="text-align:left;margin-top:1.5rem">
+      <div class="ht-faq-item" onclick="this.classList.toggle('open')">
+          <div class="ht-faq-q">Welche Plattformen werden verbunden? <span class="ht-faq-arrow">▾</span></div>
+          <div class="ht-faq-a">Shopify, Stripe, DS24, Gumroad, Amazon, eBay, PayPal — über 30 Integrationen.</div>
+        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
+          <div class="ht-faq-q">Wie aktuell sind die Daten? <span class="ht-faq-arrow">▾</span></div>
+          <div class="ht-faq-a">Echtzeit für Stripe/Shopify, stündlich für andere Plattformen.</div>
+        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
+          <div class="ht-faq-q">Kann ich eigene KPIs definieren? <span class="ht-faq-arrow">▾</span></div>
+          <div class="ht-faq-a">Ja. Custom Dashboard mit drag-and-drop Widgets.</div>
+        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
+          <div class="ht-faq-q">Gibt es ein Alert-System? <span class="ht-faq-arrow">▾</span></div>
+          <div class="ht-faq-a">Ja. Telegram/Email-Alerts bei Umsatzeinbrüchen, Anomalien oder Zielerreichung.</div>
+        </div>
+    </div>
+    <div style="margin-top:2.5rem;padding:2rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:16px">
+      <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.6rem">Noch Fragen? Ich antworte persönlich.</div>
+      <div style="color:#a1a1aa;margin-bottom:1.2rem">Rudolf Sarkany · AIITEC · Antwort in unter 4 Stunden</div>
+      <a href="https://t.me/rudisarkany" style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.5);color:#a78bfa;font-weight:700;padding:.75rem 2rem;border-radius:10px;text-decoration:none">
+        📱 Telegram: @rudisarkany
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════ FINAL CTA ═══════ -->
+<section class="ht-section" style="background:linear-gradient(135deg,#13082a,#0d1b38)">
+  <div class="ht-inner" style="text-align:center;max-width:700px;margin:0 auto">
+    <div style="font-size:3rem;margin-bottom:1rem">📈</div>
+    <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 1rem">Master Revenue Dashboard — All-in-One Revenue Intelligence</h2>
+    <p style="color:#a1a1aa;line-height:1.7;margin:0 0 2rem">Alle Revenue-Daten in Echtzeit — KI zeigt wo Geld liegt. Tausende Stunden gespart. Endlich skalierbar.</p>
+    <a href="https://buy.stripe.com/8x2aEZ2Vc1zA1gceF84F42uR" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:900;padding:1.2rem 3.5rem;border-radius:14px;text-decoration:none;font-size:1.15rem;box-shadow:0 6px 30px rgba(124,58,237,.5);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+      🚀 Jetzt €497/mo starten
+    </a>
+    <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
+      <div style="color:#71717a;font-size:.85rem">✓ Sofortzugang</div>
+      <div style="color:#71717a;font-size:.85rem">✓ 30 Tage Garantie</div>
+      <div style="color:#71717a;font-size:.85rem">✓ Stripe Secure</div>
+      <div style="color:#71717a;font-size:.85rem">✓ Keine versteckten Kosten</div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ── ROI Kalkulator ── */
+function htCalcROI(){
+  const input=parseFloat(document.getElementById('ht-roi-input').value)||0;
+  const period=parseInt(document.getElementById('ht-roi-period').value)||6;
+  const mult=1800;
+  let result=input*mult*period;
+  // Format
+  const fmt=v=>v>=1000000?'€'+(v/1000000).toFixed(1)+'M':v>=1000?'€'+(v/1000).toFixed(0)+'k':'€'+Math.round(v);
+  document.getElementById('ht-roi-output').textContent=fmt(result);
+  document.getElementById('ht-roi-detail').textContent=`Übersicht Revenue (€/Mo) über ${period} Monat${period>1?'e':''} · Sofort`;
+}
+htCalcROI();
+
+/* ── Demo Tabs ── */
+function htTab(btn,idx){
+  document.querySelectorAll('.ht-tab').forEach(t=>t.classList.remove('ht-tab-active'));
+  btn.classList.add('ht-tab-active');
+}
+
+/* ── Countdown ── */
+(function(){
+  var key='ht_cd_master-dashboard';
+  var stored=localStorage.getItem(key);
+  var end;
+  if(stored){end=parseInt(stored)}
+  else{end=Date.now()+86400000;localStorage.setItem(key,end)}
+  function tick(){
+    var diff=Math.max(0,end-Date.now());
+    var h=Math.floor(diff/3600000);
+    var m=Math.floor((diff%3600000)/60000);
+    var s=Math.floor((diff%60000)/1000);
+    var pad=n=>n.toString().padStart(2,'0');
+    var eh=document.getElementById('ht-cd-h');
+    var em=document.getElementById('ht-cd-m');
+    var es=document.getElementById('ht-cd-s');
+    if(eh){eh.textContent=pad(h);em.textContent=pad(m);es.textContent=pad(s);}
+    if(diff>0)setTimeout(tick,1000);
+  }
+  tick();
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+[[redirects]]
+  from = "/datenschutz"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/datenschutz/"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy/"
+  to = "/privacy.html"
+  status = 200
+
+# SPA fallback only for unknown routes (after specific redirects)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

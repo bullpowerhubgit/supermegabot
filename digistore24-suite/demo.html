@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Digistore24 Full Suite — Interaktive Demo</title>
+<style>
+:root { --bg:#0a0a0f; --s:#13131a; --s2:#1a1a24; --bd:#2a2a3d; --a:#b45309; --a2:#f59e0b; --t:#e8e8f0; --m:#888899; --g:#00ff88; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,'Inter','Segoe UI',sans-serif;min-height:100vh;}
+.header{background:rgba(10,10,15,0.95);border-bottom:1px solid var(--bd);padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.back-btn{color:var(--m);text-decoration:none;font-size:0.9rem;}
+.back-btn:hover{color:var(--t);}
+.hero{padding:60px 5% 40px;text-align:center;}
+.demo-badge{display:inline-block;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.4);color:var(--a2);padding:0.4rem 1.2rem;border-radius:50px;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;}
+h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:1rem;}
+h1 span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--m);max-width:600px;margin:0 auto 2rem;font-size:1.05rem;}
+.metrics{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem;}
+.metric{background:var(--s);border:1px solid var(--bd);border-radius:12px;padding:1.2rem 2rem;text-align:center;min-width:140px;}
+.metric-val{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.metric-lbl{color:var(--m);font-size:0.8rem;margin-top:0.3rem;}
+.demo-container{max-width:900px;margin:0 auto;padding:0 5% 60px;}
+.demo-screen{background:var(--s);border:1px solid var(--bd);border-radius:20px;overflow:hidden;}
+.screen-bar{background:var(--s2);padding:0.8rem 1.5rem;display:flex;align-items:center;gap:0.5rem;border-bottom:1px solid var(--bd);}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot.r{background:#ff5f57;} .dot.y{background:#febc2e;} .dot.g{background:#28c840;}
+.screen-title{margin-left:auto;margin-right:auto;color:var(--m);font-size:0.85rem;}
+.screen-body{padding:2rem;}
+.screen-body h3{font-size:1.2rem;font-weight:700;margin-bottom:1rem;}
+.feature-list{list-style:none;}
+.feature-list li{padding:0.7rem 0;border-bottom:1px solid var(--bd);color:var(--m);font-size:0.95rem;}
+.feature-list li:last-child{border-bottom:none;}
+.live-indicator{display:flex;align-items:center;gap:0.5rem;color:var(--g);font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.cta-section{text-align:center;padding:2rem 5% 4rem;}
+.cta-section h2{font-size:1.6rem;font-weight:800;margin-bottom:1rem;}
+.btn{display:inline-block;background:linear-gradient(135deg,var(--a),#5b52ef);color:white;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1.05rem;transition:all 0.3s;box-shadow:0 8px 30px rgba(108,99,255,0.3);}
+.btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,99,255,0.4);}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="logo">Digistore24 Full Suite</div>
+  <a href="index.html" class="back-btn">← Zurück zur Übersicht</a>
+</header>
+<section class="hero">
+  <div class="demo-badge">🎯 Interaktive Demo</div>
+  <h1><span>Digistore24 Full Suite</span><br>Live erleben</h1>
+  <p>Sieh in Echtzeit was Digistore24 Full Suite für dein Business leisten kann — ohne Anmeldung, ohne Kreditkarte.</p>
+  <div class="metrics">
+    <div class="metric"><div class="metric-val">€12.400</div><div class="metric-lbl">Ø Mehrumsatz/Monat</div></div>
+<div class="metric"><div class="metric-val">87%</div><div class="metric-lbl">Zeitersparnis</div></div>
+<div class="metric"><div class="metric-val">30 Min</div><div class="metric-lbl">Setup-Zeit</div></div>
+<div class="metric"><div class="metric-val">30 Tage</div><div class="metric-lbl">bis ROI</div></div>
+  </div>
+</section>
+<div class="demo-container">
+  <div class="demo-screen">
+    <div class="screen-bar">
+      <div class="dot r"></div>
+      <div class="dot y"></div>
+      <div class="dot g"></div>
+      <div class="screen-title">Digistore24 Full Suite Dashboard</div>
+    </div>
+    <div class="screen-body">
+      <div class="live-indicator"><div class="live-dot"></div> Live System aktiv</div>
+      <h3>🚀 Was Digistore24 Full Suite gerade für dich tut:</h3>
+      <ul class="feature-list">
+        <li>✅ Vollautomatischer Betrieb 24/7</li>
+<li>✅ KI-optimierte Ergebnisse</li>
+<li>✅ DSGVO-konform</li>
+<li>✅ Echtzeit-Analytics Dashboard</li>
+<li>✅ Dedizierter Onboarding Support</li>
+<li>✅ 30-Tage Geld-zurück-Garantie</li>
+      </ul>
+    </div>
+  </div>
+</div>
+<div class="cta-section">
+  <h2>Bereit loszulegen?</h2>
+  <p style="color:var(--m);margin-bottom:2rem;">30 Tage Geld-zurück-Garantie. Setup in 30 Minuten.</p>
+  <a href="index.html#preise" class="btn">Jetzt starten →</a>
+</div>
+</body>
+</html>
