@@ -12,7 +12,12 @@
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
 |-----|--------|
-| **aiitecbuuss@gmail.com App-PW** | Neues Passwort gesetzt → SMTP Login ✅ — alle 5 Gmail-Konten wieder aktiv |
+| **aiitecbuuss@gmail.com App-PW** | hvzgpgyufricmenj — IMAP+SMTP Login ✅ — alle 5 Gmail-Konten aktiv — Railway ✅ |
+| **Perplexity API** | Key in .env gültig — sonar antwortet ✅ — Railway ✅ |
+| **OpenAI API** | 123 Modelle — Key war nie revoked ✅ |
+| **Anthropic API** | claude-haiku antwortet ✅ — Credits vorhanden |
+| **Email Monitor** | Alle 2 Min Gmail IMAP — Pinterest-Alerting — deployed ✅ |
+| **Pinterest Email** | API DENIED 07.07 bestätigt — Appeal-Draft r3312635313637467450 in Gmail |
 
 ## ✅ FIXES COMMITTED (2026-07-16)
 
