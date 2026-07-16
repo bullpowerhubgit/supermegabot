@@ -72,8 +72,13 @@
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 2 | **Pinterest API — ANTWORT DA! Neu einreichen** | Pinterest abgelehnt weil AIITEC/Rudibot ≠ bullpower-hub-portal.netlify.app. **Neu einreichen:** developers.pinterest.com → App 1582363 → Company: "BullPower Hub" → App Name: "BullPower Pins" → URL: bullpower-hub-portal.netlify.app → Privacy: bullpower-hub-portal.netlify.app/datenschutz → Submit | `PINTEREST_ACCESS_TOKEN` |
-| 3 | **Stripe AIITEC 401** | stripe.com → AIITEC-Konto einloggen → Dashboard → API Keys → prüfen ob `sk_live_51SwsoNF...` aktiv ist | `STRIPE_SECRET_KEY_AIITEC` |
+| 1 | **Pinterest API** | App neu einreichen: Company "BullPower Hub", URL bullpower-hub-portal.netlify.app → neuen Token | `PINTEREST_ACCESS_TOKEN` |
+| 2 | **Claude MCP Auth** | In Claude Code: `/mcp` → Slack / Microsoft 365 / Windsor.ai OAuth im Browser (optional) | — |
+| 3 | ~~Stripe AIITEC 401~~ | **ERLEDIGT:** nur noch bullpowersrtkennels (`acct_1Tg1U0…`) — AIITEC permanent verboten | `STRIPE_SECRET_KEY` |
+
+## ✅ STRIPE BULLPOWER-ONLY (2026-07-16)
+- Konto: `bullpowersrtkennels@gmail.com` · `acct_1Tg1U0RJECiV6vSm`
+- `enforce_bullpower_only()` bei Startup · HttpGuard rewrites · CI regression
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
@@ -520,7 +525,7 @@ Methode: Graph API v21.0 via FACEBOOK_USER_TOKEN + PAGE_TOKEN (AiiteC Page 10167
 - ❌ Meta Ads: ads_management fehlt für act_878505274898620 → Business Manager Settings
 - ❌ KI-APIs: Anthropic invalid, OpenAI quota, OpenRouter daily limit → $10 auf openrouter.ai
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-07-16 12:34 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-16 18:34 UTC
 - Health: ✅ OK
 - Umsatz heute: €0.00
 - Probleme:
