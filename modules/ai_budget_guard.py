@@ -70,6 +70,11 @@ REVENUE_MODULES = frozenset({
     # Traffic & Conversion
     "traffic_maximizer",
     "full_revenue_expansion",
+    "traffic_accelerator",
+    "seo_mega_engine",
+    # DS24 & Content Publishing
+    "ds24_income_blaster",
+    "github_blog_publisher",
 })
 
 # ── Tagesbudget — KONSERVATIV nach Credit-Verlust ──────────────────────────────
@@ -254,12 +259,13 @@ def _sb_save(provider: str, state: dict) -> None:
 
 def _caller_module() -> str:
     frame = inspect.stack()
-    for entry in frame[2:12]:
+    for entry in frame[2:30]:  # Weiter suchen für async-Stacks
         filename = entry.filename or ""
         if "modules/" in filename:
             name = Path(filename).stem
             if name not in ("claude_automation", "ai_budget_guard", "anthropic_compat",
-                            "perplexity_client", "openai_client", "ai_client"):
+                            "perplexity_client", "openai_client", "ai_client",
+                            "ai_gateway", "openrouter_client", "groq_client"):
                 return name
     return "__unknown__"
 
