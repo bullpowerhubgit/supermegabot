@@ -37,8 +37,9 @@ _rr_idx = 0
 _GMAIL_DAILY_EXHAUSTED: set = set()  # Session-persistentes Set für 550-5.4.5-Accounts
 _GMAIL_AUTH_FAILED: set = set()  # BadCredentials — bis Restart/Refresh deaktiviert
 
-# Permanently skip accounts known bad until password rotated (env override)
-_DISABLED_ACCOUNTS_ENV = "GMAIL_DISABLED_INDEXES"  # e.g. "4,2"
+# Permanently removed accounts (not needed / broken) — never used for send/IMAP
+_REMOVED_INDEXES: frozenset[int] = frozenset({4})  # looopwave@gmail.com
+_REMOVED_EMAILS: frozenset[str] = frozenset({"looopwave@gmail.com"})
 
 # ── Globaler Tages-Counter (verhindert 550-Overruns) ─────────────────────────
 import sqlite3 as _sqlite3
@@ -158,12 +159,16 @@ def _hosts_for(index: int, email: str) -> Tuple[str, int, str]:
 
 
 def list_accounts() -> List[GmailAccount]:
-    """Alle 8 Konten — mit oder ohne Passwort."""
+    """Aktive Gmail-Konten (looopwave / Index 4 dauerhaft entfernt)."""
     seen: set[str] = set()
     accounts: List[GmailAccount] = []
     for i in range(1, 9):
+        if i in _REMOVED_INDEXES:
+            continue
         email = _email_for(i)
         if not email or email in seen:
+            continue
+        if email.lower() in _REMOVED_EMAILS:
             continue
         seen.add(email)
         smtp_host, smtp_port, imap_host = _hosts_for(i, email)
@@ -179,22 +184,10 @@ def list_accounts() -> List[GmailAccount]:
     return accounts
 
 
-def _disabled_indexes() -> set[int]:
-    raw = os.getenv(_DISABLED_ACCOUNTS_ENV, "4").strip()  # default: disable #4 looopwave until rotated
-    out: set[int] = set()
-    for part in raw.split(","):
-        part = part.strip()
-        if part.isdigit():
-            out.add(int(part))
-    return out
-
-
 def configured_accounts() -> List[GmailAccount]:
-    disabled = _disabled_indexes()
     return [
         a for a in list_accounts()
         if a.configured
-        and a.index not in disabled
         and a.email.lower() not in _GMAIL_AUTH_FAILED
         and a.email not in _GMAIL_DAILY_EXHAUSTED
     ]
@@ -212,10 +205,10 @@ def pick_account() -> Optional[GmailAccount]:
 
 
 def test_smtp(account: GmailAccount, timeout: int = 12) -> Dict[str, Any]:
+    if account.index in _REMOVED_INDEXES or account.email.lower() in _REMOVED_EMAILS:
+        return {"ok": False, "email": account.email, "error": "account_removed"}
     if not account.configured:
         return {"ok": False, "email": account.email, "error": "no_password"}
-    if account.index in _disabled_indexes():
-        return {"ok": False, "email": account.email, "error": "disabled_until_password_rotated"}
     try:
         ctx = ssl.create_default_context()
         if account.smtp_port == 465:
@@ -317,7 +310,11 @@ def send_email(
         if _is_account_at_limit(acc.email):
             log.warning("SMTP %s Tages-Cap (%d) erreicht — übersprungen", acc.email, MAX_PER_ACCOUNT_PER_DAY)
             continue
-        if acc.email.lower() in _GMAIL_AUTH_FAILED or acc.index in _disabled_indexes():
+        if (
+            acc.email.lower() in _GMAIL_AUTH_FAILED
+            or acc.index in _REMOVED_INDEXES
+            or acc.email.lower() in _REMOVED_EMAILS
+        ):
             continue
         try:
             msg = _build_message(acc, to_email, subject, body, html=html)

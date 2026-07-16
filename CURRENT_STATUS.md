@@ -11,7 +11,7 @@
 | 4 | seo-turbo-tools | ✅ HEALTHY port 3000 |
 | 5 | GH Actions | ✅ CI/DS24 grün; Claude install via bash |
 
-Noch manuell: looopwave@gmail.com App-Password erneuern (GMAIL_USER_4).
+looopwave@gmail.com: **dauerhaft entfernt** (nicht benötigt) — Gmail-Pool ohne Index 4.
 
 ## ✅ HEUTIGE AKTIVITÄTEN (2026-07-16)
 

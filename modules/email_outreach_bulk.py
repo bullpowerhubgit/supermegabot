@@ -638,7 +638,7 @@ def _build_email_body(company: dict) -> Tuple[str, str]:
 _OWN_EMAILS = {
     "aiitecbuuss@gmail.com", "bullpowersrtkennels@gmail.com",
     "dragonadnp@gmail.com", "rudolf.sarkany.aiitec@gmail.com",
-    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com", "looopwave@gmail.com",
+    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com",
 }
 
 _SKIP_PREFIXES = (
