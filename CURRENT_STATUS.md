@@ -1,5 +1,5 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 16:15 UTC (Wave 8 — Flash Sale VOLL EINGERICHTET)**
+**Stand: 2026-07-16 17:20 UTC (Wave 9 — Fixes + Meta Token Update)**
 
 ## 🔴 OFFENE BLOCKER — NUR RUDOLF KANN DAS FIXEN
 
@@ -7,15 +7,20 @@
 |---|---------|---------|-------------|
 | 1 | **Meta App-Domains** | developers.facebook.com → App 1535442684079797 → Grundlegendes → App-Domains → `developers.facebook.com` löschen → `supermegabot-production.up.railway.app` eintragen | — |
 | 2 | **Pinterest API — Appeal gesendet** | ✅ Tickets #16593704 + #16593708 erstellt (16.07 15:03). Antwort binnen 1 Werktag. Danach: developers.pinterest.com → neuer Token | `PINTEREST_ACCESS_TOKEN` |
-| 3 | **Twitter OAuth 401** | developer.twitter.com → Mein Projekt → Keys & Tokens → Access Token → "Regenerate" | `TWITTER_ACCESS_TOKEN` + `TWITTER_ACCESS_TOKEN_SECRET` |
+| 3 | **Twitter Keys neu** | $5 X Developer Platform bezahlt (16.07 16:30). Gehe zu developer.twitter.com → Dein Projekt → Keys & Tokens → "Regenerate All" → 4 Keys schicken | `TWITTER_API_KEY`, `TWITTER_API_SECRET`, `TWITTER_ACCESS_TOKEN`, `TWITTER_ACCESS_TOKEN_SECRET` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
 |-----|--------|
-| **Meta Ads Kampagne LIVE** | Campaign 23858766912160790 AKTIV — Start 17.07 08:00 — Ad 23858776167940790 IN_PROCESS — €10/Tag DE/AT/CH |
-| **Meta Ads Creative v2** | Flash Sale Post 17.07 als Creative — ID: 1736882491064064 — Ad IN_PROCESS (Review nach Creative-Update) |
+| **Meta Ads Kampagne LIVE** | Campaign 23858766912160790 AKTIV — Start 17.07 08:00 — Ad 23858776167940790 ACTIVE — €10/Tag DE/AT/CH |
+| **Meta Ads Creative v2** | Flash Sale Post 17.07 als Creative — ID: 1736882491064064 — Ad ACTIVE |
+| **Meta App → LIVE** | ✅ Email 16.07 16:12 bestätigt: App 1535442684079797 im Live-Modus |
+| **Meta System User Token** | ✅ EAARagX8... (läuft NIE ab) — 11 .env Vars + alle Railway-Vars aktualisiert |
 | **FB Flash Sale Posts** | 6 Scheduled Posts (17.07 08:00 → 21.07 18:00) — täglich mit Sale-Content |
 | **Pinterest Appeal** | ✅ Gesendet 16.07 15:03 — Tickets #16593704 + #16593708 — Antwort binnen 1 Werktag |
+| **eu-compliance-saas Build** | ✅ railway.toml: python3→python3.11 gefixt — Service läuft (health OK, Uptime 9h+) |
+| **"Hallo None" Bug** | ✅ full_revenue_expansion.py: `or ""` statt `get(key, "")` — Klaviyo-Revision 2026-04-15 |
+| **X Developer $5** | ✅ Bezahlt 16.07 16:30 — Basic Tier aktiv — WARTE auf neue API Keys von Rudolf |
 | **aiitecbuuss@gmail.com App-PW** | hvzgpgyufricmenj — IMAP+SMTP Login ✅ — alle 5 Gmail-Konten aktiv — Railway ✅ |
 | **Resend API Key** | re_XRHYX... → Test OK (id: 5aba12f6) — .env + Railway ✅ |
 | **Perplexity API** | Key in .env gültig — sonar antwortet ✅ — Railway ✅ |
