@@ -22,6 +22,18 @@ async def send_email(to: str | list[str], subject: str, html: str,
                      from_addr: str = FROM_DEFAULT) -> bool:
     """Send via Resend. Returns True on success."""
     to_list = [to] if isinstance(to, str) else to
+
+    # Guard: block None-names, placeholders, spam patterns before any send
+    try:
+        from modules.email_guard import validate_email
+        primary_to = to_list[0] if to_list else ""
+        ok, errors = validate_email(subject=subject, body=html, to_email=primary_to, skip_dedup=True)
+        if not ok:
+            log.warning("EmailGuard BLOCKED to=%s reason=%s", primary_to, "; ".join(errors))
+            return False
+    except ImportError:
+        pass
+
     for key in [_RESEND_KEY1(), _RESEND_KEY2]:
         if not key:
             continue

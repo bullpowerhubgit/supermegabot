@@ -1209,6 +1209,14 @@ def _send_email(to: str, subject: str, body: str) -> bool:
     if not _is_valid_recipient(to):
         log.warning("Ungültige/Noreply-Adresse übersprungen: %s", to)
         return False
+    try:
+        from modules.email_guard import validate_email
+        ok, errors = validate_email(subject=subject, body=body, to_email=to, skip_dedup=True)
+        if not ok:
+            log.warning("EmailGuard BLOCKED to=%s reason=%s", to, "; ".join(errors))
+            return False
+    except ImportError:
+        pass
     _reset_smtp_if_new_day()
 
     # 1. SendGrid primary — beste Zustellrate bei Enterprise-Servern

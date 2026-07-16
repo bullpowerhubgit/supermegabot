@@ -569,6 +569,14 @@ async def _sb_insert_lead_event(data: dict) -> None:
 # ── Email senden ──────────────────────────────────────────────────────────────
 
 def send_email(to: str, subject: str, body: str) -> bool:
+    try:
+        from modules.email_guard import validate_email
+        ok_g, errs = validate_email(subject=subject, body=body, to_email=to, skip_dedup=True)
+        if not ok_g:
+            log.warning("EmailGuard BLOCKED to=%s reason=%s", to, "; ".join(errs))
+            return False
+    except ImportError:
+        pass
     from modules.gmail_accounts import send_email as ga_send
     html = f"""<html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px">
 <pre style="font-family:inherit;white-space:pre-wrap">{body}</pre>
