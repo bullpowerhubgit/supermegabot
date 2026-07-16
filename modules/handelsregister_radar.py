@@ -27,7 +27,7 @@ import smtplib
 import sqlite3
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, date
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -65,7 +65,7 @@ def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("T
 def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 
 
-# ── Subscriber-Liste (wer kauft unsere Leads) ─────────────────────────────────
+# ── Subscriber-Liste (wer kauft unsere Leads) ────────────────────────────────────────────
 LEAD_BUYERS = [
     # kontakt@stbv.de ENTFERNT — Bounce 2026-07-13
     # vertrieb@datev.de ENTFERNT — Bounce 2026-07-13
@@ -77,7 +77,7 @@ LEAD_BUYERS = [
 ]
 
 
-# ── DB ────────────────────────────────────────────────────────────────────────
+# ── DB ──────────────────────────────────────────────────────────────────────────────
 
 def init_db():
     _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -326,7 +326,7 @@ def _score(entry: Dict) -> int:
     return min(score, 100)
 
 
-# ── Email ─────────────────────────────────────────────────────────────────────
+# ── Email ──────────────────────────────────────────────────────────────────────────
 
 def build_email_body(leads: List[Dict], buyer: Dict) -> str:
     lead_lines = ""
@@ -361,7 +361,7 @@ def send_email(to: str, subject: str, body: str) -> bool:
     return ok
 
 
-# ── Telegram ──────────────────────────────────────────────────────────────────
+# ── Telegram ───────────────────────────────────────────────────────────────────
 
 async def tg(msg: str):
     token = _tg_token()
@@ -377,7 +377,7 @@ async def tg(msg: str):
         pass
 
 
-# ── Haupt-Run ─────────────────────────────────────────────────────────────────
+# ── Haupt-Run ───────────────────────────────────────────────────────────────────
 
 async def run_cycle() -> Dict:
     init_db()
