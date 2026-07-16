@@ -5,7 +5,7 @@
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 2 | **Pinterest API — Appeal gesendet** | ✅ Tickets #16593704 + #16593708 erstellt (16.07 15:03). Antwort binnen 1 Werktag. Danach: developers.pinterest.com → neuer Token | `PINTEREST_ACCESS_TOKEN` |
+| 2 | **Pinterest API — ANTWORT DA! Neu einreichen** | Pinterest abgelehnt weil AIITEC/Rudibot ≠ bullpower-hub-portal.netlify.app. **Neu einreichen:** developers.pinterest.com → App 1582363 → Company: "BullPower Hub" → App Name: "BullPower Pins" → URL: bullpower-hub-portal.netlify.app → Privacy: bullpower-hub-portal.netlify.app/datenschutz → Submit | `PINTEREST_ACCESS_TOKEN` |
 | 3 | **Stripe AIITEC 401** | stripe.com → AIITEC-Konto einloggen → Dashboard → API Keys → prüfen ob `sk_live_51SwsoNF...` aktiv ist | `STRIPE_SECRET_KEY_AIITEC` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
