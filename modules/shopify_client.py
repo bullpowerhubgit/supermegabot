@@ -378,14 +378,18 @@ async def get_shop_info() -> Dict:
 async def create_product(title: str, price: float, vendor: str = "", body_html: str = "",
                           product_type: str = "", tags: list = None) -> Dict:
     """Neues Produkt anlegen — mit Gatekeeper-Check (blockiert Fake/Junk-Produkte)."""
-    from modules.product_gatekeeper import validate_product
     import logging as _log
-    ok, reason = validate_product(title=title, vendor=vendor,
-                                  product_type=product_type, price=price)
-    if not ok:
-        _log.getLogger(__name__).warning("shopify_client.create_product BLOCKIERT: %s — %s",
-                                         title[:60], reason)
-        return {"userErrors": [{"field": "title", "message": f"Gatekeeper: {reason}"}]}
+    _logger = _log.getLogger(__name__)
+    try:
+        from modules.product_gatekeeper import validate_product
+        ok, reason = validate_product(title=title, vendor=vendor,
+                                      product_type=product_type, price=price)
+        if not ok:
+            _logger.warning("shopify_client.create_product BLOCKIERT: %s — %s", title[:60], reason)
+            return {"userErrors": [{"field": "title", "message": f"Gatekeeper: {reason}"}]}
+    except Exception as _ge:
+        _logger.critical("GATEKEEPER FEHLER — KEIN PRODUKT ERSTELLT: %s | Titel: %s", _ge, title[:60])
+        return {"userErrors": [{"field": "gatekeeper", "message": f"Gatekeeper unavailable: {_ge}"}]}
     # Immer vendor=iNeedit wenn kein explizit erlaubter Vendor übergeben
     allowed_vendors = {"iNeedit", "Printify", "I Want That! I Need It!", "AliExpress Import",
                        "Alibaba Import", "eBay Import", "AIITEC", "Restposten"}
