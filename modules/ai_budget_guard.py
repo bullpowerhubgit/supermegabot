@@ -69,6 +69,7 @@ REVENUE_MODULES = frozenset({
     "agent_teams",
     # Traffic & Conversion
     "traffic_maximizer",
+    "full_revenue_expansion",
 })
 
 # ── Tagesbudget — KONSERVATIV nach Credit-Verlust ──────────────────────────────
