@@ -58,6 +58,9 @@ REVENUE_MODULES = frozenset({
     "daily_system_check",
     "rudiclone",
     "geheimwaffe",
+    # Email & Reply-Klassifikation → Revenue
+    "reply_monitor",
+    "agent_teams",
 })
 
 # ── Tagesbudget — KONSERVATIV nach Credit-Verlust ──────────────────────────────
