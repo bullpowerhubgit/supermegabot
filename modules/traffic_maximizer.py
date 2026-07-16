@@ -80,8 +80,30 @@ def _log_post(platform: str, topic: str, content: str, result: str, ok: bool) ->
 
 # ── Trending Topics ───────────────────────────────────────────────────────────
 
+_ECOM_KEYWORDS = {
+    "shopify", "e-commerce", "ecommerce", "online shop", "onlineshop", "dropshipping",
+    "amazon", "ebay", "etsy", "ki", "künstliche intelligenz", "automatisierung", "automation",
+    "saas", "marketing", "seo", "conversion", "umsatz", "revenue", "checkout", "payment",
+    "stripe", "klaviyo", "social media", "influencer", "werbung", "ads", "google ads",
+    "facebook ads", "tiktok shop", "instagram shop", "b2b", "startup", "gründung",
+    "handel", "verkauf", "logistik", "fulfillment", "retoure", "kundenbindung",
+}
+
+_FALLBACK_TOPICS = [
+    "Shopify KI-Automatisierung 2026 — Was DACH-Händler jetzt wissen müssen",
+    "E-Commerce Trends DACH 2026: Welche Tools sparen wirklich Zeit?",
+    "B2B-Lead-Generierung mit KI: 1.000 Kontakte pro Tag automatisiert",
+    "Social Media Automation für Shopify-Shops — So läuft Marketing auf Autopilot",
+    "Stripe Zahlungen automatisieren: SaaS-Wachstum ohne manuellen Aufwand",
+    "Klaviyo E-Mail Automationen: Wie 7 Sequenzen 30% mehr Umsatz bringen",
+    "LinkedIn B2B Outreach: 100 qualifizierte Leads täglich mit KI",
+    "Shopify Collections & SEO: Vollautomatische Produktkategorisierung",
+    "KI-Telefonie für DACH E-Commerce: Kundensupport 24/7 ohne Personal",
+    "Digistore24 Automatisierung: Digitale Produkte vollautomatisch verkaufen",
+]
+
 async def fetch_trending_topics(session: aiohttp.ClientSession) -> list:
-    """Google Trends DE (RSS) + HN — Top-5 Topics."""
+    """Google Trends DE (nur E-Commerce-relevante) — Fallback: feste AIITEC-Themen."""
     conn = _db()
     row = conn.execute("SELECT ts, topics FROM topics_cache ORDER BY ts DESC LIMIT 1").fetchone()
     conn.close()
@@ -99,32 +121,20 @@ async def fetch_trending_topics(session: aiohttp.ClientSession) -> list:
                 root = ET.fromstring(await r.text())
                 for item in root.iter("item"):
                     t = item.findtext("title", "")
-                    if t and len(topics) < 5:
-                        topics.append(t)
+                    t_lower = t.lower()
+                    # Nur E-Commerce/Business-relevante Trends verwenden
+                    if t and any(kw in t_lower for kw in _ECOM_KEYWORDS):
+                        if len(topics) < 5:
+                            topics.append(t)
     except Exception as e:
         log.debug("Trends: %s", e)
 
+    # Fallback: eigene AIITEC-Themen — KEINE fremden Headlines
     if len(topics) < 5:
-        try:
-            async with session.get(
-                "https://hacker-news.firebaseio.com/v0/topstories.json",
-                timeout=aiohttp.ClientTimeout(total=6),
-            ) as r:
-                ids = (await r.json())[:10] if r.status == 200 else []
-            for sid in ids[:5 - len(topics)]:
-                async with session.get(
-                    f"https://hacker-news.firebaseio.com/v0/item/{sid}.json",
-                    timeout=aiohttp.ClientTimeout(total=5),
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        if d and d.get("title"):
-                            topics.append(d["title"])
-        except Exception as e:
-            log.debug("HN: %s", e)
-
-    if not topics:
-        topics = ["E-Commerce Automatisierung 2026", "Shopify KI Tools", "DACH Online-Shop"]
+        import random
+        pool = [t for t in _FALLBACK_TOPICS if t not in topics]
+        random.shuffle(pool)
+        topics.extend(pool[:5 - len(topics)])
 
     conn = _db()
     conn.execute("DELETE FROM topics_cache")
@@ -426,7 +436,7 @@ async def _run_traffic_blast_inner() -> dict:
             ("facebook",     post_facebook_content(session, contents["facebook"], STRIPE_STARTER)),
             ("shopify_blog", post_shopify_blog(
                 session,
-                title=f"{topic} — Shopify 2026 automatisieren",
+                title=f"Shopify 2026: {topic[:80]}",
                 content=contents["shopify_blog"],
                 tags=["shopify automation", "e-commerce", "dach", "ki tools"],
             )),
