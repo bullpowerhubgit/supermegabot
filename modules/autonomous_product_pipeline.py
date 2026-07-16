@@ -109,37 +109,29 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
         max_tokens=400,
     ) or f"<p>{idea['tagline']}</p>"
 
-    payload = {
-        "product": {
-            "title": idea["title"],
-            "body_html": description,
-            "vendor": "iNeedit",
-            "product_type": "Digital Product",
-            "tags": ", ".join(idea.get("keywords", []) + ["digital", "automation", "ki"]),
-            "status": "active",
-            "variants": [{"price": str(float(idea["price_eur"])), "inventory_management": None,
-                          "inventory_policy": "continue", "requires_shipping": False}],
-        }
-    }
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://{SHOP}/admin/api/{SHOPIFY_VER}/products.json",
-                headers={"X-Shopify-Access-Token": SHOPIFY_TOK,
-                         "Content-Type": "application/json"},
-                json=payload,
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-        pid = data.get("product", {}).get("id")
-        handle = data.get("product", {}).get("handle", "")
+        from modules import shopify_client as _sc
+        result = await _sc.create_product(
+            title=idea["title"],
+            price=float(idea["price_eur"]),
+            vendor="iNeedit",
+            body_html=description,
+            product_type=idea.get("type", "Digital Product"),
+            tags=idea.get("keywords", []) + ["digital", "automation", "ki"],
+        )
+        errors = result.get("userErrors", [])
+        if errors:
+            log.warning("Shopify create_product Fehler: %s — %s", idea["title"][:60], errors)
+            return None
+        pid = result.get("product", {}).get("id", "")
+        if not pid:
+            log.warning("Shopify product NOT created (kein pid): %s — %s", idea["title"][:60], result)
+            return None
+        handle = result.get("product", {}).get("handle", "")
         public_domain = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
         url = f"https://{public_domain}/products/{handle}" if handle else None
-        if pid:
-            log.info("Shopify product created: %s (id=%s)", idea["title"], pid)
-        else:
-            log.warning("Shopify product NOT created (API error): %s — %s", idea["title"][:60], data.get("errors", "?"))
-        return url if pid else None
+        log.info("Shopify product created via Gatekeeper: %s (id=%s)", idea["title"], pid)
+        return url
     except Exception as e:
         log.warning("Shopify create error: %s", e)
         return None
@@ -234,6 +226,23 @@ async def _blast_all_channels(idea: dict, urls: dict) -> dict:
     )
 
     results = {}
+    # Route through post_gateway first — blocks bad content before any platform
+    try:
+        from modules.post_gateway import safe_post as _safe_post
+        gw_result = await _safe_post(
+            platform="telegram",
+            text=post_text,
+            source_module="autonomous_product_pipeline",
+        )
+        if not gw_result.get("ok") and gw_result.get("blocked"):
+            log.warning("Post-Gateway BLOCKIERT product blast: %s", gw_result.get("errors"))
+            results["mega_auto_post"] = {"blocked": True, "errors": gw_result.get("errors")}
+            return results
+    except Exception as e:
+        log.error("Post-Gateway fail-closed in blast: %s — kein Post", e)
+        results["mega_auto_post"] = {"blocked": True, "error": str(e)}
+        return results
+
     try:
         from modules.mega_auto_poster import run_mega_auto_post
         r = await run_mega_auto_post(custom_text=post_text, product_url=product_url)

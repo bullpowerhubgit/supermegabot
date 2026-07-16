@@ -2662,6 +2662,47 @@ async def task_multiplatform_autopost() -> str:
         return f"MultiPost Fehler: {e}"
 
 
+async def task_system_guardian() -> dict:
+    """Alle 10min: Synchronisierter Wächter-Zyklus — Sentinel + Gatekeeper + Post-Gateway."""
+    from datetime import datetime, timezone as _tz
+    results = {"ok": True, "ts": datetime.now(_tz.utc).isoformat()}
+    try:
+        from modules.error_sentinel import get_sentinel_status
+        status = get_sentinel_status()
+        results["sentinel"] = status
+        if not status.get("ok"):
+            log.critical("GUARDIAN: Error Sentinel nicht OK: %s", status.get("error"))
+            results["ok"] = False
+    except Exception as e:
+        log.critical("GUARDIAN: Error Sentinel AUSGEFALLEN: %s", e)
+        results["sentinel"] = {"ok": False, "error": str(e)}
+        results["ok"] = False
+
+    try:
+        from modules.product_gatekeeper import validate_product
+        ok, _ = validate_product(title="__health_check__", vendor="iNeedit",
+                                  product_type="Digital", price=9.99)
+        results["gatekeeper"] = "ok"
+        log.info("GUARDIAN: Gatekeeper OK")
+    except Exception as e:
+        log.critical("GUARDIAN: Gatekeeper AUSGEFALLEN: %s", e)
+        results["gatekeeper"] = f"FEHLER: {e}"
+        results["ok"] = False
+
+    try:
+        from modules.post_gateway import safe_post  # noqa: F401
+        results["post_gateway"] = "ok"
+        log.info("GUARDIAN: Post Gateway OK")
+    except Exception as e:
+        log.critical("GUARDIAN: Post Gateway AUSGEFALLEN: %s", e)
+        results["post_gateway"] = f"FEHLER: {e}"
+        results["ok"] = False
+
+    if not results["ok"]:
+        log.warning("GUARDIAN: Wächter-Zyklus mit Fehlern: %s", results)
+    return results
+
+
 async def task_daily_system_check() -> str:
     """Täglich 07:00: Vollprüfung aller Kanäle + Telegram-Bericht an Rudolf."""
     try:
@@ -7965,6 +8006,7 @@ TASKS = [
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     # DISABLED 2026-07-16 — erzeugt Fake-Produkte (Reddit/HN-Posts ohne Gatekeeper) — Rudolf hat verboten
     # ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
+    ("system_guardian",     task_system_guardian,            600, 30),  # 10min — Sentinel+Gatekeeper+PostGateway Sync
     ("viral_promo",         task_viral_promo_poster,       21600, 2100), # 6h — Multi-Channel Promo (35min startup delay)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 2400), # 6h — FB+IG+TG+LI+Reddit+Discord (40min startup delay)
     ("social_autopilot",     task_social_media_autopilot, 28800, 2460), # 8h — Produkt-Post FB+IG+TW+Pinterest (41min startup delay)

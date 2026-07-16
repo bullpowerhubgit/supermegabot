@@ -1273,6 +1273,11 @@ async def handle_health(req):
     except Exception:
         circuits = {}
         open_circuits = []
+    try:
+        from modules.error_sentinel import get_sentinel_status
+        sentinel = get_sentinel_status()
+    except Exception:
+        sentinel = {"ok": False, "error": "unavailable"}
     result = {
         "status": "ok",
         "service": "supermegabot-dashboard",
@@ -1285,6 +1290,7 @@ async def handle_health(req):
             "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
             "customer_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN_2")),
         },
+        "sentinel": sentinel,
     }
     _cache_set("system_health", result)
     return web.json_response(result)
