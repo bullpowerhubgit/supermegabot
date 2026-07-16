@@ -24,11 +24,11 @@ jobs:
         run: |
           echo "🔍 Scanning for blacklisted DS24 product 668035..."
           FOUND=$(grep -rn "668035" --include="*.py" --include="*.html" . \
-                  | grep -v "^Binary\|\.pyc\|#.*668035\|post_guard\.py\|post_guardian\.py\|ds24_link_guardian\.py" | wc -l | tr -d ' ')
+                  | grep -v "^Binary\|\.pyc\|#.*668035\|post_guard\.py\|post_guardian\.py\|post_error_guard\.py\|post_never_twice\.py\|ds24_link_guardian\.py" | wc -l | tr -d ' ')
           if [ "$FOUND" -gt "0" ]; then
             echo "❌ FEHLER: Blacklistetes Produkt 668035 gefunden in $FOUND Stellen:"
             grep -rn "668035" --include="*.py" --include="*.html" . \
-              | grep -v "^Binary\|\.pyc\|#.*668035\|post_guard\.py\|post_guardian\.py\|ds24_link_guardian\.py"
+              | grep -v "^Binary\|\.pyc\|#.*668035\|post_guard\.py\|post_guardian\.py\|post_error_guard\.py\|post_never_twice\.py\|ds24_link_guardian\.py"
             exit 1
           fi
           echo "✅ Kein blacklistetes Produkt gefunden"
