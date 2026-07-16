@@ -416,13 +416,22 @@ async def find_trending_topics(niche: str = "shopify ecommerce automation") -> l
         "https://trends.google.com/trends/trendingsearches/daily/rss?geo=AT",
     ]
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+        _cf_ecom_kw = {
+            "shopify","e-commerce","ecommerce","onlineshop","dropshipping","amazon","ebay",
+            "ki","künstliche intelligenz","automatisierung","automation","saas","marketing",
+            "seo","conversion","umsatz","revenue","social media","b2b","startup","affiliate",
+            "digistore","klaviyo","stripe","solar","gadget","smart home","handel","verkauf",
+        }
         for url in rss_urls:
             try:
                 async with s.get(url, headers={"User-Agent": "Mozilla/5.0"}) as r:
                     if r.status == 200:
                         text = await r.text()
                         titles = re.findall(r'<title><!\[CDATA\[(.*?)\]\]></title>', text)
-                        topics_found.extend(titles[:10])
+                        # Nur E-Commerce-relevante Trends
+                        for t in titles[:15]:
+                            if any(kw in t.lower() for kw in _cf_ecom_kw):
+                                topics_found.append(t)
             except Exception as e:
                 log.warning(f"RSS fetch {url}: {e}")
 

@@ -169,6 +169,21 @@ def validate_post(content: str, platform: str = "default",
     limits = PLATFORM_LIMITS.get(platform_key, PLATFORM_LIMITS["default"])
     text = content.strip()
 
+    # NEVER-TWICE first — dauerhafte Fehler-Memory
+    try:
+        from modules.post_never_twice import check_never_twice, remember_block
+        nt_ok, nt_errs = check_never_twice(text, platform_key)
+        if not nt_ok:
+            errors.extend(nt_errs)
+            try:
+                remember_block(text, platform_key, nt_errs, source_module="post_guardian")
+            except Exception:
+                pass
+            return False, errors
+    except Exception as e:
+        log.error("NeverTwice fail-closed in guardian: %s", e)
+        return False, [f"NeverTwice fail-closed: {e}"]
+
     # 1. Mindestlänge
     if len(text) < limits["min_chars"]:
         errors.append(f"Zu kurz: {len(text)} Zeichen (min {limits['min_chars']})")
