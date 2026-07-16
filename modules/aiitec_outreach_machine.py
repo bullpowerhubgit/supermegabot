@@ -1180,7 +1180,7 @@ def _send_via_gmail_pool(to: str, subject: str, body: str) -> bool:
 _OWN_EMAILS = {
     "aiitecbuuss@gmail.com", "bullpowersrtkennels@gmail.com",
     "dragonadnp@gmail.com", "rudolf.sarkany.aiitec@gmail.com",
-    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com", "looopwave@gmail.com",
+    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com",
 }
 
 _SKIP_PREFIXES = (
