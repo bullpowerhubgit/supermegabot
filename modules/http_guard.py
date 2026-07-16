@@ -368,11 +368,14 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
         from modules.post_never_twice import check_never_twice, remember_block
         nt_ok, nt_errs = check_never_twice(text, platform)
         if not nt_ok:
+            # Flatten: nimm nur den ersten Grund, ohne rekursive NEVER-TWICE-Verschachtelung
+            raw = (nt_errs[0] if nt_errs else "blocked")
+            short_reason = raw[:200] if not raw.startswith("NEVER-TWICE") else "bereits_blockiert"
             try:
-                remember_block(text, platform, nt_errs, source_module="http_guard")
+                remember_block(text, platform, [short_reason], source_module="http_guard")
             except Exception:
                 pass
-            return False, f"never_twice: {nt_errs[0] if nt_errs else 'blocked'}"
+            return False, f"never_twice: {short_reason}"
     except Exception as e:
         log.error("HttpGuard NeverTwice fail-closed: %s", e)
         return False, f"never_twice_error_blocked: {e}"
