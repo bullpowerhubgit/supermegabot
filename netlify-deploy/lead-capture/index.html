@@ -61,6 +61,49 @@ input::placeholder{color:#475569}
 .success p{color:#94a3b8;font-size:.9rem;line-height:1.6;margin-bottom:1.5rem}
 .success a{display:inline-block;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;text-decoration:none;border-radius:12px;padding:.85rem 1.8rem;font-weight:700;font-size:.95rem}
 .err{color:#ef4444;font-size:.85rem;margin-top:-.5rem;margin-bottom:.75rem;display:none}
+
+  /* CASE STUDIES */
+  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
+  .cs-inner { max-width: 1200px; margin: 0 auto; }
+  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
+  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
+  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
+  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
+  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
+  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .cs-name { font-weight: 700; font-size: 0.9rem; }
+  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
+  /* LIVE DEMO SECTION */
+  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
+  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
+  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
+  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
+  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
+  .demo-traffic-lights { display: flex; gap: 0.4rem; }
+  .dtl { width: 12px; height: 12px; border-radius: 50%; }
+  .dtl-r { background: #ff5f57; }
+  .dtl-y { background: #ffbd2e; }
+  .dtl-g { background: #28ca41; }
+  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
+  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
+  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
+  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
+  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
+  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
+  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
+  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
+  .demo-text-input:focus { border-color: #60a5fa; }
+  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
 </style>
 
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
@@ -255,5 +298,97 @@ document.getElementById('email').addEventListener('keydown', e => {
   </div>
 </section>
 
+
+<!-- CASE STUDIES -->
+<section class="cs-section" id="case-studies">
+  <div class="cs-inner">
+    <div class="cs-tag">Erfolgsgeschichten</div>
+    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
+    <p class="cs-desc">Sieh was andere mit Lead Capture Pro erreicht haben — und was für dich möglich ist.</p>
+    <div class="cs-grid">
+    <div class="cs-card">
+      <div class="cs-result">42 Meetings in 30 Tagen</div>
+      <div class="cs-duration">sofort nach Setup</div>
+      <p class="cs-text">Cold Outreach hatte eine Antwortrate von 0.8%. Mit Lead Capture Pro sind es jetzt 11% — personalisierten Nachrichten, richtige Zielgruppe, perfektes Timing.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#3b82f6">PL</div>
+        <div>
+          <div class="cs-name">Patrick L.</div>
+          <div class="cs-role">B2B-SaaS Startup, München</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">€45k Neuumsatz/Quartal</div>
+      <div class="cs-duration">durch Outreach-Automatisierung</div>
+      <p class="cs-text">Wir haben unsere Akquise komplett automatisiert. Das System findet, qualifiziert und kontaktiert Leads — mein Team macht nur noch die Abschluss-Calls.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#ec4899">VS</div>
+        <div>
+          <div class="cs-name">Vera S.</div>
+          <div class="cs-role">Marketing Agentur, Hamburg</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Warteliste von 3 Monaten</div>
+      <div class="cs-duration">in 8 Wochen aufgebaut</div>
+      <p class="cs-text">Als Copywriter dachte ich, Outreach sei nicht mein Ding. Lead Capture Pro hat mir gezeigt wie ich Wunschkunden direkt anspreche — jetzt bin ich 3 Monate im Voraus ausgebucht.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#059669">RZ</div>
+        <div>
+          <div class="cs-name">Robert Z.</div>
+          <div class="cs-role">Freelance Copywriter, Wien</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-inject" id="demo">
+  <div class="demo-inject-inner">
+    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
+    <h2 class="demo-inject-title">🎯 Lead-Finder Demo</h2>
+    <p class="demo-inject-desc">Finde sofort qualifizierte Leads:</p>
+    <div class="demo-box">
+      <div class="demo-box-header">
+        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
+        <span class="demo-box-title">Lead Capture Pro — Interaktive Demo</span>
+      </div>
+      <div class="demo-suggestions-inject">
+        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
+        <button class="demo-sug-btn" onclick="injectDemoRunlead_capture(0)">Finde 20 E-Commerce Shops in München die mein Tool brauchen</button><button class="demo-sug-btn" onclick="injectDemoRunlead_capture(1)">Scrape LinkedIn für Marketing-Manager in DACH</button><button class="demo-sug-btn" onclick="injectDemoRunlead_capture(2)">Erstelle eine Kalt-Email-Sequenz für mein Produkt</button>
+      </div>
+      <div class="demo-output-area empty" id="demoOutlead_capture">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
+      <div class="demo-input-row">
+        <input class="demo-text-input" id="demoInlead_capture" type="text" placeholder="Eigene Anfrage eingeben...">
+        <button class="demo-run-btn" onclick="injectDemoCustomlead_capture()">Ausführen ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var OUTPUTSlead_capture = ['✅ <strong>20 E-Commerce Leads gefunden</strong><br>• GreenShop GmbH — 50k€/mo Umsatz, kein CRM<br>• TechGadgets Berlin — Shopify Plus, kein Email-Tool<br>• SportDeal Wien — 15k Kunden, manuelles Fulfillment<br><em>+ 17 weitere Leads mit Kontakt, Umsatzschätzung, Pain Points</em>', '✅ <strong>LinkedIn Lead-Export</strong><br>Gefunden: 87 Marketing-Manager in DACH<br>Mit Email: 52 verifiziert<br>Mit Phone: 31 verifiziert<br>In CRM exportiert ✓ | Dauer: 8 Minuten', '✅ <strong>5-Email-Sequenz generiert</strong><br>Email 1: Personalisierter Hook (Name + Firma + Pain)<br>Email 2: Case Study (ähnliche Firma + Ergebnis)<br>Email 3: ROI-Kalkulator für ihr Geschäft<br>Email 4: Einwandbehandlung<br>Email 5: Letzter Versuch + Direkttermin-Link'];
+  var el = document.getElementById('demoOutlead_capture');
+  window.injectDemoRunlead_capture = function(i) {
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSlead_capture[i]; }, 600);
+  };
+  window.injectDemoCustomlead_capture = function() {
+    var v = document.getElementById('demoInlead_capture').value.trim();
+    if (!v) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSlead_capture[Math.floor(Math.random()*OUTPUTSlead_capture.length)]; }, 800);
+  };
+  document.getElementById('demoInlead_capture').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.injectDemoCustomlead_capture();
+  });
+})();
+</script>
 </body>
 </html>

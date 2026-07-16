@@ -414,6 +414,49 @@
 </head>
 <body>
 <style>
+
+  /* CASE STUDIES */
+  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
+  .cs-inner { max-width: 1200px; margin: 0 auto; }
+  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
+  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
+  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
+  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
+  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
+  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
+  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
+  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
+  .cs-name { font-weight: 700; font-size: 0.9rem; }
+  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
+  /* LIVE DEMO SECTION */
+  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
+  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
+  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
+  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
+  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
+  .demo-traffic-lights { display: flex; gap: 0.4rem; }
+  .dtl { width: 12px; height: 12px; border-radius: 50%; }
+  .dtl-r { background: #ff5f57; }
+  .dtl-y { background: #ffbd2e; }
+  .dtl-g { background: #28ca41; }
+  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
+  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
+  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
+  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
+  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
+  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
+  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
+  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
+  .demo-text-input:focus { border-color: #60a5fa; }
+  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
 </style>
 
 
@@ -684,6 +727,98 @@
 </div>
 
 <!-- FOOTER -->
+
+<!-- CASE STUDIES -->
+<section class="cs-section" id="case-studies">
+  <div class="cs-inner">
+    <div class="cs-tag">Erfolgsgeschichten</div>
+    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
+    <p class="cs-desc">Sieh was andere mit BullPower Hub erreicht haben — und was für dich möglich ist.</p>
+    <div class="cs-grid">
+    <div class="cs-card">
+      <div class="cs-result">€23k MRR durch Automation</div>
+      <div class="cs-duration">in 6 Monaten</div>
+      <p class="cs-text">Ich hatte 6 verschiedene Tools, keines davon sprach miteinander. BullPower Hub hat alles verbunden und automatisiert — mein Business läuft heute 90% ohne mich.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#f59e0b">RS</div>
+        <div>
+          <div class="cs-name">Rudolf S.</div>
+          <div class="cs-role">Multi-Channel E-Commerce, Wien</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">Team von 5 → Solo, gleicher Umsatz</div>
+      <div class="cs-duration">nach 3 Monaten</div>
+      <p class="cs-text">Mein Team hat hauptsächlich repetitive Tasks gemacht. Jetzt macht das Hub alles automatisch — ich spare €15k/Monat an Personalkosten bei gleichem Output.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#7c3aed">KN</div>
+        <div>
+          <div class="cs-name">Katharina N.</div>
+          <div class="cs-role">Online Marketing Unternehmerin, München</div>
+        </div>
+      </div>
+    </div>
+    <div class="cs-card">
+      <div class="cs-result">12 Monate ROI in Monat 2</div>
+      <div class="cs-duration">nach 60 Tagen</div>
+      <p class="cs-text">Das Hub hat sich in 60 Tagen amortisiert. Durch Automatisierung von 4 Fulltime-Jobs spare ich mehr als den Jahrespreis — jede Woche, auf ewig.</p>
+      <div class="cs-author">
+        <div class="cs-avatar" style="background:#0ea5e9">AP</div>
+        <div>
+          <div class="cs-name">Alexander P.</div>
+          <div class="cs-role">SaaS Founder, Zürich</div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTERACTIVE DEMO -->
+<section class="demo-inject" id="demo">
+  <div class="demo-inject-inner">
+    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
+    <h2 class="demo-inject-title">🏆 Hub-Übersicht Demo</h2>
+    <p class="demo-inject-desc">Sieh wie das All-in-One Dashboard funktioniert:</p>
+    <div class="demo-box">
+      <div class="demo-box-header">
+        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
+        <span class="demo-box-title">BullPower Hub — Interaktive Demo</span>
+      </div>
+      <div class="demo-suggestions-inject">
+        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
+        <button class="demo-sug-btn" onclick="injectDemoRunbullpower_hub(0)">Zeige mir alle Tools auf einen Blick</button><button class="demo-sug-btn" onclick="injectDemoRunbullpower_hub(1)">Was hat mein Business diese Woche verdient?</button><button class="demo-sug-btn" onclick="injectDemoRunbullpower_hub(2)">Starte den kompletten Automatisierungs-Workflow</button>
+      </div>
+      <div class="demo-output-area empty" id="demoOutbullpower_hub">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
+      <div class="demo-input-row">
+        <input class="demo-text-input" id="demoInbullpower_hub" type="text" placeholder="Eigene Anfrage eingeben...">
+        <button class="demo-run-btn" onclick="injectDemoCustombullpower_hub()">Ausführen ▶</button>
+      </div>
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  var OUTPUTSbullpower_hub = ['✅ <strong>12 BullPower Tools — Status Übersicht</strong><br>🟢 BullPower AI: Aktiv (234 Tasks heute)<br>🟢 Shopify Suite: Aktiv (47 Produkte sync.)<br>🟢 Lead Capture: Aktiv (12 neue Leads)<br>🟢 Email Engine: Aktiv (3 Sequences live)<br><em>+ 8 weitere Tools alle grün ✓</em>', '✅ <strong>Wochenreport</strong><br>Shopify: €3.420 Umsatz (+12% vs. VW)<br>Affiliate: €890 Provision<br>Leads generiert: 87 | Meetings gebucht: 11<br>Content erstellt: 43 Posts, 5 Emails, 2 Videos<br>Automatisch generiert — kein manueller Aufwand', '✅ <strong>Workflow gestartet: Full-Stack Automatisierung</strong><br>→ Shopify Sync läuft (500 Produkte)<br>→ Email-Campaign ausgelöst (1.240 Empfänger)<br>→ Social Posts scheduled (7 Tage)<br>→ Lead-Outreach aktiv (45 neue Kontakte)<br>Geschätzte Zeit manuell: 18h | Mit Hub: 0h'];
+  var el = document.getElementById('demoOutbullpower_hub');
+  window.injectDemoRunbullpower_hub = function(i) {
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSbullpower_hub[i]; }, 600);
+  };
+  window.injectDemoCustombullpower_hub = function() {
+    var v = document.getElementById('demoInbullpower_hub').value.trim();
+    if (!v) return;
+    el.classList.remove('empty');
+    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
+    setTimeout(function() { el.innerHTML = OUTPUTSbullpower_hub[Math.floor(Math.random()*OUTPUTSbullpower_hub.length)]; }, 800);
+  };
+  document.getElementById('demoInbullpower_hub').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') window.injectDemoCustombullpower_hub();
+  });
+})();
+</script>
 <footer>
   <div class="footer-main">
     <div class="footer-brand">
