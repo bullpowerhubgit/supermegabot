@@ -237,25 +237,33 @@ Featured:
 
 ## ✅ SESSION 2026-07-16 WAVE 5 — INSTAGRAM + LINKEDIN + KLAVIYO
 
-### Instagram Posts LIVE ✅ (@aaiitecc — 4.800 Follower)
-- Post 1: 100W Solar-Anlagesatz €119,99 | ID: 18022282622684573
-- Post 2: Mini HD Sicherheitskamera €17,99 | ID: 18169518667441728
-- Post 3: PTZ Outdoor Kamera 8MP €84,99 | ID: 18327749161279555
-- Post 4: 100-120 Zoll Projektionsleinwand €134,99 | ID: 17975207654904800
-- Post 5: AI Income Machine DS24 Affiliate | ID: 18098203319225386
-- Methode: Graph API v21.0 via FACEBOOK_USER_TOKEN + PAGE_TOKEN
+### Instagram Posts LIVE ✅ 26 Posts heute (@aaiitecc — 4.800 Follower, 26/100 Quota)
+Solar-Produkte: Solar-Anlagesatz €119,99, Solar PTZ Kamera €104,99, Portable Solar €79,99, 
+  PWM Controller €79,99, MPPT Controller €79,99, LCD Controller €79,99, Solar Charger €54,99,
+  Solar Spotlight €54,99, Solar Street Light €64,99, 100W Solar Panel €59,99
+Smart Security: Mini Kamera €17,99, PTZ 8MP WiFi6 €84,99, Solar PTZ V380 €104,99
+Smart Home: Projektionsleinwand €134,99, Smart Video Doorbell (404), Mist Heater €379,99
+Automotive: Motorrad-Alarm €3.909, Reifenpumpe €64,99, Dashcam (404)
+Electronics: HDMI Adapter €69,99, BMS 18650 €69,99, BMS 3S €69,99
+Gadgets: Wood Router €209,99
+DS24 Affiliate: AI Income Machine | ID: 18098203319225386
+Garten: Bewässerung €64,99
+Methode: Graph API v21.0 via FACEBOOK_USER_TOKEN + PAGE_TOKEN (AiiteC Page 1016738738178786)
 
-### LinkedIn ✅
-- KI-Income Streams 2026 Artikel: urn:li:share:7483379377913806848
+### LinkedIn ✅ 3 Posts heute
+- KI-Income Streams 2026: urn:li:share:7483379377913806848
+- Solar & Smart Home Markt: urn:li:share:7483380675958652928
+- DS24 Affiliate Marketing: urn:li:share:7483381995897712640
 
-### Klaviyo ✅ 13 Campaigns heute erstellt
+### Klaviyo ✅ 13 Campaigns erstellt
 - run_daily_klaviyo_campaigns(3) + mass_create_klaviyo_campaigns(10)
 
-### Telegram ✅
-- Broadcast Revenue Update (msg 183785) gesendet
+### Telegram ✅ 2 Broadcasts
+- Revenue Update (msg 183785)
+- DS24 Affiliate Links Top 6 (msg 184038)
 
-### Facebook ❌ Rate-Limited (Code 368, Subcode 1390008) — ~24h Sperre
-### Twitter ❌ Cookie-Auth abgelaufen (7 Tage seit letztem Login) — Chrome Login nötig
+### Facebook ❌ Rate-Limited (Code 368, Subcode 1390008) — ~24h Sperre reset 17.07 ~06:00
+### Twitter ❌ Cookie-Auth abgelaufen (seit 09.07) — Chrome Login bei x.com erforderlich
 
 ---
 
