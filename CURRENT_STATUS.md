@@ -1,6 +1,28 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16**
 
+## ✅ HIGH-TICKET WAVE 2 — 10 PRODUKTE × 3 TIERS LIVE (2026-07-16)
+
+Stripe Live: 30 neue Payment Links · Landingpages mit Premium-Pricing injiziert  
+Script: `scripts/monetize_high_ticket_wave2.py` · Catalog: `data/high_ticket_wave2.json`
+
+| Produkt | Starter | Pro/Business | Top | Featured Buy |
+|---------|---------|--------------|-----|--------------|
+| SteuercockPit Pro | €497/mo | €997/mo | €2.497/mo | https://buy.stripe.com/cNi4gBgM23HI1gcfJc4F42Dr |
+| Shopify Brutal Tuning | €497/mo | €997/mo | €2.497/mo | https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du |
+| Shopify Acquisition | €497/mo | €997/mo | €2.497/mo | https://buy.stripe.com/cNi28t2Vc5PQ4so1Sm4F42Dx |
+| Telegram Agency Bot | €297/mo | €797/mo | €1.997/mo | https://buy.stripe.com/7sY6oJ3Zg5PQ4sofJc4F42DA |
+| Gumroad Discord | €297/mo | €797/mo | €1.497/mo | https://buy.stripe.com/eVq28t8fw7XY9MIgNg4F42DD |
+| IcomeAuto OS | €497/mo | €997/mo | €2.997/mo | https://buy.stripe.com/dRm7sNanE5PQ3ok1Sm4F42DG |
+| BullPower Launcher | €997/mo | €2.997/mo | €4.997/mo | https://buy.stripe.com/00wcN71R87XYcYU8gK4F42DJ |
+| Lead Capture Pro | €497 once | €997/mo | €2.497/mo | https://buy.stripe.com/aFacN7anEbaacYUaoS4F42DM |
+| AutoIncome AI | €997 once | €2.997 once | €4.997 once | https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP |
+| BullPower AI | €497/mo | €997/mo | €2.997/mo | https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS |
+
+**Wave-2 Potenzial:** MRR-Summe aller Monats-Tiers €39.122 · One-time €9.488  
+**API:** `GET /api/high-ticket-links` lädt Wave-2 aus JSON automatisch  
+**HTML:** 10× `netlify-deploy/*/index.html` mit High-Ticket Pricing-Section
+
 ## HIGH-TICKET PORTFOLIO — ALLE PROJEKTE LIVE (Stand 2026-07-16)
 
 ### Neu deployed (High-Ticket):
