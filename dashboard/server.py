@@ -11545,6 +11545,8 @@ async def create_app():
     app.router.add_get("/api/facebook/refresh",       handle_facebook_refresh)
     app.router.add_get("/api/facebook/callback",      handle_facebook_callback)
     app.router.add_get("/api/facebook/status",        handle_facebook_status)
+    app.router.add_post("/facebook/delete-data",      handle_facebook_delete_data)
+    app.router.add_get("/facebook/delete-status",     handle_facebook_delete_status)
     app.router.add_post("/api/brutus/run",            handle_brutus_run)
     app.router.add_get("/api/brutus/status",          handle_brutus_status)
     app.router.add_get("/api/brutus/history",         handle_brutus_history)
@@ -15351,6 +15353,115 @@ async def handle_facebook_status(req):
         return web.json_response(results)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_facebook_delete_data(req: web.Request) -> web.Response:
+    """
+    POST /facebook/delete-data
+    Facebook Data Deletion Callback — pflicht für alle FB-Apps mit Login/Permissions.
+    Erwartet: signed_request (form-encoded) oder JSON body mit signed_request.
+    Gibt: confirmation_code + status_url zurück.
+    """
+    import hashlib, hmac, base64, json as _json, time as _time
+
+    app_secret = os.getenv("FACEBOOK_APP_SECRET", "")
+
+    # signed_request aus form-data oder JSON lesen
+    signed_request = ""
+    try:
+        if req.content_type and "json" in req.content_type:
+            body = await req.json()
+            signed_request = body.get("signed_request", "")
+        else:
+            data = await req.post()
+            signed_request = data.get("signed_request", "")
+    except Exception:
+        pass
+
+    user_id = "unknown"
+    if signed_request and app_secret:
+        try:
+            parts = signed_request.split(".", 1)
+            if len(parts) == 2:
+                encoded_sig, payload = parts
+                # Base64url decode
+                padding = "=" * (4 - len(payload) % 4)
+                decoded = _json.loads(base64.urlsafe_b64decode(payload + padding))
+                user_id = str(decoded.get("user_id", "unknown"))
+
+                # HMAC-SHA256 Signatur prüfen
+                expected = hmac.new(
+                    app_secret.encode(),
+                    payload.encode(),
+                    hashlib.sha256,
+                ).digest()
+                sig_bytes = base64.urlsafe_b64decode(
+                    encoded_sig + "=" * (4 - len(encoded_sig) % 4)
+                )
+                if not hmac.compare_digest(expected, sig_bytes):
+                    log.warning("Facebook delete-data: ungültige Signatur für user %s", user_id)
+                    user_id = "invalid_sig"
+        except Exception as ex:
+            log.warning("Facebook delete-data signed_request parse error: %s", ex)
+
+    # Confirmation Code generieren
+    ts = int(_time.time())
+    confirmation_code = f"smb-del-{user_id[:12]}-{ts}"
+    status_url = (
+        f"https://supermegabot-production.up.railway.app/facebook/delete-status"
+        f"?code={confirmation_code}"
+    )
+
+    log.info("Facebook data deletion request: user=%s code=%s", user_id, confirmation_code)
+
+    # Optional: User in Supabase als gelöscht markieren
+    try:
+        supa_url = os.getenv("SUPABASE_URL", "")
+        supa_key = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if supa_url and supa_key and user_id not in ("unknown", "invalid_sig"):
+            import aiohttp as _ahttp
+            async with _ahttp.ClientSession() as s:
+                await s.post(
+                    f"{supa_url}/rest/v1/lead_events",
+                    headers={
+                        "apikey": supa_key,
+                        "Authorization": f"Bearer {supa_key}",
+                        "Content-Type": "application/json",
+                        "Prefer": "return=minimal",
+                    },
+                    json={
+                        "event_type": "facebook_data_deletion",
+                        "platform": "facebook",
+                        "external_id": user_id,
+                        "details": confirmation_code,
+                    },
+                    timeout=_ahttp.ClientTimeout(total=5),
+                )
+    except Exception:
+        pass
+
+    return web.json_response({
+        "url": status_url,
+        "confirmation_code": confirmation_code,
+    })
+
+
+async def handle_facebook_delete_status(req: web.Request) -> web.Response:
+    """GET /facebook/delete-status?code=... — Status-Seite für Facebook Data Deletion."""
+    code = req.rel_url.query.get("code", "")
+    html = f"""<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8"><title>Datenlöschung bestätigt</title>
+<style>body{{font-family:sans-serif;max-width:600px;margin:60px auto;text-align:center;color:#333}}
+h1{{color:#1877f2}}p{{margin:16px 0}}code{{background:#f0f0f0;padding:4px 8px;border-radius:4px}}</style>
+</head>
+<body>
+<h1>Datenlöschung bestätigt</h1>
+<p>Deine Facebook-Daten wurden aus unserem System entfernt.</p>
+<p>Bestätigungscode: <code>{code}</code></p>
+<p>Bei Fragen: <a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a></p>
+</body></html>"""
+    return web.Response(text=html, content_type="text/html")
 
 
 async def handle_reality_check(req):
