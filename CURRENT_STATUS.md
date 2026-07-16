@@ -1,5 +1,26 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 19:45 UTC (Wave 10 — NEVER-TWICE LIVE · Posting-Thema ENDE)**
+**Stand: 2026-07-16 22:00 UTC (Wave 11 — API Guard + FB v21.0 ÜBERALL)**
+
+## 🔑 MANUELL ERFORDERLICH — TOTE API KEYS
+
+| Key | Status | Wo erneuern |
+|-----|--------|-------------|
+| **OpenAI** | ❌ HTTP 401 | platform.openai.com → API Keys → Create new |
+| **Perplexity** | ❌ HTTP 401 | perplexity.ai/settings/api → New API Key |
+| **Groq** | ❌ HTTP 403 | console.groq.com → API Keys → Create new |
+
+**API Key Monitor läuft jetzt alle 2h** → Telegram-Alert wenn Key stirbt!
+
+## ⚠️ MANUELL ERFORDERLICH — VERCEL LOGIN-WALL
+
+Alle Landing Pages zeigen Vercel Authentication-Wall.
+**Fix:** vercel.com → Jedes Projekt → Settings → Deployment Protection → auf "None" setzen
+Betrifft: bullpower-hub, bullpower-ai, aiitec-all, autoincome-ai, cognitive-symphony,
+creatorai-ultra, creatorstudio-pro, digistore24-suite, gumroad-discord, icomeauto,
+launcher, lead-capture, master-dashboard, shopify-acquisition-engine, shopify-brutal-tuning,
+shopify-suite, steuercockpit, telegram-bot
+
+## ✅ HEUTE GEFIXT (2026-07-16 Wave 11)
 
 ## ✅ POSTING NEVER-TWICE — DAUERHAFT GESCHLOSSEN (2026-07-16)
 
@@ -26,6 +47,17 @@
 5. Fail-closed: NeverTwice-Exception = BLOCK (nie durchlassen)
 
 **Audit:** `AUDIT OK` — 0 Leaks, good content PASS, wiring in 8 Modulen.
+
+## ✅ WAVE 11 FIXES (2026-07-16 ~22:00)
+
+| Fix | Details |
+|-----|---------|
+| Facebook API v21.0 | **28 Module** aktualisiert (v18/19/20 → v21.0 überall) |
+| AI Budget Guard | Supabase-Verbindung fix (nutzt agent_memory korrekt) |
+| Budget Limits | $2/$2/$1 (war $8/$8/$5 durch .env Override) |
+| Railway FB Tokens | Alle auf AiiteC Page-Token gesetzt |
+| API Key Monitor | Läuft alle 2h, Telegram-Alert bei totem Key |
+| CI DS24 Check | post_error_guard + post_never_twice zur Whitelist |
 
 ## ✅ POSTING SYSTEM — DAUERHAFT GEFIXT (2026-07-16, Commit a98e12a9)
 
