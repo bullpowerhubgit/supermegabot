@@ -339,7 +339,25 @@ async def safe_post(
         "errors": [], "blocked": False, "source": source_module,
     }
 
-    # Schicht 1: Inhalt prüfen
+    # Schicht 1a: PostGuardian (Off-Topic, Nische, Placeholder, KI-Text)
+    try:
+        from modules.post_guardian import validate_post as _guardian_check
+        guardian_ok, guardian_errors = _guardian_check(text, platform=platform)
+        if not guardian_ok:
+            result["errors"] = guardian_errors
+            result["blocked"] = True
+            _log_blocked(platform, " | ".join(guardian_errors), text)
+            await _alert(
+                f"🚫 <b>PostGuardian BLOCKIERT</b> [{platform}] von {source_module}\n" +
+                "\n".join(f"• {e}" for e in guardian_errors[:5]) +
+                f"\n\nPreview: {text[:150]!r}"
+            )
+            log.warning("PostGuardian blockiert [%s] von %s: %s", platform, source_module, guardian_errors)
+            return result
+    except Exception as _ge:
+        log.warning("PostGuardian nicht verfügbar (%s) — Fallback auf _validate_content", _ge)
+
+    # Schicht 1b: Eigener Content-Check (Länge, Abschnitt, Secrets)
     content_errors = _validate_content(text, platform)
     if content_errors:
         result["errors"] = content_errors
