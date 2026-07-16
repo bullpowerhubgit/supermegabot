@@ -86,7 +86,7 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
     if not SHOP or not SHOPIFY_TOK:
         return None
 
-    # Gatekeeper — blockiert Fake/News-Headlines als Produkte
+    # Gatekeeper — FAIL-CLOSED: bei jedem Fehler → kein Produkt
     try:
         from modules.product_gatekeeper import validate_product
         ok, reason = validate_product(
@@ -96,10 +96,11 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
             price=float(idea.get("price_eur", 0)),
         )
         if not ok:
-            log.warning("autonomous_product_pipeline GATEKEEPER BLOCK: %s — %s", idea.get("title", "?")[:60], reason)
+            log.warning("GATEKEEPER BLOCK: %s — %s", idea.get("title", "?")[:60], reason)
             return None
     except Exception as _ge:
-        log.debug("Gatekeeper import error: %s", _ge)
+        log.warning("GATEKEEPER ERROR → kein Produkt erstellt: %s", _ge)
+        return None  # FAIL-CLOSED: lieber kein Produkt als ein Fake
 
     description = await ai_complete(
         f"Schreibe eine überzeugende HTML-Produktbeschreibung (max 200 Wörter) auf Deutsch "
