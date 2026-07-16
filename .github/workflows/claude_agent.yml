@@ -29,8 +29,10 @@ jobs:
 
       - name: Install Claude CLI
         run: |
-          curl -fsSL https://claude.ai/install.sh | sh
+          # install.sh uses bashisms — never pipe to plain `sh`
+          curl -fsSL https://claude.ai/install.sh | bash
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          command -v claude || ls -la "$HOME/.local/bin" || true
 
       - name: Syntax-Check alle Python-Dateien
         run: |

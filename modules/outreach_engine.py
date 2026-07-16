@@ -225,6 +225,11 @@ Antworte als JSON:
 
 def send_email(to_email: str, subject: str, body: str, sender_idx: int = 0) -> bool:
     """Sendet via gmail_accounts — sender_idx 0=aiitec(5), 1=bullpower(3)."""
+    from modules.email_guard import require_valid_email, register_sent
+    ok_g, errs = require_valid_email(subject, body, to_email)
+    if not ok_g:
+        log.warning("EmailGuard blockiert outreach_engine [%s]: %s", to_email, errs)
+        return False
     from modules.gmail_accounts import send_email as ga_send
     idx = 5 if sender_idx == 0 else 3
     html_body = body.replace("\n", "<br>")
@@ -237,6 +242,7 @@ def send_email(to_email: str, subject: str, body: str, sender_idx: int = 0) -> b
     if not ok:
         ok, via = ga_send(to_email, subject, body, html=html)
     if ok:
+        register_sent(to_email, subject, body)
         log.info("Email gesendet: %s → %s via %s", subject[:40], to_email, via)
     return ok
 

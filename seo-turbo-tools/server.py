@@ -382,9 +382,11 @@ async def send_telegram(msg: str):
 
 
 async def handle_health(request):
+    # Keep this path trivial — Railway healthcheck must never wait on external APIs
     return web.json_response({
         "status": "ok",
         "service": "seo-turbo-tools",
+        "port": PORT,
         "uptime": round(time.time() - _start_time, 1),
     })
 
@@ -742,7 +744,11 @@ async def _autonomous_loop():
 
 
 async def _on_startup(app):
-    asyncio.create_task(_autonomous_loop())
+    # deferred so /health answers before background work starts
+    async def _delayed():
+        await asyncio.sleep(2)
+        asyncio.create_task(_autonomous_loop())
+    asyncio.create_task(_delayed())
 
 def create_app():
     app = web.Application()

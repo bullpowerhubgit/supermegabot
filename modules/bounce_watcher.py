@@ -61,6 +61,22 @@ _EMAIL_IN_BODY = re.compile(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}')
 
 # ── Blocklist DB ──────────────────────────────────────────────────────────────
 
+# Known hard bounces / dead mailboxes (seeded once)
+_SEED_BOUNCES = (
+    ("noreply@supermegabot.com", "test/noreply hard bounce"),
+    ("info@wirecard.de", "wirecard insolvent 2020"),
+    ("test@bullpower.de", "test address"),
+    ("test@test.com", "test address"),
+    ("null@null.com", "invalid"),
+    ("nobody@nowhere.com", "invalid"),
+    ("info@example.com", "example.com"),
+    ("admin@example.com", "example.com"),
+    ("contact@wirecard.com", "wirecard insolvent"),
+    ("office@wirecard.de", "wirecard insolvent"),
+    ("support@supermegabot.com", "internal test domain"),
+)
+
+
 def _init_db() -> None:
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(_DB_PATH)
@@ -78,6 +94,12 @@ def _init_db() -> None:
             count       INTEGER DEFAULT 1
         )
     """)
+    # seed permanent bounce addresses
+    for em, reason in _SEED_BOUNCES:
+        conn.execute(
+            "INSERT OR IGNORE INTO bounce_blocklist(email,reason,first_seen,count) VALUES(?,?,?,1)",
+            (em.lower(), reason, time.time()),
+        )
     conn.commit()
     conn.close()
 

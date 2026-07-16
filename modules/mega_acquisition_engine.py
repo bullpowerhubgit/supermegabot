@@ -780,8 +780,12 @@ async def _send_one(lead: Dict, template: str = "shop_promo",
     if not email or not _is_valid_email(email):
         return False
     raw_name = lead.get("name") or ""
-    if str(raw_name).strip() in ("None", "none", "null", "N/A"):
+    if str(raw_name).strip() in ("None", "none", "null", "N/A", ""):
         lead = {**lead, "name": ""}  # blank → template uses fallback
+    # Never interpolate Python None into templates
+    for k in ("name", "first_name", "company", "firma"):
+        if k in lead and lead[k] is None:
+            lead[k] = ""
 
     niche = lead.get("niche","shop")
     if template == "auto":
@@ -795,6 +799,13 @@ async def _send_one(lead: Dict, template: str = "shop_promo",
         subject, html = _flash_sale_template(lead)
     else:
         subject, html = _shop_promo_template(lead, products)
+
+    # FAIL-CLOSED EmailGuard — alle Layer vor SMTP/SendGrid
+    from modules.email_guard import require_valid_email, register_sent
+    ok_g, errs = require_valid_email(subject, html, email)
+    if not ok_g:
+        log.warning("EmailGuard blockiert mega_acq [%s]: %s", email, errs)
+        return False
 
     # Account rotation: wähle Account mit verfügbarer Quota
     pool = _build_smtp_pool()
@@ -810,14 +821,16 @@ async def _send_one(lead: Dict, template: str = "shop_promo",
         ok = await _send_via_sendgrid(email, subject, html)
         if ok:
             _mark_sent(email, subject, template, "sendgrid")
+            register_sent(email, subject, html)
         return ok
 
     ok = await _send_smtp_async(selected, email, subject, html)
     if ok:
         _mark_sent(email, subject, template, selected["name"])
         _increment_smtp_sent(selected["name"])
+        register_sent(email, subject, html)
         # Parallel: auch in Klaviyo eintragen
-        asyncio.create_task(_klaviyo_add_profile(email, lead.get("name","")))
+        asyncio.create_task(_klaviyo_add_profile(email, lead.get("name") or ""))
     return ok
 
 

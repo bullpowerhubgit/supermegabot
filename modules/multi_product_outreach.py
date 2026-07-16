@@ -538,14 +538,12 @@ async def _log_campaign(company_id: int, product_key: str, stage: int, subject: 
 # ── Email ─────────────────────────────────────────────────────────────────────
 
 def _send_email(to: str, subject: str, body: str) -> bool:
-    try:
-        from modules.email_guard import validate_email
-        ok, errs = validate_email(subject, body, to)
-        if not ok:
-            log.warning("EmailGuard blockiert [%s]: %s", to, errs)
-            return False
-    except Exception as eg:
-        log.debug("EmailGuard skip: %s", eg)
+    # FAIL-CLOSED: Guard nie still skippen
+    from modules.email_guard import require_valid_email, register_sent
+    ok, errs = require_valid_email(subject, body, to)
+    if not ok:
+        log.warning("EmailGuard blockiert [%s]: %s", to, errs)
+        return False
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -556,6 +554,7 @@ def _send_email(to: str, subject: str, body: str) -> bool:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
             s.login(_GMAIL_USER(), _GMAIL_PASS())
             s.sendmail(_GMAIL_USER(), [to], msg.as_string())
+        register_sent(to, subject, body)
         log.info("  ✉  → %s | %s", to, subject[:55])
         return True
     except Exception as e:
