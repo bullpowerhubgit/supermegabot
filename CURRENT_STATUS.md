@@ -1,5 +1,5 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 19:50 UTC (Wave 11 — FB Tokens Railway + Vercel PUBLIC + Infra Everywhere)**
+**Stand: 2026-07-16 21:30 UTC (Wave 12 — NeverTwice Fix + AIBudgetGuard Whitelist komplett)**
 
 
 
@@ -25,20 +25,25 @@ Nur PASS-Keys einbauen. FAIL = verwerfen.
 
 **Script:** `scripts/api_precheck.py`
 
-## ✅ PINTEREST / AIITEC ALIGNMENT (2026-07-16 18:57 UTC)
+## ⚠️ PINTEREST — WARTE AUF APP-GENEHMIGUNG (2026-07-16)
 
 | Item | Status |
 |------|--------|
-| Problem | Nana REJECT: AIITEC/Rudibot ≠ BullPower-Portal-URL |
-| Fix | Eigenes **AIITEC** Portal live: Company AIITEC · App **rodibot** · ID 1582363 |
-| Website | https://aiitec-pinterest-portal.vercel.app/ |
-| Privacy | https://aiitec-pinterest-portal.vercel.app/privacy.html (200 public) |
-| Deletion | https://aiitec-pinterest-portal.vercel.app/data-deletion.html |
-| Netlify mirror | https://extraordinary-daffodil-239faa.netlify.app/ |
-| Token | ⚠️ weiterhin **401** — Trial Resubmit + neuer Token nötig (Browser) |
-| Docs | `config/PINTEREST_RESUBMIT.md` auf AIITEC-Pfad umgestellt |
+| App | **Rudibot** · App-ID 1582363 |
+| Token | Frischer Token in `.env` — läuft **17.07.2026 21:08 CEST** ab |
+| API-Status | ❌ `401 consumer type not supported` — App noch NICHT von Pinterest genehmigt |
+| App Secret | ❌ Nicht verfügbar (Trial-Zugriff verweigert) — kein Auto-Refresh möglich |
+| Portal AIITEC | ✅ https://aiitec-pinterest-portal.vercel.app/ live |
+| Privacy/Deletion | ✅ beide Seiten erreichbar |
 
-**Nächster Schritt (nur Portal):** Website/Privacy auf AIITEC-URLs setzen → Trial neu einreichen → Token paste.
+**⚠️ MANUELLE AKTION ERFORDERLICH (Rudolf):**
+1. Pinterest Developer Portal → App **Rudibot** → „Request elevated access" einreichen
+2. Use Case: „Smart Home Produkte pinnen für ineedit.com.co E-Commerce"
+3. Company: AIITEC · Website: https://aiitec-pinterest-portal.vercel.app/
+4. Scopes beantragen: `boards:write, pins:write, user_accounts:read`
+5. Nach Genehmigung: neuen Token generieren + hier eintragen
+
+**Token-Ablauf:** täglich manuell erneuern bis App genehmigt (kein Auto-Refresh ohne Secret)
 
 ## ✅ X/TWITTER RUDIBOT84 KEYS (Wave 12 — 2026-07-16 18:50 UTC)
 
@@ -125,13 +130,23 @@ Nur PASS-Keys einbauen. FAIL = verwerfen.
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 1 | **Pinterest API** | AIITEC-Portal live (vercel). Im Developer Portal: Website/Privacy auf **aiitec-pinterest-portal.vercel.app** setzen, App **rodibot**, Company **AIITEC**, Trial resubmit, neuen Token paste | `PINTEREST_ACCESS_TOKEN` |
-| 2 | **Claude MCP Auth** | In Claude Code: `/mcp` → Slack / Microsoft 365 / Windsor.ai OAuth im Browser (optional) | — |
-| 3 | ~~Stripe AIITEC 401~~ | **ERLEDIGT:** nur noch bullpowersrtkennels (`acct_1Tg1U0…`) — AIITEC permanent verboten | `STRIPE_SECRET_KEY` |
+| 1 | **Anthropic Credits LEER** | Auf console.anthropic.com einloggen → Credits aufladen | `ANTHROPIC_API_KEY` |
+| 2 | **Pinterest API** | AIITEC-Portal live (vercel). Appeal ✅ gesendet (Tickets #16593704+#16593708). Neuen Token einreichen wenn Appeal genehmigt. Trial Token `pina_AMAR...` = "consumer type not supported" | `PINTEREST_ACCESS_TOKEN` |
+| 3 | **X/Twitter Credits** | developer.x.com → App rudibot84 → Credits hinzufügen (402 Pay Per Use) | — |
 
 ## ✅ STRIPE BULLPOWER-ONLY (2026-07-16)
 - Konto: `bullpowersrtkennels@gmail.com` · `acct_1Tg1U0RJECiV6vSm`
 - `enforce_bullpower_only()` bei Startup · HttpGuard rewrites · CI regression
+
+## ✅ WAVE 12 FIXES (2026-07-16 ~21:30 UTC)
+
+| Fix | Detail |
+|-----|--------|
+| **NeverTwice: transiente Blöcke** | `remember_block()` speichert Duplikat-24h/Rate-Limit/bereits_blockiert NICHT mehr permanent in content_blacklist — verhindert false-positive Dauerbann gültiger Posts |
+| **NeverTwice: startup purge** | `purge_transient_blacklist()` beim Start — bereinigt ältere False-Positive-Einträge |
+| **AIBudgetGuard: 10 neue Module** | traffic_maximizer, full_revenue_expansion, traffic_accelerator, seo_mega_engine, ds24_income_blaster, github_blog_publisher, email_blast_engine, klaviyo_blast, newsletter_engine |
+| **AIBudgetGuard: async Stack** | Frame-Suche von 12 auf 30 erweitert — `__unknown__` Fälle jetzt seltener |
+| **Pinterest Token** | `pina_AMAR...` Trial-Token getestet — "consumer type not supported" (noch kein voller API-Zugang). Warte auf Appeal-Genehmigung |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
