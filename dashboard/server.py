@@ -3069,6 +3069,94 @@ async def handle_pinterest_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_pinterest_verify_domain(req):
+    """POST /api/pinterest/verify-domain — Pinterest-Verification-Tag in Shopify theme.liquid einbauen."""
+    try:
+        data = await req.json() if req.content_type == "application/json" else {}
+    except Exception:
+        data = {}
+    code = data.get("code") or req.rel_url.query.get("code", "")
+    if not code:
+        return web.json_response({"ok": False, "error": "code parameter required"}, status=400)
+
+    shop  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    ver   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
+
+    if not shop or not token:
+        return web.json_response({"ok": False, "error": "Shopify not configured"}, status=500)
+
+    meta_tag = f'<meta name="p:domain_verify" content="{code}" />'
+
+    try:
+        async with aiohttp.ClientSession() as s:
+            # Get active theme
+            async with s.get(
+                f"https://{shop}/admin/api/{ver}/themes.json",
+                headers={"X-Shopify-Access-Token": token},
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as r:
+                themes = (await r.json()).get("themes", [])
+            active = next((t for t in themes if t.get("role") == "main"), None)
+            if not active:
+                return web.json_response({"ok": False, "error": "No active Shopify theme"}, status=404)
+            theme_id = active["id"]
+
+            # Read theme.liquid
+            async with s.get(
+                f"https://{shop}/admin/api/{ver}/themes/{theme_id}/assets.json",
+                headers={"X-Shopify-Access-Token": token},
+                params={"asset[key]": "layout/theme.liquid"},
+                timeout=aiohttp.ClientTimeout(total=20)
+            ) as r:
+                asset = await r.json()
+            content = asset.get("asset", {}).get("value", "")
+            if not content:
+                return web.json_response({"ok": False, "error": "Could not read theme.liquid"}, status=500)
+
+            if "p:domain_verify" in content:
+                # Update existing tag
+                import re
+                content = re.sub(r'<meta name="p:domain_verify"[^>]*/>', meta_tag, content)
+                action = "updated"
+            else:
+                # Insert after <head> or after google verification
+                google_tag = '<meta name="google-site-verification"'
+                if google_tag in content:
+                    idx = content.index(google_tag)
+                    end = content.index("/>", idx) + 2
+                    content = content[:end] + "\n    " + meta_tag + content[end:]
+                else:
+                    content = content.replace("<head>", f"<head>\n    {meta_tag}", 1)
+                action = "inserted"
+
+            # Write back
+            async with s.put(
+                f"https://{shop}/admin/api/{ver}/themes/{theme_id}/assets.json",
+                headers={"X-Shopify-Access-Token": token, "Content-Type": "application/json"},
+                json={"asset": {"key": "layout/theme.liquid", "value": content}},
+                timeout=aiohttp.ClientTimeout(total=30)
+            ) as r:
+                result = await r.json()
+                if r.status in (200, 201):
+                    log.info("Pinterest domain verify tag %s in theme %s", action, theme_id)
+                    # Also save to Railway env
+                    try:
+                        import subprocess
+                        subprocess.run(["railway", "variables", "set", f"PINTEREST_DOMAIN_VERIFY={code}"],
+                                       capture_output=True, timeout=30)
+                    except Exception:
+                        pass
+                    return web.json_response({
+                        "ok": True, "action": action, "code": code[:8] + "...",
+                        "theme": active.get("name"), "theme_id": theme_id
+                    })
+                return web.json_response({"ok": False, "error": str(result)[:300]}, status=500)
+    except Exception as e:
+        log.error("handle_pinterest_verify_domain: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_sendgrid_blast(req):
     """POST /api/email/sendgrid-blast — Revenue Email sofort senden."""
     try:
@@ -11531,8 +11619,9 @@ async def create_app():
     app.router.add_get( "/api/push/vapid-key",         handle_vapid_public_key)
     app.router.add_get( "/api/reddit/auth",            handle_reddit_auth_start)
     app.router.add_get( "/api/reddit/callback",        handle_reddit_callback)
-    app.router.add_get( "/api/pinterest/auth",         handle_pinterest_auth)
+    app.router.add_get( "/api/pinterest/auth",          handle_pinterest_auth)
     app.router.add_get( "/api/pinterest/callback",     handle_pinterest_callback)
+    app.router.add_post("/api/pinterest/verify-domain", handle_pinterest_verify_domain)
     app.router.add_get( "/api/oauth/status",           handle_oauth_status)
 
     # ── SEO Mega Engine routes (no duplicates) ──────────────────────────────
