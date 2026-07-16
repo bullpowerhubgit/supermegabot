@@ -380,3 +380,9 @@ Methode: Graph API v21.0 via FACEBOOK_USER_TOKEN + PAGE_TOKEN (AiiteC Page 10167
 - ❌ Pinterest Token: 401 → neu auth auf developers.pinterest.com
 - ❌ Meta Ads: ads_management fehlt für act_878505274898620 → Business Manager Settings
 - ❌ KI-APIs: Anthropic invalid, OpenAI quota, OpenRouter daily limit → $10 auf openrouter.ai
+
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-16 12:34 UTC
+- Health: ✅ OK
+- Umsatz heute: €0.00
+- Probleme:
+  - keine
