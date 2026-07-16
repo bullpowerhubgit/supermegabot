@@ -47,7 +47,9 @@ async def fetch_zvg_listings(state: str = "NRW", limit: int = 50) -> list:
             "User-Agent": "Mozilla/5.0 (compatible; EUComplianceSaas/1.0)",
             "Accept": "text/html",
         }
-        async with aiohttp.ClientSession() as session:
+        # SSL verify oft broken in Railway nixpacks — fail-open mit ssl=False
+        connector = aiohttp.TCPConnector(ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
             async with session.get(search_url, headers=headers, timeout=aiohttp.ClientTimeout(total=20)) as resp:
                 if resp.status != 200:
                     log.warning("ZVG Portal returned status %s", resp.status)

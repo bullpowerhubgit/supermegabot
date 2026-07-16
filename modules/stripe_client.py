@@ -23,8 +23,8 @@ STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 
 _STRIPE_KEY_NAMES = (
-    "STRIPE_SECRET_KEY",
-    "STRIPE_SECRET_KEY_AIITEC",
+    "STRIPE_SECRET_KEY",              # Main — primär (funktioniert)
+    "STRIPE_SECRET_KEY_AIITEC",       # oft 401 → auto-skip via probe
     "STRIPE_TEST_SECRET_KEY",
     "STRIPE_TEST_SECRET_KEY_AIITEC",
     "STRIPE_API_KEY",
@@ -32,8 +32,17 @@ _STRIPE_KEY_NAMES = (
 
 
 def _stripe_key_candidates() -> list[tuple[str, str]]:
+    """Working key first (resolver), then remaining envs for fallback."""
     seen: set[str] = set()
     out: list[tuple[str, str]] = []
+    try:
+        from modules.stripe_key_resolver import get_working_stripe_key, get_working_stripe_key_name
+        wk = get_working_stripe_key()
+        if wk:
+            out.append((get_working_stripe_key_name() or "STRIPE_SECRET_KEY", wk))
+            seen.add(wk)
+    except Exception:
+        pass
     for name in _STRIPE_KEY_NAMES:
         val = os.getenv(name, "").strip()
         if val and val not in seen:
@@ -43,6 +52,13 @@ def _stripe_key_candidates() -> list[tuple[str, str]]:
 
 
 def _stripe_key() -> str:
+    try:
+        from modules.stripe_key_resolver import get_working_stripe_key
+        k = get_working_stripe_key()
+        if k:
+            return k
+    except Exception:
+        pass
     for _, val in _stripe_key_candidates():
         return val
     return ""

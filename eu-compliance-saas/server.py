@@ -137,8 +137,10 @@ async def telegram_notify(msg: str):
 async def autonomous_lead_gen_loop():
     """Läuft alle 6h: scannt öffentliche Shopify-Stores, sendet Compliance-Alerts."""
     SAMPLE_SHOPS = [
-        "www.example-shop.com",
-        "demo-store.myshopify.com",
+        "ineedit.com.co",
+        "allbirds.com",
+        "gymshark.com",
+        "babbel.com",
     ]
     while True:
         try:
