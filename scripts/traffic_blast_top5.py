@@ -5,11 +5,13 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import sys
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))  # modules/ importierbar
 
 TOP5 = [
     ("BullPower Full-Stack Empire", "€4.997/mo", "https://buy.stripe.com/fZueVf9jAguu1gc9kO4F42Ev"),
@@ -85,7 +87,7 @@ def telegram_blast() -> dict:
 
 def indexnow_blast() -> dict:
     """Ping Bing IndexNow for landings (best-effort)."""
-    key = os.getenv("INDEXNOW_KEY", "supermegabot")
+    key = os.getenv("INDEXNOW_KEY", "bullpower2026indexnow")
     host = "bullpower-hub.vercel.app"
     endpoint = "https://api.indexnow.org/indexnow"
     payload = {
@@ -108,19 +110,18 @@ def indexnow_blast() -> dict:
 
 
 def sitemap_ping() -> dict:
+    # Google + Bing Sitemap-Ping sind deprecated (404/410).
+    # Stattdessen: IndexNow (Bing) + direkte URL-Validierung.
     results = []
     for landing in LANDINGS[:5]:
         sm = landing.rstrip("/") + "/sitemap.xml"
-        for engine, base in (
-            ("google", "https://www.google.com/ping?sitemap="),
-            ("bing", "https://www.bing.com/ping?sitemap="),
-        ):
-            try:
-                urllib.request.urlopen(base + urllib.parse.quote(sm, safe=""), timeout=8)
-                results.append({"engine": engine, "url": sm, "ok": True})
-            except Exception as e:
-                results.append({"engine": engine, "url": sm, "ok": False, "error": str(e)[:80]})
-    return {"pings": len(results), "ok_count": sum(1 for r in results if r.get("ok")), "details": results[:6]}
+        try:
+            req = urllib.request.Request(sm, headers={"User-Agent": "SuperMegaBot/1.0"})
+            with urllib.request.urlopen(req, timeout=8) as r:
+                results.append({"engine": "vercel", "url": sm, "ok": r.status == 200, "status": r.status})
+        except Exception as e:
+            results.append({"engine": "vercel", "url": sm, "ok": False, "error": str(e)[:80]})
+    return {"pings": len(results), "ok_count": sum(1 for r in results if r.get("ok")), "details": results}
 
 
 async def maybe_twitter() -> dict:
@@ -148,7 +149,7 @@ def main():
         "top5": [{"name": n, "price": p, "url": u} for n, p, u in TOP5],
     }
     try:
-        out["twitter"] = asyncio.get_event_loop().run_until_complete(maybe_twitter())
+        out["twitter"] = asyncio.run(maybe_twitter())
     except Exception as e:
         out["twitter"] = {"ok": False, "error": str(e)[:100]}
     print(json.dumps(out, indent=2, ensure_ascii=False))

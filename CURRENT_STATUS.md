@@ -5,8 +5,8 @@
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 1 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → oben Toggle "ENTWICKLUNG" → "LIVE" klicken | — |
-| 2 | **Pinterest API ABGELEHNT** | Gmail Drafts → Draft öffnen → "Senden" klicken. Dann: developers.pinterest.com → Token neu erstellen | `PINTEREST_ACCESS_TOKEN` |
+| 1 | **Meta App-Domains** | developers.facebook.com → App 1535442684079797 → Grundlegendes → App-Domains → `developers.facebook.com` löschen → `supermegabot-production.up.railway.app` eintragen | — |
+| 2 | **Pinterest API — Appeal gesendet** | ✅ Tickets #16593704 + #16593708 erstellt (16.07 15:03). Antwort binnen 1 Werktag. Danach: developers.pinterest.com → neuer Token | `PINTEREST_ACCESS_TOKEN` |
 | 3 | **Twitter OAuth 401** | developer.twitter.com → Mein Projekt → Keys & Tokens → Access Token → "Regenerate" | `TWITTER_ACCESS_TOKEN` + `TWITTER_ACCESS_TOKEN_SECRET` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
@@ -47,7 +47,7 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 | Resend | ✅ OK | `re_XRHYX...` → HTTP 200 live ✅ |
 | Facebook | ✅ OK | Long-Lived Token (NEVER), 10 Ads AKTIV, €10/Tag DE/AT/CH |
 | Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
-| Pinterest | ❌ API ABGELEHNT | Email 07.07 bestätigt — Appeal + neuer Token nötig |
+| Pinterest | ⏳ APPEAL GESENDET | Tickets #16593704 + #16593708 — Antwort ~17.07 |
 
 ## ✅ RAILWAY ENV VARS SYNCED (2026-07-16)
 - SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_ACCESS_TOKEN — aus .env nach Railway ✅
@@ -343,7 +343,7 @@ Script: `scripts/monetize_high_ticket_wave2.py` · Catalog: `data/high_ticket_wa
 
 ## Offene Punkte — MANUAL ACTIONS ERFORDERLICH
 - **Twitter OAuth**: developer.twitter.com → App → Keys & Tokens → Access Token → Regenerate → neue Werte in .env + Railway
-- **Pinterest Appeal**: Gmail → Drafts → Draft r3312635313637467450 öffnen → Senden → danach developers.pinterest.com → neuen Token erstellen
+- **Pinterest Token**: Appeal ✅ gesendet (16.07 15:03) — Tickets #16593704 + #16593708 — wenn genehmigt: developers.pinterest.com → neuen Token erstellen
 - **Meta App auf Live**: developers.facebook.com/apps/1535442684079797/dashboard/ → Toggle oben "ENTWICKLUNG" → "LIVE" klicken (für extended permissions)
 - **Klaviyo Template**: klaviyo.com → Campaign 01KXMHKD5W48DCKS9HMNHVEFNV → Template TqwHcP zuweisen + senden
 
