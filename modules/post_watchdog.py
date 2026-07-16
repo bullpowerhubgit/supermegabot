@@ -213,6 +213,19 @@ async def validate_post(
 
     text = text.strip()
 
+    # 0. NEVER-TWICE — gleicher Fehler/Content nie wieder
+    try:
+        from modules.post_never_twice import check_never_twice, remember_block
+        nt_ok, nt_errs = check_never_twice(text, platform)
+        if not nt_ok:
+            try:
+                remember_block(text, platform, nt_errs, source_module="post_watchdog")
+            except Exception:
+                pass
+            return False, nt_errs
+    except Exception as e:
+        return False, [f"NeverTwice fail-closed: {e}"]
+
     # 1. Längen-Check
     min_len = _MIN_LENGTH.get(platform, _MIN_LENGTH["default"])
     max_len = _MAX_LENGTH.get(platform, _MAX_LENGTH["default"])

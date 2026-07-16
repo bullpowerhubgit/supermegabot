@@ -104,9 +104,23 @@ async def post_tweet(text: str, skip_guard: bool = False) -> dict:
     # FAIL-CLOSED: Guard nie still skippen (skip_guard nur für explizite System-Tests)
     if not skip_guard:
         try:
+            from modules.post_never_twice import check_never_twice, remember_block
+            nt_ok, nt_errs = check_never_twice(text, "twitter")
+            if not nt_ok:
+                remember_block(text, "twitter", nt_errs, source_module="twitter_auto_poster")
+                return {"ok": False, "blocked": True, "reason": f"NeverTwice: {nt_errs}"}
+        except Exception as e:
+            log.error("NeverTwice fail-closed: %s", e)
+            return {"ok": False, "blocked": True, "reason": f"NeverTwice error: {e}"}
+        try:
             from modules.post_guardian import validate_post as _pg_validate
             ok, errs = _pg_validate(text, "twitter")
             if not ok:
+                try:
+                    from modules.post_never_twice import remember_block
+                    remember_block(text, "twitter", errs, source_module="twitter_auto_poster")
+                except Exception:
+                    pass
                 return {"ok": False, "blocked": True, "reason": f"PostGuardian: {errs}"}
         except Exception as e:
             log.error("PostGuardian fail-closed: %s", e)
@@ -114,6 +128,11 @@ async def post_tweet(text: str, skip_guard: bool = False) -> dict:
         try:
             from modules.post_guard import validate_and_log
             if not await validate_and_log(text, platform="twitter"):
+                try:
+                    from modules.post_never_twice import remember_block
+                    remember_block(text, "twitter", ["PostGuard quality fail"], source_module="twitter_auto_poster")
+                except Exception:
+                    pass
                 return {"ok": False, "blocked": True, "reason": "PostGuard: Qualitätsprüfung nicht bestanden"}
         except Exception as e:
             log.error("PostGuard fail-closed: %s", e)

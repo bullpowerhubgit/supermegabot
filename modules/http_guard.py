@@ -279,6 +279,21 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
     FAIL-SAFE: Bei jedem Fehler → BLOCKIEREN (nie durchlassen!)
     """
     text = _extract_text(url, content_type, kwargs)
+    platform = _url_to_platform(url)
+
+    # Schicht 0: NEVER-TWICE — gleicher Fehler/Content nie wieder
+    try:
+        from modules.post_never_twice import check_never_twice, remember_block
+        nt_ok, nt_errs = check_never_twice(text, platform)
+        if not nt_ok:
+            try:
+                remember_block(text, platform, nt_errs, source_module="http_guard")
+            except Exception:
+                pass
+            return False, f"never_twice: {nt_errs[0] if nt_errs else 'blocked'}"
+    except Exception as e:
+        log.error("HttpGuard NeverTwice fail-closed: %s", e)
+        return False, f"never_twice_error_blocked: {e}"
 
     # Wenn Text nur URL ist (Extraktion fehlgeschlagen) → blockieren
     if text == url or len(text.strip()) < 15:
@@ -287,7 +302,6 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
 
     try:
         from modules.post_validator import validate_post
-        platform = _url_to_platform(url)
         ok, layer, reason = await validate_post(
             text=text,
             platform=platform,

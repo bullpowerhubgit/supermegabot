@@ -288,6 +288,19 @@ async def validate_post(
         ok=True + layer=0 wenn alles bestanden.
         ok=False + layer=N wenn Layer N geblockt hat.
     """
+    # ── Layer 0: NEVER-TWICE — gleicher Fehler/Content nie wieder ───────────
+    try:
+        from modules.post_never_twice import check_never_twice, remember_block
+        nt_ok, nt_errs = check_never_twice(text or "", platform)
+        if not nt_ok:
+            try:
+                remember_block(text or "", platform, nt_errs, source_module="post_validator")
+            except Exception:
+                pass
+            return False, 0, f"never_twice: {nt_errs[0] if nt_errs else 'blocked'}"
+    except Exception as e:
+        return False, 0, f"never_twice_error_blocked: {e}"
+
     # ── Layer 1: Basis-Sanity ────────────────────────────────────────────────
     if not text or not text.strip():
         return False, 1, "text_leer"
