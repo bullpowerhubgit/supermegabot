@@ -3271,10 +3271,9 @@ async def handle_seo_run_factory(req):
 # SEO: Sitemap ping — Google + Bing indexing for all BullPower Hub Netlify sites
 # ---------------------------------------------------------------------------
 
-_SHOPIFY_DOMAIN = os.getenv("SHOPIFY_CUSTOM_DOMAIN", os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com"))
+_SHOPIFY_DOMAIN = os.getenv("SHOPIFY_CUSTOM_DOMAIN", os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co"))
 _SITEMAPS = [
     f"https://{_SHOPIFY_DOMAIN}/sitemap.xml",
-    "https://autopilot-store-suite-fmbka.myshopify.com/sitemap.xml",
     "https://bullpowerhubgit.github.io/bullpower-legal/sitemap.xml",
 ]
 

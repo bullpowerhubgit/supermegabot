@@ -214,6 +214,21 @@ def check_never_twice(text: str, platform: str = "default") -> Tuple[bool, List[
     return True, []
 
 
+def _sanitize_reason(r: str) -> str:
+    """Strip recursive NEVER-TWICE: prefixes before storing. Max 120 chars."""
+    r = str(r).strip()
+    # peel off nested "NEVER-TWICE: exakter Content bereits blockiert (…)" layers
+    for _ in range(5):
+        if not r.startswith("NEVER-TWICE:"):
+            break
+        m = re.search(r'\((.+)\)\s*$', r, re.DOTALL)
+        if m:
+            r = m.group(1).strip()
+        else:
+            r = r[len("NEVER-TWICE:"):].strip()
+    return r[:120]
+
+
 def remember_block(
     text: str,
     platform: str,
@@ -227,7 +242,7 @@ def remember_block(
     """
     init_db()
     platform = (platform or "default").lower()
-    reasons = [str(r) for r in (reasons or ["unknown"]) if r]
+    reasons = [_sanitize_reason(r) for r in (reasons or ["unknown"]) if r]
     ch = _content_hash(text, platform)
     fp = _fingerprint(platform, reasons)
     now = time.time()

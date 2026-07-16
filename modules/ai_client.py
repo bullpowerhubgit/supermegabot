@@ -694,6 +694,11 @@ async def _ai_complete_inner(
                         text = (d.get("content") or [{"text": ""}])[0].get("text", "")
                         if text:
                             _cb_success("Anthropic")
+                            try:
+                                usage = d.get("usage", {})
+                                _record_ant(usage.get("input_tokens", 0), usage.get("output_tokens", 0))
+                            except Exception:
+                                pass
                             return text
                     if r.status in (400, 402, 529):
                         body = await r.json(content_type=None)
@@ -743,6 +748,12 @@ async def _ai_complete_inner(
                         text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
                         if text:
                             _cb_success("OpenAI")
+                            try:
+                                from modules.ai_budget_guard import record_usage_oai as _record_oai
+                                usage = d.get("usage", {})
+                                _record_oai(usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
+                            except Exception:
+                                pass
                             return text
                         # leere 200-Antwort → kein _cb_fail
                     elif r.status == 429:
@@ -779,6 +790,11 @@ async def _ai_complete_inner(
                             text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
                             if text:
                                 _cb_success("Perplexity")
+                                try:
+                                    from modules.ai_budget_guard import record_usage_pplx as _record_pplx
+                                    _record_pplx()
+                                except Exception:
+                                    pass
                                 return text
                         elif r.status == 429:
                             _cb_rate_limit("Perplexity", 90)
