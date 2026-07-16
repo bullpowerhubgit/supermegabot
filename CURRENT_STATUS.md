@@ -78,6 +78,7 @@
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
 |-----|--------|
+| **PROTECTED_VARS — Stripe nie mehr überschrieben** | `PROTECTED_VARS` in `env_health_check.py` — STRIPE_SECRET_KEY_AIITEC, GROQ_API_KEY, PERPLEXITY_API_KEY, GOOGLE_OAUTH_CLIENT_SECRET, STRIPE_WEBHOOK_SECRET_AIITEC werden bei `.env→Railway`-Sync IMMER übersprungen — commit `3619fb75` |
 | **Meta Ads Kampagne LIVE** | Campaign 23858766912160790 AKTIV — Start 17.07 08:00 — Ad 23858776167940790 ACTIVE — €10/Tag DE/AT/CH |
 | **Meta Ads Creative v2** | Flash Sale Post 17.07 als Creative — ID: 1736882491064064 — Ad ACTIVE |
 | **Meta App → LIVE** | ✅ Email 16.07 16:12 bestätigt: App 1535442684079797 im Live-Modus |
