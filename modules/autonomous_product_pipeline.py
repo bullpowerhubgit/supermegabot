@@ -85,6 +85,22 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
     """Creates a digital product on Shopify, returns product URL."""
     if not SHOP or not SHOPIFY_TOK:
         return None
+
+    # Gatekeeper — blockiert Fake/News-Headlines als Produkte
+    try:
+        from modules.product_gatekeeper import validate_product
+        ok, reason = validate_product(
+            title=idea.get("title", ""),
+            vendor="iNeedit",
+            product_type=idea.get("type", "Digital Product"),
+            price=float(idea.get("price_eur", 0)),
+        )
+        if not ok:
+            log.warning("autonomous_product_pipeline GATEKEEPER BLOCK: %s — %s", idea.get("title", "?")[:60], reason)
+            return None
+    except Exception as _ge:
+        log.debug("Gatekeeper import error: %s", _ge)
+
     description = await ai_complete(
         f"Schreibe eine überzeugende HTML-Produktbeschreibung (max 200 Wörter) auf Deutsch "
         f"für: '{idea['title']}'. Tagline: {idea['tagline']}. "
@@ -116,10 +132,13 @@ async def _create_shopify_product(idea: dict) -> Optional[str]:
                 data = await r.json(content_type=None)
         pid = data.get("product", {}).get("id")
         handle = data.get("product", {}).get("handle", "")
-        shop_url = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOP.replace('.myshopify.com','')}.myshopify.com")
-        url = f"{shop_url}/products/{handle}" if handle else None
-        log.info("Shopify product created: %s (id=%s)", idea["title"], pid)
-        return url
+        public_domain = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
+        url = f"https://{public_domain}/products/{handle}" if handle else None
+        if pid:
+            log.info("Shopify product created: %s (id=%s)", idea["title"], pid)
+        else:
+            log.warning("Shopify product NOT created (API error): %s — %s", idea["title"][:60], data.get("errors", "?"))
+        return url if pid else None
     except Exception as e:
         log.warning("Shopify create error: %s", e)
         return None
