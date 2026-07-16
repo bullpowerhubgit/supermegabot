@@ -1,0 +1,517 @@
+{
+  "wave": "high_ticket_wave3",
+  "products": {
+    "bullpower_hub": {
+      "name": "BullPower Hub — 12 KI-Tools Empire",
+      "folder": "bullpower-hub",
+      "product_id": "prod_UtTIt9qkb4UR0q",
+      "tiers": [
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgLXRJECiV6vSmeXW7tWUf",
+          "link_id": "plink_1TtgLXRJECiV6vSmsbnkbRuw",
+          "url": "https://buy.stripe.com/28E28tcvM5PQe2Y2Wq4F42DU"
+        },
+        {
+          "tier": "Business",
+          "amount_cents": 299700,
+          "interval": "month",
+          "price_label": "€2.997/mo",
+          "price_id": "price_1TtgLZRJECiV6vSmIICxSYvM",
+          "link_id": "plink_1TtgLaRJECiV6vSmIkFxH99T",
+          "url": "https://buy.stripe.com/cNicN7cvM2DE2kg0Oi4F42DV"
+        },
+        {
+          "tier": "Empire",
+          "amount_cents": 499700,
+          "interval": "month",
+          "price_label": "€4.997/mo",
+          "price_id": "price_1TtgLdRJECiV6vSmzKjzKVTb",
+          "link_id": "plink_1TtgLeRJECiV6vSmRRC15fGK",
+          "url": "https://buy.stripe.com/cNi8wRfHY0vw7EAeF84F42DW"
+        }
+      ]
+    },
+    "creatorai_ultra": {
+      "name": "CreatorAI Ultra — KI Content Empire",
+      "folder": "creatorai-ultra",
+      "product_id": "prod_UtTIJNeXF4yl5W",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 49700,
+          "interval": "month",
+          "price_label": "€497/mo",
+          "price_id": "price_1TtgLhRJECiV6vSmZK7DyrVN",
+          "link_id": "plink_1TtgLhRJECiV6vSmW1UWhy1G",
+          "url": "https://buy.stripe.com/dRmcN78fw6TUbUQeF84F42DX"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgLiRJECiV6vSmQG5docuM",
+          "link_id": "plink_1TtgLjRJECiV6vSmAHTQrLht",
+          "url": "https://buy.stripe.com/cNiaEZ2Vc1zAgb6bsW4F42DY"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 249700,
+          "interval": "month",
+          "price_label": "€2.497/mo",
+          "price_id": "price_1TtgLkRJECiV6vSmWJTsF66k",
+          "link_id": "plink_1TtgLmRJECiV6vSm9Sq65cRS",
+          "url": "https://buy.stripe.com/4gM14p2Vc7XYf72cx04F42DZ"
+        }
+      ]
+    },
+    "creatorstudio_pro": {
+      "name": "CreatorStudio Pro — Premium Content Engine",
+      "folder": "creatorstudio-pro",
+      "product_id": "prod_UtTIh90VvANgZM",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 29700,
+          "interval": "month",
+          "price_label": "€297/mo",
+          "price_id": "price_1TtgLsRJECiV6vSmTM7XQsL7",
+          "link_id": "plink_1TtgLuRJECiV6vSmJlVE1Rm1",
+          "url": "https://buy.stripe.com/5kQ7sNfHY7XY2kgfJc4F42E0"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 79700,
+          "interval": "month",
+          "price_label": "€797/mo",
+          "price_id": "price_1TtgLuRJECiV6vSmCimgaNZc",
+          "link_id": "plink_1TtgLvRJECiV6vSmS3KRtPkO",
+          "url": "https://buy.stripe.com/9B63cx0N44LM4so7cG4F42E1"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 199700,
+          "interval": "month",
+          "price_label": "€1.997/mo",
+          "price_id": "price_1TtgLxRJECiV6vSm03hIkUfG",
+          "link_id": "plink_1TtgLyRJECiV6vSmpNLB9Vg6",
+          "url": "https://buy.stripe.com/8x2aEZcvM4LM8IEaoS4F42E2"
+        }
+      ]
+    },
+    "ds24_pro_suite": {
+      "name": "Digistore24 Pro Suite — Affiliate Empire",
+      "folder": "digistore24-suite",
+      "product_id": "prod_UtTIfETW0oJoqd",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 49700,
+          "interval": "month",
+          "price_label": "€497/mo",
+          "price_id": "price_1TtgM4RJECiV6vSmjUgQit4e",
+          "link_id": "plink_1TtgM9RJECiV6vSmiLwPRxsJ",
+          "url": "https://buy.stripe.com/dRm7sN0N4baa2kg1Sm4F42E3"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgMCRJECiV6vSm9LZTbadq",
+          "link_id": "plink_1TtgMDRJECiV6vSmwUvCgE2B",
+          "url": "https://buy.stripe.com/cNi14p8fw1zA6AwdB44F42E4"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 299700,
+          "interval": "month",
+          "price_label": "€2.997/mo",
+          "price_id": "price_1TtgMFRJECiV6vSmiNB843xN",
+          "link_id": "plink_1TtgMFRJECiV6vSmQBikm4q1",
+          "url": "https://buy.stripe.com/9B65kF1R84LM7EAcx04F42E5"
+        }
+      ]
+    },
+    "cognitive_symphony": {
+      "name": "Cognitive Symphony — DS24 Automation OS",
+      "folder": "cognitive-symphony",
+      "product_id": "prod_UtTIhAOctxL9qU",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 49700,
+          "interval": "month",
+          "price_label": "€497/mo",
+          "price_id": "price_1TtgMJRJECiV6vSmTq5cfm3Z",
+          "link_id": "plink_1TtgMLRJECiV6vSm4UeNFnKU",
+          "url": "https://buy.stripe.com/dRmdRbbrIa66aQM9kO4F42E6"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgMLRJECiV6vSmF9Yr3MrR",
+          "link_id": "plink_1TtgMNRJECiV6vSmx8nXbU7C",
+          "url": "https://buy.stripe.com/fZu14peDUdii3okbsW4F42E7"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 299700,
+          "interval": "month",
+          "price_label": "€2.997/mo",
+          "price_id": "price_1TtgMQRJECiV6vSm1g0i3SC4",
+          "link_id": "plink_1TtgMRRJECiV6vSmt5OToYj5",
+          "url": "https://buy.stripe.com/00wdRb3Zg4LMe2Y7cG4F42E8"
+        }
+      ]
+    },
+    "shopify_suite_pro": {
+      "name": "Shopify Suite Pro — Full Automaton",
+      "folder": "shopify-suite",
+      "product_id": "prod_UtTJhBMXcNsuZJ",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 49700,
+          "interval": "month",
+          "price_label": "€497/mo",
+          "price_id": "price_1TtgMTRJECiV6vSm8CaHvsBE",
+          "link_id": "plink_1TtgMURJECiV6vSmIwzx8kMZ",
+          "url": "https://buy.stripe.com/eVqdRb53ka669MI0Oi4F42E9"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgMURJECiV6vSmqKXpXwfW",
+          "link_id": "plink_1TtgMVRJECiV6vSmGaP6PwKi",
+          "url": "https://buy.stripe.com/bJedRbcvM9227EA9kO4F42Ea"
+        },
+        {
+          "tier": "Enterprise",
+          "amount_cents": 249700,
+          "interval": "month",
+          "price_label": "€2.497/mo",
+          "price_id": "price_1TtgMWRJECiV6vSmLkCpGSQR",
+          "link_id": "plink_1TtgMWRJECiV6vSmUncA5utm",
+          "url": "https://buy.stripe.com/9B6dRbbrI1zA3ok54y4F42Eb"
+        }
+      ]
+    },
+    "master_dashboard": {
+      "name": "BullPower Master Command Center",
+      "folder": "master-dashboard",
+      "product_id": "prod_UtTJQnTNO2Aq97",
+      "tiers": [
+        {
+          "tier": "Operator",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgMaRJECiV6vSmlsjQGwf9",
+          "link_id": "plink_1TtgMcRJECiV6vSmeb2HA5i3",
+          "url": "https://buy.stripe.com/9B6bJ367oa66gb668C4F42Ec"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 249700,
+          "interval": "month",
+          "price_label": "€2.497/mo",
+          "price_id": "price_1TtgMdRJECiV6vSmKuCLI75Y",
+          "link_id": "plink_1TtgMeRJECiV6vSmJqqV7fEw",
+          "url": "https://buy.stripe.com/3cI28t67oa663ok0Oi4F42Ed"
+        },
+        {
+          "tier": "White-Label",
+          "amount_cents": 499700,
+          "interval": "month",
+          "price_label": "€4.997/mo",
+          "price_id": "price_1TtgMhRJECiV6vSmBT0nYXxp",
+          "link_id": "plink_1TtgMiRJECiV6vSmo5RlcGx1",
+          "url": "https://buy.stripe.com/28E14p1R83HI4so2Wq4F42Ee"
+        }
+      ]
+    },
+    "eu_compliance": {
+      "name": "EU Compliance SaaS — DSGVO & AI Act Pack",
+      "folder": null,
+      "product_id": "prod_UtTJW5q5s4GcIL",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 49700,
+          "interval": "month",
+          "price_label": "€497/mo",
+          "price_id": "price_1TtgMkRJECiV6vSm7tHU5IQI",
+          "link_id": "plink_1TtgMlRJECiV6vSmi7d6166P",
+          "url": "https://buy.stripe.com/14A4gBanE7XY1gc40u4F42Ef"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgMnRJECiV6vSmUhExU5o0",
+          "link_id": "plink_1TtgMpRJECiV6vSmgzzjyhbr",
+          "url": "https://buy.stripe.com/7sY5kFeDUa665ws7cG4F42Eg"
+        },
+        {
+          "tier": "Enterprise",
+          "amount_cents": 249700,
+          "interval": "month",
+          "price_label": "€2.497/mo",
+          "price_id": "price_1TtgMrRJECiV6vSmXvF8GGFk",
+          "link_id": "plink_1TtgMrRJECiV6vSmU1Okabuq",
+          "url": "https://buy.stripe.com/9B63cx67ofqq0c88gK4F42Eh"
+        }
+      ]
+    },
+    "stripe_connect_saas": {
+      "name": "Stripe Connect SaaS — Multi-Vendor Platform",
+      "folder": null,
+      "product_id": "prod_UtTJTdQErLi7hO",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 49700,
+          "interval": "month",
+          "price_label": "€497/mo",
+          "price_id": "price_1TtgMtRJECiV6vSmqXQMoUXG",
+          "link_id": "plink_1TtgMuRJECiV6vSmbYulLuQk",
+          "url": "https://buy.stripe.com/aFa14p9jAcee8IEcx04F42Ei"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 149700,
+          "interval": "month",
+          "price_label": "€1.497/mo",
+          "price_id": "price_1TtgMvRJECiV6vSmiVpyhbtN",
+          "link_id": "plink_1TtgMwRJECiV6vSmALqlNd39",
+          "url": "https://buy.stripe.com/9B66oJ8fw2DEf72fJc4F42Ej"
+        },
+        {
+          "tier": "Scale",
+          "amount_cents": 299700,
+          "interval": "month",
+          "price_label": "€2.997/mo",
+          "price_id": "price_1TtgMxRJECiV6vSmim63RO7M",
+          "link_id": "plink_1TtgMxRJECiV6vSmjNHiQmZ5",
+          "url": "https://buy.stripe.com/7sYbJ30N44LMaQMbsW4F42Ek"
+        }
+      ]
+    },
+    "seo_turbo": {
+      "name": "SEO Turbo Tools — Traffic & Ranking Engine",
+      "folder": null,
+      "product_id": "prod_UtTJcfTDf0hbdG",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 29700,
+          "interval": "month",
+          "price_label": "€297/mo",
+          "price_id": "price_1TtgN0RJECiV6vSmF1EE0fS5",
+          "link_id": "plink_1TtgN1RJECiV6vSmrKquiwqj",
+          "url": "https://buy.stripe.com/bJeaEZ67o1zA4sofJc4F42El"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 79700,
+          "interval": "month",
+          "price_label": "€797/mo",
+          "price_id": "price_1TtgN3RJECiV6vSmNLnOFD3w",
+          "link_id": "plink_1TtgN4RJECiV6vSmEzKv8NFI",
+          "url": "https://buy.stripe.com/3cI4gB2Vc3HI2kgfJc4F42Em"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 199700,
+          "interval": "month",
+          "price_label": "€1.997/mo",
+          "price_id": "price_1TtgN6RJECiV6vSmt7y5S6Sl",
+          "link_id": "plink_1TtgN6RJECiV6vSmsX46GkSJ",
+          "url": "https://buy.stripe.com/8x24gB67o5PQ7EAeF84F42En"
+        }
+      ]
+    },
+    "analytics_mkt": {
+      "name": "Analytics Marketing Intelligence Suite",
+      "folder": null,
+      "product_id": "prod_UtTJs3etHFZ9ja",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 39700,
+          "interval": "month",
+          "price_label": "€397/mo",
+          "price_id": "price_1TtgN9RJECiV6vSmnlZYykxm",
+          "link_id": "plink_1TtgNARJECiV6vSmTjzzf63z",
+          "url": "https://buy.stripe.com/3cI6oJcvM7XYaQMfJc4F42Eo"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgNBRJECiV6vSmBC7bvGIj",
+          "link_id": "plink_1TtgNCRJECiV6vSmmjKmeKp6",
+          "url": "https://buy.stripe.com/28E6oJ67o9220c80Oi4F42Ep"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 249700,
+          "interval": "month",
+          "price_label": "€2.497/mo",
+          "price_id": "price_1TtgNERJECiV6vSmjYDo5Qzb",
+          "link_id": "plink_1TtgNFRJECiV6vSmVSqfrn5j",
+          "url": "https://buy.stripe.com/bJe3cxgM2emm8IE2Wq4F42Eq"
+        }
+      ]
+    },
+    "aiitec_agency": {
+      "name": "AiiteC Agency OS — Full Stack Automation",
+      "folder": null,
+      "product_id": "prod_UtTJ5IyJZkmzVV",
+      "tiers": [
+        {
+          "tier": "Starter",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgNIRJECiV6vSm9hzvtvdD",
+          "link_id": "plink_1TtgNJRJECiV6vSmOCCHSmdz",
+          "url": "https://buy.stripe.com/bJefZj53k7XYaQM0Oi4F42Er"
+        },
+        {
+          "tier": "Pro",
+          "amount_cents": 249700,
+          "interval": "month",
+          "price_label": "€2.497/mo",
+          "price_id": "price_1TtgNJRJECiV6vSmpza6yTER",
+          "link_id": "plink_1TtgNMRJECiV6vSmrPNzfs95",
+          "url": "https://buy.stripe.com/8x228t1R8guu4soeF84F42Es"
+        },
+        {
+          "tier": "Enterprise",
+          "amount_cents": 499700,
+          "interval": "month",
+          "price_label": "€4.997/mo",
+          "price_id": "price_1TtgNORJECiV6vSm4ZtNypSH",
+          "link_id": "plink_1TtgNQRJECiV6vSmuKj890ui",
+          "url": "https://buy.stripe.com/fZu4gBfHYdiiaQM54y4F42Et"
+        }
+      ]
+    },
+    "bundle_full_stack": {
+      "name": "BullPower Full-Stack Empire Bundle",
+      "folder": "launcher",
+      "product_id": "prod_UtTK0tCXYV3Xmu",
+      "tiers": [
+        {
+          "tier": "All Access",
+          "amount_cents": 199700,
+          "interval": "month",
+          "price_label": "€1.997/mo",
+          "price_id": "price_1TtgNSRJECiV6vSmDAPtmMnq",
+          "link_id": "plink_1TtgNTRJECiV6vSmyeDDf4tH",
+          "url": "https://buy.stripe.com/8x2eVf1R8dii3okeF84F42Eu"
+        },
+        {
+          "tier": "Agency White-Label",
+          "amount_cents": 499700,
+          "interval": "month",
+          "price_label": "€4.997/mo",
+          "price_id": "price_1TtgNVRJECiV6vSmTo7wL1XL",
+          "link_id": "plink_1TtgNVRJECiV6vSmk1CRGJ1A",
+          "url": "https://buy.stripe.com/fZueVf9jAguu1gc9kO4F42Ev"
+        },
+        {
+          "tier": "DFY Setup",
+          "amount_cents": 999700,
+          "interval": "one_time",
+          "price_label": "€9.997 einmalig",
+          "price_id": "price_1TtgNYRJECiV6vSmne3JhqFF",
+          "link_id": "plink_1TtgNYRJECiV6vSm9lv3zaj6",
+          "url": "https://buy.stripe.com/eVq7sNanEdiiaQMbsW4F42Ew"
+        }
+      ]
+    },
+    "bundle_shopify_empire": {
+      "name": "Shopify Empire Bundle — Acq+Brutal+Suite",
+      "folder": "shopify-suite",
+      "product_id": "prod_UtTK6j4f2heRh7",
+      "tiers": [
+        {
+          "tier": "Growth",
+          "amount_cents": 149700,
+          "interval": "month",
+          "price_label": "€1.497/mo",
+          "price_id": "price_1TtgNbRJECiV6vSmc1GJAzKI",
+          "link_id": "plink_1TtgNbRJECiV6vSmbzdirjJf",
+          "url": "https://buy.stripe.com/14A9AVgM2emm6Aw7cG4F42Ex"
+        },
+        {
+          "tier": "Scale",
+          "amount_cents": 299700,
+          "interval": "month",
+          "price_label": "€2.997/mo",
+          "price_id": "price_1TtgNdRJECiV6vSmnkWVQa2j",
+          "link_id": "plink_1TtgNeRJECiV6vSmeUJN6rmy",
+          "url": "https://buy.stripe.com/eVq6oJeDU922f72fJc4F42Ey"
+        },
+        {
+          "tier": "DFY Launch",
+          "amount_cents": 499700,
+          "interval": "one_time",
+          "price_label": "€4.997 einmalig",
+          "price_id": "price_1TtgNgRJECiV6vSmv9Szfttp",
+          "link_id": "plink_1TtgNgRJECiV6vSm6yaznoX7",
+          "url": "https://buy.stripe.com/14A5kFcvM1zAcYU8gK4F42Ez"
+        }
+      ]
+    },
+    "bundle_content_empire": {
+      "name": "Content Empire Bundle — CreatorAI+Studio",
+      "folder": "creatorai-ultra",
+      "product_id": "prod_UtTKlaWZzkQ8Ez",
+      "tiers": [
+        {
+          "tier": "Creator",
+          "amount_cents": 99700,
+          "interval": "month",
+          "price_label": "€997/mo",
+          "price_id": "price_1TtgNiRJECiV6vSm0k0uTySv",
+          "link_id": "plink_1TtgNkRJECiV6vSmIrydPGBU",
+          "url": "https://buy.stripe.com/3cI8wR7bs7XYcYUgNg4F42EA"
+        },
+        {
+          "tier": "Studio Pro",
+          "amount_cents": 199700,
+          "interval": "month",
+          "price_label": "€1.997/mo",
+          "price_id": "price_1TtgNmRJECiV6vSm3avHJqpr",
+          "link_id": "plink_1TtgNnRJECiV6vSm78tV56l5",
+          "url": "https://buy.stripe.com/8x228t3Zg2DE4soaoS4F42EB"
+        },
+        {
+          "tier": "Agency",
+          "amount_cents": 349700,
+          "interval": "month",
+          "price_label": "€3.497/mo",
+          "price_id": "price_1TtgNoRJECiV6vSmz3e8U2Iw",
+          "link_id": "plink_1TtgNpRJECiV6vSmHpSsmQ2i",
+          "url": "https://buy.stripe.com/7sY5kF53k7XYbUQ0Oi4F42EC"
+        }
+      ]
+    }
+  },
+  "mrr_potential": 79971,
+  "one_time_potential": 14994
+}

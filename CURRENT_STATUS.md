@@ -1,6 +1,25 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16**
 
+## 💰 MONEY MAX — WAVE 2+3 LIVE (2026-07-16)
+
+**Ziel: GELD GENERIEREN — alles High-Ticket**
+
+| Wave | Produkte | Payment Links | MRR-Tier-Summe | One-time |
+|------|----------|---------------|----------------|----------|
+| Wave 2 | 10 | 30 | €39.122 | €9.488 |
+| Wave 3 | 15 | 45 | €79.971 | €14.994 |
+| **Total** | **~32** | **75+** | **€119k+** | **€24k+** |
+
+- Public APIs: `GET /api/high-ticket-links` · `GET /api/money-map` (25 featured offers)
+- Catalog: `config/high_ticket_wave2.json` · `config/high_ticket_wave3.json` · `config/money_map.json`
+- Landingpages: alle netlify-deploy Sites mit Stripe-CTAs
+- Mega-Bundles:
+  - Full-Stack Empire White-Label €4.997/mo → https://buy.stripe.com/fZueVf9jAguu1gc9kO4F42Ev
+  - Shopify Empire Scale €2.997/mo → https://buy.stripe.com/eVq6oJeDU922f72fJc4F42Ey
+  - DFY Full-Stack €9.997 → https://buy.stripe.com/eVq7sNanEdiiaQMbsW4F42Ew
+
+
 ## ✅ HIGH-TICKET WAVE 2 — 10 PRODUKTE × 3 TIERS LIVE (2026-07-16)
 
 Stripe Live: 30 neue Payment Links · Landingpages mit Premium-Pricing injiziert  

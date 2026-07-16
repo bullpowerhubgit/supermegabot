@@ -6810,7 +6810,12 @@ async def cors_middleware(request, handler):
 # ---------------------------------------------------------------------------
 # Auth Middleware — X-API-Key Validierung für alle /api/* Routen
 # ---------------------------------------------------------------------------
-_AUTH_EXEMPT_EXACT = {"/health", "/api/digistore24/ipn"}
+_AUTH_EXEMPT_EXACT = {
+    "/health",
+    "/api/digistore24/ipn",
+    "/api/high-ticket-links",  # public sales catalog — Stripe buy links only
+    "/api/money-map",          # public featured offers for affiliates/sales
+}
 
 if not os.getenv("DASHBOARD_SECRET"):
     log.warning(
@@ -10223,19 +10228,23 @@ async def handle_high_ticket_links(request: web.Request) -> web.Response:
     total_mrr = sum([997, 997, 497, 797])
     total_one_time = sum([1997, 4997, 1497])
 
-    # Wave 2 catalog (10 products × 3 tiers) — live Stripe payment links
-    wave2_path = Path(__file__).resolve().parent.parent / "config" / "high_ticket_wave2.json"
-    if not wave2_path.exists():
-        wave2_path = Path(__file__).resolve().parent.parent / "data" / "high_ticket_wave2.json"
-    wave2 = {}
-    try:
-        if wave2_path.exists():
-            import json as _json
-            w2 = _json.loads(wave2_path.read_text(encoding="utf-8"))
-            wave2 = w2.get("products") or {}
-            total_mrr += int(w2.get("mrr_potential") or 0)
-            total_one_time += int(w2.get("one_time_potential") or 0)
-            for key, prod in wave2.items():
+    # Wave 2 + Wave 3 catalogs — live Stripe payment links
+    import json as _json
+    base_cfg = Path(__file__).resolve().parent.parent / "config"
+    wave_counts = {}
+    for wave_name, fname in (("wave2", "high_ticket_wave2.json"), ("wave3", "high_ticket_wave3.json")):
+        wpath = base_cfg / fname
+        if not wpath.exists():
+            wpath = Path(__file__).resolve().parent.parent / "data" / fname
+        try:
+            if not wpath.exists():
+                wave_counts[wave_name] = 0
+                continue
+            wdata = _json.loads(wpath.read_text(encoding="utf-8"))
+            wprods = wdata.get("products") or {}
+            total_mrr += int(wdata.get("mrr_potential") or 0)
+            total_one_time += int(wdata.get("one_time_potential") or 0)
+            for key, prod in wprods.items():
                 tiers = prod.get("tiers") or []
                 featured = tiers[1] if len(tiers) > 1 else (tiers[0] if tiers else {})
                 links[key] = {
@@ -10244,10 +10253,20 @@ async def handle_high_ticket_links(request: web.Request) -> web.Response:
                     "price_id": featured.get("price_id", ""),
                     "url": featured.get("url", ""),
                     "tiers": tiers,
-                    "wave": "wave2",
+                    "wave": wave_name,
                 }
-    except Exception as e:
-        log.warning("high_ticket wave2 load failed: %s", e)
+            wave_counts[wave_name] = len(wprods)
+        except Exception as e:
+            log.warning("high_ticket %s load failed: %s", wave_name, e)
+            wave_counts[wave_name] = 0
+
+    money_map = {}
+    try:
+        mm = base_cfg / "money_map.json"
+        if mm.exists():
+            money_map = _json.loads(mm.read_text(encoding="utf-8"))
+    except Exception:
+        pass
 
     return web.json_response({
         "ok": True,
@@ -10255,8 +10274,23 @@ async def handle_high_ticket_links(request: web.Request) -> web.Response:
         "potential_mrr_eur": total_mrr,
         "potential_one_time_eur": total_one_time,
         "products": links,
-        "wave2_count": len(wave2),
+        "wave2_count": wave_counts.get("wave2", 0),
+        "wave3_count": wave_counts.get("wave3", 0),
+        "featured": (money_map.get("featured") or [])[:50],
     })
+
+
+async def handle_money_map(request: web.Request) -> web.Response:
+    """GET /api/money-map — public featured high-ticket buy links for sales."""
+    try:
+        import json as _json
+        mm_path = Path(__file__).resolve().parent.parent / "config" / "money_map.json"
+        if not mm_path.exists():
+            return web.json_response({"ok": False, "error": "money_map missing"}, status=404)
+        data = _json.loads(mm_path.read_text(encoding="utf-8"))
+        return web.json_response({"ok": True, **data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ─── Auto-Sorter Handlers ─────────────────────────────────────────────────────
@@ -11806,6 +11840,7 @@ async def create_app():
     app.router.add_get( "/api/stripe/billing-stats",     handle_stripe_billing_stats)
     app.router.add_post("/api/stripe/ds24-links",        handle_stripe_ds24_links)
     app.router.add_get( "/api/high-ticket-links",        handle_high_ticket_links)
+    app.router.add_get( "/api/money-map",                handle_money_map)
 
     # ── Auto-Sorter ───────────────────────────────────────────────────────────
     app.router.add_post("/api/sort/shopify",             handle_sort_shopify)
