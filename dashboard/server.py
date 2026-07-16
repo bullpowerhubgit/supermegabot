@@ -10174,6 +10174,63 @@ async def handle_stripe_ds24_links(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_high_ticket_links(request: web.Request) -> web.Response:
+    """GET /api/high-ticket-links — Alle High-Ticket Payment Links (€497–€4997)."""
+    links = {
+        "kdp_empire": {
+            "name": "KDP Empire Builder — Done For You",
+            "price": "€997/mo",
+            "price_id": os.getenv("STRIPE_PRICE_KDP_EMPIRE", ""),
+            "url": os.getenv("PLINK_KDP_EMPIRE", ""),
+        },
+        "etsy_empire": {
+            "name": "Digital Products Empire Setup",
+            "price": "€1997 einmalig",
+            "price_id": os.getenv("STRIPE_PRICE_ETSY_EMPIRE", ""),
+            "url": os.getenv("PLINK_ETSY_EMPIRE", ""),
+        },
+        "rudibot_agency": {
+            "name": "E-Commerce KI-Agency Suite",
+            "price": "€997/mo",
+            "price_id": os.getenv("STRIPE_PRICE_RUDIBOT_AGENCY", ""),
+            "url": os.getenv("PLINK_RUDIBOT_AGENCY", ""),
+        },
+        "autoincome_dfy": {
+            "name": "Passive Income Machine — DFY Setup",
+            "price": "€4997 einmalig",
+            "price_id": os.getenv("STRIPE_PRICE_AUTOINCOME_DFY", ""),
+            "url": os.getenv("PLINK_AUTOINCOME_DFY", ""),
+        },
+        "creatorai_enterprise": {
+            "name": "Creator KI-Suite Enterprise",
+            "price": "€497/mo",
+            "price_id": os.getenv("STRIPE_PRICE_CREATORAI_ENT", ""),
+            "url": os.getenv("PLINK_CREATORAI_ENT", ""),
+        },
+        "ds24_empire": {
+            "name": "Digistore24 Empire Builder",
+            "price": "€797/mo",
+            "price_id": os.getenv("STRIPE_PRICE_DS24_EMPIRE", ""),
+            "url": os.getenv("PLINK_DS24_EMPIRE", ""),
+        },
+        "digiprod_fullservice": {
+            "name": "Digital Product Fullservice",
+            "price": "€1497 einmalig",
+            "price_id": os.getenv("STRIPE_PRICE_DIGIPROD_FS", ""),
+            "url": os.getenv("PLINK_DIGIPROD_FS", ""),
+        },
+    }
+    total_mrr = sum([997, 997, 497, 797])
+    total_one_time = sum([1997, 4997, 1497])
+    return web.json_response({
+        "ok": True,
+        "count": len(links),
+        "potential_mrr_eur": total_mrr,
+        "potential_one_time_eur": total_one_time,
+        "products": links,
+    })
+
+
 # ─── Auto-Sorter Handlers ─────────────────────────────────────────────────────
 
 async def handle_sort_shopify(request: web.Request) -> web.Response:
@@ -11702,6 +11759,7 @@ async def create_app():
     app.router.add_post("/api/stripe/payment-link",      handle_stripe_payment_link)
     app.router.add_get( "/api/stripe/billing-stats",     handle_stripe_billing_stats)
     app.router.add_post("/api/stripe/ds24-links",        handle_stripe_ds24_links)
+    app.router.add_get( "/api/high-ticket-links",        handle_high_ticket_links)
 
     # ── Auto-Sorter ───────────────────────────────────────────────────────────
     app.router.add_post("/api/sort/shopify",             handle_sort_shopify)
