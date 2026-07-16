@@ -56,6 +56,13 @@ except ImportError:
 
 PORT = int(os.getenv("PORT") or os.getenv("DASHBOARD_PORT", "8888"))
 
+# DAUERHAFT: Alle FB/IG Alias-Vars = AiiteC Page Token (nie IWIN/User als Default)
+try:
+    from modules.meta_token_resolver import apply_aiitec_aliases_to_process
+    apply_aiitec_aliases_to_process()
+except Exception as _mtr_err:
+    pass  # logging not ready yet
+
 log = logging.getLogger("Dashboard")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
@@ -11111,6 +11118,18 @@ async def _auto_register_brevo_ip() -> None:
 
 
 async def create_app():
+    # Meta Token Resolver — AiiteC Page Token in ALLE Alias-Env-Vars erzwingen
+    try:
+        from modules.meta_token_resolver import apply_aiitec_aliases_to_process, audit_aliases
+        _mtr = apply_aiitec_aliases_to_process()
+        _aud = audit_aliases()
+        log.info(
+            "MetaTokenResolver: applied=%s audit_ok=%s mismatches=%s",
+            _mtr.get("set"), _aud.get("ok"), len(_aud.get("mismatches") or []),
+        )
+    except Exception as _mtr_err:
+        log.warning("MetaTokenResolver: %s", _mtr_err)
+
     # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
     # + StripeGuard (pm_card_visa@live, url_invalid, type=recurring auf /prices)
     try:
@@ -11118,6 +11137,15 @@ async def create_app():
         _hg_activate()
     except Exception as _hg_err:
         log.warning("HttpGuard konnte nicht aktiviert werden: %s", _hg_err)
+
+    # NeverTwice — Legacy-Blocks aus post_gateway.db + post_guardian.db importieren
+    try:
+        from modules.post_never_twice import import_legacy_blocks, init_db
+        init_db()
+        r = import_legacy_blocks()
+        log.info("NeverTwice init: %d Legacy-Blocks importiert", r.get("imported", 0))
+    except Exception as _nt_err:
+        log.warning("NeverTwice init: %s", _nt_err)
 
     # StripeGuard Fallback — falls HttpGuard fehlschlägt, trotzdem process-wide patchen
     try:

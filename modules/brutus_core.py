@@ -382,6 +382,14 @@ def _validate_post(title: str, body: str, link: str) -> tuple:
     for blocked in BLOCKED_CONTENT:
         if blocked in combined:
             return False, f"blocked content: {blocked}"
+    # NeverTwice: gleicher Content/Fehler nie wieder
+    try:
+        from modules.post_never_twice import check_never_twice
+        ok, errs = check_never_twice(f"{title} {body}", "default")
+        if not ok:
+            return False, f"NeverTwice: {errs[0] if errs else 'blocked'}"
+    except Exception:
+        pass
     return True, "ok"
 
 
