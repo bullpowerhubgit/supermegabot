@@ -118,11 +118,19 @@ _NICHE_SOCIAL_PLATFORMS = {"linkedin", "facebook", "instagram", "twitter", "x", 
 _NICHE_KEYWORDS = re.compile(
     r'\b(shopify|e.commerce|ecommerce|online.?shop|dropshipping|amazon|ebay|etsy|'
     r'ki\b|ai\b|künstliche intelligenz|artificial intelligence|'
-    r'automatisierung|automation|saas|software|app\b|tool\b|'
+    r'automatisierung|automatisch|automation|saas|software|app\b|tool\b|'
     r'marketing|seo|ads\b|traffic|conversion|umsatz|revenue|'
     r'supermegabot|aiitec|ineedit|stripe|klaviyo|digistore|'
     r'affiliate|b2b|startup|gründung|unternehmen|business|'
-    r'solar|smart home|gadget|tech\b|technologie)\b',
+    r'solar|smart home|gadget|tech\b|technologie|digital|'
+    # B2B Thought-Leadership & LinkedIn-Content (DACH)
+    r'wettbewerber|wettbewerb|analyse|strategie|beratung|studie|'
+    r'marktforschung|marktanalyse|bericht|report\b|insight|'
+    r'kunden|vertrieb|pipeline|lead\b|funnel|outreach|newsletter|'
+    r'compliance|eu\s+ai\s+act|ai.act|ki.verordnung|dach\b|'
+    r'skalierung|skalier|effizienz|optimierung|plattform|'
+    r'wachstum|performance|produktivität|täglich|wöchentlich|'
+    r'agentur|dienstleistung|lösung|automatisch)\b',
     re.IGNORECASE,
 )
 
