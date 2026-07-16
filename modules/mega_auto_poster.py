@@ -618,7 +618,7 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
     channel_names = [
         "telegram", "facebook_aiitec", "instagram",
         "tiktok", "pinterest",
-        "shopify_blog", "klaviyo", "mailchimp", "sendgrid", "twitter", "linkedin",
+        "shopify_blog", "klaviyo", "mailchimp_disabled", "sendgrid", "twitter", "linkedin",
     ]
     out = {}
     success_count = 0

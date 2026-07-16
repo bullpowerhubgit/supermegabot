@@ -211,21 +211,17 @@ async def post_to_facebook(text: str) -> dict:
         return {"ok": False, "error": f"URL_DEAD: {dead_url}"}
     text = await _validate_urls(text)
 
-    url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{FB_PAGE_ID}/feed"
-    payload = {"message": text, "access_token": FB_PAGE_TOKEN}
-
+    # Über post_gateway routen — alle 5 Validierungsschichten
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, data=payload, timeout=aiohttp.ClientTimeout(total=15)) as resp:
-                data = await resp.json()
-                if "id" in data:
-                    log.info("facebook: post live (id=%s)", data["id"])
-                    return {"ok": True, "platform": "facebook", "post_id": data["id"]}
-                else:
-                    log.error("facebook error: %s", data)
-                    return {"ok": False, "error": data.get("error", {}).get("message", str(data))}
+        from modules.post_gateway import safe_post
+        result = await safe_post("facebook", text, source_module="social_scheduler")
+        if result.get("ok"):
+            log.info("facebook: post live via gateway (id=%s)", result.get("post_id"))
+        else:
+            log.error("facebook gateway block: %s", result.get("errors"))
+        return result
     except Exception as e:
-        log.error("facebook exception: %s", e)
+        log.error("facebook gateway exception: %s", e)
         return {"ok": False, "error": str(e)}
 
 

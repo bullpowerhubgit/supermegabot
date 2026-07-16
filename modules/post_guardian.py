@@ -101,7 +101,7 @@ _OFFTOPIC_PATTERNS = re.compile(
     r'skandal|korruption|'
     r'hacker\.?news|show\s*hn:?|ask\s*hn:?|hn\s+top|'
     r'quick escape button|wiped?\s+from\s+history|wipes?\s+(itself|history)|'
-    r'\bblender\b|3d\s*modellierung|vancouver\s+pd|'
+    r'blender\s+3d|3d\s*modellierung|vancouver\s+pd|'
     r'reddit\.com/r/|github\.com/.*/issues)\b',
     re.IGNORECASE,
 )
