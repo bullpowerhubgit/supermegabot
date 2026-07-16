@@ -61,14 +61,18 @@ SHOP_API_DOMAIN = lambda: _e("SHOPIFY_SHOP_DOMAIN")
 SHOP_API_TOKEN  = lambda: _e("SHOPIFY_ADMIN_API_TOKEN", "SHOPIFY_ACCESS_TOKEN")
 SHOP_PUBLIC_URL = "https://ineedit.com.co"
 def _stripe_key_fn() -> str:
+    """NUR bullpowersrtkennels@gmail.com — AIITEC verboten."""
     try:
-        from modules.stripe_key_resolver import get_working_stripe_key
+        from modules.stripe_key_resolver import get_working_stripe_key, assert_bullpower_only
         k = get_working_stripe_key()
         if k:
-            return k
+            return assert_bullpower_only(k)
     except Exception:
         pass
-    return _e("STRIPE_SECRET_KEY")
+    k = _e("STRIPE_SECRET_KEY", "STRIPE_SECRET_KEY_FULL")
+    if k.startswith("sk_live_51Swso"):
+        return ""
+    return k
 
 
 STRIPE_KEY = _stripe_key_fn

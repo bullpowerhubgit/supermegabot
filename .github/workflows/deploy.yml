@@ -42,6 +42,36 @@ jobs:
       - name: Posting system audit
         run: |
           python3 scripts/audit_posting_system.py
+      - name: Stripe BULLPOWER-ONLY (never AIITEC account)
+        run: |
+          python3 - <<'PY'
+          import os
+          # Simulate wrong AIITEC key present — must be rejected
+          os.environ["STRIPE_SECRET_KEY"] = "sk_live_51Tg1U0RJECiV6vSmBULLPOWER_TEST_KEY_XXXXXX"
+          os.environ["STRIPE_SECRET_KEY_AIITEC"] = "sk_live_51SwsoNFZGd8AIITEC_WRONG_ACCOUNT_YYYY"
+          from modules.stripe_key_resolver import (
+              get_working_stripe_key,
+              is_banned_key,
+              is_bullpower_key,
+              purge_forbidden_from_environ,
+              assert_bullpower_only,
+              BULLPOWER_ACCOUNT_ID,
+              BULLPOWER_EMAIL,
+          )
+          assert is_banned_key("sk_live_51SwsoNF_anything"), "AIITEC must be banned"
+          assert is_bullpower_key("sk_live_51Tg1U0R_anything"), "bullpower prefix required"
+          purge_forbidden_from_environ()
+          assert not os.getenv("STRIPE_SECRET_KEY_AIITEC"), "AIITEC must be purged from env"
+          k = get_working_stripe_key()
+          assert k.startswith("sk_live_51Tg1U"), k
+          assert_bullpower_only(k)
+          try:
+              assert_bullpower_only("sk_live_51Swso_FAKE")
+              raise SystemExit("should have rejected AIITEC")
+          except RuntimeError:
+              pass
+          print("Stripe BULLPOWER-ONLY OK:", BULLPOWER_EMAIL, BULLPOWER_ACCOUNT_ID)
+          PY
       - name: Meta token resolver (AiiteC aliases never IWIN)
         run: |
           python3 - <<'PY'

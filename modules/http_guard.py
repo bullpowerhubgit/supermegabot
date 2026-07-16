@@ -414,8 +414,40 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
 
     # ── StripeGuard — dauerhaft ALLE api.stripe.com Calls sanitizen ───────────
     # Verhindert: pm_card_visa@live, url_invalid, type=recurring on GET /prices
+    # + BULLPOWER-ONLY: AIITEC/fremde Keys im Authorization-Header ersetzen
     if "api.stripe.com" in url:
         try:
+            # NUR bullpowersrtkennels — AIITEC Keys im Header killen
+            try:
+                from modules.stripe_key_resolver import rewrite_auth_header_value, get_working_stripe_key
+                hdrs = kwargs.get("headers")
+                if hdrs is not None:
+                    # aiohttp headers may be CIMultiDict
+                    auth = None
+                    try:
+                        auth = hdrs.get("Authorization") or hdrs.get("authorization")
+                    except Exception:
+                        if isinstance(hdrs, dict):
+                            auth = hdrs.get("Authorization") or hdrs.get("authorization")
+                    if auth:
+                        new_auth = rewrite_auth_header_value(str(auth))
+                        if new_auth != auth:
+                            try:
+                                hdrs["Authorization"] = new_auth
+                            except Exception:
+                                kwargs["headers"] = dict(hdrs)
+                                kwargs["headers"]["Authorization"] = new_auth
+                    else:
+                        # ensure bullpower key present
+                        k = get_working_stripe_key()
+                        if k:
+                            try:
+                                hdrs["Authorization"] = f"Bearer {k}"
+                            except Exception:
+                                kwargs["headers"] = dict(hdrs) if hdrs is not None else {}
+                                kwargs["headers"]["Authorization"] = f"Bearer {k}"
+            except Exception as _bp:
+                log.debug("Stripe bullpower auth rewrite: %s", _bp)
             from modules.stripe_guards import sanitize_outgoing_request
             new_url, new_params, new_data, block = sanitize_outgoing_request(
                 method,

@@ -54,7 +54,17 @@ _FB_PAGE_ID  = lambda: os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
 _IG_ID       = lambda: os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
 _LI_TOKEN    = lambda: os.getenv("LINKEDIN_ACCESS_TOKEN", "")
 _LI_URN      = lambda: os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
-_STRIPE_KEY  = lambda: os.getenv("STRIPE_SECRET_KEY", "")
+def _STRIPE_KEY() -> str:
+    """NUR bullpowersrtkennels — nie AIITEC."""
+    try:
+        from modules.stripe_key_resolver import get_working_stripe_key, assert_bullpower_only
+        k = get_working_stripe_key()
+        if k:
+            return assert_bullpower_only(k)
+    except Exception:
+        pass
+    k = os.getenv("STRIPE_SECRET_KEY", "")
+    return "" if k.startswith("sk_live_51Swso") else k
 _SHOP_DOMAIN = lambda: os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
 _SHOP_TOK    = lambda: os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 _SHOP_VER    = lambda: os.getenv("SHOPIFY_API_VERSION", "2026-04")
