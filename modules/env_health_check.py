@@ -41,6 +41,17 @@ REQUIRED_KEYS: list[str] = [
     "RAILWAY_TOKEN",
 ]
 
+# Keys that must NEVER be pushed from .env to Railway — set them manually in Railway.
+# This prevents a Railway→.env pull followed by .env→Railway push from clobbering
+# manually-created credentials (e.g. a freshly created Stripe AIITEC key).
+PROTECTED_VARS: frozenset[str] = frozenset({
+    "STRIPE_SECRET_KEY_AIITEC",   # Rudolf creates this manually; Railway value wins
+    "STRIPE_WEBHOOK_SECRET_AIITEC",
+    "GOOGLE_OAUTH_CLIENT_SECRET",  # Google Cloud Console — must be set per-project
+    "GROQ_API_KEY",                # Expires; must be renewed at console.groq.com
+    "PERPLEXITY_API_KEY",
+})
+
 # Placeholder strings that count as "missing"
 _PLACEHOLDER_PATTERNS = re.compile(
     r"^(undefined|null|none|your[_\-]?key[_\-]?here|changeme|placeholder|todo|xxx+|<.+>|\{\{.+\}\})$",
@@ -376,11 +387,17 @@ async def sync_to_railway(
                 "errors": ["Could not determine Railway project/service/environment IDs"],
             }
 
-        # Build pairs to sync
+        # Build pairs to sync — skip PROTECTED_VARS (must be set in Railway manually)
         if keys_to_sync is None:
-            pairs = [(k, v.strip()) for k, v in env.items() if v.strip() and not k.startswith("#")]
+            pairs = [
+                (k, v.strip()) for k, v in env.items()
+                if v.strip() and not k.startswith("#") and k not in PROTECTED_VARS
+            ]
         else:
-            pairs = [(k, env.get(k, "").strip()) for k in keys_to_sync if env.get(k, "").strip()]
+            pairs = [
+                (k, env.get(k, "").strip()) for k in keys_to_sync
+                if env.get(k, "").strip() and k not in PROTECTED_VARS
+            ]
 
         synced = 0
         skipped = 0
@@ -427,8 +444,14 @@ async def sync_to_railway(
                 else:
                     skipped += 1
 
+        # Report protected vars that were intentionally excluded
+        protected_present = [k for k in PROTECTED_VARS if env.get(k, "").strip()]
+        if protected_present:
+            logger.info("Railway sync: skipped PROTECTED_VARS (must be set manually in Railway): %s",
+                        ", ".join(protected_present))
+
         logger.info("Railway sync complete: %d synced, %d skipped, %d errors", synced, skipped, len(errors))
-        return {"synced": synced, "skipped": skipped, "errors": errors}
+        return {"synced": synced, "skipped": skipped, "errors": errors, "protected": protected_present}
 
 
 # ---------------------------------------------------------------------------
