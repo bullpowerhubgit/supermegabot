@@ -336,13 +336,13 @@ async def post_facebook_content(
     except ImportError:
         pass
 
-    params = {"message": text, "access_token": token}
+    payload = {"message": text, "access_token": token}
     if link:
-        params["link"] = link
+        payload["link"] = link
     try:
         async with session.post(
             f"https://graph.facebook.com/v21.0/{page_id}/feed",
-            params=params,
+            data=payload,
             timeout=aiohttp.ClientTimeout(total=15),
         ) as r:
             d = await r.json(content_type=None)
