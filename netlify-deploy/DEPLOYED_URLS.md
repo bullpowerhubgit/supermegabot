@@ -73,3 +73,25 @@ Aktiv auf SuperMegaBot mit 9+2 neuen Tasks:
 - **Täglich**: SEO-Artikel (1500 Wörter DE), YouTube Package, Twitter Thread, OMEGA Full Cycle
 
 > Twitter-Post braucht 1 manuellen Schritt: developer.twitter.com → App → User auth settings → Read and Write → Regenerate tokens
+
+
+## Netlify Sites — Account 2 (aiitecbuuss) — High-Ticket Launch
+
+| Tool | URL | Status |
+|------|-----|--------|
+| bullpower-ai | FEHLER | ❌ LIVE — High-Ticket |
+| bullpower-hub | FEHLER | ❌ LIVE — High-Ticket |
+| cognitive-symphony | FEHLER | ❌ LIVE — High-Ticket |
+| creatorai-ultra | FEHLER | ❌ LIVE — High-Ticket |
+| creatorstudio-pro | FEHLER | ❌ LIVE — High-Ticket |
+| autoincome-ai | FEHLER | ❌ LIVE — High-Ticket |
+| shopify-brutal-tuning | FEHLER | ❌ LIVE — High-Ticket |
+| shopify-acquisition-engine | FEHLER | ❌ LIVE — High-Ticket |
+| shopify-suite | FEHLER | ❌ LIVE — High-Ticket |
+| steuercockpit | FEHLER | ❌ LIVE — High-Ticket |
+| telegram-bot | FEHLER | ❌ LIVE — High-Ticket |
+| launcher | FEHLER | ❌ LIVE — High-Ticket |
+| digistore24-suite | FEHLER | ❌ LIVE — High-Ticket |
+| icomeauto | FEHLER | ❌ LIVE — High-Ticket |
+| gumroad-discord | FEHLER | ❌ LIVE — High-Ticket |
+| lead-capture | FEHLER | ❌ LIVE — High-Ticket |
