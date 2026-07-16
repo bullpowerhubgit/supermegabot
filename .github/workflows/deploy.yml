@@ -42,5 +42,28 @@ jobs:
       - name: Posting system audit
         run: |
           python3 scripts/audit_posting_system.py
+      - name: Meta token resolver (AiiteC aliases never IWIN)
+        run: |
+          python3 - <<'PY'
+          import os
+          # Simulate wrong IWIN bleed into default aliases — resolver must fix
+          os.environ["FACEBOOK_PAGE_TOKEN_AIITEC"] = "EAA_AIITEC_CANONICAL_TOKEN_VALUE_XXXXXXXX"
+          os.environ["FACEBOOK_PAGE_TOKEN"] = "EAA_IWIN_WRONG_TOKEN_VALUE_YYYYYYYY"
+          os.environ["FB_PAGE_TOKEN"] = "EAA_OLD_WRONG_TOKEN_VALUE_ZZZZZZZZ"
+          from modules.meta_token_resolver import (
+              apply_aiitec_aliases_to_process,
+              audit_aliases,
+              get_aiitec_page_token,
+              AIITEC_TOKEN_ALIASES,
+          )
+          t = get_aiitec_page_token()
+          assert t.startswith("EAA_AIITEC"), t
+          apply_aiitec_aliases_to_process(t)
+          aud = audit_aliases()
+          assert aud["ok"], aud
+          for k in AIITEC_TOKEN_ALIASES:
+              assert os.environ.get(k) == t, (k, os.environ.get(k))
+          print("MetaTokenResolver OK:", len(AIITEC_TOKEN_ALIASES), "aliases forced to AiiteC")
+          PY
       - name: Deploy note
         run: echo "✅ Syntax OK — Railway GitHub App deployt automatisch auf push zu main"

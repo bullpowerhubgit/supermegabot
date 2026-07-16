@@ -526,7 +526,11 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
     """Facebook Page AiiteC — automatisch posten."""
     if is_open("facebook"):
         return False
-    page_token = os.getenv("FACEBOOK_PAGE_TOKEN", "")
+    try:
+        from modules.meta_token_resolver import get_aiitec_page_token
+        page_token = get_aiitec_page_token()
+    except Exception:
+        page_token = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC") or os.getenv("FACEBOOK_PAGE_TOKEN", "")
     page_id    = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
     if not page_token:
         return False

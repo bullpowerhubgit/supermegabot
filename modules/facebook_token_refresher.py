@@ -160,14 +160,25 @@ async def _update_railway_vars(token: str) -> bool:
         "Authorization": f"Bearer {RAILWAY_TOKEN}",
         "Content-Type": "application/json",
     }
-    var_names = [
-        "FACEBOOK_ACCESS_TOKEN",
-        "FACEBOOK_PAGE_TOKEN",
-        "FACEBOOK_PAGE_TOKEN_AIITEC",
-        "META_ACCESS_TOKEN",
-        "INSTAGRAM_ACCESS_TOKEN",
-        "INSTAGRAM_TOKEN_AIITEC",
-    ]
+    # ALLE AiiteC-Aliase — nie wieder nur eine Stelle
+    try:
+        from modules.meta_token_resolver import AIITEC_TOKEN_ALIASES
+        var_names = list(AIITEC_TOKEN_ALIASES)
+    except Exception:
+        var_names = [
+            "FACEBOOK_ACCESS_TOKEN",
+            "FACEBOOK_PAGE_TOKEN",
+            "FACEBOOK_PAGE_TOKEN_AIITEC",
+            "FACEBOOK_PAGE_ACCESS_TOKEN",
+            "FACEBOOK_META_TOKEN",
+            "FACEBOOK_USER_TOKEN",
+            "FACEBOOK_IG_ACCESS_TOKEN",
+            "FB_PAGE_TOKEN",
+            "META_ACCESS_TOKEN",
+            "META_PAGE_ACCESS_TOKEN",
+            "INSTAGRAM_ACCESS_TOKEN",
+            "INSTAGRAM_TOKEN_AIITEC",
+        ]
     # Build upsert variables
     variables_input = {k: token for k in var_names}
     query = """
@@ -283,10 +294,18 @@ async def check_and_refresh() -> dict:
 
     log.info(f"Neuer Token erhalten — läuft ab in {new_days} Tagen ({new_expires.date()})")
 
-    # 5. In laufendem Prozess sofort aktiv setzen
-    for var in ["FACEBOOK_ACCESS_TOKEN", "FACEBOOK_PAGE_TOKEN", "FACEBOOK_PAGE_TOKEN_AIITEC",
-                "META_ACCESS_TOKEN", "INSTAGRAM_ACCESS_TOKEN"]:
-        os.environ[var] = new_token
+    # 5. In laufendem Prozess sofort aktiv setzen — ALLE Aliase
+    try:
+        from modules.meta_token_resolver import apply_aiitec_aliases_to_process
+        apply_aiitec_aliases_to_process(new_token)
+    except Exception:
+        for var in [
+            "FACEBOOK_ACCESS_TOKEN", "FACEBOOK_PAGE_TOKEN", "FACEBOOK_PAGE_TOKEN_AIITEC",
+            "FACEBOOK_PAGE_ACCESS_TOKEN", "FACEBOOK_META_TOKEN", "FACEBOOK_USER_TOKEN",
+            "FACEBOOK_IG_ACCESS_TOKEN", "FB_PAGE_TOKEN", "META_ACCESS_TOKEN",
+            "META_PAGE_ACCESS_TOKEN", "INSTAGRAM_ACCESS_TOKEN", "INSTAGRAM_TOKEN_AIITEC",
+        ]:
+            os.environ[var] = new_token
 
     # 6. Supabase updaten
     supa_ok = await _supa_save_token(new_token, new_expires)

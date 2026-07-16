@@ -163,11 +163,30 @@ async def refresh_all_tokens() -> dict:
             else:
                 results[f"page_{page_name}"] = "failed"
 
-        # Also update META_ACCESS_TOKEN and FACEBOOK_PAGE_TOKEN aliases
-        iwin_token = os.getenv("FACEBOOK_PAGE_TOKEN_IWIN", "")
-        if iwin_token:
-            _set_railway_var("META_ACCESS_TOKEN", iwin_token)
-            _set_railway_var("FACEBOOK_PAGE_TOKEN", iwin_token)
+        # DAUERHAFT: Default-Aliase = AiiteC (NIEMALS IWIN als FACEBOOK_PAGE_TOKEN!)
+        # Bug-History: früher IWIN → falsche Posts / 190 errors auf Railway
+        try:
+            from modules.meta_token_resolver import AIITEC_TOKEN_ALIASES, apply_aiitec_aliases_to_process
+            aiitec = (
+                os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC")
+                or results.get("page_AIITEC")
+                or ""
+            )
+            # Prefer freshly refreshed AIITEC page token if we just set it
+            # (token itself lives on Railway; process env may still have old)
+            if not aiitec or aiitec == "refreshed":
+                aiitec = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", "")
+            if aiitec and aiitec not in ("refreshed", "failed", "railway_set_failed"):
+                apply_aiitec_aliases_to_process(aiitec)
+                for alias in AIITEC_TOKEN_ALIASES:
+                    _set_railway_var(alias, aiitec)
+                results["aliases_set_to_aiitec"] = True
+            else:
+                results["aliases_set_to_aiitec"] = False
+                log.error("FB: could not set AiiteC aliases — missing AIITEC page token")
+        except Exception as e:
+            log.error("FB alias sync failed: %s", e)
+            results["aliases_set_to_aiitec"] = False
 
         await _tg(
             f"✅ *Facebook Tokens erfolgreich erneuert!*\n"
