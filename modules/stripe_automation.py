@@ -25,11 +25,18 @@ _DATA_DIR = Path(__file__).parent.parent / "data"
 _CACHE_FILE = _DATA_DIR / "stripe_cache.json"
 
 
-def _auth() -> Dict[str, str]:
-    key = os.getenv("STRIPE_SECRET_KEY", "")
+def _get_key() -> str:
+    """Aktiven Stripe Key ermitteln: FULL hat Priorität, Fallback auf SECRET_KEY."""
+    full = os.getenv("STRIPE_SECRET_KEY_FULL", "")
+    main = os.getenv("STRIPE_SECRET_KEY", "")
+    key = full or main
     if not key:
-        raise ValueError("STRIPE_SECRET_KEY nicht gesetzt")
-    return {"Authorization": f"Bearer {key}"}
+        raise ValueError("Kein Stripe Key gesetzt (STRIPE_SECRET_KEY_FULL oder STRIPE_SECRET_KEY)")
+    return key
+
+
+def _auth() -> Dict[str, str]:
+    return {"Authorization": f"Bearer {_get_key()}"}
 
 
 def _session(total: int = 30) -> aiohttp.ClientSession:
@@ -55,9 +62,10 @@ async def _tg(msg: str):
 # ── Health ────────────────────────────────────────────────────────────────────
 
 async def ping() -> tuple[bool, str]:
-    key = os.getenv("STRIPE_SECRET_KEY", "")
-    if not key:
-        return False, "STRIPE_SECRET_KEY nicht gesetzt"
+    try:
+        key = _get_key()
+    except ValueError as e:
+        return False, str(e)
     try:
         async with _session() as s:
             # Try /account first (full key), fall back to /balance (restricted key OK)

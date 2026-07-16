@@ -9101,12 +9101,12 @@ async def handle_rss_run(req: web.Request) -> web.Response:
 
 async def handle_stripe_plans_info(req):
     return web.json_response({"plans": [
-        {"id": os.getenv("STRIPE_PRICE_STARTER",""),         "name": "Starter",          "price_eur": 49,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_PRO",""),             "name": "Pro",              "price_eur": 99,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_ENTERPRISE",""),      "name": "Enterprise",       "price_eur": 299, "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_STARTER",""),"name": "Telegram Starter", "price_eur": 29,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_PRO",""),    "name": "Telegram Pro",     "price_eur": 79,  "interval": "month"},
-        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_AGENCY",""), "name": "Telegram Agency",  "price_eur": 199, "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_STARTER","price_1TtfRvRJECiV6vSmX3T1Kjn2"),         "name": "Starter",          "price_eur": 49,  "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_PRO","price_1TtfRwRJECiV6vSmbNBlDUzo"),             "name": "Pro",              "price_eur": 99,  "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_ENTERPRISE","price_1TtfRyRJECiV6vSmwUgvoj0x"),      "name": "Enterprise",       "price_eur": 299, "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_STARTER","price_1TjodoRJECiV6vSmL726jLd3"),"name": "Telegram Starter", "price_eur": 29,  "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_PRO","price_1TjodoRJECiV6vSmcWkhHtWz"),    "name": "Telegram Pro",     "price_eur": 79,  "interval": "month"},
+        {"id": os.getenv("STRIPE_PRICE_TELEGRAM_AGENCY","price_1TjodpRJECiV6vSmFVtPj8yb"), "name": "Telegram Agency",  "price_eur": 199, "interval": "month"},
     ]})
 
 async def handle_shopify_inventory_live(req):
