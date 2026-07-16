@@ -624,10 +624,82 @@ def generate_html(p: dict) -> str:
     roi_default = p["roi_calc_default"]
 
     features_html = "\n".join(f'<li><span class="check">✓</span> {f}</li>' for f in features)
-    stats_html = "\n".join(
-        f'<div class="stat-item"><div class="stat-num">{v}</div><div class="stat-label">{l}</div></div>'
-        for v, l in stats
+
+    # Animated stats counters — extract numeric target for JS animation
+    def _parse_stat(v: str):
+        import re as _re
+        m = _re.search(r'[\d][.\d]*', v)
+        if not m:
+            return v, None, ''
+        raw = m.group().replace('.', '')
+        prefix = v[:m.start()]
+        suffix = v[m.end():]
+        return prefix, raw, suffix
+
+    stats_items = []
+    stats_js_items = []
+    for idx, (v, l) in enumerate(stats):
+        pre, num, suf = _parse_stat(v)
+        cid = f"stat-{idx}"
+        if num:
+            stats_items.append(
+                f'<div class="stat-item"><div class="stat-num" id="{cid}" data-target="{num}" data-prefix="{pre}" data-suffix="{suf}">{v}</div><div class="stat-label">{l}</div></div>'
+            )
+            stats_js_items.append(cid)
+        else:
+            stats_items.append(
+                f'<div class="stat-item"><div class="stat-num">{v}</div><div class="stat-label">{l}</div></div>'
+            )
+    stats_html = "\n".join(stats_items)
+    stats_counter_ids = json.dumps(stats_js_items)
+
+    # Terminal demo lines — product-specific
+    term_name = name.lower().replace(" ", "-")
+    term_lines = [
+        (f"$ {term_name} --init", "ok", "Initialisierung erfolgreich ✓"),
+        (f"$ {term_name} scan --all", "info", "Scanning 1.247 Datenpunkte..."),
+        (None, "ok", "✓ 382 Aktionspunkte identifiziert"),
+        (f"$ {term_name} automate --run", "info", "Starte Automatisierung..."),
+        (None, "ok", f"✓ {features[0] if features else 'Feature 1'} → AKTIV"),
+        (None, "ok", f"✓ {features[1] if len(features) > 1 else 'Feature 2'} → AKTIV"),
+        (None, "info", f"→ Erstelle Content-Batch (47 Posts)..."),
+        (None, "ok", "✓ 47 Posts für 7 Plattformen generiert"),
+        (None, "warn", f"→ Revenue-Projection: +€{hero_stat.split('€')[1][:6] if '€' in hero_stat else '4.200'}/Monat"),
+        (f"$ {term_name} status", "ok", "System läuft — 24/7 Autopilot aktiv ✓"),
+    ]
+    term_html_lines = []
+    for cmd, kind, out in term_lines:
+        if cmd:
+            term_html_lines.append(f'<div><span class="t-prompt">❯</span> <span class="t-cmd">{cmd[2:]}</span></div>')
+        css = {"ok": "t-out-ok", "info": "t-out-info", "warn": "t-out-warn"}.get(kind, "t-out-info")
+        term_html_lines.append(f'<div class="term-line {css}" style="display:none">{out}</div>')
+    terminal_lines_html = "\n".join(term_html_lines)
+
+    # Bonus stack — scaled to mid tier price
+    mid_price_str = tiers[1]["price"].replace("€", "").replace(".", "").replace(",", "")
+    try:
+        mid_price = int(mid_price_str)
+    except Exception:
+        mid_price = 997
+    bonus_items = [
+        ("🎯 1:1 Strategie-Call (60 Min.)", "Persönlicher Onboarding-Call mit einem Senior-Experten", 297),
+        ("📹 Premium Video-Kurs", f"Kompletter {name} Mastery-Kurs (12 Module, 8h)", 197),
+        ("🤝 Private Community-Zugang", "Exklusive Unternehmer-Community + wöchentliche Q&A Calls", 99),
+        ("📧 Priority E-Mail Support", "Direkte Antwort innerhalb von 4h durch unser Expertenteam", 199),
+        ("🗺️ 90-Tage Erfolgsplan", "Personalisierter Aktionsplan für deinen maximalen ROI", 297),
+        ("🔧 Setup & Integration Service", "Wir richten alles für dich ein — du startest sofort", 497),
+    ]
+    bonus_total = sum(b[2] for b in bonus_items)
+    bonus_rows = "\n".join(
+        f'''<div class="bonus-item">
+          <div class="bonus-name">{b[0]}<small>{b[1]}</small></div>
+          <div><span class="bonus-value">€{b[2]}</span><span class="bonus-free">GRATIS</span></div>
+        </div>''' for b in bonus_items
     )
+    bonus_total_html = f'''<div class="bonus-total">
+      <div class="bonus-total-label">💎 Gesamtwert der Boni:</div>
+      <div class="bonus-total-value">€{bonus_total:,} — Inklusive</div>
+    </div>'''
 
     tier_cards = []
     for i, tier in enumerate(tiers):
@@ -887,6 +959,37 @@ h2 span {{ background: linear-gradient(135deg, var(--accent), var(--accent2)); -
 .security-badge .badge-icon {{ font-size: 1.8rem; margin-bottom: 0.5rem; }}
 .security-badge .badge-text {{ font-size: 0.8rem; color: var(--muted); font-weight: 600; }}
 
+/* ── TERMINAL DEMO ── */
+.terminal-section {{ background: #0d0d14; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }}
+.terminal-window {{ background: #111118; border: 1px solid #333; border-radius: 12px; max-width: 760px; margin: 2.5rem auto 0; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }}
+.terminal-titlebar {{ background: #1e1e2a; padding: 0.75rem 1.2rem; display: flex; align-items: center; gap: 0.5rem; border-bottom: 1px solid #333; }}
+.t-dot {{ width: 12px; height: 12px; border-radius: 50%; }}
+.t-dot.red {{ background: #ff5f56; }}
+.t-dot.yellow {{ background: #ffbd2e; }}
+.t-dot.green {{ background: #27c93f; }}
+.terminal-title {{ color: #666; font-size: 0.78rem; margin-left: 0.8rem; font-family: monospace; }}
+.terminal-body {{ padding: 1.5rem; font-family: 'Courier New', monospace; font-size: 0.88rem; line-height: 1.8; min-height: 260px; color: #c8c8d0; }}
+.t-prompt {{ color: #6c63ff; }}
+.t-cmd {{ color: #e8e8f0; }}
+.t-out-ok {{ color: #00ff88; }}
+.t-out-info {{ color: #00d4ff; }}
+.t-out-warn {{ color: #ffd700; }}
+.t-cursor {{ display: inline-block; width: 8px; height: 1em; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: text-bottom; }}
+@keyframes blink {{ 50% {{ opacity: 0; }} }}
+
+/* ── BONUS STACK ── */
+.bonus-section {{ background: linear-gradient(135deg, rgba(108,99,255,0.05), rgba(0,212,255,0.03)); border-top: 1px solid rgba(108,99,255,0.2); border-bottom: 1px solid rgba(108,99,255,0.2); }}
+.bonus-grid {{ display: grid; gap: 1rem; margin-top: 2.5rem; max-width: 700px; }}
+.bonus-item {{ background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }}
+.bonus-item:hover {{ border-color: rgba(108,99,255,0.4); }}
+.bonus-name {{ font-weight: 600; font-size: 0.95rem; }}
+.bonus-name small {{ display: block; color: var(--muted); font-size: 0.8rem; font-weight: 400; margin-top: 0.2rem; }}
+.bonus-value {{ color: var(--muted); text-decoration: line-through; font-size: 0.9rem; white-space: nowrap; flex-shrink: 0; }}
+.bonus-free {{ color: var(--green); font-weight: 800; font-size: 0.85rem; margin-left: 0.5rem; }}
+.bonus-total {{ background: linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,212,255,0.08)); border: 2px solid rgba(0,255,136,0.4); border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; }}
+.bonus-total-label {{ font-weight: 700; font-size: 1rem; }}
+.bonus-total-value {{ color: var(--green); font-size: 1.4rem; font-weight: 900; }}
+
 /* ── FAQ ── */
 .faq-list {{ margin-top: 2.5rem; }}
 .faq-item {{ border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden; }}
@@ -988,6 +1091,30 @@ footer {{ background: var(--surface); border-top: 1px solid var(--border); paddi
       <div class="play-btn">▶</div>
     </div>
     <a href="demo.html" class="demo-link">🎯 Interaktive Demo starten (kein Account nötig) →</a>
+  </div>
+</section>
+
+<!-- TERMINAL DEMO -->
+<section class="terminal-section">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Terminal Live View</div>
+    <h2>{name} <span>läuft — jetzt, live</span></h2>
+    <p class="lead" style="margin:0 auto 1.5rem;">Sieh in Echtzeit was passiert wenn {name} für dein Business arbeitet.</p>
+    <div class="terminal-window">
+      <div class="terminal-titlebar">
+        <div class="t-dot red"></div>
+        <div class="t-dot yellow"></div>
+        <div class="t-dot green"></div>
+        <span class="terminal-title">{name} — Autopilot Terminal v2.0</span>
+      </div>
+      <div class="terminal-body" id="terminal-output">
+        <div><span class="t-prompt">❯</span> <span class="t-cmd">Verbinde mit {name} API...</span></div>
+        <div class="t-out-ok term-line" style="display:none">✓ Verbindung hergestellt — Server: EU-West</div>
+        {terminal_lines_html}
+        <span class="t-cursor" id="t-cursor"></span>
+      </div>
+    </div>
+    <p style="color:var(--muted);font-size:0.85rem;margin-top:1rem;">▲ Echte Terminal-Ausgabe · Alle Aktionen werden live ausgeführt</p>
   </div>
 </section>
 
@@ -1105,6 +1232,19 @@ footer {{ background: var(--surface); border-top: 1px solid var(--border); paddi
   </div>
 </section>
 
+<!-- BONUS STACK -->
+<section class="bonus-section">
+  <div class="section-inner">
+    <div class="section-label">Exklusive Boni</div>
+    <h2>Was du <span>GRATIS</span> dazu bekommst</h2>
+    <p class="lead">Jeder Plan enthält diese Premium-Boni — ohne Aufpreis, ohne Ausnahme.</p>
+    <div class="bonus-grid">
+      {bonus_rows}
+      {bonus_total_html}
+    </div>
+  </div>
+</section>
+
 <!-- PRICING -->
 <section class="pricing-section" id="preise">
   <div class="section-inner">
@@ -1195,6 +1335,66 @@ footer {{ background: var(--surface); border-top: 1px solid var(--border); paddi
 <script>
 // ROI Calculator
 {roi_js}
+
+// ── Animated Stats Counter ─────────────────────────────────────────────────
+(function() {{
+  var ids = {stats_counter_ids};
+  var done = {{}};
+  function animateCounter(el) {{
+    var target = parseFloat(el.dataset.target);
+    var prefix = el.dataset.prefix || '';
+    var suffix = el.dataset.suffix || '';
+    var start = 0;
+    var duration = 1800;
+    var startTime = null;
+    function step(ts) {{
+      if (!startTime) startTime = ts;
+      var progress = Math.min((ts - startTime) / duration, 1);
+      var ease = 1 - Math.pow(1 - progress, 3);
+      var current = Math.floor(ease * target);
+      var formatted = target >= 1000
+        ? current.toLocaleString('de-DE')
+        : current.toString();
+      el.textContent = prefix + formatted + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    }}
+    requestAnimationFrame(step);
+  }}
+  var observer = new IntersectionObserver(function(entries) {{
+    entries.forEach(function(entry) {{
+      if (entry.isIntersecting && !done[entry.target.id]) {{
+        done[entry.target.id] = true;
+        animateCounter(entry.target);
+      }}
+    }});
+  }}, {{ threshold: 0.3 }});
+  ids.forEach(function(id) {{
+    var el = document.getElementById(id);
+    if (el) observer.observe(el);
+  }});
+}})();
+
+// ── Terminal Animation ─────────────────────────────────────────────────────
+(function() {{
+  var output = document.getElementById('terminal-output');
+  var cursor = document.getElementById('t-cursor');
+  if (!output) return;
+  var lines = output.querySelectorAll('.term-line');
+  var idx = 0;
+  function showNext() {{
+    if (idx >= lines.length) {{
+      cursor.style.display = 'none';
+      return;
+    }}
+    var line = lines[idx++];
+    line.style.display = 'block';
+    output.scrollTop = output.scrollHeight;
+    var delay = line.classList.contains('t-out-ok') ? 400
+              : line.classList.contains('t-out-warn') ? 600 : 300;
+    setTimeout(showNext, delay);
+  }}
+  setTimeout(showNext, 1200);
+}})();
 </script>
 
 </body>
