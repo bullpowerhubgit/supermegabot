@@ -261,10 +261,8 @@ async def create_subscription_checkout() -> list:
         all_products = await _paginate_all(session, "/products", {"active": "true"})
         product_map  = {p["name"]: p["id"] for p in all_products}
 
-        all_prices = await _paginate_all(session, "/prices", {
-            "active": "true",
-            "type":   "recurring",
-        })
+        all_prices_raw = await _paginate_all(session, "/prices", {"active": "true"})
+        all_prices = [p for p in all_prices_raw if p.get("recurring")]
 
         for tier in SAAS_TIERS:
             tier_name   = tier["name"]
