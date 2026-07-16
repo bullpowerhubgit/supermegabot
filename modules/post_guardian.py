@@ -87,6 +87,33 @@ PRIVATE_DATA_PATTERNS = [
     r'\bsecret\s*[:=]\s*\S+',
 ]
 
+# ── Themen-Relevanz: Off-Topic-Muster die NIEMALS gepostet werden dürfen ──────
+# Kein fremdes News-Topic als Post-Titel/Body (HN, Nachrichten, Politik, etc.)
+_OFFTOPIC_PATTERNS = re.compile(
+    r'\b(polizei|police|policing|pd\b|sheriff|feuerwehr|fbi|bka|bnd|'
+    r'wahlen?|wahl|election|parliament|bundestag|senat|congress|'
+    r'krieg|war|ukraine|russia|militär|military|nato|'
+    r'impfung|impfstoff|vaccine|covid|corona|pandemie|pandemic|'
+    r'erdbeben|earthquake|hurricane|tornado|flut|flood|'
+    r'skandal|korruption|prozess|urteil|gericht|klage|anklage|'
+    r'hacker.news|show hn:|ask hn:|hn top|'
+    r'quick escape button|wiped? from history|wipes? itself)\b',
+    re.IGNORECASE,
+)
+
+# Für Social-Plattformen: mindestens 1 Nischen-Keyword erforderlich
+_NICHE_SOCIAL_PLATFORMS = {"linkedin", "facebook", "instagram", "twitter", "x", "tiktok", "pinterest"}
+_NICHE_KEYWORDS = re.compile(
+    r'\b(shopify|e.commerce|ecommerce|online.?shop|dropshipping|amazon|ebay|etsy|'
+    r'ki\b|ai\b|künstliche intelligenz|artificial intelligence|'
+    r'automatisierung|automation|saas|software|app\b|tool\b|'
+    r'marketing|seo|ads\b|traffic|conversion|umsatz|revenue|'
+    r'supermegabot|aiitec|ineedit|stripe|klaviyo|digistore|'
+    r'affiliate|b2b|startup|gründung|unternehmen|business|'
+    r'solar|smart home|gadget|tech\b|technologie)\b',
+    re.IGNORECASE,
+)
+
 # ── DB ────────────────────────────────────────────────────────────────────────
 def _db() -> sqlite3.Connection:
     _DB.parent.mkdir(exist_ok=True)
@@ -167,6 +194,16 @@ def validate_post(content: str, platform: str = "default",
     hashtags = re.findall(r'#\w+', text)
     if len(hashtags) > limits["max_hashtags"]:
         errors.append(f"Zu viele Hashtags: {len(hashtags)} (max {limits['max_hashtags']})")
+
+    # 9. Off-Topic-Inhalte (Nachrichten, Politik, Polizei, HN-Headlines etc.)
+    m = _OFFTOPIC_PATTERNS.search(text)
+    if m:
+        errors.append(f"Off-Topic blockiert: '{m.group()[:40]}' — kein Nachrichten/Polizei/Politik-Inhalt erlaubt")
+
+    # 10. Nischen-Relevanz für Social-Posts
+    if platform_key in _NICHE_SOCIAL_PLATFORMS:
+        if not _NICHE_KEYWORDS.search(text):
+            errors.append("Kein Nischen-Keyword (E-Commerce/AI/Shopify/Marketing) — Post blockiert")
 
     # 8. HTML-Müll in Plaintext
     if re.search(r'<[a-z]+[^>]*>.*?</[a-z]+>', text, re.IGNORECASE | re.DOTALL):
