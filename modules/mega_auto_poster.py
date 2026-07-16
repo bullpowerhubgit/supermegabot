@@ -166,7 +166,7 @@ async def _post_telegram(content: dict) -> bool:
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:5])
         url  = content.get("url", "").strip()
-        text = f"*{content['title']}*\n\n{content['body']}\n\n{tags}"
+        text = f"*{content.get('title','')}*\n\n{content.get('body','')}\n\n{tags}"
         if url:
             text += f"\n\n🔗 {url}"
         async with aiohttp.ClientSession() as s:
@@ -298,8 +298,8 @@ async def _post_shopify_blog(content: dict) -> bool:
         tags = ", ".join(content.get("hashtags", [])[:8])
         article = {
             "article": {
-                "title": content.get("blog_title", content["title"]),
-                "body_html": content.get("blog_content", f"<p>{content['body']}</p>"),
+                "title": content.get("blog_title", content.get("title", "")),
+                "body_html": content.get("blog_content", f"<p>{content.get('body', '')}</p>"),
                 "tags": tags,
                 "published": True,
                 "image": {"src": content.get("image_url", IG_PIXEL)},
@@ -334,7 +334,7 @@ async def _post_klaviyo_campaign(content: dict) -> bool:
             "data": {
                 "type": "campaign",
                 "attributes": {
-                    "name": f"AutoPost {content['title'][:40]} {now_str[:10]}",
+                    "name": f"AutoPost {content.get('title','')[:40]} {now_str[:10]}",
                     "audiences": {"included": [KLAVIYO_LIST]},
                     "send_strategy": {"method": "immediate"},
                     "campaign-messages": {
@@ -391,8 +391,8 @@ async def _post_mailchimp_campaign(content: dict) -> bool:
         base_url = f"https://{MC_SERVER}.api.mailchimp.com/3.0"
         body_html = f"""
 <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-<h1 style="color:#333">{content['title']}</h1>
-<p style="font-size:16px;line-height:1.6">{content.get('email_body', content['body'])}</p>
+<h1 style="color:#333">{content.get('title','')}</h1>
+<p style="font-size:16px;line-height:1.6">{content.get('email_body', content.get('body',''))}</p>
 <p><a href="{content.get('url','#')}" style="background:#7c6fff;color:white;padding:12px 24px;
 text-decoration:none;border-radius:6px">{content.get('cta','Jetzt kaufen')}</a></p>
 </body></html>"""
@@ -400,7 +400,7 @@ text-decoration:none;border-radius:6px">{content.get('cta','Jetzt kaufen')}</a><
             "type": "regular",
             "recipients": {"list_id": MC_LIST},
             "settings": {
-                "subject_line": content.get("email_subject", content["title"])[:150],
+                "subject_line": content.get("email_subject", content.get("title",""))[:150],
                 "from_name": SENDGRID_NAME,
                 "reply_to": SENDGRID_FROM,
                 "from_email": SENDGRID_FROM,
@@ -435,15 +435,15 @@ async def _post_sendgrid(content: dict) -> bool:
         import aiohttp
         body_html = f"""
 <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-<h1 style="color:#333">{content['title']}</h1>
-<p style="font-size:16px;line-height:1.6">{content.get('email_body', content['body'])}</p>
+<h1 style="color:#333">{content.get('title','')}</h1>
+<p style="font-size:16px;line-height:1.6">{content.get('email_body', content.get('body',''))}</p>
 <p><a href="{content.get('url','#')}" style="background:#7c6fff;color:white;padding:12px 24px;
 text-decoration:none;border-radius:6px">{content.get('cta','Jetzt kaufen')}</a></p>
 </body></html>"""
         payload = {
             "personalizations": [{"to": [{"email": SENDGRID_FROM, "name": SENDGRID_NAME}]}],
             "from": {"email": SENDGRID_FROM, "name": SENDGRID_NAME},
-            "subject": content.get("email_subject", content["title"])[:150],
+            "subject": content.get("email_subject", content.get("title",""))[:150],
             "content": [{"type": "text/html", "value": body_html}],
         }
         async with aiohttp.ClientSession() as s:
@@ -502,7 +502,7 @@ async def _post_twitter(content: dict) -> bool:
     try:
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
-        tweet = f"{content['body'][:200]}\n{tags}\n{content.get('url','')}".strip()[:280]
+        tweet = f"{content.get('body','')[:200]}\n{tags}\n{content.get('url','')}".strip()[:280]
         tw_url = "https://api.twitter.com/2/tweets"
         auth = _tw_oauth_header("POST", tw_url)
         async with aiohttp.ClientSession() as s:
@@ -528,7 +528,7 @@ async def _post_linkedin(content: dict) -> bool:
     try:
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
-        text = f"{content['body'][:600]}\n\n{tags}\n\n👉 {content.get('url','https://ineedit.com.co')}".strip()
+        text = f"{content.get('body','')[:600]}\n\n{tags}\n\n👉 {content.get('url','https://ineedit.com.co')}".strip()
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 "https://api.linkedin.com/v2/ugcPosts",
