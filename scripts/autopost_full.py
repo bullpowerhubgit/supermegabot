@@ -4,12 +4,47 @@ SuperMegaBot — Multi-Platform Autopost
 Plattformen: Facebook · Instagram · LinkedIn · Telegram · Reddit · Discord · Gumroad · Pinterest · eBay
 Läuft 4x täglich via automation_scheduler.py
 """
-import os, re, random, requests, sys, json, base64, logging, time
+import os, re, random, requests, sys, json, base64, logging, time, hashlib
 from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import urlencode
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("autopost")
+
+# ── Content Guard ─────────────────────────────────────────────────────────────
+_TECH_KW = [
+    'smart', 'tech', 'gadget', 'wifi', 'wlan', 'bluetooth', 'wireless',
+    'sensor', 'led', 'solar', 'usb', 'kamera', 'camera', 'speaker',
+    'display', 'monitor', 'controller', 'adapter', 'charger', 'lader',
+    'arduino', 'raspberry', 'powerbank', 'hub', 'dock', 'keyboard',
+    'mouse', 'headphone', 'earphone', 'robot', 'drone', 'tracker',
+    'gps', 'automation', 'automatisierung', 'digital', 'app',
+]
+_DEDUP_FILE = Path(os.getenv("DATA_DIR", "/tmp")) / "autopost_dedup.json"
+_DEDUP_WINDOW_H = 8  # kein gleicher Handle öfter als alle 8h posten
+
+def _is_tech_product(title: str) -> bool:
+    t = title.lower()
+    return any(kw in t for kw in _TECH_KW)
+
+def _dedup_ok(handle: str) -> bool:
+    try:
+        db = json.loads(_DEDUP_FILE.read_text()) if _DEDUP_FILE.exists() else {}
+        last = db.get(handle, 0)
+        return (time.time() - last) > _DEDUP_WINDOW_H * 3600
+    except Exception:
+        return True
+
+def _dedup_mark(handle: str):
+    try:
+        db = json.loads(_DEDUP_FILE.read_text()) if _DEDUP_FILE.exists() else {}
+        cutoff = time.time() - 48 * 3600
+        db = {k: v for k, v in db.items() if v > cutoff}
+        db[handle] = time.time()
+        _DEDUP_FILE.write_text(json.dumps(db))
+    except Exception:
+        pass
 
 # ── Shopify ──────────────────────────────────────────────────────────────────
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
@@ -471,11 +506,24 @@ def run_autopost(dry_run: bool = False):
         log.error("Produkt-Fehler: %s", e)
         sys.exit(1)
 
+    # ── Content Guard ────────────────────────────────────────────────────────
+    if not _is_tech_product(prod["title"]):
+        log.warning("⛔ ContentGuard: '%s' kein Tech-Produkt — Autopost übersprungen", prod["title"])
+        sys.exit(0)
+    if not _dedup_ok(prod["handle"]):
+        log.info("⏭ Dedup: Handle '%s' wurde kürzlich gepostet — übersprungen", prod["handle"])
+        sys.exit(0)
+    if not prod["img"]:
+        log.warning("⛔ ContentGuard: kein gültiges Bild für '%s' — übersprungen", prod["title"])
+        sys.exit(0)
+    # ────────────────────────────────────────────────────────────────────────
+
     if dry_run:
         log.info("DRY RUN — kein echter Post")
         log.info("Würde posten: %s", json.dumps(prod, ensure_ascii=False))
         return
 
+    _dedup_mark(prod["handle"])
     results = {}
 
     # Facebook AiiteC Page

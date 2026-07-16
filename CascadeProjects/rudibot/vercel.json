@@ -2,14 +2,15 @@
   "version": 2,
   "framework": null,
   "buildCommand": null,
-  "outputDirectory": ".",
+  "outputDirectory": "public",
   "rewrites": [
     { "source": "/api/status", "destination": "/api/status-v2.js" },
+    { "source": "/api/health", "destination": "/api/status-v2.js" },
     { "source": "/webhook/telegram", "destination": "/api/webhook-telegram-v2.js" },
     { "source": "/webhook/control", "destination": "/api/webhook-control-v2.js" },
-    { "source": "/api/health", "destination": "/api/status-v2.js" },
     { "source": "/api/agent-help/(.*)", "destination": "/api/agent-help.js" },
-    { "source": "/revenue-first", "destination": "/public/revenue-first-dashboard.html" },
-    { "source": "/finanz-assistant", "destination": "/public/finanz-assistant-dashboard.html" }
+    { "source": "/revenue-first", "destination": "/revenue-first-dashboard.html" },
+    { "source": "/finanz-assistant", "destination": "/finanz-assistant-dashboard.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
