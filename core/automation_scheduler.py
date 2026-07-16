@@ -2001,6 +2001,31 @@ async def task_ab_test_analyze() -> str:
         return f"A/B analyze Fehler: {e}"
 
 
+async def task_shopify_ab_run() -> str:
+    """Täglich: neue Shopify A/B Tests für Preis/Titel/Beschreibung starten."""
+    try:
+        from modules.shopify_ab_tester import run_shopify_ab_tests
+        result = await run_shopify_ab_tests()
+        started = result.get("started", 0)
+        return f"Shopify A/B: {started} neue Tests gestartet"
+    except Exception as exc:
+        return f"shopify_ab_tester Fehler: {exc}"
+
+
+async def task_shopify_ab_analyze() -> str:
+    """Alle 48h: Shopify A/B Gewinner auswählen und Verlierer zurücksetzen."""
+    try:
+        from modules.shopify_ab_tester import analyze_shopify_ab_winners
+        result = await analyze_shopify_ab_winners()
+        return (
+            f"Shopify A/B Analyse: {result.get('analyzed', 0)} ausgewertet, "
+            f"{len(result.get('winners', []))} Gewinner, "
+            f"{len(result.get('reverted', []))} rückgängig"
+        )
+    except Exception as exc:
+        return f"shopify_ab_analyze Fehler: {exc}"
+
+
 async def task_ai_content_calendar() -> str:
     """Täglich 06:00: KI-Inhaltskalender für 7 Tage generieren."""
     try:
@@ -8120,6 +8145,8 @@ TASKS = [
     # ── Autonomy Max-Upgrades ─────────────────────────────────────────────
     ("competitor_monitor",      task_competitor_monitor,     86400,  500),   # daily — Konkurrenz-Check
     ("ab_test_analyze",         task_ab_test_analyze,        43200,  510),   # 12h — A/B Gewinner auswählen
+    ("shopify_ab_run",          task_shopify_ab_run,         86400,  515),   # 24h — neue Shopify A/B Tests starten
+    ("shopify_ab_analyze",      task_shopify_ab_analyze,    172800,  516),   # 48h — Shopify A/B Gewinner auswählen
     ("ai_content_calendar",     task_ai_content_calendar,    86400,  520),   # daily 06:00 — KI-Kalender
     ("revenue_optimize",        task_revenue_optimize,       43200,  530),   # 12h — Revenue-KI-Empfehlungen
     # ── REVOLUTION PACK — SEO + Traffic + Automation Max ─────────────────
