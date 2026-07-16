@@ -75,6 +75,10 @@ REVENUE_MODULES = frozenset({
     # DS24 & Content Publishing
     "ds24_income_blaster",
     "github_blog_publisher",
+    # Email Marketing
+    "email_blast_engine",
+    "klaviyo_blast",
+    "newsletter_engine",
 })
 
 # ── Tagesbudget — KONSERVATIV nach Credit-Verlust ──────────────────────────────
