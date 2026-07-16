@@ -9,7 +9,16 @@
 | 2 | **OpenAI API Key revoked** | platform.openai.com → API Keys | `OPENAI_API_KEY` |
 | 3 | **aiitecbuuss@gmail.com App-PW** | accounts.google.com → Sicherheit → App-Passwörter | `GMAIL_APP_PASSWORD_5` |
 | 4 | **Resend 403** | resend.com → API Keys → neu | `RESEND_API_KEY` |
-| 5 | **Meta App Live-Modus** | developers.facebook.com | — |
+| 5 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings → dann nochmal versuchen | — |
+| 6 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API Entwickler-Tools → neuen Appeal + neuen Access-Token generieren auf developers.pinterest.com → rodibot | `PINTEREST_ACCESS_TOKEN` |
+
+## ✅ FIXES COMMITTED (2026-07-16)
+
+| Commit | Datei | Fix |
+|--------|-------|-----|
+| `32807569` | `modules/revenue_engine.py:204` | AttributeError bei HttpGuard — `log.warning("FB: %s", getattr(e, 'message', None) or repr(e))` statt `str(e)` |
+
+Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `self.request_info.real_url` → NoneType-Crash → Railway-Restart. Gefixt + deployed.
 
 ## ✅ LIVE-AUDIT 2026-07-16 (verifiziert)
 
@@ -28,7 +37,7 @@
 | Resend | ❌ 403 | → resend.com neu generieren |
 | Facebook | ⚠️ Rate Limit | Reset 17.07 ~06:00 |
 | Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
-| Pinterest | ⚠️ Token 401 | → developers.pinterest.com |
+| Pinterest | ❌ API ABGELEHNT | Email 07.07 bestätigt — Appeal + neuer Token nötig |
 
 ## ✅ RAILWAY ENV VARS SYNCED (2026-07-16)
 - SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_ACCESS_TOKEN — aus .env nach Railway ✅
