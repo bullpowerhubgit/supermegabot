@@ -525,8 +525,10 @@ async def run_lead_discovery() -> Dict:
 # ── Email Templates ───────────────────────────────────────────────────────────
 
 def _shop_promo_template(lead: Dict, products: List[Dict] = None) -> Tuple[str, str]:
-    name = lead.get("name") or "Technik-Enthusiast"
-    first = name.split()[0] if name else "Hey"
+    name = lead.get("name") or ""
+    if not name or name.strip() in ("None", "null", "N/A", "n/a", "unknown", ""):
+        name = "Technik-Enthusiast"
+    first = name.split()[0]
     discount = "MEGA10"  # 10% discount code
 
     product_html = ""
