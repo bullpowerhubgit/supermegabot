@@ -5635,6 +5635,21 @@ async def task_ds24_affiliate_blast() -> str:
         return f"DS24 Affiliate Blast Fehler: {e}"
 
 
+async def task_api_key_monitor() -> str:
+    """API Key Monitor — Alle kritischen Keys testen, Telegram-Alert bei Fehlern."""
+    try:
+        from modules.api_key_monitor import async_run_check
+        result = await async_run_check(send_alert=True)
+        failed = result["failed"]
+        ok = result["ok"]
+        total = result["checked"]
+        if failed:
+            return f"API Key Monitor: {ok}/{total} OK — FEHLER: {', '.join(failed)}"
+        return f"API Key Monitor: {total}/{total} Keys aktiv ✅"
+    except Exception as e:
+        return f"API Key Monitor Fehler: {e}"
+
+
 async def task_meta_roas_monitor() -> str:
     """Meta ROAS Monitor — Budget automatisch skalieren wenn ROAS >= 3x."""
     try:
@@ -7995,6 +8010,7 @@ TASKS = [
     ("affiliate_blast",        task_affiliate_blast,         7200,   75),  # 2h — DS24 Affiliate auf alle Kanäle  # 30min — Live Revenue: Ads+Email+Shopify+IG
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
+    ("api_key_monitor",        task_api_key_monitor,         7200,  300), # 2h — Alle Keys testen + Telegram-Alert bei Fehler
     ("meta_roas_monitor",      task_meta_roas_monitor,      21600, 3600), # 6h — ROAS prüfen + Budget skalieren (ab 01:00)
     ("revenue_engine",         task_revenue_engine,         43200,  69),   # 12h Morgen — DS24+Flash+AIITEC
     ("revenue_engine_evening", task_revenue_engine_evening, 43200, 32400), # 12h Abend  — Stripe+B2B+Bericht (9h delay≈18:00)
