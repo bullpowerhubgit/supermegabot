@@ -155,7 +155,7 @@ def _hosts_for(index: int, email: str) -> Tuple[str, int, str]:
         smtp = os.getenv("SMTP_HOST_6", "smtp.strato.de")
         imap = os.getenv("IMAP_HOST_6", "imap.strato.de")
         return smtp, 465, imap
-    return "smtp.gmail.com", 465, "imap.gmail.com"
+    return "smtp.gmail.com", 587, "imap.gmail.com"
 
 
 def list_accounts() -> List[GmailAccount]:
