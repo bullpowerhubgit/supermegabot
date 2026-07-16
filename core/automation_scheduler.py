@@ -6153,6 +6153,15 @@ async def task_pinterest_traffic_cycle() -> str:
         return f"PinterestTraffic Fehler: {e}"
 
 
+async def task_pinterest_token_health() -> str:
+    """Pinterest Token-Check: validiert Token und refresht falls nötig (täglich)."""
+    try:
+        from modules.pinterest_token_manager import run_token_health_check
+        return await run_token_health_check()
+    except Exception as e:
+        return f"Pinterest Token-Check Fehler: {e}"
+
+
 async def task_sendgrid_daily() -> str:
     """SendGrid: tägliche Revenue-Email an alle Klaviyo-Profile (täglich)."""
     try:
@@ -7989,6 +7998,7 @@ TASKS = [
     # ── Pinterest Traffic ─────────────────────────────────────────────────────
     ("pinterest_cycle",          task_pinterest_cycle,          14400,  860),  # 4h — Pinterest autonomy
     ("pinterest_traffic",        task_pinterest_traffic_cycle,   7200,  870),  # 2h — Smart Home Pins ineedit.com.co
+    ("pinterest_token_health",   task_pinterest_token_health,   86400,  880),  # täglich — Token-Validierung + Auto-Refresh
     # ── Meta Ads Engine ───────────────────────────────────────────────────────
     ("meta_ads",                 task_meta_ads_cycle,           14400,  300),  # 4h — Facebook/Instagram Kampagnen
     # ── SendGrid Revenue Email ────────────────────────────────────────────────
