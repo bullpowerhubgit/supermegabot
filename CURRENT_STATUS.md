@@ -1,6 +1,26 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16 (Wave 6 — Full Monetization Blast)**
 
+## Email-Konten Status (2026-07-16)
+| Konto | App-Password | SMTP | Status |
+|-------|-------------|------|--------|
+| bullpowersrtkennels@gmail.com | GMAIL_APP_PASSWORD_3 | Port 587 | ✅ FUNKTIONIERT |
+| dragonadnp@gmail.com | GMAIL_APP_PASSWORD_1 | Port 587 | ✅ FUNKTIONIERT |
+| rudolf.sarkany.aiitec@gmail.com | GMAIL_APP_PASSWORD_7 | Port 587 | ✅ FUNKTIONIERT |
+| rudolfsarkany1984@gmail.com | GMAIL_APP_PASSWORD_8 | Port 587 | ✅ FUNKTIONIERT |
+| aiitecbuuss@gmail.com | GMAIL_APP_PASSWORD_5 | Port 587 | ❌ App-PW abgelaufen → neu generieren! |
+
+**Aktion benötigt:** Rudolf muss aiitecbuuss@gmail.com App Password neu generieren
+→ accounts.google.com → Sicherheit → 2-Schritt-Bestätigung → App-Passwörter → SuperMegaBot
+→ Dann .env + Railway: GMAIL_APP_PASSWORD_5=<neues_passwort> setzen
+
+## Posts-Fixes (2026-07-16)
+- ✅ autopost_full.py: ContentGuard (Tech-Keywords), Dedup 8h/Handle, Bild-Pflicht
+- ✅ social_media_autopilot: Facebook/Instagram → post_gateway.safe_post (5 Schichten)
+- ✅ viral_promo_poster: → post_gateway.safe_post für alle Kanäle
+- ✅ scripts/autopost_full.py: kein Post ohne Tech-Nische + Duplikat-Check
+- ⚠️ twitter_autoposter, social_scheduler: weiterhin ohne Gateway — vorerst akzeptiert
+
 ## ✅ EMAIL AUDIT 2026-07-16 — GESCHLOSSEN
 
 | # | Problem | Status |
