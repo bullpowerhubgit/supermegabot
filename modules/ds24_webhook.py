@@ -235,7 +235,7 @@ DANKESEITE_HTML = """<!DOCTYPE html>
     Produkt: {product_name}
   </div>
   <p>Bei Fragen stehen wir dir jederzeit zur Verfügung.</p>
-  <a href="https://bullpowerhub.com" class="cta">Zur Hauptseite →</a>
+  <a href="https://ineedit.com.co" class="cta">Zur Hauptseite →</a>
 </div>
 </body>
 </html>"""

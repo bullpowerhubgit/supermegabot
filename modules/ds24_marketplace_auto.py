@@ -131,7 +131,7 @@ async def apply_for_affiliate(product_id: str, message: str = "") -> dict:
     if not message:
         message = (
             "Hallo, ich betreibe einen erfolgreichen Marketing-Kanal "
-            "(bullpowerhub.com) mit starker Zielgruppe im Bereich Online-Business. "
+            "(ineedit.com.co) mit starker Zielgruppe im Bereich Online-Business. "
             "Ich möchte gerne Ihr Produkt als Affiliate vermarkten und bin überzeugt, "
             "dass ich Ihnen hochwertige Verkäufe bringen kann. "
             "Ich arbeite mit E-Mail-Marketing, Social Media und SEO."

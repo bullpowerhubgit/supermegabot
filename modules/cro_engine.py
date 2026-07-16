@@ -102,9 +102,9 @@ async def create_klaviyo_welcome_flow() -> bool:
                                 "type": "email",
                                 "subject": "Willkommen! Hier sind deine 3 Automatisierungs-Tipps",
                                 "preview_text": "Schnell starten mit BullPower Hub",
-                                "from_email": "hello@bullpowerhub.com",
+                                "from_email": "aiitecbuuss@gmail.com",
                                 "from_label": "Rudolf @ BullPower Hub",
-                                "reply_to_email": "hello@bullpowerhub.com",
+                                "reply_to_email": "aiitecbuuss@gmail.com",
                                 "html_body": html_body,
                             }
                         }}},
@@ -159,7 +159,7 @@ async def _create_klaviyo_welcome_flow_legacy() -> bool:
                             "settings": {
                                 "name": "1 — Willkommen + Bonus",
                                 "from_label": "Rudolf @ BullPower Hub",
-                                "from_email": "hello@bullpowerhub.com",
+                                "from_email": "aiitecbuuss@gmail.com",
                                 "subject": "Danke! Hier ist dein Bonus...",
                                 "preview_text": "Schön dass du dabei bist!",
                                 "html_body": (
@@ -184,7 +184,7 @@ async def _create_klaviyo_welcome_flow_legacy() -> bool:
                             "settings": {
                                 "name": "2 — Mehrwert Tag 3",
                                 "from_label": "Rudolf @ BullPower Hub",
-                                "from_email": "hello@bullpowerhub.com",
+                                "from_email": "aiitecbuuss@gmail.com",
                                 "subject": "Wie ich €111 im Februar verdient habe (und warum es jetzt mehr wird)",
                                 "preview_text": "Meine ehrliche Bilanz...",
                                 "html_body": (
@@ -209,7 +209,7 @@ async def _create_klaviyo_welcome_flow_legacy() -> bool:
                             "settings": {
                                 "name": "3 — Angebot Tag 7",
                                 "from_label": "Rudolf @ BullPower Hub",
-                                "from_email": "hello@bullpowerhub.com",
+                                "from_email": "aiitecbuuss@gmail.com",
                                 "subject": "⚡ Nur für dich: 20% Rabatt (läuft in 48h ab)",
                                 "preview_text": "Exklusiv für neue Mitglieder",
                                 "html_body": (
@@ -329,9 +329,9 @@ async def create_urgency_campaign(product_name: str, discount_pct: int = 20) -> 
                             "type": "email",
                             "subject": subject,
                             "preview_text": f"Nur {discount_pct}% Rabatt — läuft heute ab!",
-                            "from_email": "hello@bullpowerhub.com",
+                            "from_email": "aiitecbuuss@gmail.com",
                             "from_label": "BullPower Hub",
-                            "reply_to_email": "hello@bullpowerhub.com",
+                            "reply_to_email": "aiitecbuuss@gmail.com",
                             "html_body": html_body,
                         }
                     }}},
@@ -431,9 +431,9 @@ href="{shopify_url}?utm_source=email&utm_medium=upsell&utm_campaign=ds24_buyer">
                                 "type": "email",
                                 "subject": subject,
                                 "preview_text": "Exklusive Empfehlung für dich",
-                                "from_email": "hello@bullpowerhub.com",
+                                "from_email": "aiitecbuuss@gmail.com",
                                 "from_label": "BullPower Hub",
-                                "reply_to_email": "hello@bullpowerhub.com",
+                                "reply_to_email": "aiitecbuuss@gmail.com",
                                 "html_body": html_body,
                             }
                         }}]},

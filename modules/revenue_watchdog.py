@@ -85,7 +85,7 @@ def _shopify_metrics_today() -> tuple[int, float]:
 
     today = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00Z")
     url   = (
-        f"https://{shop}/admin/api/2024-01/orders.json"
+        f"https://{shop}/admin/api/2026-04/orders.json"
         f"?status=any&created_at_min={today}&limit=250&fields=id,total_price,currency"
     )
     try:
