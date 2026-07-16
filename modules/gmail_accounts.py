@@ -303,12 +303,24 @@ def send_email(
             else:
                 log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
         except smtplib.SMTPRecipientsRefused as e:
-            codes = {str(v[0]) for v in e.recipients.values()}
-            if "550" in codes:
+            # 550 on recipient = hard bounce (user unknown) — block recipient, NOT our account
+            for refused_email, (code, msg) in (e.recipients or {}).items():
+                code_s = str(code)
+                msg_s = (msg.decode() if isinstance(msg, (bytes, bytearray)) else str(msg))[:120]
+                if code_s.startswith("55"):
+                    try:
+                        from modules.bounce_watcher import mark_bounced
+                        mark_bounced(refused_email or to_email, f"SMTP {code_s}: {msg_s}")
+                        log.warning("Hard bounce → blocklist: %s (%s)", refused_email or to_email, msg_s)
+                    except Exception as be:
+                        log.debug("mark_bounced failed: %s", be)
+            # Only treat as sender daily limit if Gmail quota wording
+            blob = str(e.recipients)
+            if "5.4.5" in blob or "Daily user sending limit" in blob:
                 _GMAIL_DAILY_EXHAUSTED.add(acc.email)
-                log.warning("SMTP %s Tageslimit (Recipients 550) — für heute deaktiviert", acc.email)
+                log.warning("SMTP %s Tageslimit (Recipients 550 quota) — für heute deaktiviert", acc.email)
             else:
-                log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
+                log.warning("SMTP %s recipient refused: %s", acc.email, e)
         except Exception as e:
             err_str = str(e)
             if "5.4.5" in err_str or "Daily user sending limit" in err_str:

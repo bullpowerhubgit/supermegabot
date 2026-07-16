@@ -63,9 +63,18 @@ _EMAIL_IN_BODY = re.compile(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}')
 
 # Known hard bounces / dead mailboxes (seeded once)
 _SEED_BOUNCES = (
+    # audit 2026-07-16 (201+ bounces)
     ("noreply@supermegabot.com", "test/noreply hard bounce"),
-    ("info@wirecard.de", "wirecard insolvent 2020"),
     ("test@bullpower.de", "test address"),
+    ("info@wirecard.de", "wirecard insolvent 2020"),
+    ("info@anchor.de", "550 5.7.1 Rejected"),
+    ("info@idealo.de", "Address not found 550"),
+    ("info@wacker.com", "550 #5.1.0 no mailbox"),
+    ("info@dachdecker.de", "Address not found 550"),
+    ("info@webwirkung.de", "550 5.1.1 User unknown"),
+    ("hello@socialchain.com", "Address not found 550"),
+    ("kontakt@tlgg.de", "Address not found 550"),
+    ("info@wp.de", "Address not found 550"),
     ("test@test.com", "test address"),
     ("null@null.com", "invalid"),
     ("nobody@nowhere.com", "invalid"),
@@ -75,6 +84,13 @@ _SEED_BOUNCES = (
     ("office@wirecard.de", "wirecard insolvent"),
     ("support@supermegabot.com", "internal test domain"),
 )
+
+
+def mark_bounced(email_addr: str, reason: str = "smtp 550") -> bool:
+    """Public API: mark address permanently blocked after hard bounce."""
+    if not email_addr or "@" not in email_addr:
+        return False
+    return add_to_blocklist(email_addr.strip().lower(), reason)
 
 
 def _init_db() -> None:
