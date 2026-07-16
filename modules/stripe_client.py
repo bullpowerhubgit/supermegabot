@@ -22,40 +22,49 @@ log = logging.getLogger("stripe_client")
 STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 
+# NUR bullpowersrtkennels — NIEMALS AIITEC (sk_live_51Swso…)
 _STRIPE_KEY_NAMES = (
-    "STRIPE_SECRET_KEY",              # bullpowersrtkennels@gmail.com — IMMER diese!
-    "STRIPE_TEST_SECRET_KEY",
+    "STRIPE_SECRET_KEY",
+    "STRIPE_SECRET_KEY_FULL",
     "STRIPE_API_KEY",
-    # STRIPE_SECRET_KEY_AIITEC ENTFERNT — 401, falsches Konto
 )
 
 
 def _stripe_key_candidates() -> list[tuple[str, str]]:
-    """Working key first (resolver), then remaining envs for fallback."""
+    """Only bullpowersrtkennels keys."""
     seen: set[str] = set()
     out: list[tuple[str, str]] = []
     try:
-        from modules.stripe_key_resolver import get_working_stripe_key, get_working_stripe_key_name
+        from modules.stripe_key_resolver import (
+            get_working_stripe_key,
+            get_working_stripe_key_name,
+            is_bullpower_key,
+        )
         wk = get_working_stripe_key()
-        if wk:
+        if wk and is_bullpower_key(wk):
             out.append((get_working_stripe_key_name() or "STRIPE_SECRET_KEY", wk))
             seen.add(wk)
     except Exception:
         pass
     for name in _STRIPE_KEY_NAMES:
         val = os.getenv(name, "").strip()
-        if val and val not in seen:
-            seen.add(val)
-            out.append((name, val))
+        if not val or val in seen:
+            continue
+        if val.startswith("sk_live_51Swso"):
+            continue
+        if not (val.startswith("sk_live_51Tg1U") or val.startswith("rk_live_51Tg1U")):
+            continue
+        seen.add(val)
+        out.append((name, val))
     return out
 
 
 def _stripe_key() -> str:
     try:
-        from modules.stripe_key_resolver import get_working_stripe_key
+        from modules.stripe_key_resolver import get_working_stripe_key, assert_bullpower_only
         k = get_working_stripe_key()
         if k:
-            return k
+            return assert_bullpower_only(k)
     except Exception:
         pass
     for _, val in _stripe_key_candidates():
