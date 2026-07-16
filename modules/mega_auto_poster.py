@@ -609,7 +609,8 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
         _post_pinterest(content),
         _post_shopify_blog(content),
         _post_klaviyo_campaign(content),
-        _post_mailchimp_campaign(content),
+        # Mailchimp PERMANENT DEAKTIVIERT — alle 3 Konten gesperrt 2026-07-12
+        asyncio.sleep(0),
         _post_sendgrid(content),
         _post_twitter(content),
         _post_linkedin(content),
