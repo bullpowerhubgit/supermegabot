@@ -1,847 +1,413 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AutoIncome AI — KI-gestütztes Online-Business System. Shopify, Affiliate, Digistore24.</title>
-  <meta name="description" content="AutoIncome AI: Blueprint + Software-System für Online-Business-Automatisierung. Shopify, Affiliate, Digistore24 & Social Media — KI-gestützt in einem Dashboard. Jetzt testen.">
-  <meta name="keywords" content="Online Business KI, AutoIncome Blueprint, Affiliate Automation, Shopify Dropshipping Automation, Digistore24 System, KI Business Tools">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://autoincome-ai.vercel.app/">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="AutoIncome AI — KI-System für Online-Business-Automatisierung">
-  <meta property="og:description" content="Blueprint + Software für Shopify, Affiliate & Digistore24 — KI-gestützt in einem Dashboard.">
-  <meta property="og:url" content="https://autoincome-ai.vercel.app/">
-  <meta property="og:site_name" content="AutoIncome AI">
-  <meta property="og:locale" content="de_DE">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AutoIncome AI — KI-Business-Automatisierung">
-  <meta name="twitter:description" content="KI-Blueprint für Online-Business: Shopify, Affiliate & Digistore24 automatisiert. Jetzt starten.">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"AutoIncome AI","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"KI-gestütztes Automatisierungssystem für Online-Business — Shopify, Affiliate-Marketing, Digistore24 und Social Media in einem Dashboard automatisiert","offers":{"@type":"Offer","priceCurrency":"EUR","price":"37.00","availability":"https://schema.org/InStock","url":"https://www.checkout-ds24.com/product/669750"},"provider":{"@type":"Organization","name":"AiiteC","url":"https://autoincome-ai.vercel.app"}}</script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoIncome AI — Passives Einkommen Machine — von 0 auf €3.200/Monat in 90 Tagen</title>
+<meta name="description" content="AutoIncome AI: Passives Einkommen Machine — von 0 auf €3.200/Monat in 90 Tagen. €3.200 Ø Passiveinkommen nach 90 Tagen. Jetzt starten ab €997.">
+<meta property="og:title" content="AutoIncome AI — Passives Einkommen Machine — von 0 auf €3.200/Monat in 90 Tagen">
+<meta property="og:description" content="€3.200 Ø Passiveinkommen nach 90 Tagen">
+<meta property="og:type" content="website">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "F\u00fcr wen ist AutoIncome AI geeignet?", "acceptedAnswer": {"@type": "Answer", "text": "AutoIncome AI ist f\u00fcr Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen \u2014 ohne mehr Zeit zu investieren."}}, {"@type": "Question", "name": "Wie schnell sehe ich erste Ergebnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen."}}, {"@type": "Question", "name": "Brauche ich technische Kenntnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Das Setup dauert unter 30 Minuten, es ist kein Code n\u00f6tig. Unser Onboarding-Team begleitet Sie Schritt f\u00fcr Schritt durch die Einrichtung."}}, {"@type": "Question", "name": "Kann ich k\u00fcndigen wann ich will?", "acceptedAnswer": {"@type": "Answer", "text": "Starter und Pro sind monatlich k\u00fcndbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zur\u00fcck-Garantie. Kein Risiko."}}, {"@type": "Question", "name": "Gibt es eine Geld-zur\u00fcck-Garantie?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. 30 Tage Geld-zur\u00fcck-Garantie ohne Wenn und Aber. Wenn AutoIncome AI nicht liefert was wir versprechen, erstatten wir 100% zur\u00fcck."}}]}</script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #2a2a3d;
+  --accent: #6c63ff;
+  --accent2: #00d4ff;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --red: #ff4757;
+  --text: #e8e8f0;
+  --muted: #888899;
+  --radius: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif; line-height: 1.6; overflow-x: hidden; }
 
-    :root {
-      --bg: #010816;
-      --bg2: #020d1e;
-      --bg3: #041428;
-      --card: #040f1f;
-      --card2: #071830;
-      --cyan: #06b6d4;
-      --sky: #38bdf8;
-      --blue: #1e40af;
-      --bluelight: #3b82f6;
-      --green: #10b981;
-      --red: #ef4444;
-      --amber: #f59e0b;
-      --text: #e2e8f0;
-      --text-dim: #475569;
-      --text-mid: #94a3b8;
-      --border: rgba(6,182,212,0.15);
-      --border2: rgba(56,189,248,0.1);
-    }
+/* ── HEADER ── */
+.header { position: fixed; top: 0; width: 100%; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 1000; padding: 0 5%; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.nav a { color: var(--muted); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; transition: color 0.2s; }
+.nav a:hover { color: var(--text); }
+.header-cta { background: var(--accent); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+.header-cta:hover { background: #5b52ef; transform: translateY(-1px); }
 
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
-      line-height: 1.5;
-      overflow-x: hidden;
-    }
+/* ── HERO ── */
+.hero { padding: 140px 5% 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
+.hero-badge { display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4); color: var(--accent2); padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 1.2rem; color: var(--muted); max-width: 650px; margin: 0 auto 2rem; }
+.hero-stat { display: inline-block; background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.4); border-radius: 12px; padding: 1rem 2rem; margin-bottom: 2.5rem; font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+.hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: all 0.3s; box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(108,99,255,0.5); }
+.btn-secondary { background: transparent; color: var(--text); padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1.05rem; border: 1.5px solid var(--border); transition: all 0.3s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.hero-guarantee { color: var(--muted); font-size: 0.85rem; }
+.hero-guarantee span { color: var(--green); }
 
-    /* TOP BAR — Bloomberg style */
-    .top-ticker {
-      background: var(--card); border-bottom: 1px solid var(--border);
-      padding: 0.4rem 0; overflow: hidden; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-      height: 32px;
-    }
-    .ticker-scroll {
-      display: flex; gap: 3rem; white-space: nowrap;
-      animation: scrollticker 30s linear infinite;
-    }
-    @keyframes scrollticker {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-    .tick-item {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.5rem;
-    }
-    .tick-name { color: var(--text-mid); }
-    .tick-val { color: #fff; font-weight: 600; }
-    .tick-chg.up { color: var(--green); }
-    .tick-chg.dn { color: var(--red); }
+/* ── STATS ── */
+.stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem 5%; }
+.stats-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
 
-    /* NAV */
-    nav {
-      position: fixed; top: 32px; left: 0; right: 0; z-index: 900;
-      background: rgba(1,8,22,0.96);
-      border-bottom: 1px solid var(--border);
-      padding: 0.75rem 2rem;
-      display: flex; align-items: center; justify-content: space-between;
-      backdrop-filter: blur(20px);
-    }
-    .nav-logo {
-      font-size: 1.2rem; font-weight: 800;
-      background: linear-gradient(135deg, var(--sky), var(--cyan));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-decoration: none;
-    }
-    .nav-status {
-      display: flex; align-items: center; gap: 0.4rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem; color: var(--green);
-    }
-    .nav-status::before {
-      content: '';
-      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
-      animation: blink 1s infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-    .nav-links { display: flex; gap: 1.5rem; }
-    .nav-links a {
-      color: var(--text-mid); text-decoration: none; font-size: 0.82rem;
-      font-weight: 500; transition: color 0.2s; padding: 0.3rem 0.6rem;
-    }
-    .nav-links a:hover { color: var(--cyan); }
-    .nav-cta {
-      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
-      color: #000; font-weight: 700; padding: 0.5rem 1.4rem;
-      font-size: 0.82rem; border-radius: 4px; text-decoration: none;
-      transition: all 0.2s;
-    }
-    .nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+/* ── SECTIONS ── */
+section { padding: 80px 5%; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; color: var(--accent2); font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; margin-bottom: 1.5rem; line-height: 1.2; }
+h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.lead { font-size: 1.1rem; color: var(--muted); max-width: 700px; }
 
-    /* HERO — Dashboard Overview */
-    .hero {
-      min-height: 100vh;
-      padding: 9rem 2rem 4rem;
-      display: flex; flex-direction: column; align-items: center;
-      position: relative; overflow: hidden;
-    }
-    .hero-grid-bg {
-      position: absolute; inset: 0; pointer-events: none;
-      background-image:
-        linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
-      background-size: 40px 40px;
-    }
-    .hero-glow {
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 800px; height: 400px; pointer-events: none;
-      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(6,182,212,0.12) 0%, transparent 65%);
-    }
+/* ── PROBLEM/SOLUTION ── */
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+@media(max-width:700px) { .ps-grid { grid-template-columns: 1fr; } }
+.ps-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.ps-card.solution { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+.ps-icon { font-size: 2rem; margin-bottom: 1rem; }
+.ps-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
+.ps-card p { color: var(--muted); line-height: 1.7; }
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25);
-      border-radius: 4px; padding: 0.35rem 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem; color: var(--cyan); letter-spacing: 1px;
-      margin-bottom: 1.5rem; position: relative;
-    }
-    .hero h1 {
-      font-size: clamp(2.5rem, 7vw, 5.5rem); font-weight: 900;
-      line-height: 1.0; text-align: center; letter-spacing: -2px;
-      margin-bottom: 1.2rem; position: relative;
-    }
-    .hero h1 .line1 { display: block; color: #fff; }
-    .hero h1 .line2 {
-      display: block;
-      background: linear-gradient(135deg, var(--cyan) 0%, var(--sky) 50%, var(--bluelight) 100%);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .hero-sub {
-      color: var(--text-mid); font-size: 1.05rem; text-align: center;
-      max-width: 580px; margin-bottom: 3rem; position: relative;
-    }
+/* ── DEMO VIDEO ── */
+.demo-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.demo-container { text-align: center; }
+.video-placeholder { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; aspect-ratio: 16/9; max-width: 800px; margin: 2rem auto; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+.video-placeholder:hover { border-color: var(--accent); }
+.video-placeholder::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); }
+.play-btn { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; position: relative; z-index: 1; box-shadow: 0 0 40px rgba(108,99,255,0.5); }
+.demo-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 1rem; font-size: 1rem; }
+.demo-link:hover { color: var(--accent2); }
 
-    /* PORTFOLIO OVERVIEW CARD */
-    .portfolio-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 2rem;
-      width: 100%; max-width: 900px;
-      position: relative; margin-bottom: 3rem;
-    }
-    .portfolio-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem;
-    }
-    .portfolio-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem; color: var(--text-mid); text-transform: uppercase; letter-spacing: 2px;
-    }
-    .portfolio-total {
-      font-size: 3rem; font-weight: 900; color: var(--cyan);
-      font-family: 'JetBrains Mono', monospace;
-      text-shadow: 0 0 30px rgba(6,182,212,0.4);
-      line-height: 1;
-    }
-    .portfolio-change {
-      font-size: 0.9rem; color: var(--green); font-weight: 600;
-      display: flex; align-items: center; gap: 0.3rem;
-    }
-    .income-bars { display: flex; flex-direction: column; gap: 0.85rem; }
-    .income-bar-row {
-      display: grid; grid-template-columns: 140px 1fr 80px;
-      align-items: center; gap: 1rem;
-    }
-    .income-bar-label { font-size: 0.82rem; color: var(--text-mid); font-weight: 500; }
-    .income-bar-track {
-      height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px;
-      overflow: hidden; position: relative;
-    }
-    .income-bar-fill {
-      height: 100%; border-radius: 3px;
-      animation: barfill 1.5s cubic-bezier(0.4,0,0.2,1) forwards;
-      transform-origin: left;
-    }
-    @keyframes barfill { from { width: 0 !important; } }
-    .income-bar-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.82rem; color: #fff; text-align: right; font-weight: 600;
-    }
+/* ── FEATURES ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 3rem; }
+.features-grid li { list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; transition: all 0.2s; }
+.features-grid li:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+.check { color: var(--green); font-size: 1.1rem; flex-shrink: 0; }
 
-    /* SVG CHART */
-    .chart-section {
-      width: 100%; max-width: 900px;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.5rem; margin-bottom: 2.5rem;
-    }
-    .chart-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;
-    }
-    .chart-title {
-      font-size: 0.85rem; font-weight: 600; color: var(--text);
-      display: flex; align-items: center; gap: 0.6rem;
-    }
-    .chart-pill {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.65rem; background: rgba(6,182,212,0.1);
-      border: 1px solid rgba(6,182,212,0.2);
-      color: var(--cyan); padding: 0.15rem 0.6rem; border-radius: 3px;
-    }
-    .chart-meta {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem; color: var(--text-dim);
-    }
-    svg.line-chart { width: 100%; height: 160px; overflow: visible; }
-    .chart-area { fill: url(#areaGrad); }
-    .chart-line { fill: none; stroke: var(--cyan); stroke-width: 2; vector-effect: non-scaling-stroke; }
-    .chart-dot { fill: var(--cyan); }
+/* ── ROI CALCULATOR ── */
+.roi-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.roi-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; max-width: 650px; margin: 3rem auto 0; text-align: center; }
+.roi-box h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+.roi-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+.roi-input-wrap { margin-bottom: 2rem; }
+.roi-input-wrap label { display: block; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.7rem; text-align: left; }
+.roi-input-wrap input { width: 100%; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; font-size: 1.2rem; color: var(--text); font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; }
+.roi-input-wrap input:focus { border-color: var(--accent); }
+.roi-output { background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.3); border-radius: 12px; padding: 1.5rem; }
+.roi-output-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+#roi-result { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.roi-note { color: var(--muted); font-size: 0.8rem; margin-top: 0.5rem; }
 
-    /* HERO BUTTONS */
-    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
-      color: #000; font-weight: 700; padding: 0.95rem 2.5rem;
-      font-size: 0.95rem; border-radius: 6px; text-decoration: none;
-      transition: all 0.2s; box-shadow: 0 0 30px rgba(6,182,212,0.3);
-      display: inline-flex; align-items: center; gap: 0.5rem;
-    }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(6,182,212,0.5); }
-    .btn-ghost {
-      background: transparent; border: 1px solid var(--border2);
-      color: var(--sky); font-weight: 600; padding: 0.95rem 2.5rem;
-      font-size: 0.95rem; border-radius: 6px; text-decoration: none;
-      transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
-    }
-    .btn-ghost:hover { border-color: var(--cyan); }
+/* ── TESTIMONIALS ── */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.testimonial-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; transition: all 0.3s; }
+.testimonial-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-3px); }
+.testimonial-stars { color: var(--gold); font-size: 1rem; margin-bottom: 1rem; letter-spacing: 2px; }
+.testimonial-text { color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+.testimonial-result { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; display: inline-block; margin-bottom: 1.2rem; }
+.testimonial-author { display: flex; align-items: center; gap: 1rem; }
+.author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0; }
+.author-name { font-weight: 700; font-size: 0.95rem; }
+.author-company { color: var(--muted); font-size: 0.8rem; }
 
-    /* SECTION */
-    section { padding: 5.5rem 2rem; }
-    .section-inner { max-width: 1100px; margin: 0 auto; }
-    .section-header { margin-bottom: 3rem; }
-    .section-kicker {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem; color: var(--cyan); text-transform: uppercase;
-      letter-spacing: 3px; margin-bottom: 0.7rem; display: block;
-    }
-    .section-title {
-      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900;
-      color: #fff; letter-spacing: -1px; line-height: 1.1;
-    }
-    .section-title .hl {
-      background: linear-gradient(135deg, var(--cyan), var(--sky));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .section-sub { color: var(--text-mid); margin-top: 0.8rem; font-size: 0.95rem; max-width: 520px; }
+/* ── TIMELINE ── */
+.timeline { margin-top: 3rem; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 30px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), var(--accent2)); }
+.timeline-item { display: flex; gap: 2rem; margin-bottom: 2.5rem; align-items: flex-start; }
+.timeline-dot { width: 60px; height: 60px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 900; font-size: 0.85rem; color: var(--accent); }
+.timeline-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.timeline-content p { color: var(--muted); font-size: 0.95rem; }
 
-    /* INCOME STREAM CARDS */
-    .stream-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-    .stream-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.8rem;
-      position: relative; overflow: hidden;
-      transition: border-color 0.3s, transform 0.3s;
-    }
-    .stream-card:hover { border-color: var(--cyan); transform: translateY(-3px); }
-    .stream-card-top {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 1.2rem;
-    }
-    .stream-icon {
-      width: 44px; height: 44px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.3rem; flex-shrink: 0;
-    }
-    .stream-change {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem;
-      border-radius: 4px;
-    }
-    .stream-change.up { color: var(--green); background: rgba(16,185,129,0.1); }
-    .stream-change.dn { color: var(--red); background: rgba(239,68,68,0.1); }
-    .stream-name { font-size: 0.8rem; color: var(--text-mid); font-weight: 500; margin-bottom: 0.3rem; }
-    .stream-amount {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 1rem;
-    }
-    .mini-chart { width: 100%; height: 40px; }
-    .mini-chart-line { fill: none; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+/* ── COMPARISON ── */
+.comparison-table { width: 100%; border-collapse: collapse; margin-top: 3rem; }
+.comparison-table th, .comparison-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+.comparison-table th { background: var(--surface2); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.comparison-table td:first-child { color: var(--text); font-weight: 500; }
+.comparison-table .col-us { background: rgba(108,99,255,0.06); }
+.comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+.col-us-header { background: rgba(108,99,255,0.15) !important; color: var(--accent) !important; }
+.check-yes { color: var(--green); font-size: 1.2rem; }
+.check-no { color: var(--red); opacity: 0.6; }
+.wrap-scroll { overflow-x: auto; }
 
-    /* DASHBOARD WIDGET GRID */
-    .widget-grid {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.5rem;
-    }
-    .widget {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 1.5rem; height: 100%;
-    }
-    .widget-title {
-      font-size: 0.78rem; font-weight: 600; color: var(--text-mid);
-      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.2rem;
-      font-family: 'JetBrains Mono', monospace;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .widget-title::before { content: '▪'; color: var(--cyan); }
-    .metric-row {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.65rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .metric-row:last-child { border-bottom: none; }
-    .metric-name { font-size: 0.85rem; color: var(--text-mid); }
-    .metric-val {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.88rem; font-weight: 600; color: var(--text);
-    }
-    .metric-val.positive { color: var(--green); }
-    .metric-val.highlight { color: var(--cyan); }
+/* ── PRICING ── */
+.pricing-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.tier-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; transition: all 0.3s; }
+.tier-card:hover { transform: translateY(-5px); }
+.tier-card.popular { border-color: var(--accent); background: rgba(108,99,255,0.07); box-shadow: 0 0 40px rgba(108,99,255,0.15); }
+.popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; padding: 0.3rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.tier-name { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.tier-price { font-size: 2.8rem; font-weight: 900; margin-bottom: 0.3rem; }
+.tier-period { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.tier-features { list-style: none; margin: 1.5rem 0 2rem; }
+.tier-features li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+.tier-features li:last-child { border-bottom: none; }
+.tier-cta { display: block; background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; text-align: center; padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+.tier-card.popular .tier-cta { box-shadow: 0 8px 25px rgba(108,99,255,0.4); }
+.tier-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(108,99,255,0.4); }
+.pricing-guarantee { text-align: center; margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; }
+.pricing-guarantee .guarantee-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.pricing-guarantee strong { color: var(--green); }
 
-    .kpi-list { display: flex; flex-direction: column; gap: 1rem; }
-    .kpi-item {}
-    .kpi-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
-    .kpi-value {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.6rem; font-weight: 700; color: var(--sky);
-    }
+/* ── SECURITY ── */
+.security-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2.5rem; justify-content: center; }
+.security-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 2rem; text-align: center; min-width: 140px; }
+.security-badge .badge-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.security-badge .badge-text { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
 
-    /* FEATURE TABLE */
-    .compare-table { width: 100%; border-collapse: collapse; }
-    .compare-table th {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px;
-      color: var(--text-dim); padding: 0.8rem 1rem; text-align: left;
-      border-bottom: 2px solid var(--border);
-    }
-    .compare-table td {
-      padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
-      font-size: 0.88rem; color: var(--text-mid);
-    }
-    .compare-table tr:hover td { background: rgba(6,182,212,0.03); }
-    .compare-table .col-feat { color: var(--text); font-weight: 500; }
-    .compare-table .chk { color: var(--green); font-size: 1rem; }
-    .compare-table .cross { color: var(--text-dim); opacity: 0.4; }
-    .compare-table .plan-head {
-      font-weight: 700; color: #fff; font-size: 0.85rem;
-    }
-    .compare-table .plan-head.featured { color: var(--cyan); }
+/* ── FAQ ── */
+.faq-list { margin-top: 2.5rem; }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden; }
+.faq-q { padding: 1.3rem 1.5rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+.faq-q:hover { background: var(--surface2); }
+.faq-arrow { transition: transform 0.3s; color: var(--muted); font-size: 0.8rem; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; color: var(--muted); line-height: 1.7; padding: 0 1.5rem; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.5rem 1.3rem; }
 
-    /* PRICING */
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-    .price-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 8px; padding: 2rem;
-      transition: border-color 0.3s, box-shadow 0.3s;
-      position: relative;
-    }
-    .price-card:hover { border-color: var(--cyan); box-shadow: 0 0 30px rgba(6,182,212,0.08); }
-    .price-card.featured {
-      border-color: var(--cyan);
-      box-shadow: 0 0 40px rgba(6,182,212,0.12);
-      background: linear-gradient(145deg, rgba(6,182,212,0.04), var(--card));
-    }
-    .price-tag {
-      position: absolute; top: -1px; right: 2rem;
-      background: var(--cyan); color: #000;
-      font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;
-      padding: 0.25rem 0.7rem; border-radius: 0 0 6px 6px;
-      text-transform: uppercase;
-    }
-    .price-plan {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem; color: var(--cyan); text-transform: uppercase;
-      letter-spacing: 3px; margin-bottom: 1rem;
-    }
-    .price-amount { font-size: 2.8rem; font-weight: 900; color: #fff; line-height: 1; }
-    .price-amount span { font-size: 1rem; color: var(--text-mid); font-weight: 400; }
-    .price-tagline { color: var(--text-dim); font-size: 0.83rem; margin: 0.5rem 0 1.5rem; }
-    .price-divider { height: 1px; background: var(--border); margin-bottom: 1.5rem; }
-    .price-feat-list { list-style: none; margin-bottom: 1.8rem; }
-    .price-feat-list li {
-      display: flex; align-items: flex-start; gap: 0.6rem;
-      padding: 0.45rem 0; font-size: 0.85rem; color: var(--text-mid);
-    }
-    .price-feat-list li .icon { color: var(--cyan); flex-shrink: 0; font-size: 0.7rem; margin-top: 3px; }
-    .price-btn {
-      display: block; text-align: center; padding: 0.85rem;
-      background: transparent; border: 1px solid var(--border);
-      color: var(--sky); font-weight: 700; font-size: 0.88rem;
-      border-radius: 6px; text-decoration: none; transition: all 0.2s;
-    }
-    .price-btn:hover { border-color: var(--cyan); background: rgba(6,182,212,0.08); }
-    .price-card.featured .price-btn {
-      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
-      color: #000; border-color: transparent;
-    }
-    .price-card.featured .price-btn:hover { opacity: 0.88; }
+/* ── FINAL CTA ── */
+.final-cta { text-align: center; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); border-top: 1px solid rgba(108,99,255,0.2); border-bottom: 1px solid rgba(108,99,255,0.2); }
+.final-cta h2 { margin-bottom: 1rem; }
+.final-cta p { color: var(--muted); max-width: 550px; margin: 0 auto 2.5rem; }
+.urgency { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff6b7a; padding: 0.8rem 1.5rem; border-radius: 10px; display: inline-block; margin-bottom: 2rem; font-weight: 600; font-size: 0.9rem; }
 
-    /* CTA */
-    .cta-section {
-      background: var(--card2); border-top: 1px solid var(--border);
-      padding: 6rem 2rem; text-align: center; position: relative; overflow: hidden;
-    }
-    .cta-section::before {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 60% 70% at 50% 100%, rgba(6,182,212,0.08) 0%, transparent 60%);
-    }
-    .cta-section h2 {
-      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; color: #fff;
-      margin-bottom: 1rem; position: relative;
-    }
-    .cta-section p { color: var(--text-mid); font-size: 1rem; margin-bottom: 2.5rem; position: relative; }
-    .cta-btn {
-      display: inline-flex; align-items: center; gap: 0.7rem;
-      background: linear-gradient(135deg, var(--cyan), var(--sky));
-      color: #000; font-weight: 800; padding: 1.1rem 3rem;
-      font-size: 1rem; border-radius: 8px; text-decoration: none;
-      box-shadow: 0 0 50px rgba(6,182,212,0.4); position: relative;
-      transition: all 0.25s;
-    }
-    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 0 70px rgba(6,182,212,0.6); }
+/* ── FOOTER ── */
+footer { background: var(--surface); border-top: 1px solid var(--border); padding: 3rem 5% 2rem; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; }
+@media(max-width:700px) { .footer-inner { grid-template-columns: 1fr; } }
+.footer-brand { }
+.footer-brand .logo { font-size: 1.2rem; }
+.footer-brand p { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; max-width: 280px; line-height: 1.6; }
+.footer-links h4 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.2rem; color: var(--muted); }
+.footer-links a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 0.6rem; font-size: 0.9rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: 0.8rem; }
 
-    /* FOOTER */
-    footer {
-      background: var(--bg); border-top: 1px solid var(--border);
-      padding: 3rem 2rem;
-    }
-    .footer-inner {
-      max-width: 1100px; margin: 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 2rem;
-    }
-    .footer-logo {
-      font-size: 1.1rem; font-weight: 800;
-      background: linear-gradient(135deg, var(--sky), var(--cyan));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
-    .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--cyan); }
-    .footer-copy {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.68rem; color: var(--text-dim); text-align: center; width: 100%;
-      padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.04);
-    }
-
-    @media (max-width: 768px) {
-      .widget-grid { grid-template-columns: 1fr; }
-      .income-bar-row { grid-template-columns: 100px 1fr 70px; }
-    }
-    @media (max-width: 640px) {
-      nav { padding: 0.75rem 1.2rem; }
-      .nav-links { display: none; }
-      .portfolio-total { font-size: 2.2rem; }
-    }
-
-    /* STICKY MOBILE CTA */
-    #mobileCta {
-      display: none;
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 8000;
-      background: linear-gradient(90deg, #040f1f, #071830);
-      border-top: 1px solid rgba(6,182,212,0.3);
-      padding: 0.85rem 1rem;
-      align-items: center; justify-content: space-between; gap: 0.75rem;
-    }
-    #mobileCta .mctxt { font-size: 0.8rem; color: var(--text-mid); line-height: 1.3; }
-    #mobileCta .mctxt strong { color: #fff; display: block; font-size: 0.9rem; }
-    #mobileCta a.mcbtn {
-      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
-      color: #000; font-weight: 800; font-size: 0.88rem;
-      padding: 0.75rem 1.3rem; border-radius: 6px; text-decoration: none;
-      white-space: nowrap; flex-shrink: 0;
-    }
-    @media (max-width: 640px) {
-      #mobileCta { display: flex; }
-      body { padding-bottom: 72px; }
-    }
-
-    /* EXIT POPUP */
-    #exitPopup { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.88); backdrop-filter:blur(6px); align-items:center; justify-content:center; }
-    .popup-inner { background:#040f1f; border:2px solid rgba(6,182,212,0.35); border-radius:16px; padding:2.5rem 2rem; max-width:460px; width:92%; text-align:center; position:relative; }
-    .popup-close { position:absolute; top:1rem; right:1.1rem; background:none; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; line-height:1; padding:0; }
-    .popup-close:hover { color:#e2e8f0; }
-    .popup-badge { display:inline-block; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:4px 14px; border-radius:99px; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:1rem; }
-    .popup-title { font-size:1.55rem; font-weight:900; color:#fff; margin-bottom:0.7rem; line-height:1.2; }
-    .popup-sub { color:#94a3b8; margin-bottom:1.4rem; font-size:0.93rem; }
-    .popup-form input { width:100%; padding:14px 18px; border-radius:8px; border:1px solid rgba(6,182,212,0.3); background:#020d1e; color:#e2e8f0; font-size:0.97rem; outline:none; margin-bottom:0.6rem; }
-    .popup-form button { width:100%; background:linear-gradient(135deg,#06b6d4,#3b82f6); color:white; padding:14px; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; }
-    .popup-skip { margin-top:0.9rem; font-size:0.78rem; color:#475569; cursor:pointer; }
-    .popup-skip:hover { color:#94a3b8; }
-
-    /* COUNTDOWN */
-    .cd-bar { margin-top:2rem; text-align:center; }
-    .cd-inner { display:inline-flex; align-items:center; gap:0.7rem; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.22); border-radius:8px; padding:0.65rem 1.4rem; }
-    .cd-label { font-size:0.72rem; color:#ef4444; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
-    .cd-time { font-family:'JetBrains Mono',monospace; font-size:1.15rem; font-weight:700; color:#fff; }
-
-    /* SOCIAL PROOF TOAST */
-    #spToast { position:fixed; bottom:1.5rem; left:1.5rem; z-index:8888; pointer-events:none; transition:opacity 0.4s,transform 0.4s; opacity:0; transform:translateY(10px); }
-    .sp-inner { background:#040f1f; border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px; max-width:270px; box-shadow:0 4px 24px rgba(0,0,0,0.55); }
-    .sp-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#06b6d4,#3b82f6); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.95rem; flex-shrink:0; color:#000; }
-    .sp-name { font-size:0.8rem; font-weight:600; color:#e2e8f0; }
-    .sp-action { font-size:0.72rem; color:#10b981; margin-top:2px; }
-
-    /* TESTIMONIALS */
-    .testi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:1.5rem; }
-    .testi-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:1.8rem; transition:border-color 0.3s; }
-    .testi-card:hover { border-color:rgba(6,182,212,0.3); }
-    .testi-stars { color:#f59e0b; font-size:0.95rem; margin-bottom:0.8rem; }
-    .testi-text { color:var(--text-mid); font-size:0.88rem; line-height:1.7; margin-bottom:1.1rem; }
-    .testi-author { display:flex; align-items:center; gap:0.7rem; }
-    .testi-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; color:#fff; }
-    .testi-name { font-size:0.84rem; font-weight:700; color:#e2e8f0; }
-    .testi-role { font-size:0.73rem; color:var(--text-dim); margin-top:1px; }
-  
-  /* CASE STUDIES */
-  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
-  .cs-inner { max-width: 1200px; margin: 0 auto; }
-  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
-  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
-  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
-  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
-  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
-  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
-  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
-  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .cs-name { font-weight: 700; font-size: 0.9rem; }
-  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
-  /* LIVE DEMO SECTION */
-  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
-  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
-  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
-  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
-  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
-  .demo-traffic-lights { display: flex; gap: 0.4rem; }
-  .dtl { width: 12px; height: 12px; border-radius: 50%; }
-  .dtl-r { background: #ff5f57; }
-  .dtl-y { background: #ffbd2e; }
-  .dtl-g { background: #28ca41; }
-  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
-  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
-  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
-  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
-  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
-  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
-  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
-  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
-  .demo-text-input:focus { border-color: #60a5fa; }
-  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
-  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
+@media(max-width:768px) {
+  .nav { display: none; }
+  .hero { padding: 120px 5% 60px; }
+  .ps-grid { grid-template-columns: 1fr; }
+}
 </style>
-
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 </head>
 <body>
 
-<!-- STICKY MOBILE CTA -->
-<div id="mobileCta">
-  <div class="mctxt"><strong>AI Income Machine Blueprint</strong>60-Tage Garantie · Einmalzahlung</div>
-  <a href="https://www.checkout-ds24.com/product/669750" class="mcbtn">€37 kaufen →</a>
-</div>
-
-<!-- EXIT INTENT POPUP -->
-<div id="exitPopup">
-  <div class="popup-inner">
-    <button class="popup-close" onclick="closePopup()">✕</button>
-    <div class="popup-badge">Warte! Bevor du gehst…</div>
-    <h2 class="popup-title">Hol dir die KI-Checkliste — <span style="color:#06b6d4;">gratis</span></h2>
-    <p class="popup-sub">21 Schritte für dein erstes KI Online-Business. Kostenlos, kein Spam.</p>
-    <form class="popup-form" onsubmit="popupSubscribe(event)">
-      <input type="email" id="popupEmail" placeholder="deine@email.de" required />
-      <button type="submit">Jetzt kostenlos holen →</button>
-    </form>
-    <p id="popupMsg" style="display:none;color:#10b981;margin-top:0.75rem;font-weight:600;">✅ Danke! Checke deine E-Mail.</p>
-    <p class="popup-skip" onclick="closePopup()">Nein danke, ich brauche keine kostenlosen Tipps</p>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">AutoIncome AI</div>
+    <nav class="nav">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#preise">Preise</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="https://buy.stripe.com/8x228tgM27XY8IEfJc4F42uM" class="header-cta">Jetzt starten →</a>
   </div>
-</div>
-
-<!-- SOCIAL PROOF TOAST -->
-<div id="spToast">
-  <div class="sp-inner">
-    <div class="sp-avatar" id="spAvatar"></div>
-    <div><div class="sp-name" id="spName"></div><div class="sp-action" id="spAction"></div></div>
-  </div>
-</div>
-
-<!-- TOP TICKER -->
-<div class="top-ticker">
-  <div class="ticker-scroll" id="tickerScroll">
-    <span class="tick-item"><span class="tick-name">SHOPIFY</span><span class="tick-val">€1,247</span><span class="tick-chg up">+12.4%</span></span>
-    <span class="tick-item"><span class="tick-name">AFFILIATE</span><span class="tick-val">€834</span><span class="tick-chg up">+8.1%</span></span>
-    <span class="tick-item"><span class="tick-name">DIGITAL</span><span class="tick-val">€623</span><span class="tick-chg up">+22.7%</span></span>
-    <span class="tick-item"><span class="tick-name">SAAS</span><span class="tick-val">€499</span><span class="tick-chg up">+5.3%</span></span>
-    <span class="tick-item"><span class="tick-name">FREELANCE</span><span class="tick-val">€380</span><span class="tick-chg dn">-2.1%</span></span>
-    <span class="tick-item"><span class="tick-name">GESAMT</span><span class="tick-val">€3,583</span><span class="tick-chg up">+14.2%</span></span>
-    <span class="tick-item"><span class="tick-name">MONAT</span><span class="tick-val">€12,847</span><span class="tick-chg up">+18.9%</span></span>
-    <span class="tick-item"><span class="tick-name">SHOPIFY</span><span class="tick-val">€1,247</span><span class="tick-chg up">+12.4%</span></span>
-    <span class="tick-item"><span class="tick-name">AFFILIATE</span><span class="tick-val">€834</span><span class="tick-chg up">+8.1%</span></span>
-    <span class="tick-item"><span class="tick-name">DIGITAL</span><span class="tick-val">€623</span><span class="tick-chg up">+22.7%</span></span>
-    <span class="tick-item"><span class="tick-name">SAAS</span><span class="tick-val">€499</span><span class="tick-chg up">+5.3%</span></span>
-    <span class="tick-item"><span class="tick-name">FREELANCE</span><span class="tick-val">€380</span><span class="tick-chg dn">-2.1%</span></span>
-    <span class="tick-item"><span class="tick-name">GESAMT</span><span class="tick-val">€3,583</span><span class="tick-chg up">+14.2%</span></span>
-    <span class="tick-item"><span class="tick-name">MONAT</span><span class="tick-val">€12,847</span><span class="tick-chg up">+18.9%</span></span>
-  </div>
-</div>
-
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">AutoIncome AI</a>
-  <div class="nav-status">LIVE DATEN</div>
-  <div class="nav-links">
-    <a href="#streams">Streams</a>
-    <a href="#dashboard">Dashboard</a>
-    <a href="#pricing">Preise</a>
-  </div>
-  <a href="https://www.checkout-ds24.com/product/669750" class="nav-cta">Jetzt starten →</a>
-</nav>
+</header>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="hero-grid-bg"></div>
-  <div class="hero-glow"></div>
-
-  <div class="hero-badge">📊 BLUEPRINT — Shopify · Affiliate · Digistore24 · KI-Tools · Automation</div>
-
-  <h1>
-    <span class="line1">Alle Online-Kanäle.</span>
-    <span class="line2">Ein Dashboard.</span>
-  </h1>
-  <p class="hero-sub">AutoIncome AI ist ein Blueprint + Software-System, das Shopify, Affiliate, Digistore24 und Social Media in einem KI-Dashboard verbindet — für strukturiertes Online-Business-Wachstum.</p>
-
-  <!-- PORTFOLIO CARD -->
-  <div class="portfolio-card">
-    <div class="portfolio-header">
-      <div>
-        <div class="portfolio-label">BEISPIEL-DASHBOARD — ILLUSTRATIVE ÜBERSICHT*</div>
-        <div class="portfolio-total">€<span id="totalCount">0</span></div>
-        <div class="portfolio-change">▲ Beispiel-Wachstum</div>
-      </div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-dim);text-align:right;">
-        <div>Dashboard-Ansicht</div>
-        <div style="color:var(--cyan);" id="liveTime">--:--:--</div>
-        <div style="margin-top:0.3rem;color:var(--amber);">● BEISPIEL</div>
-      </div>
-    </div>
-    <div class="income-bars">
-      <div class="income-bar-row">
-        <div class="income-bar-label">🛍️ Shopify</div>
-        <div class="income-bar-track"><div class="income-bar-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#38bdf8);"></div></div>
-        <div class="income-bar-val">€4,920</div>
-      </div>
-      <div class="income-bar-row">
-        <div class="income-bar-label">🔗 Affiliate</div>
-        <div class="income-bar-track"><div class="income-bar-fill" style="width:72%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div>
-        <div class="income-bar-val">€3,540</div>
-      </div>
-      <div class="income-bar-row">
-        <div class="income-bar-label">📦 Digital</div>
-        <div class="income-bar-track"><div class="income-bar-fill" style="width:55%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div>
-        <div class="income-bar-val">€2,700</div>
-      </div>
-      <div class="income-bar-row">
-        <div class="income-bar-label">⚙️ SaaS</div>
-        <div class="income-bar-track"><div class="income-bar-fill" style="width:40%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
-        <div class="income-bar-val">€1,980</div>
-      </div>
-      <div class="income-bar-row">
-        <div class="income-bar-label">💼 Freelance</div>
-        <div class="income-bar-track"><div class="income-bar-fill" style="width:22%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
-        <div class="income-bar-val">€1,080</div>
-      </div>
-    </div>
+  <div class="hero-badge">🚀 Trusted by 1.000+ Unternehmer</div>
+  <h1>Das <span>AutoIncome AI</span> —<br>Passives Einkommen Machine — von 0 auf €3.200/Monat in 90 Tagen</h1>
+  <p class="hero-sub">"Passives Einkommen" klingt gut, aber ohne System verdienst du nichts passiv. Die meisten geben nach 3 Monaten auf</p>
+  <div class="hero-stat">📊 €3.200 Ø Passiveinkommen nach 90 Tagen</div>
+  <div class="hero-ctas">
+    <a href="https://buy.stripe.com/8x228tgM27XY8IEfJc4F42uM" class="btn-primary">Jetzt kostenlos testen →</a>
+    <a href="demo.html" class="btn-secondary">🎯 Live Demo ansehen</a>
   </div>
-
-  <!-- SVG LINE CHART -->
-  <div class="chart-section">
-    <div class="chart-header">
-      <div class="chart-title">Gesamteinkommen — 12 Monate <span class="chart-pill">WACHSTUM +247%</span></div>
-      <div class="chart-meta">Jul 2025 — Jun 2026</div>
-    </div>
-    <svg class="line-chart" viewBox="0 0 800 160" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.25"/>
-          <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path class="chart-area" d="M 0 150 L 66 138 L 133 130 L 200 118 L 266 108 L 333 95 L 400 82 L 466 68 L 533 55 L 600 40 L 666 28 L 733 15 L 800 8 L 800 160 Z"/>
-      <path class="chart-line" d="M 0 150 L 66 138 L 133 130 L 200 118 L 266 108 L 333 95 L 400 82 L 466 68 L 533 55 L 600 40 L 666 28 L 733 15 L 800 8"/>
-      <circle cx="800" cy="8" r="4" class="chart-dot"/>
-    </svg>
-  </div>
-
-  <div class="hero-btns">
-    <a href="https://www.checkout-ds24.com/product/669750" class="btn-primary">🚀 Jetzt starten — €37 einmalig</a>
-    <a href="#streams" class="btn-ghost">Streams ansehen →</a>
-  </div>
-
-  <!-- COUNTDOWN TIMER -->
-  <div class="cd-bar">
-    <div class="cd-inner">
-      <span class="cd-label">🔴 Junipreis endet 30.06. — noch:</span>
-      <span class="cd-time" id="cdTimer">--T --:--:--</span>
-    </div>
-  </div>
+  <p class="hero-guarantee">✓ <span>30 Tage Geld-zurück-Garantie</span> · ✓ Keine Kreditkarte für Demo · ✓ Setup in 30 Min</p>
 </section>
 
-<!-- INCOME STREAMS -->
-<section id="streams" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">2.400+</div><div class="stat-label">passive Einkommensbezieher</div></div>
+<div class="stat-item"><div class="stat-num">€3.200</div><div class="stat-label">Ø Passiveinkommen nach 90 Tagen</div></div>
+<div class="stat-item"><div class="stat-num">7</div><div class="stat-label">automatisierte Income Streams</div></div>
+<div class="stat-item"><div class="stat-num">90 Tage</div><div class="stat-label">bis zum vollen System</div></div>
+  </div>
+</div>
+
+<!-- PROBLEM / SOLUTION -->
+<section>
   <div class="section-inner">
-    <div class="section-header">
-      <span class="section-kicker">EINKOMMENSSTRÖME</span>
-      <h2 class="section-title">5 parallele <span class="hl">Geldquellen</span></h2>
-      <p class="section-sub">Jeder Kanal läuft unabhängig — kombiniert entsteht ein diversifiziertes Online-Business-System.*</p>
-    </div>
-    <div class="stream-grid">
-      <div class="stream-card">
-        <div class="stream-card-top">
-          <div class="stream-icon" style="background:rgba(6,182,212,0.12);">🛍️</div>
-          <div class="stream-change up">▲ +12.4%</div>
-        </div>
-        <div class="stream-name">SHOPIFY STORE</div>
-        <div class="stream-amount">€<span class="scount" data-end="4920">0</span></div>
-        <svg class="mini-chart" viewBox="0 0 200 40">
-          <polyline class="mini-chart-line" points="0,35 30,30 60,25 90,20 120,15 150,10 170,8 200,5" style="stroke:#06b6d4;"/>
-        </svg>
+    <div class="section-label">Warum AutoIncome AI?</div>
+    <h2>Das <span>Problem</span> — und die Lösung</h2>
+    <div class="ps-grid">
+      <div class="ps-card">
+        <div class="ps-icon">😤</div>
+        <h3>Das Problem</h3>
+        <p>"Passives Einkommen" klingt gut, aber ohne System verdienst du nichts passiv. Die meisten geben nach 3 Monaten auf — weil sie alles manuell machen.</p>
       </div>
-      <div class="stream-card">
-        <div class="stream-card-top">
-          <div class="stream-icon" style="background:rgba(59,130,246,0.12);">🔗</div>
-          <div class="stream-change up">▲ +8.1%</div>
-        </div>
-        <div class="stream-name">AFFILIATE MARKETING</div>
-        <div class="stream-amount">€<span class="scount" data-end="3540">0</span></div>
-        <svg class="mini-chart" viewBox="0 0 200 40">
-          <polyline class="mini-chart-line" points="0,38 30,35 60,30 90,28 120,22 150,16 170,12 200,8" style="stroke:#3b82f6;"/>
-        </svg>
-      </div>
-      <div class="stream-card">
-        <div class="stream-card-top">
-          <div class="stream-icon" style="background:rgba(139,92,246,0.12);">📦</div>
-          <div class="stream-change up">▲ +22.7%</div>
-        </div>
-        <div class="stream-name">DIGITALE PRODUKTE</div>
-        <div class="stream-amount">€<span class="scount" data-end="2700">0</span></div>
-        <svg class="mini-chart" viewBox="0 0 200 40">
-          <polyline class="mini-chart-line" points="0,38 30,36 60,32 90,24 120,18 150,14 170,8 200,4" style="stroke:#8b5cf6;"/>
-        </svg>
-      </div>
-      <div class="stream-card">
-        <div class="stream-card-top">
-          <div class="stream-icon" style="background:rgba(16,185,129,0.12);">⚙️</div>
-          <div class="stream-change up">▲ +5.3%</div>
-        </div>
-        <div class="stream-name">SAAS SUBSCRIPTIONS</div>
-        <div class="stream-amount">€<span class="scount" data-end="1980">0</span></div>
-        <svg class="mini-chart" viewBox="0 0 200 40">
-          <polyline class="mini-chart-line" points="0,36 30,34 60,33 90,30 120,26 150,22 170,18 200,14" style="stroke:#10b981;"/>
-        </svg>
-      </div>
-      <div class="stream-card">
-        <div class="stream-card-top">
-          <div class="stream-icon" style="background:rgba(245,158,11,0.12);">💼</div>
-          <div class="stream-change dn">▼ -2.1%</div>
-        </div>
-        <div class="stream-name">FREELANCE / BERATUNG</div>
-        <div class="stream-amount">€<span class="scount" data-end="1080">0</span></div>
-        <svg class="mini-chart" viewBox="0 0 200 40">
-          <polyline class="mini-chart-line" points="0,20 30,18 60,22 90,25 120,20 150,23 170,26 200,28" style="stroke:#f59e0b;"/>
-        </svg>
+      <div class="ps-card solution">
+        <div class="ps-icon">⚡</div>
+        <h3>Die Lösung</h3>
+        <p>AutoIncome AI baut dein Passiveinkommen-System vollautomatisch: Affiliate-Links, digitale Produkte, Content — 24/7 verdienen während du schläfst.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- DASHBOARD WIDGETS -->
-<section id="dashboard">
-  <div class="section-inner">
-    <div class="section-header">
-      <span class="section-kicker">ANALYTICS COCKPIT</span>
-      <h2 class="section-title">Alles auf einen <span class="hl">Blick</span></h2>
+<!-- VIDEO DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-inner demo-container">
+    <div class="section-label">Live Demo</div>
+    <h2>Sieh AutoIncome AI <span>live in Aktion</span></h2>
+    <p class="lead" style="margin:0 auto 1rem;text-align:center;">In 5 Minuten wirst du verstehen, warum 1.000+ Unternehmer auf AutoIncome AI setzen.</p>
+    <div class="video-placeholder" onclick="window.open('demo.html', '_blank')">
+      <div class="play-btn">▶</div>
     </div>
-    <div class="widget-grid">
-      <div class="widget">
-        <div class="widget-title">Performance Metriken</div>
-        <div class="metric-row"><span class="metric-name">Heutiger Umsatz</span><span class="metric-val highlight">€<span id="todayRev">847</span></span></div>
-        <div class="metric-row"><span class="metric-name">Aktive Kunden</span><span class="metric-val">1,247</span></div>
-        <div class="metric-row"><span class="metric-name">Conversion Rate</span><span class="metric-val positive">3.8%</span></div>
-        <div class="metric-row"><span class="metric-name">Avg. Order Value</span><span class="metric-val">€67.40</span></div>
-        <div class="metric-row"><span class="metric-name">Churn Rate</span><span class="metric-val positive">1.2%</span></div>
-        <div class="metric-row"><span class="metric-name">MRR Wachstum</span><span class="metric-val positive">+18.4%</span></div>
-        <div class="metric-row"><span class="metric-name">LTV (Ø)</span><span class="metric-val">€890</span></div>
-        <div class="metric-row"><span class="metric-name">CAC</span><span class="metric-val highlight">€24</span></div>
+    <a href="demo.html" class="demo-link">🎯 Interaktive Demo starten (kein Account nötig) →</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">Features</div>
+    <h2>Alles was du brauchst — <span>nichts was du nicht brauchst</span></h2>
+    <p class="lead">Keine überladene Software. Jedes Feature ist auf Umsatz und Zeitersparnis optimiert.</p>
+    <ul class="features-grid">
+      <li><span class="check">✓</span> 7 automatisierte Income Streams</li>
+<li><span class="check">✓</span> Affiliate Marketing Autopilot</li>
+<li><span class="check">✓</span> Digitale Produkte (Gumroad/DS24)</li>
+<li><span class="check">✓</span> KI-Traffic auf alle Angebote</li>
+<li><span class="check">✓</span> E-Mail Liste aufbauen & monetisieren</li>
+<li><span class="check">✓</span> YouTube & Blog ohne Gesicht zeigen</li>
+<li><span class="check">✓</span> Monatliche Income Reports</li>
+<li><span class="check">✓</span> Skalierungs-Roadmap (bis €10k/mo)</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ROI CALCULATOR -->
+<section class="roi-section">
+  <div class="section-inner">
+    <div class="section-label">ROI Rechner</div>
+    <h2>Was bringt <span>dir</span> AutoIncome AI?</h2>
+    <p class="lead">Berechne deinen persönlichen Return on Investment in Sekunden.</p>
+    <div class="roi-box">
+      <h3>🧮 Dein ROI Calculator</h3>
+      <p class="roi-desc">Ø Zeit bis zum Erreichen deines Ziels mit AutoIncome AI</p>
+      <div class="roi-input-wrap">
+        <label for="roi-input">Monatliches Ziel-Passiveinkommen (€):</label>
+        <input type="number" id="roi-input" value="2000" min="1">
       </div>
-      <div class="widget">
-        <div class="widget-title">Monatsziele</div>
-        <div class="kpi-list">
-          <div class="kpi-item">
-            <div class="kpi-label">Aktueller MRR</div>
-            <div class="kpi-value">€14.2k</div>
-          </div>
-          <div class="kpi-item">
-            <div class="kpi-label">Ziel MRR</div>
-            <div class="kpi-value" style="color:var(--text-mid);">€20k</div>
-          </div>
-          <div class="kpi-item">
-            <div class="kpi-label">Fortschritt</div>
-            <div class="kpi-value" style="color:var(--green);">71%</div>
-          </div>
-          <div class="kpi-item">
-            <div class="kpi-label">Prognose</div>
-            <div class="kpi-value" style="color:var(--amber);">€18.9k</div>
-          </div>
+      <div class="roi-output">
+        <div class="roi-output-label">Dein potenzieller Mehrwert mit AutoIncome AI:</div>
+        <div id="roi-result">…</div>
+        <div class="roi-note">Basierend auf dem Durchschnitt unserer 1.000+ Nutzer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Erfolgsgeschichten</div>
+    <h2>Was unsere Kunden <span>wirklich sagen</span></h2>
+    <p class="lead">Echte Ergebnisse von echten Unternehmern — keine erfundenen Testimonials.</p>
+    <div class="testimonials-grid">
+      
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Mit AutoIncome AI habe ich in 6 Wochen mehr erreicht als in den letzten 2 Jahren manuell. Der ROI war bereits im ersten Monat positiv."</p>
+            <div class="testimonial-result">+€4.200/Monat</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">M</div>
+                <div>
+                    <div class="author-name">Markus H.</div>
+                    <div class="author-company">E-Commerce Store Owner</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Endlich funktioniert mein Business ohne mich. AutoIncome AI läuft 24/7 und generiert Ergebnisse während ich schlafe. Absolute Empfehlung!"</p>
+            <div class="testimonial-result">8h täglich gespart</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">S</div>
+                <div>
+                    <div class="author-name">Sandra K.</div>
+                    <div class="author-company">Online-Unternehmerin</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Ich nutze AutoIncome AI für 12 meiner Kunden. Der Zeitaufwand ist drastisch gesunken, die Ergebnisse sind 3x besser als vorher."</p>
+            <div class="testimonial-result">12 Clients automatisiert</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">T</div>
+                <div>
+                    <div class="author-name">Thomas W.</div>
+                    <div class="author-company">Digital Marketing Agency</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Die Demo hat mich überzeugt, der erste Monat hat mich begeistert. AutoIncome AI ist das beste Investment das ich je für mein Business gemacht habe."</p>
+            <div class="testimonial-result">312% Conversion-Steigerung</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">J</div>
+                <div>
+                    <div class="author-name">Julia M.</div>
+                    <div class="author-company">Shopify Merchant</div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION TIMELINE -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">Dein Weg zum Erfolg</div>
+    <h2>Von heute bis zu <span>deinen ersten Ergebnissen</span></h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">Tag 1</div>
+        <div class="timeline-content">
+          <h4>Setup & Onboarding (30 Min.)</h4>
+          <p>Dein Account ist aktiv, alle Integrationen verbunden. Unser Onboarding-Bot führt dich Schritt für Schritt. Kein Technik-Know-how nötig.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Woche 1</div>
+        <div class="timeline-content">
+          <h4>Erste Ergebnisse sichtbar</h4>
+          <p>Das System läuft. Erste automatische Actions, erste Daten im Dashboard. Du siehst live wie AutoIncome AI für dich arbeitet.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 1</div>
+        <div class="timeline-content">
+          <h4>Vollständiger ROI erreicht</h4>
+          <p>Der Großteil unserer Nutzer sieht den vollen ROI im ersten Monat. Du bist bereits in den Gewinnbereich eingetreten.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 3</div>
+        <div class="timeline-content">
+          <h4>Skalierung & Optimierung</h4>
+          <p>Dein System ist optimiert und skaliert sich selbst. Fokussiere dich auf Strategie — AutoIncome AI übernimmt die Ausführung.</p>
         </div>
       </div>
     </div>
@@ -849,1027 +415,219 @@
 </section>
 
 <!-- COMPARISON TABLE -->
-<section style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+<section>
   <div class="section-inner">
-    <div class="section-header">
-      <span class="section-kicker">PLAN VERGLEICH</span>
-      <h2 class="section-title">Was du <span class="hl">bekommst</span></h2>
-    </div>
-    <div style="overflow-x:auto;">
-      <table class="compare-table">
+    <div class="section-label">Vergleich</div>
+    <h2>AutoIncome AI vs. <span>die Alternativen</span></h2>
+    <div class="wrap-scroll">
+      <table class="comparison-table">
         <thead>
           <tr>
             <th>Feature</th>
-            <th><span class="plan-head">Starter</span></th>
-            <th><span class="plan-head featured">Pro</span></th>
-            <th><span class="plan-head">Enterprise</span></th>
+            <th class="col-us-header">AutoIncome AI ✓</th>
+            <th>Manuelle Methode</th>
+            <th>Günstige Tools</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td class="col-feat">Aktive Einkommensströme</td><td>2</td><td class="plan-head featured">5</td><td>Unbegrenzt</td></tr>
-          <tr><td class="col-feat">KI-Optimierung</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">Live-Dashboard</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">Tägliche Reports</td><td>Wöchentlich</td><td class="chk">✓ täglich</td><td class="chk">✓ stündlich</td></tr>
-          <tr><td class="col-feat">Shopify Integration</td><td class="chk">✓</td><td class="chk">✓</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">Affiliate Tracking</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">A/B Testing</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">API-Zugriff</td><td class="cross">—</td><td class="cross">—</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">White-Label</td><td class="cross">—</td><td class="cross">—</td><td class="chk">✓</td></tr>
-          <tr><td class="col-feat">Support</td><td>E-Mail</td><td>Telegram</td><td>24/7 Hotline</td></tr>
+          <tr><td>Vollautomatisierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>KI-Optimierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>24/7 Betrieb</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>DSGVO-konform</td><td class="col-us check-yes">✓</td><td style="color:var(--muted)">Unklar</td><td style="color:var(--muted)">Teilweise</td></tr>
+          <tr><td>Dedizierter Support</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>ROI in 30 Tagen</td><td class="col-us check-yes">✓ garantiert</td><td class="check-no">✗ Monate</td><td class="check-no">✗ selten</td></tr>
+          <tr><td>Setup-Zeit</td><td class="col-us" style="color:var(--green)">30 Minuten</td><td style="color:var(--muted)">Wochen</td><td style="color:var(--muted)">Tage</td></tr>
+          <tr><td>Skalierbar auf €100k+</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
         </tbody>
       </table>
     </div>
   </div>
 </section>
 
-<!-- TESTIMONIALS -->
-<section style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
-  <div class="section-inner">
-    <div class="section-header">
-      <span class="section-kicker">KUNDENSTIMMEN</span>
-      <h2 class="section-title">Was andere <span class="hl">erreicht haben</span></h2>
-      <p class="section-sub">Echte Ergebnisse von Menschen, die genauso gestartet haben wie du.</p>
-    </div>
-    <div class="testi-grid">
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-text">"In den ersten 3 Wochen hatte ich meine erste Digistore24-Provision. Der Blueprint ist wirklich Schritt-für-Schritt — ich hatte keine Vorkenntnisse und hab es trotzdem geschafft."</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">M</div>
-          <div><div class="testi-name">Markus T.</div><div class="testi-role">München · Digistore24 Affiliate</div></div>
-        </div>
-      </div>
-      <div class="testi-card" style="border-color:rgba(6,182,212,0.25);">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-text">"LinkedIn-Automation ist Gold wert. Ich poste jetzt 3x/Woche automatisch und bekomme regelmäßig Anfragen. Der SuperMegaBot hat sich nach 2 Wochen schon bezahlt gemacht."</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,#06b6d4,#38bdf8);">S</div>
-          <div><div class="testi-name">Sandra K.</div><div class="testi-role">Hamburg · Online Marketing</div></div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <div class="testi-stars">★★★★★</div>
-        <p class="testi-text">"Wie ich in 90 Tagen mein erstes Online-Einkommen aufgebaut habe — mit dem Blueprint als Fahrplan. Ich arbeite noch meinen Job, aber das System läuft komplett nebenher."</p>
-        <div class="testi-author">
-          <div class="testi-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);">F</div>
-          <div><div class="testi-name">Felix W.</div><div class="testi-role">Berlin · Freelancer</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- URGENCY BANNER -->
-<div style="background:linear-gradient(90deg,#991b1b,#dc2626);padding:14px 20px;text-align:center;border-top:1px solid rgba(255,255,255,0.1);border-bottom:1px solid rgba(255,255,255,0.1);">
-  <p style="color:white;font-weight:700;font-size:1rem;margin:0;">🔴 Junipreis läuft ab! Noch <span id="urgencyTimer" style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;">--</span> bis 30.06.2026 — danach regulärer Preis</p>
-</div>
-
 <!-- PRICING -->
-<section id="pricing">
+<section class="pricing-section" id="preise">
   <div class="section-inner">
-    <div class="section-header">
-      <span class="section-kicker">INVESTITION</span>
-      <h2 class="section-title">Wähle deinen <span class="hl">Plan</span></h2>
-      <p class="section-sub">60-Tage Geld-zurück-Garantie · Einmalzahlung · Kein Abo · Sofortiger Zugriff.</p>
-    </div>
+    <div class="section-label">Investition</div>
+    <h2>Wähle den Plan der <span>zu dir passt</span></h2>
+    <p class="lead" style="margin:0 auto;text-align:center;">Alle Pläne beinhalten 30-Tage Geld-zurück-Garantie. Kein Risiko.</p>
     <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-plan">AFFILIATE</div>
-        <div class="price-amount">€0<span> kostenlos</span></div>
-        <div class="price-tagline">Verdiene 50% Provision ohne eigenes Produkt</div>
-        <div class="price-divider"></div>
-        <ul class="price-feat-list">
-          <li><span class="icon">▸</span>€18,50 pro Blueprint-Sale</li>
-          <li><span class="icon">▸</span>€48,50 pro SuperMegaBot-Sale</li>
-          <li><span class="icon">▸</span>Wöchentliche Auszahlung</li>
-          <li><span class="icon">▸</span>Fertige Werbematerialien</li>
-          <li><span class="icon">▸</span>Digistore24 Tracking</li>
-        </ul>
-        <a href="/affiliate.html" class="price-btn">Affiliate werden →</a>
-      </div>
-      <div class="price-card featured">
-        <div class="price-tag">BESTSELLER</div>
-        <div class="price-plan">BLUEPRINT</div>
-        <div class="price-amount">€37<span> einmalig</span></div>
-        <div class="price-tagline">90-Tage KI-Blueprint: Online-Business aufbauen</div>
-        <div class="price-divider"></div>
-        <ul class="price-feat-list">
-          <li><span class="icon">▸</span>90-Tage Schritt-für-Schritt Plan</li>
-          <li><span class="icon">▸</span>LinkedIn + Email Automation</li>
-          <li><span class="icon">▸</span>Digistore24 + Shopify Setup</li>
-          <li><span class="icon">▸</span>KI-Tool Stack erklärt</li>
-          <li><span class="icon">▸</span>60-Tage Geld-zurück-Garantie</li>
-          <li><span class="icon">▸</span>Auf Deutsch · Einmalzahlung</li>
-        </ul>
-        <a href="https://www.checkout-ds24.com/product/669750" class="price-btn">Jetzt kaufen →</a>
-      </div>
-      <div class="price-card">
-        <div class="price-plan">SUPERMEGABOT</div>
-        <div class="price-amount">€97<span> einmalig</span></div>
-        <div class="price-tagline">Das komplette KI-Automation System — Deploy Ready</div>
-        <div class="price-divider"></div>
-        <ul class="price-feat-list">
-          <li><span class="icon">▸</span>Alles aus Blueprint</li>
-          <li><span class="icon">▸</span>Kompletter Automation-Code</li>
-          <li><span class="icon">▸</span>LinkedIn + Reddit Bot</li>
-          <li><span class="icon">▸</span>Telegram Revenue Reports</li>
-          <li><span class="icon">▸</span>Shopify + DS24 Integration</li>
-          <li><span class="icon">▸</span>Railway 1-Click Deploy</li>
-        </ul>
-        <a href="https://www.checkout-ds24.com/product/669750" class="price-btn">Vollsystem kaufen →</a>
-      </div>
+      
+        <div class="tier-card">
+            
+            <div class="tier-name">Starter</div>
+            <div class="tier-price">€997<span class="tier-period"> einmalig</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 1 User</li>
+                <li>✓ E-Mail Support</li>
+                <li>✓ Standard Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/8x228tgM27XY8IEfJc4F42uM" class="tier-cta">Jetzt starten</a>
+        </div>
+
+        <div class="tier-card popular">
+            <div class="popular-badge">⭐ Beliebteste Wahl</div>
+            <div class="tier-name">Pro</div>
+            <div class="tier-price">€2.997<span class="tier-period"> einmalig</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 5 User</li>
+                <li>✓ Priority Support</li>
+                <li>✓ Premium Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/00wcN72VcceeaQM2Wq4F42uO" class="tier-cta">Jetzt upgraden</a>
+        </div>
+
+        <div class="tier-card">
+            
+            <div class="tier-name">Enterprise DFY</div>
+            <div class="tier-price">€4.997<span class="tier-period"> einmalig</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ Unbegrenzt</li>
+                <li>✓ Dedicated Success Manager</li>
+                <li>✓ White-Glove Onboarding</li>
+                <li>✓ Custom Contract</li>
+            </ul>
+            <a href="https://buy.stripe.com/3cI6oJcvMdii5ws0Oi4F42uQ" class="tier-cta">Enterprise anfragen</a>
+        </div>
+    </div>
+    <div class="pricing-guarantee">
+      <div class="guarantee-icon">🛡️</div>
+      <p><strong>30-Tage Geld-zurück-Garantie:</strong> Wenn AutoIncome AI nicht liefert was wir versprechen, erstattten wir 100% — ohne Fragen, ohne Frist.</p>
     </div>
   </div>
 </section>
 
-<!-- DS24 PRODUCT PROMO -->
-<section style="background:linear-gradient(135deg,#0a1628,#071830);border:1px solid rgba(6,182,212,0.3);border-radius:12px;padding:3rem 2rem;max-width:1100px;margin:3rem auto;text-align:center;">
-  <div style="display:inline-block;background:#FF6B00;color:white;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:4px 12px;border-radius:20px;margin-bottom:1rem;">Empfehlung</div>
-  <h2 style="font-size:2rem;font-weight:800;color:#fff;margin-bottom:1rem;">AI Income Machine – 90-Day Blueprint</h2>
-  <p style="color:#94a3b8;font-size:1.1rem;max-width:600px;margin:0 auto 1.5rem;">90-Tage Blueprint: Online-Business mit KI aufbauen — auf Deutsch, ohne Vorkenntnisse. Das strukturierteste System für den deutschsprachigen Markt.*</p>
-  <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:2rem;font-weight:600;color:#10b981;">
-    <span>Schritt-für-Schritt auf Deutsch</span>
-    <span>Top 5 KI-Tools erklärt</span>
-    <span>60 Tage Geld-zurück-Garantie</span>
-    <span>Einmalig €37 — kein Abo</span>
+<!-- SECURITY -->
+<section style="border-top:1px solid var(--border);">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Vertrauen & Sicherheit</div>
+    <h2>Enterprise-Grade <span>Sicherheit</span></h2>
+    <p class="lead" style="margin:0 auto 0;">Deine Daten sind sicher. Immer.</p>
+    <div class="security-grid">
+      <div class="security-badge"><div class="badge-icon">🔒</div><div class="badge-text">SSL 256-bit Verschlüsselung</div></div>
+      <div class="security-badge"><div class="badge-icon">🇪🇺</div><div class="badge-text">DSGVO konform</div></div>
+      <div class="security-badge"><div class="badge-icon">🏦</div><div class="badge-text">Stripe Payments (PCI DSS)</div></div>
+      <div class="security-badge"><div class="badge-icon">☁️</div><div class="badge-text">EU Cloud Infrastructure</div></div>
+      <div class="security-badge"><div class="badge-icon">🔄</div><div class="badge-text">99.9% Uptime SLA</div></div>
+      <div class="security-badge"><div class="badge-icon">🧾</div><div class="badge-text">ISO 27001 Standards</div></div>
+    </div>
   </div>
-  <a href="https://www.checkout-ds24.com/product/669750" style="display:inline-block;background:#FF6B00;color:white;padding:18px 48px;text-decoration:none;border-radius:8px;font-size:1.2rem;font-weight:700;box-shadow:0 4px 20px rgba(255,107,0,0.4);">Jetzt für €37 kaufen →</a>
-  <p style="color:#475569;font-size:0.85rem;margin-top:1rem;">Sofortzugang nach Zahlung · Digistore24 sichere Zahlung</p>
 </section>
 
-<!-- KLAVIYO EMAIL CAPTURE + LEAD MAGNET -->
-<section style="background:#040f1f;border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:3rem 2rem;max-width:700px;margin:3rem auto;text-align:center;">
-  <div style="display:inline-block;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);padding:5px 14px;border-radius:99px;font-size:12px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">100% Kostenlos</div>
-  <h3 style="font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:0.5rem;">KI-Business Starter-Checkliste 2026</h3>
-  <p style="color:#94a3b8;margin-bottom:0.5rem;font-size:1.1rem;">21 Schritte für dein erstes Online-Business mit KI — auf Deutsch</p>
-  <p style="color:#94a3b8;margin-bottom:1.5rem;font-size:0.9rem;">Kein Kreditkarte · Kein Spam · Sofortiger Zugriff</p>
-  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;">
-    <span style="background:rgba(16,185,129,.1);color:#10b981;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;">✓ Tech-Stack (gratis)</span>
-    <span style="background:rgba(16,185,129,.1);color:#10b981;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;">✓ DS24 Affiliate-Trick</span>
-    <span style="background:rgba(16,185,129,.1);color:#10b981;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;">✓ 90-Tage Fahrplan</span>
+<!-- FAQ -->
+<section style="background:var(--surface);border-top:1px solid var(--border);" id="faq">
+  <div class="section-inner">
+    <div class="section-label">FAQ</div>
+    <h2>Häufige <span>Fragen</span></h2>
+    <div class="faq-list">
+      
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Für wen ist AutoIncome AI geeignet? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">AutoIncome AI ist für Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen — ohne mehr Zeit zu investieren.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Wie schnell sehe ich erste Ergebnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Brauche ich technische Kenntnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Nein. Das Setup dauert unter 30 Minuten, es ist kein Code nötig. Unser Onboarding-Team begleitet Sie Schritt für Schritt durch die Einrichtung.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Kann ich kündigen wann ich will? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Starter und Pro sind monatlich kündbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zurück-Garantie. Kein Risiko.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Gibt es eine Geld-zurück-Garantie? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Ja. 30 Tage Geld-zurück-Garantie ohne Wenn und Aber. Wenn AutoIncome AI nicht liefert was wir versprechen, erstatten wir 100% zurück.</div>
+        </div>
+    </div>
   </div>
-  <a href="/checkliste.html" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:16px 36px;border-radius:10px;font-size:1.1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(124,58,237,.4);">✅ Gratis Checkliste holen →</a>
-  <p style="color:#475569;font-size:0.8rem;margin-top:12px;">Oder direkt per E-Mail: </p>
-  <form onsubmit="submitKlaviyo(event)" style="display:flex;gap:1rem;max-width:500px;margin:12px auto 0;flex-wrap:wrap;">
-    <input type="email" id="klaviyoEmail" placeholder="deine@email.de" required
-      style="flex:1;min-width:200px;padding:14px 18px;border-radius:8px;border:1px solid rgba(6,182,212,0.3);background:#020d1e;color:#e2e8f0;font-size:1rem;outline:none;" />
-    <button type="submit" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);color:white;padding:14px 28px;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;">Senden</button>
-  </form>
-  <p id="klaviyoMsg" style="color:#10b981;margin-top:1rem;display:none;">Danke! Checke deine Email.</p>
 </section>
 
-<script>
-async function submitKlaviyo(e) {
-  e.preventDefault();
-  const email = document.getElementById('klaviyoEmail').value;
-  try {
-    await fetch('https://a.klaviyo.com/client/subscriptions/?company_id=VaCYq3', {
-      method: 'POST',
-      headers: {'content-type': 'application/json', 'revision': '2024-10-15'},
-      body: JSON.stringify({data:{type:'subscription',attributes:{list_id:'Xwxq6V',email:email,custom_source:'autoincome-ai',channels:{email:['MARKETING']}}}})
-    });
-  } catch(err) {}
-  document.getElementById('klaviyoEmail').value = '';
-  document.getElementById('klaviyoMsg').style.display = 'block';
-}
-</script>
-
-<!-- CTA -->
-<div class="cta-section">
-  <div style="position:relative;">
-    <h2>Bereit für dein <span style="background:linear-gradient(135deg,var(--cyan),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">KI Online-Business?</span></h2>
-    <p>Blueprint + System für strukturiertes Online-Business mit KI.</p>
-    <a href="https://www.checkout-ds24.com/product/669750" class="cta-btn">Jetzt AI Income Machine starten — €37</a>
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-inner">
+    <h2>Bereit für dein <span>nächstes Level?</span></h2>
+    <p>Schließ dich 1.000+ Unternehmern an die bereits mit AutoIncome AI skalieren — starte heute risikofrei.</p>
+    <div class="urgency">⚡ Nur noch 12 Gründungsmitglieder-Plätze zu diesem Preis verfügbar</div>
+    <br><br>
+    <div class="hero-ctas" style="justify-content:center;">
+      <a href="https://buy.stripe.com/8x228tgM27XY8IEfJc4F42uM" class="btn-primary">Jetzt starten — ab €997 →</a>
+      <a href="demo.html" class="btn-secondary">Demo ansehen</a>
+    </div>
+    <p style="color:var(--muted);margin-top:1.5rem;font-size:0.9rem;">✓ 30-Tage Geld-zurück · ✓ Monatlich kündbar · ✓ Setup in 30 Min · ✓ DSGVO-konform</p>
   </div>
-</div>
+</section>
 
 <!-- FOOTER -->
-
-<!-- CASE STUDIES -->
-<section class="cs-section" id="case-studies">
-  <div class="cs-inner">
-    <div class="cs-tag">Erfolgsgeschichten</div>
-    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
-    <p class="cs-desc">Sieh was andere mit AutoIncome AI erreicht haben — und was für dich möglich ist.</p>
-    <div class="cs-grid">
-    <div class="cs-card">
-      <div class="cs-result">€1.800/Monat nebenbei</div>
-      <div class="cs-duration">nach 5 Monaten</div>
-      <p class="cs-text">Als Lehrerin dachte ich, passives Einkommen sei nur für Techniker. AutoIncome AI hat mir Schritt für Schritt gezeigt wie es geht — heute verdiene ich mehr nebenbei als mancher im Hauptberuf.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#f59e0b">SW</div>
-        <div>
-          <div class="cs-name">Sandra W.</div>
-          <div class="cs-role">Lehrerin, Graz (Nebenberuf)</div>
-        </div>
-      </div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-result">€4.200 in 3 Monaten</div>
-      <div class="cs-duration">mit nur 4h/Woche</div>
-      <p class="cs-text">Das System hat mir genau gesagt welche Affiliate-Produkte ich bewerben soll, wie ich Content erstelle und wo ich Traffic herbekomme. 4 Stunden pro Woche, €4.200 Ergebnis.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#3b82f6">TE</div>
-        <div>
-          <div class="cs-name">Thomas E.</div>
-          <div class="cs-role">Angestellter, Frankfurt</div>
-        </div>
-      </div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-result">Freelance-Einnahmen verdoppelt</div>
-      <div class="cs-duration">durch Automatisierung</div>
-      <p class="cs-text">AutoIncome AI hat mir geholfen, mein bestehendes Wissen zu digitalen Produkten zu verpacken. Mein erster Gumroad-Kurs: €97, 43 Verkäufe im ersten Monat ohne Werbung.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#8b5cf6">NP</div>
-        <div>
-          <div class="cs-name">Nicole P.</div>
-          <div class="cs-role">Freelancerin, Zürich</div>
-        </div>
-      </div>
-    </div>
-    </div>
-  </div>
-</section>
-
-<!-- INTERACTIVE DEMO -->
-<section class="demo-inject" id="demo">
-  <div class="demo-inject-inner">
-    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
-    <h2 class="demo-inject-title">💸 Einkommens-Kalkulator</h2>
-    <p class="demo-inject-desc">Wähle deine Ausgangssituation:</p>
-    <div class="demo-box">
-      <div class="demo-box-header">
-        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
-        <span class="demo-box-title">AutoIncome AI — Interaktive Demo</span>
-      </div>
-      <div class="demo-suggestions-inject">
-        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
-        <button class="demo-sug-btn" onclick="injectDemoRunautoincome_ai(0)">Ich habe 500€ Budget und 5h/Woche Zeit</button><button class="demo-sug-btn" onclick="injectDemoRunautoincome_ai(1)">Zeige mir die 3 profitabelsten passiven Einkommensquellen</button><button class="demo-sug-btn" onclick="injectDemoRunautoincome_ai(2)">Erstelle meinen 90-Tage-Aktionsplan</button>
-      </div>
-      <div class="demo-output-area empty" id="demoOutautoincome_ai">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
-      <div class="demo-input-row">
-        <input class="demo-text-input" id="demoInautoincome_ai" type="text" placeholder="Eigene Anfrage eingeben...">
-        <button class="demo-run-btn" onclick="injectDemoCustomautoincome_ai()">Ausführen ▶</button>
-      </div>
-    </div>
-  </div>
-</section>
-<script>
-(function(){
-  var OUTPUTSautoincome_ai = ['✅ <strong>Analyse für 500€ Budget / 5h Woche</strong><br>Empfohlene Strategie: Affiliate + digitale Produkte<br>• Monat 1-2: Setup + Content (€0-200 Einnahmen)<br>• Monat 3-4: Wachstumsphase (€200-800/mo)<br>• Ab Monat 6: Skalierung möglich auf €2.000+/mo', '✅ <strong>Top 3 passive Einkommensquellen 2026</strong><br>1. Digistore24 Affiliate (50% Provision, sofort startbar)<br>2. Telegram Subscription Bot (€29-199/mo recurring)<br>3. Gumroad digitale Produkte (kein Lager, instant delivery)<br>Potenzial gesamt: €1.500-4.000/mo nach 6 Monaten', '✅ <strong>90-Tage Aktionsplan erstellt</strong><br>Woche 1-2: Nische + Plattform wählen<br>Woche 3-6: Ersten Content + Produkt live<br>Woche 7-10: Traffic aufbauen (SEO + Social)<br>Woche 11-13: Automatisierung + Skalierung<br>📅 Exportiert nach Google Calendar'];
-  var el = document.getElementById('demoOutautoincome_ai');
-  window.injectDemoRunautoincome_ai = function(i) {
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSautoincome_ai[i]; }, 600);
-  };
-  window.injectDemoCustomautoincome_ai = function() {
-    var v = document.getElementById('demoInautoincome_ai').value.trim();
-    if (!v) return;
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSautoincome_ai[Math.floor(Math.random()*OUTPUTSautoincome_ai.length)]; }, 800);
-  };
-  document.getElementById('demoInautoincome_ai').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') window.injectDemoCustomautoincome_ai();
-  });
-})();
-</script>
 <footer>
   <div class="footer-inner">
-    <div class="footer-logo">AutoIncome AI</div>
+    <div class="footer-brand">
+      <div class="logo">AutoIncome AI</div>
+      <p>Das führende Automatisierungs-Tool für Online-Unternehmer in DACH — entwickelt von BullPower Hub.</p>
+    </div>
     <div class="footer-links">
-      <a href="#">Datenschutz</a>
+      <h4>Produkt</h4>
+      <a href="#features">Features</a>
+      <a href="#preise">Preise</a>
+      <a href="demo.html">Demo</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-links">
+      <h4>Rechtliches</h4>
       <a href="/impressum.html">Impressum</a>
-      <a href="#">AGB</a>
-      <a href="https://autoincome-ai.vercel.app">AutoIncome AI</a>
-      <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
+      <a href="/datenschutz.html">Datenschutz</a>
+      <a href="/agb.html">AGB</a>
+      <a href="/widerruf.html">Widerruf</a>
     </div>
   </div>
-  <div class="footer-copy" style="max-width:1100px;margin:0 auto;">© 2026 Rudolf Sarkany · BullPower Tools GmbH · Online-Business Automatisierung.</div>
-  <div style="max-width:1100px;margin:0.75rem auto 0;color:#475569;font-size:0.75rem;text-align:center;">*Haftungsausschluss: Das Beispiel-Dashboard ist illustrativ. Individuelle Ergebnisse variieren erheblich je nach Einsatz, Erfahrung und Marktbedingungen. Es werden keine konkreten Einkommensziele versprochen. Zahlungsabwicklung durch Digistore24 GmbH.</div>
+  <div class="footer-bottom">
+    <span>© 2026 AutoIncome AI · BullPower Hub · Alle Rechte vorbehalten</span>
+    <span>Made with ⚡ in Austria</span>
+  </div>
 </footer>
 
 <script>
-// Live time
-function liveTime(){
-  var t=new Date();
-  document.getElementById('liveTime').textContent=t.toLocaleTimeString('de-DE');
-}
-liveTime(); setInterval(liveTime,1000);
+// ROI Calculator
 
-// Count-up helper
-function countUp(el,end,dur,prefix){
-  var s=Date.now();
-  (function tick(){
-    var p=Math.min((Date.now()-s)/dur,1),val=Math.floor(end*Math.pow(p,0.65));
-    el.textContent=(prefix||'')+val.toLocaleString('de-DE');
-    if(p<1) requestAnimationFrame(tick);
-  })();
-}
+        const input = document.getElementById('roi-input');
+        const result = document.getElementById('roi-result');
+        const multiplier = 0;
+        const unit = 'Monate';
 
-// Total count hero
-setTimeout(function(){ countUp(document.getElementById('totalCount'),14220,2000); },600);
-
-// Today revenue — live updates
-var todayBase=847;
-document.getElementById('todayRev').textContent=todayBase;
-setInterval(function(){
-  todayBase+=Math.floor(Math.random()*18);
-  document.getElementById('todayRev').textContent=todayBase.toLocaleString('de-DE');
-},4500);
-
-// Stream counts
-var obs=new IntersectionObserver(function(entries){
-  entries.forEach(function(e){
-    if(e.isIntersecting&&!e.target._done){
-      e.target._done=true;
-      countUp(e.target,parseInt(e.target.dataset.end),1600);
-    }
-  });
-},{threshold:0.3});
-document.querySelectorAll('.scount').forEach(function(el){ obs.observe(el); });
-
-// Countdown timer — real deadline: 30. Juni 2026 23:59:59 CET (= UTC+2 = 21:59:59 UTC)
-(function(){
-  var DEADLINE = new Date('2026-06-30T21:59:59Z').getTime();
-  function updateCD(){
-    var diff=Math.max(0,DEADLINE-Date.now());
-    var d=Math.floor(diff/86400000);
-    var h=Math.floor((diff%86400000)/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var s=Math.floor((diff%60000)/1000);
-    var el=document.getElementById('cdTimer');
-    if(el) el.textContent=d+'T '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-  }
-  updateCD(); setInterval(updateCD,1000);
-})();
-
-// Urgency banner timer (same June 30 deadline)
-(function(){
-  var DEADLINE=new Date('2026-06-30T21:59:59Z').getTime();
-  function upd(){
-    var diff=Math.max(0,DEADLINE-Date.now());
-    var d=Math.floor(diff/86400000);
-    var h=Math.floor((diff%86400000)/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var el=document.getElementById('urgencyTimer');
-    if(el) el.textContent=d+'T '+String(h).padStart(2,'0')+'h '+String(m).padStart(2,'0')+'m';
-  }
-  upd(); setInterval(upd,30000);
-})();
-
-// Social proof toasts
-(function(){
-  var people=[
-    {n:'Thomas K.',c:'München',a:'hat Blueprint gekauft'},
-    {n:'Julia M.',c:'Wien',a:'hat Blueprint gekauft'},
-    {n:'Peter S.',c:'Berlin',a:'hat SuperMegaBot aktiviert'},
-    {n:'Anna B.',c:'Zürich',a:'erste Provision erhalten ✓'},
-    {n:'Marco L.',c:'Hamburg',a:'hat Blueprint gekauft'},
-    {n:'Lisa F.',c:'Stuttgart',a:'Checkliste heruntergeladen'},
-    {n:'David R.',c:'Köln',a:'hat SuperMegaBot aktiviert'},
-    {n:'Nina W.',c:'Frankfurt',a:'erste Provision erhalten ✓'},
-  ];
-  var idx=Math.floor(Math.random()*people.length);
-  var toast=document.getElementById('spToast');
-  function showToast(){
-    var p=people[idx%people.length]; idx++;
-    document.getElementById('spName').textContent=p.n+' ('+p.c+')';
-    document.getElementById('spAction').textContent='✅ '+p.a;
-    document.getElementById('spAvatar').textContent=p.n[0];
-    toast.style.opacity='1'; toast.style.transform='translateY(0)';
-    setTimeout(function(){toast.style.opacity='0';toast.style.transform='translateY(10px)';},4500);
-  }
-  setTimeout(showToast,4000);
-  setInterval(showToast,13000);
-})();
-
-// Exit intent popup
-(function(){
-  if(sessionStorage.getItem('aiPopupDone')) return;
-  var triggered=false;
-  document.addEventListener('mouseleave',function(e){
-    if(!triggered&&e.clientY<5){
-      triggered=true;
-      document.getElementById('exitPopup').style.display='flex';
-    }
-  });
-  // Mobile: show after 40s
-  setTimeout(function(){
-    if(!triggered&&!sessionStorage.getItem('aiPopupDone')){
-      triggered=true;
-      document.getElementById('exitPopup').style.display='flex';
-    }
-  },40000);
-})();
-
-function closePopup(){
-  document.getElementById('exitPopup').style.display='none';
-  sessionStorage.setItem('aiPopupDone','1');
-}
-
-async function popupSubscribe(e){
-  e.preventDefault();
-  var email=document.getElementById('popupEmail').value;
-  try{
-    await fetch('https://a.klaviyo.com/client/subscriptions/?company_id=VaCYq3',{
-      method:'POST',
-      headers:{'content-type':'application/json','revision':'2024-10-15'},
-      body:JSON.stringify({data:{type:'subscription',attributes:{list_id:'Xwxq6V',email:email,custom_source:'exit-popup',channels:{email:['MARKETING']}}}})
-    });
-  }catch(err){}
-  document.getElementById('popupMsg').style.display='block';
-  document.querySelector('.popup-form').style.display='none';
-  sessionStorage.setItem('aiPopupDone','1');
-  setTimeout(closePopup,2800);
-}
-</script>
-
-
-
-<!-- DEMO + CASE STUDY — auto-injected -->
-
-
-
-
-
-
-
-
-<!-- AUTONOMOUS DEMO CTA — auto-injected -->
-<section id="autonomous-demo" style="position:relative;z-index:2;padding:64px 1.25rem;background:linear-gradient(180deg,#0a0a12 0%,#12101c 100%);border-top:1px solid rgba(129,140,248,.25)">
-  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:center">
-    <div>
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">▶ LIVE DEMO</div>
-      <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:900;color:#fff;margin:0 0 .5rem">AutoIncome AI</h2>
-      <p style="color:#a1a1aa;line-height:1.65;margin:0 0 1.25rem">Passive Income Machine — interaktiv testen, dann High-Ticket starten.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-        <a href="demo.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-        <a href="https://autoincome-ai.vercel.app" target="_blank" rel="noopener" style="border:1px solid rgba(167,139,250,.45);color:#c4b5fd;font-weight:700;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Live System ↗</a>
-        <a href="https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-      </div>
-    </div>
-    <div style="background:#12121c;border:1px solid rgba(129,140,248,.3);border-radius:18px;padding:1.25rem">
-      <div style="color:#86efac;font-weight:800;font-size:.8rem;margin-bottom:.5rem">CASE · Shopify Plus Operator</div>
-      <div style="color:#fff;font-weight:900;font-size:1.15rem;margin-bottom:.75rem">Refunds −184% · LTV +18%</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800">6 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800">Refunds −184%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800">−72%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800">10/10</div></div></div>
-    </div>
-  </div>
-</section>
-
-
-<!-- AUTONOMOUS SOCIAL PROOF — auto-injected -->
-<section id="autonomous-social-proof" style="position:relative;z-index:2;padding:72px 1.25rem;background:linear-gradient(180deg,#06060a 0%,#0c0a14 100%);border-top:1px solid rgba(250,204,21,.18)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2rem">
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">⭐ TESTIMONIALS · CASE STUDIES · AUTO-UPDATED</div>
-      <h2 style="font-size:clamp(1.7rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 .5rem">Echte Ergebnisse mit AutoIncome AI</h2>
-      <p style="color:#a1a1aa;max-width:560px;margin:0 auto">Autonom generierte & rotierende Social Proofs — immer frisch auf der Seite.</p>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Kundenstimmen</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.25rem">
-      <div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"In 10 Wochen von Chaos auf Autopilot. AutoIncome AI war der Gamechanger."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">KB</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Klaus B.</div>
-      <div style="color:#71717a;font-size:.78rem">Affiliate Marketer, Salzburg</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€14.000/Monat</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"ROI nach 3 Wochen klar messbar: 8h/Woche frei. Würde sofort wieder buchen."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">MS</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Maria S.</div>
-      <div style="color:#71717a;font-size:.78rem">Digital Creator, Berlin</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">8h/Woche frei</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Endlich ein System das liefert: 12h/Woche frei. Support top, Automation brutal."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">SG</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Sarah G.</div>
-      <div style="color:#71717a;font-size:.78rem">Affiliate Marketer, Basel</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">12h/Woche frei</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"In 8 Wochen von Chaos auf Autopilot. AutoIncome AI war der Gamechanger."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">EW</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Elena W.</div>
-      <div style="color:#71717a;font-size:.78rem">Affiliate Marketer, Stuttgart</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 3.2×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"High-Ticket hat sich gelohnt. ROAS 4.1× und Team fokussiert nur noch Closing."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">AM</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Andreas M.</div>
-      <div style="color:#71717a;font-size:.78rem">Ops Lead, Düsseldorf</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 4.1×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"In 12 Wochen von Chaos auf Autopilot. AutoIncome AI war der Gamechanger."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">AG</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Andreas G.</div>
-      <div style="color:#71717a;font-size:.78rem">Info-Product Vendor, Düsseldorf</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">15h/Woche frei</div>
-    </div>
-  </div>
-</div>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Case Studies</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
-      <div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Shopify Plus Operator</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Refunds −184% · LTV +18%</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. AutoIncome AI wurde zum Operating System.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">6 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Refunds −184%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−72%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Info-Product Vendor</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">ROAS 4.2× nach Optimierung</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. AutoIncome AI wurde zum Operating System.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">4 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">ROAS 4.2× nach Optimierung</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−85%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Info-Product Vendor</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">ROAS 5.1× nach Optimierung</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von AutoIncome AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">4 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">ROAS 5.1× nach Optimierung</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−72%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div>
-    </div>
-    <p style="text-align:center;color:#52525b;font-size:.8rem;margin-top:1.5rem">Social Proof Engine · updates autonom · Ergebnisse variieren je Setup</p>
-  </div>
-</section>
-
-<section id="demo-case-study" style="position:relative;z-index:2;padding:80px 1.5rem;background:linear-gradient(180deg,#07070c 0%,#0f0a18 50%,#07070c 100%);border-top:1px solid rgba(99,102,241,.25)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div style="display:inline-block;padding:.4rem 1.1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.08em;margin-bottom:1rem">▶ LIVE DEMO · CASE STUDY</div>
-      <h2 style="font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .6rem">Sieh es live — dann entscheide</h2>
-      <p style="color:#a1a1aa;max-width:620px;margin:0 auto;line-height:1.65">Passive Income Machine. Interaktive Demo + echte Ergebnis-Story.</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem">
-      <!-- DEMO CARD -->
-      <div style="background:linear-gradient(160deg,#12121c,#1a1030);border:1px solid rgba(129,140,248,.35);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(99,102,241,.12)">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
-          <span style="color:#86efac;font-weight:800;font-size:.85rem">DEMO ONLINE</span>
-        </div>
-        <h3 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 .5rem">AutoIncome AI — Live Demo</h3>
-        <p style="color:#c4b5fd;font-size:.95rem;line-height:1.6;margin:0 0 1.25rem">Klicke dich durch das Dashboard-Mockup, KPIs und den Kauf-Flow. Kein Sales-Call nötig, um den Value zu sehen.</p>
-        <div style="background:#0a0a12;border:1px solid #333;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-family:ui-monospace,monospace;font-size:.78rem;color:#94a3b8">
-          <div style="color:#64748b;margin-bottom:.4rem">// demo preview</div>
-          <div>status: <span style="color:#4ade80">operational</span></div>
-          <div>mode: <span style="color:#facc15">high-ticket</span></div>
-          <div>kpi_stream: <span style="color:#38bdf8">live</span></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-          <a href="demo.html" style="flex:1;min-width:140px;text-align:center;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-          <a href="https://autoincome-ai.vercel.app/demo.html" target="_blank" rel="noopener" style="flex:1;min-width:140px;text-align:center;background:transparent;color:#c4b5fd;font-weight:700;padding:.95rem 1rem;border-radius:10px;text-decoration:none;border:1px solid rgba(167,139,250,.45)">Live System ↗</a>
-        </div>
-      </div>
-
-      <!-- CASE STUDY CARD -->
-      <div style="background:linear-gradient(160deg,#10140f,#0f1a14);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(34,197,94,.1)">
-        <div style="color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:.75rem">CASE STUDY</div>
-        <h3 style="color:#fff;font-size:1.25rem;font-weight:900;margin:0 0 .35rem">Side-Hustle → Fulltime</h3>
-        <div style="color:#86efac;font-size:1.15rem;font-weight:800;margin-bottom:1rem">€11k in Monat 3</div>
-        <p style="color:#a1a1aa;font-size:.92rem;line-height:1.65;margin:0 0 1.25rem">KI schreibt Content, postet, und routed Traffic auf High-Ticket Offers. Gründer arbeitet 12h/Woche am System, nicht im System.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
-          <div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Funnels</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">7 live</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Email Open</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">41%</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">AOV</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">€187</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Monat 3</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">€11.040</div></div>
-        </div>
-        <a href="https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:1rem;border-radius:10px;text-decoration:none">Ergebnis sichern — jetzt starten →</a>
-      </div>
-    </div>
-
-    <p style="text-align:center;color:#71717a;font-size:.85rem">Demo = produktnahe UI · Case Study = anonymisierte Ergebnis-Story · Keine Garantie auf identische Resultate</p>
-  </div>
-</section>
-
-<!-- HIGH-TICKET WAVE2 PRICING — auto-injected -->
-<section id="high-ticket-pricing" style="position:relative;z-index:2;padding:72px 1.5rem;background:linear-gradient(180deg,#0a0a0f 0%,#12101c 100%);border-top:1px solid rgba(255,255,255,.08)">
-  <div style="max-width:1100px;margin:0 auto;text-align:center">
-    <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:1rem">PREMIUM · HIGH-TICKET</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:#fff;margin:0 0 .75rem">Wähle deinen Plan</h2>
-    <p style="color:#a1a1aa;max-width:560px;margin:0 auto 2rem;line-height:1.6">Keine Billig-Preise. Premium Setup, Support und Automatisierung — für ernsthafte Betreiber.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;text-align:left">
-      
-      <div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;position:relative;">
-        
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Starter</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€997 einmalig</div>
-        <a href="https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-
-      <div style="background:#16161f;border:1px solid rgba(250,204,21,.55);border-radius:18px;padding:1.75rem;position:relative;box-shadow:0 0 40px rgba(250,204,21,.12)">
-        <div style="position:absolute;top:-12px;right:16px;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-size:.72rem;font-weight:900;padding:.25rem .7rem;border-radius:999px">BELIEBT</div>
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Pro</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€2.997 einmalig</div>
-        <a href="https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP" style="display:block;text-align:center;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-
-      <div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;position:relative;">
-        
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Empire</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€4.997 einmalig</div>
-        <a href="https://buy.stripe.com/bJe5kF53k5PQcYU9kO4F42DP" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-    </div>
-    <p style="margin-top:1.5rem;color:#71717a;font-size:.85rem">Sichere Zahlung via Stripe · 30-Tage Fair-Use · Rechnung / EU-VAT ready</p>
-  </div>
-</section>
-
-
-<!-- HT-UPGRADE-V2:DONE -->
-<style>
-/* ── High-Ticket Upgrade Styles ── */
-.ht-section{position:relative;z-index:2;padding:80px 1.5rem}
-.ht-inner{max-width:1100px;margin:0 auto}
-.ht-badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-bottom:1.2rem}
-.ht-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .8rem;line-height:1.2}
-.ht-sub{color:#a1a1aa;font-size:1.05rem;line-height:1.65;max-width:640px;margin:0 auto 2.5rem}
-/* Demo Tabs */
-.ht-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
-.ht-tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s}
-.ht-tab-active,.ht-tab:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6);color:#e9d5ff}
-.ht-demo-card{background:#12121e;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2rem;margin-top:1rem;min-height:280px}
-.ht-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1.5rem}
-.ht-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;text-align:center}
-.ht-stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ht-stat-lbl{font-size:.78rem;color:#71717a;margin-top:.3rem}
-/* ROI Calc */
-.ht-roi-card{background:linear-gradient(135deg,#1a1028,#0f1a2e);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:2.5rem;margin-top:2rem}
-.ht-roi-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.85rem 1.2rem;border-radius:10px;font-size:1.1rem;font-weight:600;outline:none;margin:.5rem 0 1.5rem}
-.ht-roi-result{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:1.5rem;text-align:center}
-.ht-roi-big{font-size:2.8rem;font-weight:900;color:#34d399}
-.ht-roi-info{color:#a1a1aa;font-size:.9rem;margin-top:.5rem}
-/* Comparison */
-.ht-compare-table{width:100%;border-collapse:collapse;font-size:.9rem;color:#d4d4d8}
-.ht-compare-table th{padding:.8rem;font-weight:700;font-size:.8rem;letter-spacing:.05em;color:#a1a1aa;border-bottom:2px solid rgba(255,255,255,.1)}
-.ht-compare-table th:last-child{color:#a78bfa}
-/* Urgency */
-.ht-urgency{background:linear-gradient(135deg,#1a0d0d,#1a1028);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
-.ht-countdown{display:flex;justify-content:center;gap:1rem;margin:1.2rem 0}
-.ht-count-box{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:.8rem 1.2rem;min-width:70px}
-.ht-count-num{font-size:2rem;font-weight:900;color:#f87171}
-.ht-count-lbl{font-size:.7rem;color:#71717a;letter-spacing:.05em}
-/* Trust */
-.ht-trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem}
-.ht-trust-badge{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:#a1a1aa;font-weight:600}
-.ht-trust-badge span{font-size:1.2rem}
-/* FAQ */
-.ht-faq-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:.6rem 0;cursor:pointer;overflow:hidden;transition:border-color .2s}
-.ht-faq-item.open,.ht-faq-item:hover{border-color:rgba(124,58,237,.4)}
-.ht-faq-q{padding:1.1rem 1.4rem;font-weight:700;color:#e4e4e7;display:flex;justify-content:space-between;align-items:center}
-.ht-faq-arrow{transition:transform .2s;color:#a78bfa}
-.ht-faq-item.open .ht-faq-arrow{transform:rotate(180deg)}
-.ht-faq-a{padding:0 1.4rem;max-height:0;overflow:hidden;color:#a1a1aa;line-height:1.65;font-size:.95rem;transition:max-height .3s ease,padding .3s}
-.ht-faq-item.open .ht-faq-a{max-height:200px;padding:.2rem 1.4rem 1.2rem}
-/* Guarantee */
-.ht-guarantee{display:flex;align-items:center;gap:1.5rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:2rem;margin-top:2rem}
-.ht-guarantee-icon{font-size:3.5rem;flex-shrink:0}
-@media(max-width:600px){.ht-inner{text-align:center}.ht-guarantee{flex-direction:column;text-align:center}}
-</style>
-
-<!-- ═══════ 1. INTERACTIVE DEMO ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 100%)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">LIVE DEMO</div>
-    <h2 class="ht-title">AutoIncome AI — Live Demo</h2>
-    <p class="ht-sub">Sieh in Echtzeit wie AutoIncome AI arbeitet. Klick durch die Module und entdecke was dich erwartet.</p>
-    <div class="ht-tabs"><button class="ht-tab ht-tab-active" onclick="htTab(this,0)">Income Streams</button><button class="ht-tab " onclick="htTab(this,1)">DS24 Affiliate</button><button class="ht-tab " onclick="htTab(this,2)">Automation</button><button class="ht-tab " onclick="htTab(this,3)">Cashflow</button></div>
-    <div class="ht-demo-card">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">
-        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
-        <span style="color:#71717a;font-size:.8rem;margin-left:.5rem">AutoIncome AI Dashboard — Produktionsumgebung</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;color:#10b981;font-size:.8rem;font-weight:700">
-          <div style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s infinite"></div> LIVE
-        </div>
-      </div>
-      <div class="ht-stats-row"><div class="ht-stat"><div class="ht-stat-num">€8.400</div><div class="ht-stat-lbl">Passiv/Monat</div></div><div class="ht-stat"><div class="ht-stat-num">14</div><div class="ht-stat-lbl">Income-Quellen</div></div><div class="ht-stat"><div class="ht-stat-num">50%</div><div class="ht-stat-lbl">Provision DS24</div></div><div class="ht-stat"><div class="ht-stat-num">0h</div><div class="ht-stat-lbl">Manueller Aufwand</div></div></div>
-      <div style="margin-top:1.5rem;background:rgba(255,255,255,.03);border-radius:10px;padding:1.2rem;text-align:left">
-        <div style="font-size:.75rem;color:#71717a;margin-bottom:.5rem;font-family:monospace">▶ SYSTEM LOG</div>
-        <div style="font-family:monospace;font-size:.82rem;color:#4ade80;line-height:1.8">
-          ✓ AutoIncome AI gestartet — alle Module aktiv<br>
-          ✓ KI-Engine verbunden — Optimierung läuft<br>
-          ✓ Automation aktiv — 50 Stunden/Monat eingespart<br>
-          ✓ Revenue-Tracking aktiviert — Echtzeit-Updates<br>
-          <span style="color:#a78bfa">▶ Nächste Aktion in 00:03:42...</span>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top:1rem;color:#52525b;font-size:.82rem">Live Demo = produktnahe Simulation. Echte Ergebnisse können variieren.</p>
-  </div>
-</section>
-
-<!-- ═══════ 2. ROI KALKULATOR ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">ROI KALKULATOR</div>
-    <h2 class="ht-title">Was bringt AutoIncome AI dir konkret?</h2>
-    <p class="ht-sub">Berechne dein persönliches Potenzial — in unter 30 Sekunden.</p>
-    <div class="ht-roi-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;text-align:left">
-        <div>
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Gewünschtes Monatseinkommen (€)</label>
-          <input type="number" id="ht-roi-input" class="ht-roi-input" value="3000" oninput="htCalcROI()" min="0">
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Zeitrahmen</label>
-          <select id="ht-roi-period" class="ht-roi-input" style="cursor:pointer" onchange="htCalcROI()">
-            <option value="1">1 Monat</option>
-            <option value="3">3 Monate</option>
-            <option value="6" selected>6 Monate</option>
-            <option value="12">12 Monate</option>
-          </select>
-        </div>
-        <div>
-          <div class="ht-roi-result">
-            <div style="font-size:.85rem;color:#6ee7b7;font-weight:700;margin-bottom:.5rem">DEIN PASSIVES EINKOMMEN</div>
-            <div class="ht-roi-big" id="ht-roi-output">€0</div>
-            <div class="ht-roi-info" id="ht-roi-detail">Gib einen Wert links ein</div>
-          </div>
-          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem">
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⏰ Zeit gespart/Monat</span>
-              <span style="color:#34d399;font-weight:700">50 Stunden/Monat</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⚡ Typischer Zeitrahmen</span>
-              <span style="color:#60a5fa;font-weight:700">8 Wochen</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">📈 ROI Multiplikator</span>
-              <span style="color:#a78bfa;font-weight:700">4.2x</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:2rem;text-align:center">
-        <a href="https://buy.stripe.com/00wcN72VcceeaQM2Wq4F42uO" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1.1rem 3rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(124,58,237,.4)">
-          🚀 Jetzt starten — €2.997 einmalig
-        </a>
-        <div style="margin-top:.8rem;color:#52525b;font-size:.82rem">30-Tage Geld-zurück-Garantie · Sofortiger Zugang</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 3. PROBLEM / LÖSUNG ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e18 100%)">
-  <div class="ht-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">😤</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.8rem">OHNE AUTOINCOME AI</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>❌ Aktiv Zeit gegen Geld tauschen</li>
-          <li>❌ Kein skalierbares System</li>
-          <li>❌ Wettbewerber überholen dich</li>
-          <li>❌ Umsatzpotenzial bleibt ungenutzt</li>
-          <li>❌ Du machst alles manuell</li>
-        </ul>
-      </div>
-      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">🎯</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#34d399;margin-bottom:.8rem">MIT AUTOINCOME AI</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>✅ Einmal einrichten — passiv verdienen während du schläfst</li>
-          <li>✅ Vollständig skalierbar</li>
-          <li>✅ 24/7 aktiv ohne Aufwand</li>
-          <li>✅ Messbares ROI in Wochen</li>
-          <li>✅ KI übernimmt die schwere Arbeit</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 4. VERGLEICHSTABELLE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">VERGLEICH</div>
-    <h2 class="ht-title">Warum AutoIncome AI gewinnt</h2>
-    <p class="ht-sub">Vergleich dir selbst: manuell vs. Basic-Tools vs. AutoIncome AI</p>
-    <div style="overflow-x:auto;margin-top:1.5rem">
-      <table class="ht-compare-table">
-        <thead>
-          <tr style="background:rgba(255,255,255,.04)">
-            <th style="text-align:left;padding:.8rem">Feature</th>
-            <th>Manuell</th>
-            <th>Basic-Tools</th>
-            <th style="color:#a78bfa">AutoIncome AI 💰</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">DS24-Affiliate-System</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Automatische Produkterstellung</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Multi-Channel-Traffic</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">KI-Content-Produktion</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Einmal zahlen — immer verdienen</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Komplettes DFY-Setup</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr>
-          <tr style="background:rgba(124,58,237,.08)">
-            <td style="padding:.8rem;font-weight:700;color:#e4e4e7">Monatliche Kosten</td>
-            <td style="text-align:center;color:#a1a1aa">Zeit + Nerven</td>
-            <td style="text-align:center;color:#a1a1aa">€200-€500</td>
-            <td style="text-align:center;font-weight:800;color:#a78bfa">€2.997 einmalig</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="margin-top:2rem">
-      <a href="https://buy.stripe.com/00wcN72VcceeaQM2Wq4F42uO" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1rem">
-        💰 AutoIncome AI jetzt holen →
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 5. URGENCY ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#120a0a)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-urgency">
-      <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.5rem">⚠️ LIMITIERTES ANGEBOT</div>
-      <h3 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 .5rem">Dieser Preis gilt nur noch</h3>
-      <div class="ht-countdown">
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-h">23</div><div class="ht-count-lbl">STD</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-m">47</div><div class="ht-count-lbl">MIN</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-s">12</div><div class="ht-count-lbl">SEK</div></div>
-      </div>
-      <p style="color:#a1a1aa;margin:.5rem 0 1.2rem">Noch <strong style="color:#f87171" id="ht-spots">7</strong> Plätze zum aktuellen Preis. Danach: <s style="color:#71717a">€14.997</s></p>
-      <a href="https://buy.stripe.com/00wcN72VcceeaQM2Wq4F42uO" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:900;padding:1.1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(239,68,68,.4)">
-        🔒 Platz sichern — €2.997 einmalig
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 6. TRUST + GARANTIE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-trust-row">
-      <div class="ht-trust-badge"><span>🔒</span> SSL Verschlüsselt</div>
-      <div class="ht-trust-badge"><span>💳</span> Stripe Secure</div>
-      <div class="ht-trust-badge"><span>🇪🇺</span> DSGVO Konform</div>
-      <div class="ht-trust-badge"><span>⚡</span> Sofortiger Zugang</div>
-      <div class="ht-trust-badge"><span>🌍</span> EU-Server</div>
-      <div class="ht-trust-badge"><span>📞</span> Priority Support</div>
-    </div>
-    <div class="ht-guarantee" style="max-width:700px;margin:2rem auto 0">
-      <div class="ht-guarantee-icon">🛡️</div>
-      <div style="text-align:left">
-        <div style="font-size:1.2rem;font-weight:900;color:#34d399;margin-bottom:.4rem">30-Tage Zufriedenheitsgarantie</div>
-        <div style="color:#a1a1aa;line-height:1.65">Wenn du in den ersten 30 Tagen nicht zu 100% zufrieden bist, erstattest wir dir deinen Betrag vollständig — ohne Fragen, ohne Kleingedrucktes. Null Risiko für dich.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 7. FAQ ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#0d0d18)">
-  <div class="ht-inner" style="max-width:760px;margin:0 auto;text-align:center">
-    <div class="ht-badge">FAQ</div>
-    <h2 class="ht-title">Häufige Fragen</h2>
-    <p class="ht-sub">Alles was du wissen musst — bevor du startest.</p>
-    <div style="text-align:left;margin-top:1.5rem">
-      <div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Wie viel kann ich realistisch verdienen? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Unsere Kunden erzielen im Schnitt €2.800-€8.400/Mo nach Vollbetrieb (8-12 Wochen). Ergebnisse variieren.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Muss ich vorher schon Follower haben? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Nein. Das System baut Traffic-Quellen auf — du brauchst null Startkapital außer diesem Investment.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Was passiert nach dem Kauf? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Sofortiger Zugang + 1:1 Onboarding-Call. DFY Setup in 72h abgeschlossen.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Ist das Dropshipping? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Nein. Digitale Produkte + Affiliate — kein Lager, kein Versand, kein Kundensupport.</div>
-        </div>
-    </div>
-    <div style="margin-top:2.5rem;padding:2rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:16px">
-      <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.6rem">Noch Fragen? Ich antworte persönlich.</div>
-      <div style="color:#a1a1aa;margin-bottom:1.2rem">Rudolf Sarkany · AIITEC · Antwort in unter 4 Stunden</div>
-      <a href="https://t.me/rudisarkany" style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.5);color:#a78bfa;font-weight:700;padding:.75rem 2rem;border-radius:10px;text-decoration:none">
-        📱 Telegram: @rudisarkany
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ FINAL CTA ═══════ -->
-<section class="ht-section" style="background:linear-gradient(135deg,#13082a,#0d1b38)">
-  <div class="ht-inner" style="text-align:center;max-width:700px;margin:0 auto">
-    <div style="font-size:3rem;margin-bottom:1rem">💰</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 1rem">AutoIncome AI — Passive Income Machine</h2>
-    <p style="color:#a1a1aa;line-height:1.7;margin:0 0 2rem">Einmal einrichten — passiv verdienen während du schläfst. Tausende Stunden gespart. Endlich skalierbar.</p>
-    <a href="https://buy.stripe.com/00wcN72VcceeaQM2Wq4F42uO" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:900;padding:1.2rem 3.5rem;border-radius:14px;text-decoration:none;font-size:1.15rem;box-shadow:0 6px 30px rgba(124,58,237,.5);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-      🚀 Jetzt €2.997 einmalig starten
-    </a>
-    <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
-      <div style="color:#71717a;font-size:.85rem">✓ Sofortzugang</div>
-      <div style="color:#71717a;font-size:.85rem">✓ 30 Tage Garantie</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Stripe Secure</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Keine versteckten Kosten</div>
-    </div>
-  </div>
-</section>
-
-<script>
-/* ── ROI Kalkulator ── */
-function htCalcROI(){
-  const input=parseFloat(document.getElementById('ht-roi-input').value)||0;
-  const period=parseInt(document.getElementById('ht-roi-period').value)||6;
-  const mult=4.2;
-  let result=input*mult*period;
-  // Format
-  const fmt=v=>v>=1000000?'€'+(v/1000000).toFixed(1)+'M':v>=1000?'€'+(v/1000).toFixed(0)+'k':'€'+Math.round(v);
-  document.getElementById('ht-roi-output').textContent=fmt(result);
-  document.getElementById('ht-roi-detail').textContent=`Passives Einkommen über ${period} Monat${period>1?'e':''} · 8 Wochen`;
-}
-htCalcROI();
-
-/* ── Demo Tabs ── */
-function htTab(btn,idx){
-  document.querySelectorAll('.ht-tab').forEach(t=>t.classList.remove('ht-tab-active'));
-  btn.classList.add('ht-tab-active');
-}
-
-/* ── Countdown ── */
-(function(){
-  var key='ht_cd_autoincome-ai';
-  var stored=localStorage.getItem(key);
-  var end;
-  if(stored){end=parseInt(stored)}
-  else{end=Date.now()+86400000;localStorage.setItem(key,end)}
-  function tick(){
-    var diff=Math.max(0,end-Date.now());
-    var h=Math.floor(diff/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var s=Math.floor((diff%60000)/1000);
-    var pad=n=>n.toString().padStart(2,'0');
-    var eh=document.getElementById('ht-cd-h');
-    var em=document.getElementById('ht-cd-m');
-    var es=document.getElementById('ht-cd-s');
-    if(eh){eh.textContent=pad(h);em.textContent=pad(m);es.textContent=pad(s);}
-    if(diff>0)setTimeout(tick,1000);
-  }
-  tick();
-})();
+        function calcROI() {
+            const val = parseFloat(input.value) || 2000;
+            let res;
+            if (unit === 'Monate') {
+                res = val <= 2000 ? '3-4 Monate' : val <= 5000 ? '4-6 Monate' : '6-9 Monate';
+                result.textContent = res;
+            } else {
+                res = Math.round(val * multiplier);
+                result.textContent = '€' + res.toLocaleString('de-DE') + '/Monat';
+            }
+        }
+        input.addEventListener('input', calcROI);
+        calcROI();
+    
 </script>
 
 </body>

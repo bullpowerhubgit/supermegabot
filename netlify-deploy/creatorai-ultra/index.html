@@ -1,1505 +1,633 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CreatorAI Ultra — KI Content-Erstellung auf Knopfdruck. Blog, Social, Video.</title>
-  <meta name="description" content="CreatorAI Ultra: KI erstellt automatisch Blog-Artikel, Social-Media-Posts, Video-Skripte und Werbetexte. Content-Marketing auf Autopilot. Für Shopify, YouTube & Social Media.">
-  <meta name="keywords" content="KI Content Erstellung, AI Content Generator, Blog Artikel KI, Social Media Posts automatisch, Content Marketing Automation">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://creatorai-ultra.vercel.app/">
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="CreatorAI Ultra — KI Content auf Knopfdruck">
-  <meta property="og:description" content="KI erstellt Blog-Artikel, Social-Posts, Video-Skripte und Werbetexte vollautomatisch. Content-Marketing Autopilot.">
-  <meta property="og:url" content="https://creatorai-ultra.vercel.app/">
-  <meta property="og:site_name" content="CreatorAI Ultra">
-  <meta property="og:locale" content="de_DE">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="CreatorAI Ultra — KI Content Generator">
-  <meta name="twitter:description" content="Blog, Social Media, Video-Skripte — KI erstellt alles automatisch für dich.">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"CreatorAI Ultra","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"KI-gestützter Content-Generator für Blog-Artikel, Social-Media-Posts, Video-Skripte und Werbetexte. Vollautomatisiertes Content-Marketing.","provider":{"@type":"Organization","name":"BullPower Tools","url":"https://creatorai-ultra.vercel.app"}}</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorAI Ultra — KI Content Empire — 30 Plattformen, 1 System, 12h täglich gespart</title>
+<meta name="description" content="CreatorAI Ultra: KI Content Empire — 30 Plattformen, 1 System, 12h täglich gespart. 10x mehr Content in ¼ der Zeit. Jetzt starten ab €297.">
+<meta property="og:title" content="CreatorAI Ultra — KI Content Empire — 30 Plattformen, 1 System, 12h täglich gespart">
+<meta property="og:description" content="10x mehr Content in ¼ der Zeit">
+<meta property="og:type" content="website">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "F\u00fcr wen ist CreatorAI Ultra geeignet?", "acceptedAnswer": {"@type": "Answer", "text": "CreatorAI Ultra ist f\u00fcr Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen \u2014 ohne mehr Zeit zu investieren."}}, {"@type": "Question", "name": "Wie schnell sehe ich erste Ergebnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen."}}, {"@type": "Question", "name": "Brauche ich technische Kenntnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Das Setup dauert unter 30 Minuten, es ist kein Code n\u00f6tig. Unser Onboarding-Team begleitet Sie Schritt f\u00fcr Schritt durch die Einrichtung."}}, {"@type": "Question", "name": "Kann ich k\u00fcndigen wann ich will?", "acceptedAnswer": {"@type": "Answer", "text": "Starter und Pro sind monatlich k\u00fcndbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zur\u00fcck-Garantie. Kein Risiko."}}, {"@type": "Question", "name": "Gibt es eine Geld-zur\u00fcck-Garantie?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. 30 Tage Geld-zur\u00fcck-Garantie ohne Wenn und Aber. Wenn CreatorAI Ultra nicht liefert was wir versprechen, erstatten wir 100% zur\u00fcck."}}]}</script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #2a2a3d;
+  --accent: #6c63ff;
+  --accent2: #00d4ff;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --red: #ff4757;
+  --text: #e8e8f0;
+  --muted: #888899;
+  --radius: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif; line-height: 1.6; overflow-x: hidden; }
 
-  <!-- Password Gate -->
-  <script></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── HEADER ── */
+.header { position: fixed; top: 0; width: 100%; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 1000; padding: 0 5%; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.nav a { color: var(--muted); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; transition: color 0.2s; }
+.nav a:hover { color: var(--text); }
+.header-cta { background: var(--accent); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+.header-cta:hover { background: #5b52ef; transform: translateY(-1px); }
 
-    :root {
-      --bg: #08000f;
-      --bg2: #0d0017;
-      --bg3: #12001f;
-      --card: #0f0018;
-      --card2: #150022;
-      --mag: #d946ef;
-      --mag2: #c026d3;
-      --purple: #a855f7;
-      --purple2: #7c3aed;
-      --pink: #ec4899;
-      --text: #f0e6ff;
-      --text-dim: #6b4d8a;
-      --text-mid: #b898d4;
-      --border: rgba(168,85,247,0.18);
-      --border2: rgba(217,70,239,0.2);
-      --glow: rgba(217,70,239,0.4);
-    }
+/* ── HERO ── */
+.hero { padding: 140px 5% 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
+.hero-badge { display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4); color: var(--accent2); padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 1.2rem; color: var(--muted); max-width: 650px; margin: 0 auto 2rem; }
+.hero-stat { display: inline-block; background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.4); border-radius: 12px; padding: 1rem 2rem; margin-bottom: 2.5rem; font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+.hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: all 0.3s; box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(108,99,255,0.5); }
+.btn-secondary { background: transparent; color: var(--text); padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1.05rem; border: 1.5px solid var(--border); transition: all 0.3s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.hero-guarantee { color: var(--muted); font-size: 0.85rem; }
+.hero-guarantee span { color: var(--green); }
 
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
+/* ── STATS ── */
+.stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem 5%; }
+.stats-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
 
-    /* PARTICLE BG */
-    body::before {
-      content: '';
-      position: fixed; inset: 0; pointer-events: none; z-index: 0;
-      background:
-        radial-gradient(ellipse 50% 30% at 15% 20%, rgba(168,85,247,0.08) 0%, transparent 50%),
-        radial-gradient(ellipse 40% 25% at 85% 70%, rgba(217,70,239,0.06) 0%, transparent 50%),
-        radial-gradient(ellipse 30% 20% at 50% 50%, rgba(124,58,237,0.04) 0%, transparent 50%);
-    }
+/* ── SECTIONS ── */
+section { padding: 80px 5%; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; color: var(--accent2); font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; margin-bottom: 1.5rem; line-height: 1.2; }
+h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.lead { font-size: 1.1rem; color: var(--muted); max-width: 700px; }
 
-    /* NAV */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
-      background: rgba(8,0,15,0.95); backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
-      padding: 0.85rem 2.5rem;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.3rem; font-weight: 900;
-      background: linear-gradient(135deg, var(--purple), var(--mag));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-decoration: none; letter-spacing: -0.5px;
-    }
-    .nav-links { display: flex; gap: 0.3rem; }
-    .nav-links a {
-      color: var(--text-mid); text-decoration: none; font-size: 0.85rem;
-      padding: 0.4rem 0.9rem; border-radius: 6px; transition: all 0.2s; font-weight: 500;
-    }
-    .nav-links a:hover { color: var(--text); background: rgba(168,85,247,0.08); }
-    .nav-cta {
-      background: linear-gradient(135deg, var(--purple2), var(--mag2));
-      color: #fff; font-weight: 700; padding: 0.55rem 1.4rem;
-      border-radius: 8px; text-decoration: none; font-size: 0.85rem;
-      box-shadow: 0 4px 20px rgba(168,85,247,0.3); transition: all 0.2s;
-    }
-    .nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+/* ── PROBLEM/SOLUTION ── */
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+@media(max-width:700px) { .ps-grid { grid-template-columns: 1fr; } }
+.ps-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.ps-card.solution { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+.ps-icon { font-size: 2rem; margin-bottom: 1rem; }
+.ps-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
+.ps-card p { color: var(--muted); line-height: 1.7; }
 
-    /* HERO — magazine editorial */
-    .hero {
-      min-height: 100vh; padding: 7rem 2rem 5rem;
-      display: flex; flex-direction: column; align-items: center;
-      justify-content: center; text-align: center; position: relative; overflow: hidden;
-    }
+/* ── DEMO VIDEO ── */
+.demo-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.demo-container { text-align: center; }
+.video-placeholder { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; aspect-ratio: 16/9; max-width: 800px; margin: 2rem auto; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+.video-placeholder:hover { border-color: var(--accent); }
+.video-placeholder::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); }
+.play-btn { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; position: relative; z-index: 1; box-shadow: 0 0 40px rgba(108,99,255,0.5); }
+.demo-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 1rem; font-size: 1rem; }
+.demo-link:hover { color: var(--accent2); }
 
-    /* Floating orbs */
-    .orb {
-      position: absolute; border-radius: 50%; pointer-events: none; filter: blur(80px);
-      animation: orb-float linear infinite alternate;
-    }
-    .orb1 { width: 400px; height: 400px; background: rgba(168,85,247,0.12); top: -100px; left: -100px; animation-duration: 8s; }
-    .orb2 { width: 300px; height: 300px; background: rgba(217,70,239,0.1); bottom: 0; right: -50px; animation-duration: 10s; animation-delay: -4s; }
-    .orb3 { width: 200px; height: 200px; background: rgba(236,72,153,0.08); top: 40%; left: 20%; animation-duration: 12s; animation-delay: -2s; }
-    @keyframes orb-float {
-      from { transform: translate(0,0) scale(1); }
-      to { transform: translate(30px,20px) scale(1.1); }
-    }
+/* ── FEATURES ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 3rem; }
+.features-grid li { list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; transition: all 0.2s; }
+.features-grid li:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+.check { color: var(--green); font-size: 1.1rem; flex-shrink: 0; }
 
-    .hero-eyebrow {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      background: rgba(217,70,239,0.08); border: 1px solid var(--border2);
-      color: var(--mag); padding: 0.4rem 1.2rem; border-radius: 100px;
-      font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
-      margin-bottom: 2rem; position: relative;
-    }
-    .hero-eyebrow .sparkle { animation: spin 3s linear infinite; display: inline-block; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+/* ── ROI CALCULATOR ── */
+.roi-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.roi-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; max-width: 650px; margin: 3rem auto 0; text-align: center; }
+.roi-box h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+.roi-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+.roi-input-wrap { margin-bottom: 2rem; }
+.roi-input-wrap label { display: block; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.7rem; text-align: left; }
+.roi-input-wrap input { width: 100%; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; font-size: 1.2rem; color: var(--text); font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; }
+.roi-input-wrap input:focus { border-color: var(--accent); }
+.roi-output { background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.3); border-radius: 12px; padding: 1.5rem; }
+.roi-output-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+#roi-result { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.roi-note { color: var(--muted); font-size: 0.8rem; margin-top: 0.5rem; }
 
-    .hero-h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(3.5rem, 10vw, 8rem); font-weight: 900;
-      line-height: 0.95; letter-spacing: -3px; position: relative;
-      margin-bottom: 1.5rem;
-    }
-    .hero-h1 .grad-text {
-      background: linear-gradient(135deg, #e879f9, #a855f7, #c026d3, #e879f9);
-      background-size: 200% auto;
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      animation: gradshift 4s linear infinite;
-    }
-    .hero-h1 .white-text { color: #fff; display: block; }
-    @keyframes gradshift { to { background-position: 200% center; } }
+/* ── TESTIMONIALS ── */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.testimonial-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; transition: all 0.3s; }
+.testimonial-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-3px); }
+.testimonial-stars { color: var(--gold); font-size: 1rem; margin-bottom: 1rem; letter-spacing: 2px; }
+.testimonial-text { color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+.testimonial-result { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; display: inline-block; margin-bottom: 1.2rem; }
+.testimonial-author { display: flex; align-items: center; gap: 1rem; }
+.author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0; }
+.author-name { font-weight: 700; font-size: 0.95rem; }
+.author-company { color: var(--muted); font-size: 0.8rem; }
 
-    .hero-sub {
-      color: var(--text-mid); font-size: 1.1rem; max-width: 560px;
-      margin: 0 auto 3rem; position: relative;
-    }
+/* ── TIMELINE ── */
+.timeline { margin-top: 3rem; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 30px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), var(--accent2)); }
+.timeline-item { display: flex; gap: 2rem; margin-bottom: 2.5rem; align-items: flex-start; }
+.timeline-dot { width: 60px; height: 60px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 900; font-size: 0.85rem; color: var(--accent); }
+.timeline-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.timeline-content p { color: var(--muted); font-size: 0.95rem; }
 
-    /* CONTENT SHOWCASE GRID */
-    .showcase-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 1rem; max-width: 1000px; width: 100%; margin-bottom: 3.5rem; position: relative;
-    }
-    .showcase-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 1.2rem; text-align: left;
-      transition: all 0.3s; cursor: default;
-      position: relative; overflow: hidden;
-    }
-    .showcase-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, var(--purple), var(--mag));
-      opacity: 0; transition: opacity 0.3s;
-    }
-    .showcase-card:hover { border-color: var(--border2); transform: translateY(-3px); box-shadow: 0 10px 40px rgba(168,85,247,0.1); }
-    .showcase-card:hover::before { opacity: 1; }
-    .sc-type {
-      font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
-      color: var(--mag); margin-bottom: 0.6rem;
-      display: flex; align-items: center; gap: 0.4rem;
-    }
-    .sc-type .sc-icon { font-size: 0.85rem; }
-    .sc-text { font-size: 0.83rem; color: var(--text-mid); line-height: 1.5; }
-    .sc-text strong { color: var(--text); }
+/* ── COMPARISON ── */
+.comparison-table { width: 100%; border-collapse: collapse; margin-top: 3rem; }
+.comparison-table th, .comparison-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+.comparison-table th { background: var(--surface2); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.comparison-table td:first-child { color: var(--text); font-weight: 500; }
+.comparison-table .col-us { background: rgba(108,99,255,0.06); }
+.comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+.col-us-header { background: rgba(108,99,255,0.15) !important; color: var(--accent) !important; }
+.check-yes { color: var(--green); font-size: 1.2rem; }
+.check-no { color: var(--red); opacity: 0.6; }
+.wrap-scroll { overflow-x: auto; }
 
-    /* HERO BUTTONS */
-    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
-    .btn-magic {
-      background: linear-gradient(135deg, var(--purple2), var(--mag2));
-      color: #fff; font-weight: 700; padding: 1rem 2.8rem;
-      border-radius: 10px; text-decoration: none; font-size: 0.95rem;
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      box-shadow: 0 0 40px rgba(168,85,247,0.4); transition: all 0.2s;
-    }
-    .btn-magic:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(217,70,239,0.5); }
-    .btn-ghost-magic {
-      background: transparent; border: 1px solid var(--border);
-      color: var(--text-mid); font-weight: 600; padding: 1rem 2.8rem;
-      border-radius: 10px; text-decoration: none; font-size: 0.95rem;
-      display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s;
-    }
-    .btn-ghost-magic:hover { border-color: var(--purple); color: var(--text); }
+/* ── PRICING ── */
+.pricing-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.tier-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; transition: all 0.3s; }
+.tier-card:hover { transform: translateY(-5px); }
+.tier-card.popular { border-color: var(--accent); background: rgba(108,99,255,0.07); box-shadow: 0 0 40px rgba(108,99,255,0.15); }
+.popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; padding: 0.3rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.tier-name { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.tier-price { font-size: 2.8rem; font-weight: 900; margin-bottom: 0.3rem; }
+.tier-period { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.tier-features { list-style: none; margin: 1.5rem 0 2rem; }
+.tier-features li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+.tier-features li:last-child { border-bottom: none; }
+.tier-cta { display: block; background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; text-align: center; padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+.tier-card.popular .tier-cta { box-shadow: 0 8px 25px rgba(108,99,255,0.4); }
+.tier-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(108,99,255,0.4); }
+.pricing-guarantee { text-align: center; margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; }
+.pricing-guarantee .guarantee-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.pricing-guarantee strong { color: var(--green); }
 
-    /* SECTIONS */
-    section { padding: 5.5rem 2rem; position: relative; z-index: 1; }
-    .section-inner { max-width: 1100px; margin: 0 auto; }
-    .sec-eyebrow {
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 3px; color: var(--mag); margin-bottom: 0.8rem; display: block;
-    }
-    .sec-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900;
-      color: #fff; letter-spacing: -1px; line-height: 1.1;
-    }
-    .sec-title .grad { background: linear-gradient(135deg, var(--purple), var(--mag)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .sec-sub { color: var(--text-mid); font-size: 0.95rem; margin-top: 0.8rem; max-width: 520px; }
+/* ── SECURITY ── */
+.security-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2.5rem; justify-content: center; }
+.security-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 2rem; text-align: center; min-width: 140px; }
+.security-badge .badge-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.security-badge .badge-text { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
 
-    /* INTERACTIVE TABS */
-    .tabs-wrap { margin-top: 3rem; }
-    .tab-buttons {
-      display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem;
-    }
-    .tab-btn {
-      padding: 0.5rem 1.2rem; border-radius: 20px; border: 1px solid var(--border);
-      background: transparent; color: var(--text-mid); font-size: 0.82rem; font-weight: 600;
-      cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif;
-    }
-    .tab-btn:hover { border-color: var(--purple); color: var(--text); }
-    .tab-btn.active {
-      background: linear-gradient(135deg, var(--purple2), var(--mag2));
-      border-color: transparent; color: #fff;
-      box-shadow: 0 4px 16px rgba(168,85,247,0.3);
-    }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-    .content-output {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 12px; padding: 2rem;
-      position: relative; overflow: hidden;
-    }
-    .content-output::before {
-      content: 'KI-GENERIERT';
-      position: absolute; top: 1rem; right: 1rem;
-      font-size: 0.6rem; font-weight: 700; letter-spacing: 2px;
-      color: var(--mag); background: rgba(217,70,239,0.1);
-      padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(217,70,239,0.2);
-    }
-    .content-output .content-type {
-      font-size: 0.72rem; color: var(--purple); font-weight: 700;
-      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem;
-      display: flex; align-items: center; gap: 0.5rem;
-    }
-    .content-output h3 { font-size: 1.3rem; font-weight: 700; color: #fff; margin-bottom: 0.8rem; line-height: 1.3; }
-    .content-output p { color: var(--text-mid); font-size: 0.9rem; line-height: 1.7; }
-    .content-output .content-meta {
-      margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--border);
-      display: flex; gap: 1.5rem; flex-wrap: wrap;
-    }
-    .content-output .meta-item { font-size: 0.75rem; color: var(--text-dim); }
-    .content-output .meta-item span { color: var(--mag); font-weight: 600; }
+/* ── FAQ ── */
+.faq-list { margin-top: 2.5rem; }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden; }
+.faq-q { padding: 1.3rem 1.5rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+.faq-q:hover { background: var(--surface2); }
+.faq-arrow { transition: transform 0.3s; color: var(--muted); font-size: 0.8rem; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; color: var(--muted); line-height: 1.7; padding: 0 1.5rem; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.5rem 1.3rem; }
 
-    /* NUMBERS — big glowing */
-    .numbers-section { text-align: center; }
-    .numbers-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 2rem; margin-top: 3rem;
-    }
-    .number-card { padding: 2.5rem 1.5rem; position: relative; }
-    .number-card::after {
-      content: '';
-      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-      width: 1px; height: 100%;
-      background: linear-gradient(180deg, transparent, rgba(168,85,247,0.15), transparent);
-    }
-    .number-val {
-      font-family: 'Playfair Display', serif;
-      font-size: 4rem; font-weight: 900;
-      background: linear-gradient(135deg, var(--purple), var(--mag));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      display: block; line-height: 1; margin-bottom: 0.5rem;
-    }
-    .number-label { font-size: 0.85rem; color: var(--text-mid); font-weight: 500; }
+/* ── FINAL CTA ── */
+.final-cta { text-align: center; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); border-top: 1px solid rgba(108,99,255,0.2); border-bottom: 1px solid rgba(108,99,255,0.2); }
+.final-cta h2 { margin-bottom: 1rem; }
+.final-cta p { color: var(--muted); max-width: 550px; margin: 0 auto 2.5rem; }
+.urgency { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff6b7a; padding: 0.8rem 1.5rem; border-radius: 10px; display: inline-block; margin-bottom: 2rem; font-weight: 600; font-size: 0.9rem; }
 
-    /* HOW IT WORKS — editorial style */
-    .editorial-grid {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center;
-    }
-    .editorial-text {}
-    .editorial-visual {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 2rem; position: relative;
-    }
-    .editorial-visual::before {
-      content: '';
-      position: absolute; inset: -1px; border-radius: 17px;
-      background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(217,70,239,0.1), transparent);
-      pointer-events: none; z-index: -1;
-    }
-    .how-step-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
-    .how-step-li { display: flex; gap: 1rem; align-items: flex-start; }
-    .how-step-num {
-      width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-      background: linear-gradient(135deg, var(--purple2), var(--mag2));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 800; color: #fff;
-    }
-    .how-step-info {}
-    .how-step-t { font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
-    .how-step-d { font-size: 0.85rem; color: var(--text-mid); }
+/* ── FOOTER ── */
+footer { background: var(--surface); border-top: 1px solid var(--border); padding: 3rem 5% 2rem; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; }
+@media(max-width:700px) { .footer-inner { grid-template-columns: 1fr; } }
+.footer-brand { }
+.footer-brand .logo { font-size: 1.2rem; }
+.footer-brand p { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; max-width: 280px; line-height: 1.6; }
+.footer-links h4 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.2rem; color: var(--muted); }
+.footer-links a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 0.6rem; font-size: 0.9rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: 0.8rem; }
 
-    /* Content type selector visual */
-    .content-types-visual { display: flex; flex-direction: column; gap: 0.8rem; }
-    .ct-row {
-      display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem;
-      background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.1);
-      border-radius: 8px; transition: all 0.2s; cursor: pointer;
-    }
-    .ct-row:hover, .ct-row.sel { background: rgba(168,85,247,0.12); border-color: rgba(217,70,239,0.25); }
-    .ct-icon { font-size: 1.2rem; }
-    .ct-info {}
-    .ct-name { font-size: 0.85rem; font-weight: 600; color: #fff; }
-    .ct-words { font-size: 0.72rem; color: var(--text-dim); }
-    .ct-time {
-      margin-left: auto; font-size: 0.7rem; color: var(--mag); font-weight: 600;
-      background: rgba(217,70,239,0.1); padding: 0.15rem 0.5rem; border-radius: 10px;
-    }
-
-    /* PRICING */
-    .pricing-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 2rem; }
-    .price-orb {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 2.5rem 2rem; position: relative; overflow: hidden;
-      transition: all 0.3s;
-    }
-    .price-orb::after {
-      content: '';
-      position: absolute; bottom: -60px; right: -60px;
-      width: 150px; height: 150px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .price-orb:hover { border-color: var(--border2); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(168,85,247,0.12); }
-    .price-orb.featured {
-      border-color: var(--purple);
-      box-shadow: 0 0 60px rgba(168,85,247,0.2);
-      background: linear-gradient(145deg, rgba(168,85,247,0.08), var(--card));
-    }
-    .price-orb.featured::before {
-      content: '✨ EMPFOHLEN';
-      position: absolute; top: 1.2rem; right: 1.2rem;
-      font-size: 0.62rem; font-weight: 700; letter-spacing: 1px;
-      color: var(--mag); background: rgba(217,70,239,0.1);
-      padding: 0.2rem 0.6rem; border-radius: 6px; border: 1px solid rgba(217,70,239,0.2);
-    }
-    .p-plan {
-      font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 3px;
-      color: var(--purple); margin-bottom: 0.8rem;
-    }
-    .p-price { font-size: 3rem; font-weight: 900; color: #fff; line-height: 1; margin-bottom: 0.3rem; }
-    .p-price sub { font-size: 1rem; color: var(--text-mid); font-weight: 400; vertical-align: bottom; }
-    .p-desc { color: var(--text-mid); font-size: 0.83rem; margin-bottom: 2rem; }
-    .p-feats { list-style: none; margin-bottom: 2rem; }
-    .p-feats li {
-      padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-      display: flex; align-items: center; gap: 0.6rem;
-      font-size: 0.85rem; color: var(--text-mid);
-    }
-    .p-feats li:last-child { border-bottom: none; }
-    .p-feats li .pi { color: var(--mag); font-size: 0.7rem; flex-shrink: 0; }
-    .p-btn {
-      display: block; text-align: center; padding: 0.9rem;
-      background: transparent; border: 1px solid var(--border2);
-      color: var(--purple); font-weight: 700; font-size: 0.88rem;
-      border-radius: 10px; text-decoration: none; transition: all 0.2s;
-    }
-    .p-btn:hover { background: rgba(168,85,247,0.1); border-color: var(--purple); }
-    .price-orb.featured .p-btn {
-      background: linear-gradient(135deg, var(--purple2), var(--mag2));
-      border-color: transparent; color: #fff;
-    }
-    .price-orb.featured .p-btn:hover { opacity: 0.88; }
-
-    /* CTA */
-    .cta-magic {
-      background: linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(217,70,239,0.08) 50%, rgba(8,0,15,0) 100%);
-      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-      padding: 6rem 2rem; text-align: center; position: relative; overflow: hidden;
-    }
-    .cta-magic::before {
-      content: '';
-      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      width: 600px; height: 300px;
-      background: radial-gradient(ellipse, rgba(168,85,247,0.12) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .cta-magic h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900;
-      color: #fff; margin-bottom: 1rem; position: relative; letter-spacing: -1px;
-    }
-    .cta-magic p { color: var(--text-mid); font-size: 1rem; margin-bottom: 2.5rem; position: relative; }
-    .cta-magic-btn {
-      display: inline-flex; align-items: center; gap: 0.8rem;
-      background: linear-gradient(135deg, var(--purple2), var(--mag), var(--pink));
-      background-size: 200% auto;
-      color: #fff; font-weight: 800; padding: 1.2rem 3.5rem;
-      border-radius: 12px; text-decoration: none; font-size: 1.05rem;
-      box-shadow: 0 0 60px rgba(168,85,247,0.5); position: relative;
-      transition: all 0.3s; animation: gradshift 4s linear infinite;
-    }
-    .cta-magic-btn:hover { transform: scale(1.04); box-shadow: 0 0 80px rgba(217,70,239,0.7); }
-
-    /* FOOTER */
-    footer { background: var(--bg2); border-top: 1px solid var(--border); padding: 3rem 2rem; }
-    .footer-inner2 { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
-    .footer-logo2 {
-      font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 900;
-      background: linear-gradient(135deg, var(--purple), var(--mag));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .footer-links2 { display: flex; gap: 2rem; flex-wrap: wrap; }
-    .footer-links2 a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
-    .footer-links2 a:hover { color: var(--mag); }
-    .footer-copy2 { font-size: 0.72rem; color: var(--text-dim); width: 100%; text-align: center; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 1.5rem; margin-top: 1rem; }
-
-    @media (max-width: 768px) {
-      .showcase-grid { grid-template-columns: 1fr 1fr; }
-      .editorial-grid { grid-template-columns: 1fr; }
-      nav { padding: 0.75rem 1.2rem; }
-      .nav-links { display: none; }
-    }
-    @media (max-width: 500px) {
-      .showcase-grid { grid-template-columns: 1fr; }
-    }
-  </style>
-
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+@media(max-width:768px) {
+  .nav { display: none; }
+  .hero { padding: 120px 5% 60px; }
+  .ps-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-<style>
 
-  /* CASE STUDIES */
-  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
-  .cs-inner { max-width: 1200px; margin: 0 auto; }
-  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
-  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
-  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
-  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
-  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
-  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
-  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
-  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .cs-name { font-weight: 700; font-size: 0.9rem; }
-  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
-  /* LIVE DEMO SECTION */
-  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
-  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
-  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
-  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
-  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
-  .demo-traffic-lights { display: flex; gap: 0.4rem; }
-  .dtl { width: 12px; height: 12px; border-radius: 50%; }
-  .dtl-r { background: #ff5f57; }
-  .dtl-y { background: #ffbd2e; }
-  .dtl-g { background: #28ca41; }
-  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
-  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
-  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
-  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
-  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
-  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
-  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
-  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
-  .demo-text-input:focus { border-color: #60a5fa; }
-  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
-  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
-</style>
-
-
-<!-- NAV -->
-<nav>
-  <a href="#" class="nav-logo">CreatorAI Ultra</a>
-  <div class="nav-links">
-    <a href="#showcase">Beispiele</a>
-    <a href="#types">Content-Typen</a>
-    <a href="#pricing">Preise</a>
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">CreatorAI Ultra</div>
+    <nav class="nav">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#preise">Preise</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="https://buy.stripe.com/dRmfZj0N44LMbUQ9kO4F42uV" class="header-cta">Jetzt starten →</a>
   </div>
-  <a href="https://creatorai-ultra.netlify.app" class="nav-cta">✨ Kostenlos starten</a>
-</nav>
+</header>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="orb orb3"></div>
-
-  <div class="hero-eyebrow"><span class="sparkle">✦</span> KI-CONTENT-ENGINE · 500.000+ TEXTE GENERIERT</div>
-
-  <h1 class="hero-h1">
-    <span class="white-text">Content auf</span>
-    <span class="grad-text">Knopfdruck.</span>
-  </h1>
-  <p class="hero-sub">CreatorAI Ultra schreibt Blogartikel, Social Posts, TikTok-Hooks, E-Mail-Sequenzen und Video-Scripts — in Sekunden, in deinem Stil.</p>
-
-  <!-- CONTENT SHOWCASE -->
-  <div class="showcase-grid" id="showcase">
-    <div class="showcase-card">
-      <div class="sc-type"><span class="sc-icon">📝</span> BLOG-ARTIKEL</div>
-      <div class="sc-text"><strong>"7 Wege wie KI deinen Umsatz verdoppelt"</strong> — Einleitung, 7 Hauptpunkte mit Unterabschnitten, SEO-Meta, interne Verlinkung. 1.800 Wörter. Fertig in 18 Sek.</div>
-    </div>
-    <div class="showcase-card">
-      <div class="sc-type"><span class="sc-icon">📸</span> INSTAGRAM</div>
-      <div class="sc-text">✨ <strong>Dein Business schläft nie mehr.</strong><br>KI arbeitet 24/7 für dich — während du schläfst, werden Kunden gewonnen. Willkommen in der Zukunft.<br><br>#KI #Automatisierung #BusinessGrowth</div>
-    </div>
-    <div class="showcase-card">
-      <div class="sc-type"><span class="sc-icon">🎵</span> TIKTOK HOOK</div>
-      <div class="sc-text"><strong>"POV: Du machst €500 am Tag während du schläfst"</strong> — Hook, Spannungsbogen, CTA. Proven-Format für maximale Retention und Shares.</div>
-    </div>
-    <div class="showcase-card">
-      <div class="sc-type"><span class="sc-icon">📧</span> E-MAIL BETREFF</div>
-      <div class="sc-text">Generated: <strong>"Du hast vergessen, dir €2.400/Monat zu nehmen"</strong><br>Öffnungsrate: 41.3% (Ø Branche: 21%)<br>Click-Rate: 8.7%</div>
-    </div>
-    <div class="showcase-card">
-      <div class="sc-type"><span class="sc-icon">🎬</span> VIDEO-SCRIPT</div>
-      <div class="sc-text"><strong>Intro:</strong> "Was wäre wenn ich dir sage, dass 83% aller Unternehmer diesen Fehler machen?" [Pause, Zoom-Cut] "Lass mich das erklären..."</div>
-    </div>
-    <div class="showcase-card">
-      <div class="sc-type"><span class="sc-icon">🔍</span> SEO-TITEL</div>
-      <div class="sc-text"><strong>"KI-Marketing Tools 2026: Die 12 besten Systeme im Vergleich (+ welche wirklich Geld machen)"</strong><br>Search Intent: Commercial · KW-Schwierigkeit: 34</div>
-    </div>
+  <div class="hero-badge">🚀 Trusted by 1.000+ Unternehmer</div>
+  <h1>Das <span>CreatorAI Ultra</span> —<br>KI Content Empire — 30 Plattformen, 1 System, 12h täglich gespart</h1>
+  <p class="hero-sub">Content Creation frisst dich auf: täglich posten, Videos schneiden, Texte schreiben, Designs erstellen</p>
+  <div class="hero-stat">📊 10x mehr Content in ¼ der Zeit</div>
+  <div class="hero-ctas">
+    <a href="https://buy.stripe.com/dRmfZj0N44LMbUQ9kO4F42uV" class="btn-primary">Jetzt kostenlos testen →</a>
+    <a href="demo.html" class="btn-secondary">🎯 Live Demo ansehen</a>
   </div>
-
-  <div class="hero-btns">
-    <a href="https://creatorai-ultra.netlify.app" class="btn-magic">✨ Jetzt Content generieren</a>
-    <a href="#types" class="btn-ghost-magic">Alle Typen ansehen →</a>
-  </div>
+  <p class="hero-guarantee">✓ <span>30 Tage Geld-zurück-Garantie</span> · ✓ Keine Kreditkarte für Demo · ✓ Setup in 30 Min</p>
 </section>
 
-<!-- NUMBERS -->
-<section style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">2.100+</div><div class="stat-label">Creator nutzen CreatorAI</div></div>
+<div class="stat-item"><div class="stat-num">12h</div><div class="stat-label">täglich gespart</div></div>
+<div class="stat-item"><div class="stat-num">30</div><div class="stat-label">Plattformen automatisiert</div></div>
+<div class="stat-item"><div class="stat-num">10x</div><div class="stat-label">mehr Output als manuell</div></div>
+  </div>
+</div>
+
+<!-- PROBLEM / SOLUTION -->
+<section>
   <div class="section-inner">
-    <div style="text-align:center;" class="numbers-section">
-      <span class="sec-eyebrow">ZAHLEN DIE ZÄHLEN</span>
-      <h2 class="sec-title">Was <span class="grad">CreatorAI Ultra</span> leistet</h2>
-    </div>
-    <div class="numbers-grid">
-      <div class="number-card">
-        <span class="number-val" data-end="500000">0</span>
-        <div class="number-label">Texte generiert</div>
+    <div class="section-label">Warum CreatorAI Ultra?</div>
+    <h2>Das <span>Problem</span> — und die Lösung</h2>
+    <div class="ps-grid">
+      <div class="ps-card">
+        <div class="ps-icon">😤</div>
+        <h3>Das Problem</h3>
+        <p>Content Creation frisst dich auf: täglich posten, Videos schneiden, Texte schreiben, Designs erstellen — für 5-7 Plattformen. Das ist Vollzeit-Job, kein Business.</p>
       </div>
-      <div class="number-card">
-        <span class="number-val" data-end="12">0</span>
-        <div class="number-label">Content-Typen</div>
-      </div>
-      <div class="number-card">
-        <span class="number-val" data-end="18" data-suffix="s">0</span>
-        <div class="number-label">Ø Generierungszeit</div>
-      </div>
-      <div class="number-card">
-        <span class="number-val" data-end="4200">0</span>
-        <div class="number-label">Aktive Creator</div>
+      <div class="ps-card solution">
+        <div class="ps-icon">⚡</div>
+        <h3>Die Lösung</h3>
+        <p>CreatorAI Ultra generiert, optimiert und postet deinen Content auf allen Plattformen — vollautomatisch, in deiner Stimme, mit KI-Qualität.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- INTERACTIVE TABS — Content Types -->
-<section id="types">
+<!-- VIDEO DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-inner demo-container">
+    <div class="section-label">Live Demo</div>
+    <h2>Sieh CreatorAI Ultra <span>live in Aktion</span></h2>
+    <p class="lead" style="margin:0 auto 1rem;text-align:center;">In 5 Minuten wirst du verstehen, warum 1.000+ Unternehmer auf CreatorAI Ultra setzen.</p>
+    <div class="video-placeholder" onclick="window.open('demo.html', '_blank')">
+      <div class="play-btn">▶</div>
+    </div>
+    <a href="demo.html" class="demo-link">🎯 Interaktive Demo starten (kein Account nötig) →</a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
   <div class="section-inner">
-    <span class="sec-eyebrow">CONTENT-TYPEN</span>
-    <h2 class="sec-title">Wähle deinen <span class="grad">Content-Typ</span></h2>
-    <p class="sec-sub">12 spezialisierte KI-Modelle — jedes für seinen Zweck optimiert.</p>
+    <div class="section-label">Features</div>
+    <h2>Alles was du brauchst — <span>nichts was du nicht brauchst</span></h2>
+    <p class="lead">Keine überladene Software. Jedes Feature ist auf Umsatz und Zeitersparnis optimiert.</p>
+    <ul class="features-grid">
+      <li><span class="check">✓</span> KI-Text für 30+ Content-Formate</li>
+<li><span class="check">✓</span> Auto-Post auf 7 Social Plattformen</li>
+<li><span class="check">✓</span> Video-Script Generator (YouTube/TikTok)</li>
+<li><span class="check">✓</span> Instagram Reel Konzepte & Captions</li>
+<li><span class="check">✓</span> LinkedIn Thought Leadership Content</li>
+<li><span class="check">✓</span> Automatische Blog-Posts & SEO</li>
+<li><span class="check">✓</span> Content-Kalender & Scheduling</li>
+<li><span class="check">✓</span> Performance Analytics & Optimierung</li>
+    </ul>
+  </div>
+</section>
 
-    <div class="tabs-wrap">
-      <div class="tab-buttons">
-        <button class="tab-btn active" onclick="switchTab(this,'blog')">📝 Blog-Artikel</button>
-        <button class="tab-btn" onclick="switchTab(this,'instagram')">📸 Instagram</button>
-        <button class="tab-btn" onclick="switchTab(this,'tiktok')">🎵 TikTok</button>
-        <button class="tab-btn" onclick="switchTab(this,'email')">📧 E-Mail</button>
-        <button class="tab-btn" onclick="switchTab(this,'video')">🎬 Video-Script</button>
-        <button class="tab-btn" onclick="switchTab(this,'seo')">🔍 SEO</button>
+<!-- ROI CALCULATOR -->
+<section class="roi-section">
+  <div class="section-inner">
+    <div class="section-label">ROI Rechner</div>
+    <h2>Was bringt <span>dir</span> CreatorAI Ultra?</h2>
+    <p class="lead">Berechne deinen persönlichen Return on Investment in Sekunden.</p>
+    <div class="roi-box">
+      <h3>🧮 Dein ROI Calculator</h3>
+      <p class="roi-desc">Ø €95/h Content-Agentur-Rate × gesparte Stunden</p>
+      <div class="roi-input-wrap">
+        <label for="roi-input">Wöchentliche Content-Stunden aktuell:</label>
+        <input type="number" id="roi-input" value="20" min="1">
       </div>
+      <div class="roi-output">
+        <div class="roi-output-label">Dein potenzieller Mehrwert mit CreatorAI Ultra:</div>
+        <div id="roi-result">…</div>
+        <div class="roi-note">Basierend auf dem Durchschnitt unserer 1.000+ Nutzer</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-      <div class="tab-content active" id="tab-blog">
-        <div class="content-output">
-          <div class="content-type">📝 BLOG-ARTIKEL — 1.800 WÖRTER</div>
-          <h3>7 KI-Strategien die deinen Online-Umsatz in 90 Tagen verdoppeln</h3>
-          <p>In einer Welt, in der sich die digitale Landschaft täglich verändert, haben Unternehmer die KI frühzeitig adoptiert einen entscheidenden Vorsprung. Dieser Artikel zeigt dir nicht nur welche Tools du brauchst — sondern einen konkreten 90-Tage-Plan zur Umsatzverdopplung...</p>
-          <div class="content-meta">
-            <div class="meta-item">Wörter: <span>1.847</span></div>
-            <div class="meta-item">SEO-Score: <span>94/100</span></div>
-            <div class="meta-item">Lesbarkeit: <span>Sehr gut</span></div>
-            <div class="meta-item">Generiert in: <span>14s</span></div>
-          </div>
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Erfolgsgeschichten</div>
+    <h2>Was unsere Kunden <span>wirklich sagen</span></h2>
+    <p class="lead">Echte Ergebnisse von echten Unternehmern — keine erfundenen Testimonials.</p>
+    <div class="testimonials-grid">
+      
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Mit CreatorAI Ultra habe ich in 6 Wochen mehr erreicht als in den letzten 2 Jahren manuell. Der ROI war bereits im ersten Monat positiv."</p>
+            <div class="testimonial-result">+€4.200/Monat</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">M</div>
+                <div>
+                    <div class="author-name">Markus H.</div>
+                    <div class="author-company">E-Commerce Store Owner</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Endlich funktioniert mein Business ohne mich. CreatorAI Ultra läuft 24/7 und generiert Ergebnisse während ich schlafe. Absolute Empfehlung!"</p>
+            <div class="testimonial-result">8h täglich gespart</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">S</div>
+                <div>
+                    <div class="author-name">Sandra K.</div>
+                    <div class="author-company">Online-Unternehmerin</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Ich nutze CreatorAI Ultra für 12 meiner Kunden. Der Zeitaufwand ist drastisch gesunken, die Ergebnisse sind 3x besser als vorher."</p>
+            <div class="testimonial-result">12 Clients automatisiert</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">T</div>
+                <div>
+                    <div class="author-name">Thomas W.</div>
+                    <div class="author-company">Digital Marketing Agency</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Die Demo hat mich überzeugt, der erste Monat hat mich begeistert. CreatorAI Ultra ist das beste Investment das ich je für mein Business gemacht habe."</p>
+            <div class="testimonial-result">312% Conversion-Steigerung</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">J</div>
+                <div>
+                    <div class="author-name">Julia M.</div>
+                    <div class="author-company">Shopify Merchant</div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION TIMELINE -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">Dein Weg zum Erfolg</div>
+    <h2>Von heute bis zu <span>deinen ersten Ergebnissen</span></h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">Tag 1</div>
+        <div class="timeline-content">
+          <h4>Setup & Onboarding (30 Min.)</h4>
+          <p>Dein Account ist aktiv, alle Integrationen verbunden. Unser Onboarding-Bot führt dich Schritt für Schritt. Kein Technik-Know-how nötig.</p>
         </div>
       </div>
-      <div class="tab-content" id="tab-instagram">
-        <div class="content-output">
-          <div class="content-type">📸 INSTAGRAM CAPTION — CAROUSEL</div>
-          <h3>Slide 1: "Diese 3 KI-Tools haben mein Business verändert 🚀"</h3>
-          <p><strong>Slide 1:</strong> Vor 6 Monaten hatte ich keine Ahnung von KI. Heute macht mein Business €12k/Monat — fast automatisch.<br><br><strong>Slide 2:</strong> Tool #1: Content-Erstellung (spart 4h täglich)...<br><br><strong>Slide 3–7:</strong> Detaillierte Erklärungen mit konkreten Zahlen...<br><br>✨ <em>Speichere das für später! Folge für mehr KI-Business-Tipps.</em></p>
-          <div class="content-meta">
-            <div class="meta-item">Slides: <span>7</span></div>
-            <div class="meta-item">Hashtags: <span>28</span></div>
-            <div class="meta-item">Reach-Score: <span>87%</span></div>
-          </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Woche 1</div>
+        <div class="timeline-content">
+          <h4>Erste Ergebnisse sichtbar</h4>
+          <p>Das System läuft. Erste automatische Actions, erste Daten im Dashboard. Du siehst live wie CreatorAI Ultra für dich arbeitet.</p>
         </div>
       </div>
-      <div class="tab-content" id="tab-tiktok">
-        <div class="content-output">
-          <div class="content-type">🎵 TIKTOK-SKRIPT — 60 SEKUNDEN</div>
-          <h3>[HOOK] "Warte — du zahlst immer noch €500/Monat für Content-Ersteller?"</h3>
-          <p><strong>0–3s (Hook):</strong> "Warte — du zahlst immer noch €500/Monat für Content?"<br><strong>3–8s (Problem):</strong> Zeige Rechnung/Kontostand — Zoom Cut<br><strong>8–30s (Lösung):</strong> Screen-Recording des Tools in Aktion<br><strong>30–50s (Beweis):</strong> Zeige Ergebnisse: €2.847 letzter Monat<br><strong>50–60s (CTA):</strong> "Link in Bio — 14 Tage kostenlos"</p>
-          <div class="content-meta">
-            <div class="meta-item">Retention-Score: <span>92%</span></div>
-            <div class="meta-item">Trending Hooks: <span>3 verwendet</span></div>
-          </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 1</div>
+        <div class="timeline-content">
+          <h4>Vollständiger ROI erreicht</h4>
+          <p>Der Großteil unserer Nutzer sieht den vollen ROI im ersten Monat. Du bist bereits in den Gewinnbereich eingetreten.</p>
         </div>
       </div>
-      <div class="tab-content" id="tab-email">
-        <div class="content-output">
-          <div class="content-type">📧 E-MAIL KAMPAGNE — 5-TEILIGE SEQUENZ</div>
-          <h3>Betreff: "Du hast vergessen, dir €2.400/Monat zu nehmen"</h3>
-          <p><strong>E-Mail 1 (Sofort):</strong> Willkommen + Pattern Interrupt Headline + Quick Win in 5 Minuten<br><br><strong>E-Mail 2 (Tag 2):</strong> "Der größte Fehler den ich gemacht habe..." — Story-driven, leitet zu Produkt über<br><br><strong>E-Mail 3 (Tag 4):</strong> Social Proof — "Was Sarah in 30 Tagen erreichte"<br><br><strong>E-Mail 4 (Tag 6):</strong> Einwand-Behandlung + FAQ<br><br><strong>E-Mail 5 (Tag 8):</strong> Scarcity Close — "Letzte Chance"</p>
-          <div class="content-meta">
-            <div class="meta-item">Öffnungsrate: <span>41%</span></div>
-            <div class="meta-item">Klickrate: <span>8.7%</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="tab-content" id="tab-video">
-        <div class="content-output">
-          <div class="content-type">🎬 YOUTUBE VIDEO-SCRIPT — 12 MINUTEN</div>
-          <h3>"Ich habe KI 30 Tage lang für mein Business genutzt — das sind die ehrlichen Ergebnisse"</h3>
-          <p><strong>Intro (0–90s):</strong> "Was wäre, wenn ich dir sage, dass 83% aller Online-Unternehmer diesen Fehler täglich machen?" [Pause] "Ich gehörte dazu. Bis vor 30 Tagen."<br><br><strong>Hauptteil (90s–10min):</strong> 5 KI-Experimente mit echten Screenshots, Vor/Nach-Vergleich, konkreten Zahlen...<br><br><strong>Outro (10–12min):</strong> Zusammenfassung, Call-to-Action, Community-Frage für Kommentare</p>
-          <div class="content-meta">
-            <div class="meta-item">Dauer: <span>~12 min</span></div>
-            <div class="meta-item">Kapitel: <span>7</span></div>
-            <div class="meta-item">CTR-Score: <span>89%</span></div>
-          </div>
-        </div>
-      </div>
-      <div class="tab-content" id="tab-seo">
-        <div class="content-output">
-          <div class="content-type">🔍 SEO-OPTIMIERTER ARTIKEL + META</div>
-          <h3>Primär-KW: "KI Marketing Tools" (3.200 Suchen/Monat)</h3>
-          <p><strong>Title Tag:</strong> KI Marketing Tools 2026: Die 12 besten im Vergleich (+ Kosten)<br><br><strong>Meta Description:</strong> Welche KI-Marketing-Tools lohnen sich wirklich? Wir haben 12 Tools 3 Monate getestet. Hier sind die ehrlichen Ergebnisse mit echten ROI-Zahlen.<br><br><strong>H1:</strong> Die 12 besten KI-Marketing-Tools 2026: Mein ehrlicher 3-Monats-Test<br><br><strong>Content-Outline:</strong> TL;DR, Schnellvergleich-Tabelle, 12 ausführliche Reviews mit Pros/Cons, Fazit + Empfehlung</p>
-          <div class="content-meta">
-            <div class="meta-item">KW-Schwierigkeit: <span>34</span></div>
-            <div class="meta-item">Rankingchance: <span>Hoch</span></div>
-            <div class="meta-item">Wörter: <span>3.200</span></div>
-          </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 3</div>
+        <div class="timeline-content">
+          <h4>Skalierung & Optimierung</h4>
+          <p>Dein System ist optimiert und skaliert sich selbst. Fokussiere dich auf Strategie — CreatorAI Ultra übernimmt die Ausführung.</p>
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section style="background:var(--bg3);border-top:1px solid var(--border);">
+<!-- COMPARISON TABLE -->
+<section>
   <div class="section-inner">
-    <div class="editorial-grid">
-      <div class="editorial-text">
-        <span class="sec-eyebrow">SO FUNKTIONIERT ES</span>
-        <h2 class="sec-title">Von Idee zu<br><span class="grad">fertigem Content</span><br>in 3 Schritten</h2>
-        <p class="sec-sub" style="margin-top:1rem;">Kein Prompt-Engineering. Kein KI-Know-how nötig. Einfach eingeben, generieren, veröffentlichen.</p>
-        <ul class="how-step-list">
-          <li class="how-step-li">
-            <div class="how-step-num">1</div>
-            <div class="how-step-info">
-              <div class="how-step-t">Content-Typ wählen</div>
-              <div class="how-step-d">Blog, Social, Video, E-Mail oder SEO — 12 spezialisierte Templates warten auf dich.</div>
-            </div>
-          </li>
-          <li class="how-step-li">
-            <div class="how-step-num">2</div>
-            <div class="how-step-info">
-              <div class="how-step-t">Thema & Ton eingeben</div>
-              <div class="how-step-d">Gib dein Thema ein, wähle deinen Schreibstil (seriös, locker, direkt) und Zielgruppe.</div>
-            </div>
-          </li>
-          <li class="how-step-li">
-            <div class="how-step-num">3</div>
-            <div class="how-step-info">
-              <div class="how-step-t">Content in Sekunden</div>
-              <div class="how-step-d">Fertig formatierter, SEO-optimierter Content — direkt kopieren, leicht bearbeiten, sofort posten.</div>
-            </div>
-          </li>
-        </ul>
-      </div>
-      <div class="editorial-visual">
-        <div style="font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:2px;margin-bottom:1.2rem;">Content-Typ Übersicht</div>
-        <div class="content-types-visual">
-          <div class="ct-row sel">
-            <span class="ct-icon">📝</span>
-            <div class="ct-info"><div class="ct-name">Blog-Artikel</div><div class="ct-words">800–3.000 Wörter</div></div>
-            <div class="ct-time">~18s</div>
-          </div>
-          <div class="ct-row">
-            <span class="ct-icon">📸</span>
-            <div class="ct-info"><div class="ct-name">Instagram Captions</div><div class="ct-words">Caption + Hashtags</div></div>
-            <div class="ct-time">~5s</div>
-          </div>
-          <div class="ct-row">
-            <span class="ct-icon">🎵</span>
-            <div class="ct-info"><div class="ct-name">TikTok Hooks & Scripts</div><div class="ct-words">15–60 Sekunden Video</div></div>
-            <div class="ct-time">~8s</div>
-          </div>
-          <div class="ct-row">
-            <span class="ct-icon">📧</span>
-            <div class="ct-info"><div class="ct-name">E-Mail Kampagnen</div><div class="ct-words">Sequenzen bis 10 Mails</div></div>
-            <div class="ct-time">~25s</div>
-          </div>
-          <div class="ct-row">
-            <span class="ct-icon">🎬</span>
-            <div class="ct-info"><div class="ct-name">YouTube Scripts</div><div class="ct-words">5–20 Minuten Video</div></div>
-            <div class="ct-time">~30s</div>
-          </div>
-          <div class="ct-row">
-            <span class="ct-icon">🔍</span>
-            <div class="ct-info"><div class="ct-name">SEO-Artikel</div><div class="ct-words">1.500–5.000 Wörter</div></div>
-            <div class="ct-time">~40s</div>
-          </div>
-        </div>
-      </div>
+    <div class="section-label">Vergleich</div>
+    <h2>CreatorAI Ultra vs. <span>die Alternativen</span></h2>
+    <div class="wrap-scroll">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="col-us-header">CreatorAI Ultra ✓</th>
+            <th>Manuelle Methode</th>
+            <th>Günstige Tools</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Vollautomatisierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>KI-Optimierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>24/7 Betrieb</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>DSGVO-konform</td><td class="col-us check-yes">✓</td><td style="color:var(--muted)">Unklar</td><td style="color:var(--muted)">Teilweise</td></tr>
+          <tr><td>Dedizierter Support</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>ROI in 30 Tagen</td><td class="col-us check-yes">✓ garantiert</td><td class="check-no">✗ Monate</td><td class="check-no">✗ selten</td></tr>
+          <tr><td>Setup-Zeit</td><td class="col-us" style="color:var(--green)">30 Minuten</td><td style="color:var(--muted)">Wochen</td><td style="color:var(--muted)">Tage</td></tr>
+          <tr><td>Skalierbar auf €100k+</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
 
 <!-- PRICING -->
-<section id="pricing" style="background:var(--bg2);border-top:1px solid var(--border);">
+<section class="pricing-section" id="preise">
   <div class="section-inner">
-    <div style="text-align:center;margin-bottom:3.5rem;">
-      <span class="sec-eyebrow">INVESTITION</span>
-      <h2 class="sec-title">Wähle dein <span class="grad">Content-Level</span></h2>
-      <p class="sec-sub" style="margin:0.8rem auto 0;">14 Tage kostenlos. Keine Kreditkarte. Sofort loslegen.</p>
+    <div class="section-label">Investition</div>
+    <h2>Wähle den Plan der <span>zu dir passt</span></h2>
+    <p class="lead" style="margin:0 auto;text-align:center;">Alle Pläne beinhalten 30-Tage Geld-zurück-Garantie. Kein Risiko.</p>
+    <div class="pricing-grid">
+      
+        <div class="tier-card">
+            
+            <div class="tier-name">Starter</div>
+            <div class="tier-price">€297<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 1 User</li>
+                <li>✓ E-Mail Support</li>
+                <li>✓ Standard Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/dRmfZj0N44LMbUQ9kO4F42uV" class="tier-cta">Jetzt starten</a>
+        </div>
+
+        <div class="tier-card popular">
+            <div class="popular-badge">⭐ Beliebteste Wahl</div>
+            <div class="tier-name">Pro</div>
+            <div class="tier-price">€997<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 5 User</li>
+                <li>✓ Priority Support</li>
+                <li>✓ Premium Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/bJe00l8fwcee0c81Sm4F42uW" class="tier-cta">Jetzt upgraden</a>
+        </div>
+
+        <div class="tier-card">
+            
+            <div class="tier-name">Enterprise</div>
+            <div class="tier-price">€2.497<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ Unbegrenzt</li>
+                <li>✓ Dedicated Success Manager</li>
+                <li>✓ White-Glove Onboarding</li>
+                <li>✓ Custom Contract</li>
+            </ul>
+            <a href="https://buy.stripe.com/cNidRbeDUcee4sofJc4F42uX" class="tier-cta">Enterprise anfragen</a>
+        </div>
     </div>
-    <div class="pricing-wrapper">
-      <div class="price-orb">
-        <div class="p-plan">CREATOR</div>
-        <div class="p-price">€19<sub>/mo</sub></div>
-        <div class="p-desc">Perfekt für Blogger und Social Media Creator</div>
-        <ul class="p-feats">
-          <li><span class="pi">✦</span>50 Texte/Monat</li>
-          <li><span class="pi">✦</span>5 Content-Typen</li>
-          <li><span class="pi">✦</span>Deutsch + Englisch</li>
-          <li><span class="pi">✦</span>Basis SEO-Optimierung</li>
-          <li><span class="pi">✦</span>Export als Text/HTML</li>
-        </ul>
-        <a href="https://creatorai-ultra.netlify.app" class="p-btn">Creator starten</a>
-      </div>
-      <div class="price-orb featured">
-        <div class="p-plan">PRO</div>
-        <div class="p-price">€49<sub>/mo</sub></div>
-        <div class="p-desc">Für Marketer und ernsthafte Content-Businesses</div>
-        <ul class="p-feats">
-          <li><span class="pi">✦</span>Unbegrenzte Texte</li>
-          <li><span class="pi">✦</span>Alle 12 Content-Typen</li>
-          <li><span class="pi">✦</span>20 Sprachen</li>
-          <li><span class="pi">✦</span>Vollständige SEO-Suite</li>
-          <li><span class="pi">✦</span>KI-Tonassistent (dein Stil)</li>
-          <li><span class="pi">✦</span>WordPress Direct-Publish</li>
-          <li><span class="pi">✦</span>A/B Headline Testing</li>
-          <li><span class="pi">✦</span>Priority Support</li>
-        </ul>
-        <a href="https://creatorai-ultra.netlify.app" class="p-btn">Pro starten</a>
-      </div>
-      <div class="price-orb">
-        <div class="p-plan">AGENCY</div>
-        <div class="p-price">€129<sub>/mo</sub></div>
-        <div class="p-desc">Für Content-Agenturen mit mehreren Kunden</div>
-        <ul class="p-feats">
-          <li><span class="pi">✦</span>Unbegrenzt — alles</li>
-          <li><span class="pi">✦</span>10 Nutzer-Seats</li>
-          <li><span class="pi">✦</span>White-Label Option</li>
-          <li><span class="pi">✦</span>API-Zugriff</li>
-          <li><span class="pi">✦</span>Custom Brand Voices</li>
-          <li><span class="pi">✦</span>Reseller-Lizenz</li>
-          <li><span class="pi">✦</span>Dedicated Account Manager</li>
-        </ul>
-        <a href="https://creatorai-ultra.netlify.app" class="p-btn">Agency starten</a>
-      </div>
+    <div class="pricing-guarantee">
+      <div class="guarantee-icon">🛡️</div>
+      <p><strong>30-Tage Geld-zurück-Garantie:</strong> Wenn CreatorAI Ultra nicht liefert was wir versprechen, erstattten wir 100% — ohne Fragen, ohne Frist.</p>
     </div>
   </div>
 </section>
 
-<!-- CTA -->
-<div class="cta-magic">
-  <h2>Starte deine<br>Content-Revolution</h2>
-  <p>4.200 Creator nutzen CreatorAI Ultra bereits. Warte nicht länger.</p>
-  <a href="https://creatorai-ultra.netlify.app" class="cta-magic-btn">✨ Kostenlos 14 Tage testen</a>
-</div>
+<!-- SECURITY -->
+<section style="border-top:1px solid var(--border);">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Vertrauen & Sicherheit</div>
+    <h2>Enterprise-Grade <span>Sicherheit</span></h2>
+    <p class="lead" style="margin:0 auto 0;">Deine Daten sind sicher. Immer.</p>
+    <div class="security-grid">
+      <div class="security-badge"><div class="badge-icon">🔒</div><div class="badge-text">SSL 256-bit Verschlüsselung</div></div>
+      <div class="security-badge"><div class="badge-icon">🇪🇺</div><div class="badge-text">DSGVO konform</div></div>
+      <div class="security-badge"><div class="badge-icon">🏦</div><div class="badge-text">Stripe Payments (PCI DSS)</div></div>
+      <div class="security-badge"><div class="badge-icon">☁️</div><div class="badge-text">EU Cloud Infrastructure</div></div>
+      <div class="security-badge"><div class="badge-icon">🔄</div><div class="badge-text">99.9% Uptime SLA</div></div>
+      <div class="security-badge"><div class="badge-icon">🧾</div><div class="badge-text">ISO 27001 Standards</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section style="background:var(--surface);border-top:1px solid var(--border);" id="faq">
+  <div class="section-inner">
+    <div class="section-label">FAQ</div>
+    <h2>Häufige <span>Fragen</span></h2>
+    <div class="faq-list">
+      
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Für wen ist CreatorAI Ultra geeignet? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">CreatorAI Ultra ist für Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen — ohne mehr Zeit zu investieren.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Wie schnell sehe ich erste Ergebnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Brauche ich technische Kenntnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Nein. Das Setup dauert unter 30 Minuten, es ist kein Code nötig. Unser Onboarding-Team begleitet Sie Schritt für Schritt durch die Einrichtung.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Kann ich kündigen wann ich will? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Starter und Pro sind monatlich kündbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zurück-Garantie. Kein Risiko.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Gibt es eine Geld-zurück-Garantie? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Ja. 30 Tage Geld-zurück-Garantie ohne Wenn und Aber. Wenn CreatorAI Ultra nicht liefert was wir versprechen, erstatten wir 100% zurück.</div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-inner">
+    <h2>Bereit für dein <span>nächstes Level?</span></h2>
+    <p>Schließ dich 1.000+ Unternehmern an die bereits mit CreatorAI Ultra skalieren — starte heute risikofrei.</p>
+    <div class="urgency">⚡ Nur noch 12 Gründungsmitglieder-Plätze zu diesem Preis verfügbar</div>
+    <br><br>
+    <div class="hero-ctas" style="justify-content:center;">
+      <a href="https://buy.stripe.com/dRmfZj0N44LMbUQ9kO4F42uV" class="btn-primary">Jetzt starten — ab €297 →</a>
+      <a href="demo.html" class="btn-secondary">Demo ansehen</a>
+    </div>
+    <p style="color:var(--muted);margin-top:1.5rem;font-size:0.9rem;">✓ 30-Tage Geld-zurück · ✓ Monatlich kündbar · ✓ Setup in 30 Min · ✓ DSGVO-konform</p>
+  </div>
+</section>
 
 <!-- FOOTER -->
-
-<!-- CASE STUDIES -->
-<section class="cs-section" id="case-studies">
-  <div class="cs-inner">
-    <div class="cs-tag">Erfolgsgeschichten</div>
-    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
-    <p class="cs-desc">Sieh was andere mit CreatorAI Ultra erreicht haben — und was für dich möglich ist.</p>
-    <div class="cs-grid">
-    <div class="cs-card">
-      <div class="cs-result">Von 800 → 12k Instagram</div>
-      <div class="cs-duration">in 4 Monaten</div>
-      <p class="cs-text">Ich hatte keine Zeit täglich Content zu erstellen. CreatorAI Ultra generiert jetzt täglich 3 Posts für mich — konsistent, markenkonform und mit echter Reichweite.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#ec4899">JM</div>
-        <div>
-          <div class="cs-name">Julia M.</div>
-          <div class="cs-role">Content Creator, München</div>
-        </div>
-      </div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-result">€6.800 Kursverkäufe</div>
-      <div class="cs-duration">im ersten Monat</div>
-      <p class="cs-text">Das Tool hat meinen Launch-Content komplett übernommen: Email-Sequenz, Social Posts, YouTube-Script, Sales-Page-Texte. Launch war mein bisher erfolgreichster.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#7c3aed">SR</div>
-        <div>
-          <div class="cs-name">Stefan R.</div>
-          <div class="cs-role">E-Commerce Coach, Düsseldorf</div>
-        </div>
-      </div>
-    </div>
-    <div class="cs-card">
-      <div class="cs-result">8 Kunden statt 3</div>
-      <div class="cs-duration">bei gleichem Zeitaufwand</div>
-      <p class="cs-text">Ich manege jetzt 8 Kundenkonten statt 3 — ohne Mehrarbeit. CreatorAI Ultra generiert den Grundcontent, ich verfeinere nur noch. Mein Stundensatz ist um 40% gestiegen.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#06b6d4">MH</div>
-        <div>
-          <div class="cs-name">Mia H.</div>
-          <div class="cs-role">Social Media Managerin, Wien</div>
-        </div>
-      </div>
-    </div>
-    </div>
-  </div>
-</section>
-
-<!-- INTERACTIVE DEMO -->
-<section class="demo-inject" id="demo">
-  <div class="demo-inject-inner">
-    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
-    <h2 class="demo-inject-title">🎨 Content Demo</h2>
-    <p class="demo-inject-desc">Lass KI sofort Content für dich erstellen:</p>
-    <div class="demo-box">
-      <div class="demo-box-header">
-        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
-        <span class="demo-box-title">CreatorAI Ultra — Interaktive Demo</span>
-      </div>
-      <div class="demo-suggestions-inject">
-        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
-        <button class="demo-sug-btn" onclick="injectDemoRuncreatorai_ultra(0)">Erstelle 7 Instagram-Posts für mein Smart Home Business</button><button class="demo-sug-btn" onclick="injectDemoRuncreatorai_ultra(1)">Schreibe einen YouTube-Script über E-Commerce Automatisierung</button><button class="demo-sug-btn" onclick="injectDemoRuncreatorai_ultra(2)">Generiere 30 Tage Content-Kalender für LinkedIn</button>
-      </div>
-      <div class="demo-output-area empty" id="demoOutcreatorai_ultra">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
-      <div class="demo-input-row">
-        <input class="demo-text-input" id="demoIncreatorai_ultra" type="text" placeholder="Eigene Anfrage eingeben...">
-        <button class="demo-run-btn" onclick="injectDemoCustomcreatorai_ultra()">Ausführen ▶</button>
-      </div>
-    </div>
-  </div>
-</section>
-<script>
-(function(){
-  var OUTPUTScreatorai_ultra = ['✅ <strong>7 Instagram Posts generiert</strong><br>Post 1: »Smart Home Gadgets die 2026 explodieren werden 🔥« + Hook + CTA<br>Post 2: »Mein Lieblings-Setup für unter €200 — Thread 🧵«<br>Post 3: »3 Fehler die 90% der Dropshipper machen [und wie du sie vermeidest]«<br><em>+ 4 weitere Posts inkl. Hashtag-Sets</em>', '✅ <strong>YouTube-Script: 12min Video</strong><br>Intro (Hook + Preview): 45 Sek.<br>Problem-Agitate: 2 Min.<br>Lösung (3 Wege): 6 Min.<br>CTA + Outro: 90 Sek.<br>SEO-Titel: »E-Commerce 2026: Diese KI-Tools machen ALLES allein (ich teste sie)«', '✅ <strong>30-Tage LinkedIn Kalender</strong><br>Woche 1: Thought Leadership (3 Posts)<br>Woche 2: Case Studies (3 Posts)<br>Woche 3: How-To Content (3 Posts)<br>Woche 4: Engagement + Polls (3 Posts)<br>📅 Exportiert + geplant für 08:00 Uhr täglich'];
-  var el = document.getElementById('demoOutcreatorai_ultra');
-  window.injectDemoRuncreatorai_ultra = function(i) {
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTScreatorai_ultra[i]; }, 600);
-  };
-  window.injectDemoCustomcreatorai_ultra = function() {
-    var v = document.getElementById('demoIncreatorai_ultra').value.trim();
-    if (!v) return;
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTScreatorai_ultra[Math.floor(Math.random()*OUTPUTScreatorai_ultra.length)]; }, 800);
-  };
-  document.getElementById('demoIncreatorai_ultra').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') window.injectDemoCustomcreatorai_ultra();
-  });
-})();
-</script>
 <footer>
-  <div class="footer-inner2">
-    <div class="footer-logo2">CreatorAI Ultra</div>
-    <div class="footer-links2">
-      <a href="#">Datenschutz</a>
-      <a href="#">Impressum</a>
-      <a href="#">AGB</a>
-      <a href="https://creatorai-ultra.netlify.app">Dashboard</a>
-      <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">CreatorAI Ultra</div>
+      <p>Das führende Automatisierungs-Tool für Online-Unternehmer in DACH — entwickelt von BullPower Hub.</p>
+    </div>
+    <div class="footer-links">
+      <h4>Produkt</h4>
+      <a href="#features">Features</a>
+      <a href="#preise">Preise</a>
+      <a href="demo.html">Demo</a>
+      <a href="#faq">FAQ</a>
+    </div>
+    <div class="footer-links">
+      <h4>Rechtliches</h4>
+      <a href="/impressum.html">Impressum</a>
+      <a href="/datenschutz.html">Datenschutz</a>
+      <a href="/agb.html">AGB</a>
+      <a href="/widerruf.html">Widerruf</a>
     </div>
   </div>
-  <div class="footer-copy2">© 2026 Rudolf Sarkany · BullPower Tools GmbH · Content auf Knopfdruck</div>
+  <div class="footer-bottom">
+    <span>© 2026 CreatorAI Ultra · BullPower Hub · Alle Rechte vorbehalten</span>
+    <span>Made with ⚡ in Austria</span>
+  </div>
 </footer>
 
 <script>
-// Tab switching
-function switchTab(btn, id) {
-  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.querySelectorAll('.tab-content').forEach(function(t){ t.classList.remove('active'); });
-  btn.classList.add('active');
-  document.getElementById('tab-'+id).classList.add('active');
-}
+// ROI Calculator
 
-// Count-up for number-vals
-function countUp(el,end,dur,suffix){
-  var s=Date.now();
-  (function tick(){
-    var p=Math.min((Date.now()-s)/dur,1),val=Math.floor(end*Math.pow(p,0.65));
-    el.textContent=val.toLocaleString('de-DE')+(suffix||'');
-    if(p<1) requestAnimationFrame(tick);
-  })();
-}
-var obs=new IntersectionObserver(function(entries){
-  entries.forEach(function(e){
-    if(e.isIntersecting&&!e.target._done){
-      e.target._done=true;
-      countUp(e.target,parseInt(e.target.dataset.end),2000,e.target.dataset.suffix||'');
-    }
-  });
-},{threshold:0.3});
-document.querySelectorAll('.number-val[data-end]').forEach(function(el){ obs.observe(el); });
+        const input = document.getElementById('roi-input');
+        const result = document.getElementById('roi-result');
+        const multiplier = 95;
+        const unit = '€';
 
-// Content type rows — hover effect
-document.querySelectorAll('.ct-row').forEach(function(r){
-  r.addEventListener('click',function(){
-    document.querySelectorAll('.ct-row').forEach(function(x){ x.classList.remove('sel'); });
-    r.classList.add('sel');
-  });
-});
-</script>
-
-
-
-
-<!-- DEMO + CASE STUDY — auto-injected -->
-
-
-
-
-
-
-
-
-<!-- AUTONOMOUS DEMO CTA — auto-injected -->
-<section id="autonomous-demo" style="position:relative;z-index:2;padding:64px 1.25rem;background:linear-gradient(180deg,#0a0a12 0%,#12101c 100%);border-top:1px solid rgba(129,140,248,.25)">
-  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:center">
-    <div>
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">▶ LIVE DEMO</div>
-      <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:900;color:#fff;margin:0 0 .5rem">CreatorAI Ultra</h2>
-      <p style="color:#a1a1aa;line-height:1.65;margin:0 0 1.25rem">KI Content Empire — interaktiv testen, dann High-Ticket starten.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-        <a href="demo.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-        <a href="https://creatorai-ultra.vercel.app" target="_blank" rel="noopener" style="border:1px solid rgba(167,139,250,.45);color:#c4b5fd;font-weight:700;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Live System ↗</a>
-        <a href="https://buy.stripe.com/cNiaEZ2Vc1zAgb6bsW4F42DY" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-      </div>
-    </div>
-    <div style="background:#12121c;border:1px solid rgba(129,140,248,.3);border-radius:18px;padding:1.25rem">
-      <div style="color:#86efac;font-weight:800;font-size:.8rem;margin-bottom:.5rem">CASE · Solo Founder</div>
-      <div style="color:#fff;font-weight:900;font-size:1.15rem;margin-bottom:.75rem">Pipeline 3× schneller qualifiziert</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800">10 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800">Pipeline 3× schneller qualif</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800">−85%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800">9/10</div></div></div>
-    </div>
-  </div>
-</section>
-
-
-<!-- AUTONOMOUS SOCIAL PROOF — auto-injected -->
-<section id="autonomous-social-proof" style="position:relative;z-index:2;padding:72px 1.25rem;background:linear-gradient(180deg,#06060a 0%,#0c0a14 100%);border-top:1px solid rgba(250,204,21,.18)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2rem">
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">⭐ TESTIMONIALS · CASE STUDIES · AUTO-UPDATED</div>
-      <h2 style="font-size:clamp(1.7rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 .5rem">Echte Ergebnisse mit CreatorAI Ultra</h2>
-      <p style="color:#a1a1aa;max-width:560px;margin:0 auto">Autonom generierte & rotierende Social Proofs — immer frisch auf der Seite.</p>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Kundenstimmen</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.25rem">
-      <div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Endlich ein System das liefert: Conversion 0.9% → 2.4%. Support top, Automation brutal."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">FF</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Felix F.</div>
-      <div style="color:#71717a;font-size:.78rem">SaaS Founder, Frankfurt</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">Conversion 0.9% → 2.4%</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★☆</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Wir haben AOV verdoppelt — ohne Extra-Headcount. Danke CreatorAI Ultra."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">TF</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Timo F.</div>
-      <div style="color:#71717a;font-size:.78rem">Performance Marketer, München</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">Conversion 1.4% → 3.1%</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Seit CreatorAI Ultra spare ich 10h/Woche und mein Umsatz stieg um 84%."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">SB</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Stefan B.</div>
-      <div style="color:#71717a;font-size:.78rem">Shopify Store-Inhaber, Berlin</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 4.1×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Wir haben Subscriber verdoppelt — ohne Extra-Headcount. Danke CreatorAI Ultra."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">ST</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Sophie T.</div>
-      <div style="color:#71717a;font-size:.78rem">Performance Marketer, Basel</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">12h/Woche frei</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"ROI nach 6 Wochen klar messbar: 6h/Woche frei. Würde sofort wieder buchen."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">MB</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Michael B.</div>
-      <div style="color:#71717a;font-size:.78rem">Shopify Store-Inhaber, Berlin</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">6h/Woche frei</div>
-    </div>
-  </div>
-</div>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Case Studies</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
-      <div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Solo Founder</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Pipeline 3× schneller qualifiziert</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Der Engpass war Content/Ops, nicht Traffic. CreatorAI Ultra entlastete das Team um 14h/Woche — Kapazität ging in Sales.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">10 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Pipeline 3× schneller qualif</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−85%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">DACH E-Commerce Agency</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">8h/Woche Zeitersparnis</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. CreatorAI Ultra wurde zum Operating System.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">10 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">8h/Woche Zeitersparnis</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−45%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Info-Product Vendor</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Refunds −34% · LTV +27%</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Info-Product Vendor skalierte mit CreatorAI Ultra. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: Refunds −34% · LTV +27%.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">8 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Refunds −34%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−60%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div>
-    </div>
-    <p style="text-align:center;color:#52525b;font-size:.8rem;margin-top:1.5rem">Social Proof Engine · updates autonom · Ergebnisse variieren je Setup</p>
-  </div>
-</section>
-
-<section id="demo-case-study" style="position:relative;z-index:2;padding:80px 1.5rem;background:linear-gradient(180deg,#07070c 0%,#0f0a18 50%,#07070c 100%);border-top:1px solid rgba(99,102,241,.25)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div style="display:inline-block;padding:.4rem 1.1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.08em;margin-bottom:1rem">▶ LIVE DEMO · CASE STUDY</div>
-      <h2 style="font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .6rem">Sieh es live — dann entscheide</h2>
-      <p style="color:#a1a1aa;max-width:620px;margin:0 auto;line-height:1.65">KI Content Empire. Interaktive Demo + echte Ergebnis-Story.</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem">
-      <!-- DEMO CARD -->
-      <div style="background:linear-gradient(160deg,#12121c,#1a1030);border:1px solid rgba(129,140,248,.35);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(99,102,241,.12)">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
-          <span style="color:#86efac;font-weight:800;font-size:.85rem">DEMO ONLINE</span>
-        </div>
-        <h3 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 .5rem">CreatorAI Ultra — Live Demo</h3>
-        <p style="color:#c4b5fd;font-size:.95rem;line-height:1.6;margin:0 0 1.25rem">Klicke dich durch das Dashboard-Mockup, KPIs und den Kauf-Flow. Kein Sales-Call nötig, um den Value zu sehen.</p>
-        <div style="background:#0a0a12;border:1px solid #333;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-family:ui-monospace,monospace;font-size:.78rem;color:#94a3b8">
-          <div style="color:#64748b;margin-bottom:.4rem">// demo preview</div>
-          <div>status: <span style="color:#4ade80">operational</span></div>
-          <div>mode: <span style="color:#facc15">high-ticket</span></div>
-          <div>kpi_stream: <span style="color:#38bdf8">live</span></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-          <a href="demo.html" style="flex:1;min-width:140px;text-align:center;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-          <a href="https://creatorai-ultra.vercel.app/demo.html" target="_blank" rel="noopener" style="flex:1;min-width:140px;text-align:center;background:transparent;color:#c4b5fd;font-weight:700;padding:.95rem 1rem;border-radius:10px;text-decoration:none;border:1px solid rgba(167,139,250,.45)">Live System ↗</a>
-        </div>
-      </div>
-
-      <!-- CASE STUDY CARD -->
-      <div style="background:linear-gradient(160deg,#10140f,#0f1a14);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(34,197,94,.1)">
-        <div style="color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:.75rem">CASE STUDY</div>
-        <h3 style="color:#fff;font-size:1.25rem;font-weight:900;margin:0 0 .35rem">YouTube + Newsletter Creator</h3>
-        <div style="color:#86efac;font-size:1.15rem;font-weight:800;margin-bottom:1rem">30 Tage Content in 6h</div>
-        <p style="color:#a1a1aa;font-size:.92rem;line-height:1.65;margin:0 0 1.25rem">Scripts, Hooks, Thumbnails-Texte und Newsletter aus einem Briefing. Creator fokussiert auf Recording & Deals.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
-          <div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Posts/Mo</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">48</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Watch Time</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">+62%</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">List Growth</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">+2.1k</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Sponsors</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">+3</div></div>
-        </div>
-        <a href="https://buy.stripe.com/cNiaEZ2Vc1zAgb6bsW4F42DY" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:1rem;border-radius:10px;text-decoration:none">Ergebnis sichern — jetzt starten →</a>
-      </div>
-    </div>
-
-    <p style="text-align:center;color:#71717a;font-size:.85rem">Demo = produktnahe UI · Case Study = anonymisierte Ergebnis-Story · Keine Garantie auf identische Resultate</p>
-  </div>
-</section>
-
-<!-- HIGH-TICKET WAVE3 PRICING — auto-injected -->
-<section id="high-ticket-pricing-w3" style="position:relative;z-index:2;padding:72px 1.5rem;background:linear-gradient(180deg,#050508 0%,#12101a 100%);border-top:1px solid rgba(250,204,21,.2)">
-  <div style="max-width:1100px;margin:0 auto;text-align:center">
-    <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.4);color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:1rem">💰 HIGH-TICKET · JETZT KAUFEN</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:#fff;margin:0 0 .75rem">Premium Pläne — sofort starten</h2>
-    <p style="color:#a1a1aa;max-width:560px;margin:0 auto 2rem">Sichere Stripe-Zahlung · Rechnung · EU-ready · Keine Billig-Preise</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;text-align:left">
-<div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;">
-  
-  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Creator</div>
-  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€997/mo</div>
-  <a href="https://buy.stripe.com/8x228t3Zg2DE4soaoS4F42EB" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-</div>
-
-
-<div style="background:#16161f;border:1px solid rgba(34,197,94,.55);border-radius:18px;padding:1.75rem;box-shadow:0 0 40px rgba(34,197,94,.15)">
-  <div style="color:#4ade80;font-size:.72rem;font-weight:900;margin-bottom:.5rem">★ BESTSELLER</div>
-  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Studio Pro</div>
-  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€1.997/mo</div>
-  <a href="https://buy.stripe.com/8x228t3Zg2DE4soaoS4F42EB" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-</div>
-
-
-<div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;">
-  
-  <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Agency</div>
-  <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€3.497/mo</div>
-  <a href="https://buy.stripe.com/7sY5kF53k7XYbUQ0Oi4F42EC" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-</div>
-</div>
-  </div>
-</section>
-
-
-<!-- HT-UPGRADE-V2:DONE -->
-<style>
-/* ── High-Ticket Upgrade Styles ── */
-.ht-section{position:relative;z-index:2;padding:80px 1.5rem}
-.ht-inner{max-width:1100px;margin:0 auto}
-.ht-badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-bottom:1.2rem}
-.ht-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .8rem;line-height:1.2}
-.ht-sub{color:#a1a1aa;font-size:1.05rem;line-height:1.65;max-width:640px;margin:0 auto 2.5rem}
-/* Demo Tabs */
-.ht-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
-.ht-tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s}
-.ht-tab-active,.ht-tab:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6);color:#e9d5ff}
-.ht-demo-card{background:#12121e;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2rem;margin-top:1rem;min-height:280px}
-.ht-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1.5rem}
-.ht-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;text-align:center}
-.ht-stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ht-stat-lbl{font-size:.78rem;color:#71717a;margin-top:.3rem}
-/* ROI Calc */
-.ht-roi-card{background:linear-gradient(135deg,#1a1028,#0f1a2e);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:2.5rem;margin-top:2rem}
-.ht-roi-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.85rem 1.2rem;border-radius:10px;font-size:1.1rem;font-weight:600;outline:none;margin:.5rem 0 1.5rem}
-.ht-roi-result{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:1.5rem;text-align:center}
-.ht-roi-big{font-size:2.8rem;font-weight:900;color:#34d399}
-.ht-roi-info{color:#a1a1aa;font-size:.9rem;margin-top:.5rem}
-/* Comparison */
-.ht-compare-table{width:100%;border-collapse:collapse;font-size:.9rem;color:#d4d4d8}
-.ht-compare-table th{padding:.8rem;font-weight:700;font-size:.8rem;letter-spacing:.05em;color:#a1a1aa;border-bottom:2px solid rgba(255,255,255,.1)}
-.ht-compare-table th:last-child{color:#a78bfa}
-/* Urgency */
-.ht-urgency{background:linear-gradient(135deg,#1a0d0d,#1a1028);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
-.ht-countdown{display:flex;justify-content:center;gap:1rem;margin:1.2rem 0}
-.ht-count-box{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:.8rem 1.2rem;min-width:70px}
-.ht-count-num{font-size:2rem;font-weight:900;color:#f87171}
-.ht-count-lbl{font-size:.7rem;color:#71717a;letter-spacing:.05em}
-/* Trust */
-.ht-trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem}
-.ht-trust-badge{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:#a1a1aa;font-weight:600}
-.ht-trust-badge span{font-size:1.2rem}
-/* FAQ */
-.ht-faq-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:.6rem 0;cursor:pointer;overflow:hidden;transition:border-color .2s}
-.ht-faq-item.open,.ht-faq-item:hover{border-color:rgba(124,58,237,.4)}
-.ht-faq-q{padding:1.1rem 1.4rem;font-weight:700;color:#e4e4e7;display:flex;justify-content:space-between;align-items:center}
-.ht-faq-arrow{transition:transform .2s;color:#a78bfa}
-.ht-faq-item.open .ht-faq-arrow{transform:rotate(180deg)}
-.ht-faq-a{padding:0 1.4rem;max-height:0;overflow:hidden;color:#a1a1aa;line-height:1.65;font-size:.95rem;transition:max-height .3s ease,padding .3s}
-.ht-faq-item.open .ht-faq-a{max-height:200px;padding:.2rem 1.4rem 1.2rem}
-/* Guarantee */
-.ht-guarantee{display:flex;align-items:center;gap:1.5rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:2rem;margin-top:2rem}
-.ht-guarantee-icon{font-size:3.5rem;flex-shrink:0}
-@media(max-width:600px){.ht-inner{text-align:center}.ht-guarantee{flex-direction:column;text-align:center}}
-</style>
-
-<!-- ═══════ 1. INTERACTIVE DEMO ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 100%)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">LIVE DEMO</div>
-    <h2 class="ht-title">CreatorAI Ultra — Live Demo</h2>
-    <p class="ht-sub">Sieh in Echtzeit wie CreatorAI Ultra arbeitet. Klick durch die Module und entdecke was dich erwartet.</p>
-    <div class="ht-tabs"><button class="ht-tab ht-tab-active" onclick="htTab(this,0)">Content Hub</button><button class="ht-tab " onclick="htTab(this,1)">KI-Produktion</button><button class="ht-tab " onclick="htTab(this,2)">Multi-Platform</button><button class="ht-tab " onclick="htTab(this,3)">Analytics</button></div>
-    <div class="ht-demo-card">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">
-        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
-        <span style="color:#71717a;font-size:.8rem;margin-left:.5rem">CreatorAI Ultra Dashboard — Produktionsumgebung</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;color:#10b981;font-size:.8rem;font-weight:700">
-          <div style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s infinite"></div> LIVE
-        </div>
-      </div>
-      <div class="ht-stats-row"><div class="ht-stat"><div class="ht-stat-num">2.400</div><div class="ht-stat-lbl">Posts/Monat</div></div><div class="ht-stat"><div class="ht-stat-num">8</div><div class="ht-stat-lbl">Plattformen</div></div><div class="ht-stat"><div class="ht-stat-num">€0.08</div><div class="ht-stat-lbl">Pro Post</div></div><div class="ht-stat"><div class="ht-stat-num">100%</div><div class="ht-stat-lbl">KI-generiert</div></div></div>
-      <div style="margin-top:1.5rem;background:rgba(255,255,255,.03);border-radius:10px;padding:1.2rem;text-align:left">
-        <div style="font-size:.75rem;color:#71717a;margin-bottom:.5rem;font-family:monospace">▶ SYSTEM LOG</div>
-        <div style="font-family:monospace;font-size:.82rem;color:#4ade80;line-height:1.8">
-          ✓ CreatorAI Ultra gestartet — alle Module aktiv<br>
-          ✓ KI-Engine verbunden — Optimierung läuft<br>
-          ✓ Automation aktiv — 70 Stunden/Monat eingespart<br>
-          ✓ Revenue-Tracking aktiviert — Echtzeit-Updates<br>
-          <span style="color:#a78bfa">▶ Nächste Aktion in 00:03:42...</span>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top:1rem;color:#52525b;font-size:.82rem">Live Demo = produktnahe Simulation. Echte Ergebnisse können variieren.</p>
-  </div>
-</section>
-
-<!-- ═══════ 2. ROI KALKULATOR ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">ROI KALKULATOR</div>
-    <h2 class="ht-title">Was bringt CreatorAI Ultra dir konkret?</h2>
-    <p class="ht-sub">Berechne dein persönliches Potenzial — in unter 30 Sekunden.</p>
-    <div class="ht-roi-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;text-align:left">
-        <div>
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Aktueller Content-Aufwand (h/Monat)</label>
-          <input type="number" id="ht-roi-input" class="ht-roi-input" value="80" oninput="htCalcROI()" min="0">
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Zeitrahmen</label>
-          <select id="ht-roi-period" class="ht-roi-input" style="cursor:pointer" onchange="htCalcROI()">
-            <option value="1">1 Monat</option>
-            <option value="3">3 Monate</option>
-            <option value="6" selected>6 Monate</option>
-            <option value="12">12 Monate</option>
-          </select>
-        </div>
-        <div>
-          <div class="ht-roi-result">
-            <div style="font-size:.85rem;color:#6ee7b7;font-weight:700;margin-bottom:.5rem">DEIN CONTENT-OUTPUT-STEIGERUNG</div>
-            <div class="ht-roi-big" id="ht-roi-output">€0</div>
-            <div class="ht-roi-info" id="ht-roi-detail">Gib einen Wert links ein</div>
-          </div>
-          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem">
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⏰ Zeit gespart/Monat</span>
-              <span style="color:#34d399;font-weight:700">70 Stunden/Monat</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⚡ Typischer Zeitrahmen</span>
-              <span style="color:#60a5fa;font-weight:700">4 Wochen</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">📈 ROI Multiplikator</span>
-              <span style="color:#a78bfa;font-weight:700">10x</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:2rem;text-align:center">
-        <a href="https://buy.stripe.com/bJe00l8fwcee0c81Sm4F42uW" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1.1rem 3rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(124,58,237,.4)">
-          🚀 Jetzt starten — €997/mo
-        </a>
-        <div style="margin-top:.8rem;color:#52525b;font-size:.82rem">30-Tage Geld-zurück-Garantie · Sofortiger Zugang</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 3. PROBLEM / LÖSUNG ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e18 100%)">
-  <div class="ht-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">😤</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.8rem">OHNE CREATORAI ULTRA</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>❌ Stunden an Content-Erstellung verschwenden</li>
-          <li>❌ Kein skalierbares System</li>
-          <li>❌ Wettbewerber überholen dich</li>
-          <li>❌ Umsatzpotenzial bleibt ungenutzt</li>
-          <li>❌ Du machst alles manuell</li>
-        </ul>
-      </div>
-      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">🎯</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#34d399;margin-bottom:.8rem">MIT CREATORAI ULTRA</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>✅ 2.400 Posts/Monat auf Autopilot — ohne Schreiben</li>
-          <li>✅ Vollständig skalierbar</li>
-          <li>✅ 24/7 aktiv ohne Aufwand</li>
-          <li>✅ Messbares ROI in Wochen</li>
-          <li>✅ KI übernimmt die schwere Arbeit</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 4. VERGLEICHSTABELLE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">VERGLEICH</div>
-    <h2 class="ht-title">Warum CreatorAI Ultra gewinnt</h2>
-    <p class="ht-sub">Vergleich dir selbst: manuell vs. Basic-Tools vs. CreatorAI Ultra</p>
-    <div style="overflow-x:auto;margin-top:1.5rem">
-      <table class="ht-compare-table">
-        <thead>
-          <tr style="background:rgba(255,255,255,.04)">
-            <th style="text-align:left;padding:.8rem">Feature</th>
-            <th>Manuell</th>
-            <th>Basic-Tools</th>
-            <th style="color:#a78bfa">CreatorAI Ultra ✨</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">KI-Textgenerierung</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Video-Skripte</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Social Media Automation</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">SEO-Optimierung</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Brand Voice Training</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Massenproduktion</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr>
-          <tr style="background:rgba(124,58,237,.08)">
-            <td style="padding:.8rem;font-weight:700;color:#e4e4e7">Monatliche Kosten</td>
-            <td style="text-align:center;color:#a1a1aa">Zeit + Nerven</td>
-            <td style="text-align:center;color:#a1a1aa">€200-€500</td>
-            <td style="text-align:center;font-weight:800;color:#a78bfa">€997/mo</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="margin-top:2rem">
-      <a href="https://buy.stripe.com/bJe00l8fwcee0c81Sm4F42uW" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1rem">
-        ✨ CreatorAI Ultra jetzt holen →
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 5. URGENCY ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#120a0a)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-urgency">
-      <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.5rem">⚠️ LIMITIERTES ANGEBOT</div>
-      <h3 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 .5rem">Dieser Preis gilt nur noch</h3>
-      <div class="ht-countdown">
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-h">23</div><div class="ht-count-lbl">STD</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-m">47</div><div class="ht-count-lbl">MIN</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-s">12</div><div class="ht-count-lbl">SEK</div></div>
-      </div>
-      <p style="color:#a1a1aa;margin:.5rem 0 1.2rem">Noch <strong style="color:#f87171" id="ht-spots">7</strong> Plätze zum aktuellen Preis. Danach: <s style="color:#71717a">€7.997</s></p>
-      <a href="https://buy.stripe.com/bJe00l8fwcee0c81Sm4F42uW" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:900;padding:1.1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(239,68,68,.4)">
-        🔒 Platz sichern — €997/mo
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 6. TRUST + GARANTIE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-trust-row">
-      <div class="ht-trust-badge"><span>🔒</span> SSL Verschlüsselt</div>
-      <div class="ht-trust-badge"><span>💳</span> Stripe Secure</div>
-      <div class="ht-trust-badge"><span>🇪🇺</span> DSGVO Konform</div>
-      <div class="ht-trust-badge"><span>⚡</span> Sofortiger Zugang</div>
-      <div class="ht-trust-badge"><span>🌍</span> EU-Server</div>
-      <div class="ht-trust-badge"><span>📞</span> Priority Support</div>
-    </div>
-    <div class="ht-guarantee" style="max-width:700px;margin:2rem auto 0">
-      <div class="ht-guarantee-icon">🛡️</div>
-      <div style="text-align:left">
-        <div style="font-size:1.2rem;font-weight:900;color:#34d399;margin-bottom:.4rem">30-Tage Zufriedenheitsgarantie</div>
-        <div style="color:#a1a1aa;line-height:1.65">Wenn du in den ersten 30 Tagen nicht zu 100% zufrieden bist, erstattest wir dir deinen Betrag vollständig — ohne Fragen, ohne Kleingedrucktes. Null Risiko für dich.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 7. FAQ ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#0d0d18)">
-  <div class="ht-inner" style="max-width:760px;margin:0 auto;text-align:center">
-    <div class="ht-badge">FAQ</div>
-    <h2 class="ht-title">Häufige Fragen</h2>
-    <p class="ht-sub">Alles was du wissen musst — bevor du startest.</p>
-    <div style="text-align:left;margin-top:1.5rem">
-      <div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Ist der Content wirklich gut? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">KI wird mit deiner Brand Voice trainiert — der Output klingt wie du, nur 100x schneller.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Welche Plattformen werden bedient? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Instagram, TikTok, YouTube, LinkedIn, Facebook, Pinterest, Twitter/X, Telegram.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Wie lange bis erste Ergebnisse? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Erste Posts live in 24h. Messbare Follower-Wachstum nach 2-3 Wochen.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Brauche ich eigene KI-API-Keys? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Nein. Alles inklusive — KI-Kapazität + alle Tools in einem Paket.</div>
-        </div>
-    </div>
-    <div style="margin-top:2.5rem;padding:2rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:16px">
-      <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.6rem">Noch Fragen? Ich antworte persönlich.</div>
-      <div style="color:#a1a1aa;margin-bottom:1.2rem">Rudolf Sarkany · AIITEC · Antwort in unter 4 Stunden</div>
-      <a href="https://t.me/rudisarkany" style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.5);color:#a78bfa;font-weight:700;padding:.75rem 2rem;border-radius:10px;text-decoration:none">
-        📱 Telegram: @rudisarkany
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ FINAL CTA ═══════ -->
-<section class="ht-section" style="background:linear-gradient(135deg,#13082a,#0d1b38)">
-  <div class="ht-inner" style="text-align:center;max-width:700px;margin:0 auto">
-    <div style="font-size:3rem;margin-bottom:1rem">✨</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 1rem">CreatorAI Ultra — KI Content Empire</h2>
-    <p style="color:#a1a1aa;line-height:1.7;margin:0 0 2rem">2.400 Posts/Monat auf Autopilot — ohne Schreiben. Tausende Stunden gespart. Endlich skalierbar.</p>
-    <a href="https://buy.stripe.com/bJe00l8fwcee0c81Sm4F42uW" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:900;padding:1.2rem 3.5rem;border-radius:14px;text-decoration:none;font-size:1.15rem;box-shadow:0 6px 30px rgba(124,58,237,.5);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-      🚀 Jetzt €997/mo starten
-    </a>
-    <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
-      <div style="color:#71717a;font-size:.85rem">✓ Sofortzugang</div>
-      <div style="color:#71717a;font-size:.85rem">✓ 30 Tage Garantie</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Stripe Secure</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Keine versteckten Kosten</div>
-    </div>
-  </div>
-</section>
-
-<script>
-/* ── ROI Kalkulator ── */
-function htCalcROI(){
-  const input=parseFloat(document.getElementById('ht-roi-input').value)||0;
-  const period=parseInt(document.getElementById('ht-roi-period').value)||6;
-  const mult=10;
-  let result=input*mult*period;
-  // Format
-  const fmt=v=>v>=1000000?'€'+(v/1000000).toFixed(1)+'M':v>=1000?'€'+(v/1000).toFixed(0)+'k':'€'+Math.round(v);
-  document.getElementById('ht-roi-output').textContent=fmt(result);
-  document.getElementById('ht-roi-detail').textContent=`Content-Output-Steigerung über ${period} Monat${period>1?'e':''} · 4 Wochen`;
-}
-htCalcROI();
-
-/* ── Demo Tabs ── */
-function htTab(btn,idx){
-  document.querySelectorAll('.ht-tab').forEach(t=>t.classList.remove('ht-tab-active'));
-  btn.classList.add('ht-tab-active');
-}
-
-/* ── Countdown ── */
-(function(){
-  var key='ht_cd_creatorai-ultra';
-  var stored=localStorage.getItem(key);
-  var end;
-  if(stored){end=parseInt(stored)}
-  else{end=Date.now()+86400000;localStorage.setItem(key,end)}
-  function tick(){
-    var diff=Math.max(0,end-Date.now());
-    var h=Math.floor(diff/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var s=Math.floor((diff%60000)/1000);
-    var pad=n=>n.toString().padStart(2,'0');
-    var eh=document.getElementById('ht-cd-h');
-    var em=document.getElementById('ht-cd-m');
-    var es=document.getElementById('ht-cd-s');
-    if(eh){eh.textContent=pad(h);em.textContent=pad(m);es.textContent=pad(s);}
-    if(diff>0)setTimeout(tick,1000);
-  }
-  tick();
-})();
+        function calcROI() {
+            const val = parseFloat(input.value) || 20;
+            let res;
+            if (unit === 'Monate') {
+                res = val <= 2000 ? '3-4 Monate' : val <= 5000 ? '4-6 Monate' : '6-9 Monate';
+                result.textContent = res;
+            } else {
+                res = Math.round(val * multiplier);
+                result.textContent = '€' + res.toLocaleString('de-DE') + '/Monat';
+            }
+        }
+        input.addEventListener('input', calcROI);
+        calcROI();
+    
 </script>
 
 </body>

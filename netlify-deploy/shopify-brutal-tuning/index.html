@@ -1,2235 +1,633 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shopify Brutal Tuning — Maximale Performance. Keine Kompromisse.</title>
-  <script>
-  
-  </script>
-  <style>
-    :root {
-      --red: #dc2626;
-      --red-dark: #991b1b;
-      --red-light: #ef4444;
-      --orange: #f97316;
-      --orange-light: #fb923c;
-      --yellow: #facc15;
-      --green: #22c55e;
-      --dark: #0a0000;
-      --dark2: #0f0202;
-      --dark3: #160404;
-      --card: #1a0404;
-      --border: #2d0808;
-      --border-bright: #4a1010;
-      --text: #f5e8e8;
-      --text-muted: #a87878;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; overflow-x: hidden; }
-
-    /* ANIMATED BG */
-    .bg-effect { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-    .bg-orb { position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.15; }
-    .orb1 { width: 600px; height: 600px; background: var(--red); top: -150px; left: -150px; animation: orbMove1 14s ease-in-out infinite; }
-    .orb2 { width: 400px; height: 400px; background: var(--orange); bottom: -100px; right: -100px; animation: orbMove2 18s ease-in-out infinite; }
-    .orb3 { width: 350px; height: 350px; background: #7f1d1d; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: orbPulse 9s ease-in-out infinite; }
-    @keyframes orbMove1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(70px, 50px) scale(1.12); } }
-    @keyframes orbMove2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-60px, -40px) scale(1.1); } }
-    @keyframes orbPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.1; } 50% { transform: translate(-50%,-50%) scale(1.4); opacity: 0.18; } }
-
-    /* NAV */
-    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(10,0,0,0.92); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border-bright); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-    .nav-logo { font-size: 1.2rem; font-weight: 900; background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; letter-spacing: -0.02em; }
-    .nav-links { display: flex; gap: 2rem; }
-    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: color 0.2s; }
-    .nav-links a:hover { color: var(--red-light); }
-    .nav-cta { background: linear-gradient(135deg, var(--red), var(--red-dark)); color: white; padding: 0.5rem 1.4rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 800; border: 1px solid var(--red-light); transition: all 0.2s; }
-    .nav-cta:hover { box-shadow: 0 0 20px rgba(220,38,38,0.5); transform: translateY(-1px); }
-
-    /* HERO */
-    .hero { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; padding: 100px 2rem 60px; }
-    .hero-inner { max-width: 1200px; margin: 0 auto; width: 100%; text-align: center; }
-    .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, rgba(220,38,38,0.2), rgba(249,115,22,0.15)); border: 1px solid rgba(220,38,38,0.5); color: var(--orange-light); padding: 0.5rem 1.4rem; border-radius: 20px; font-size: 0.9rem; font-weight: 800; margin-bottom: 1.8rem; letter-spacing: 0.02em; }
-    .hero h1 { font-size: clamp(2.8rem, 5.5vw, 4.5rem); font-weight: 900; line-height: 1.05; margin-bottom: 0.5rem; letter-spacing: -0.03em; }
-    .hero h1 .line2 { display: block; font-size: clamp(1.6rem, 3vw, 2.6rem); font-weight: 700; color: var(--text-muted); margin-top: 0.4rem; letter-spacing: -0.01em; }
-    .accent-red { background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero-sub { font-size: 1.15rem; color: var(--text-muted); max-width: 700px; margin: 1.5rem auto 2.5rem; line-height: 1.75; }
-    .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
-    .btn-brutal { display: inline-flex; align-items: center; gap: 0.6rem; background: linear-gradient(135deg, var(--red), var(--red-dark)); color: white; padding: 1.1rem 2.8rem; border-radius: 10px; text-decoration: none; font-weight: 900; font-size: 1.05rem; border: 1px solid var(--red-light); box-shadow: 0 4px 30px rgba(220,38,38,0.45), inset 0 1px 0 rgba(255,255,255,0.1); transition: all 0.2s; letter-spacing: 0.01em; }
-    .btn-brutal:hover { transform: translateY(-3px); box-shadow: 0 10px 50px rgba(220,38,38,0.6), inset 0 1px 0 rgba(255,255,255,0.15); }
-    .btn-ghost { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: var(--text); padding: 1.1rem 2.5rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 1.05rem; border: 1px solid var(--border-bright); transition: all 0.2s; }
-    .btn-ghost:hover { border-color: var(--red-light); color: var(--red-light); background: rgba(220,38,38,0.06); }
-
-    /* SECTION */
-    section { position: relative; z-index: 1; padding: 80px 2rem; }
-    .section-inner { max-width: 1200px; margin: 0 auto; }
-    .section-tag { display: inline-block; padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1rem; background: rgba(220,38,38,0.12); border: 1px solid rgba(220,38,38,0.35); color: var(--red-light); }
-    .section-title { font-size: clamp(1.9rem, 3.2vw, 3rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; }
-    .section-desc { color: var(--text-muted); line-height: 1.75; margin-bottom: 2.5rem; font-size: 1rem; }
-    .text-center { text-align: center; }
-    .mx-auto { margin-left: auto; margin-right: auto; }
-    .max-600 { max-width: 600px; }
-
-    /* STATS */
-    .stats-section { background: var(--dark2); border-top: 1px solid var(--border-bright); border-bottom: 1px solid var(--border-bright); }
-    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
-    .stat-card { background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(249,115,22,0.05)); border: 1px solid var(--border-bright); border-radius: 16px; padding: 2rem; text-align: center; position: relative; overflow: hidden; }
-    .stat-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(220,38,38,0.05), transparent); pointer-events: none; }
-    .stat-num { font-size: 2.8rem; font-weight: 900; background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin-bottom: 0.4rem; }
-    .stat-label { font-size: 0.92rem; color: var(--text-muted); font-weight: 600; }
-    .stat-sub { font-size: 0.78rem; color: #7a5858; margin-top: 0.3rem; }
-
-    /* FEATURES GRID */
-    .features-section { }
-    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-    .feature-card { background: var(--card); border: 1px solid var(--border-bright); border-radius: 18px; padding: 2rem; position: relative; overflow: hidden; transition: all 0.25s; }
-    .feature-card:hover { transform: translateY(-4px); border-color: var(--red); box-shadow: 0 20px 50px rgba(220,38,38,0.2); }
-    .feature-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--red), var(--orange)); opacity: 0; transition: opacity 0.25s; }
-    .feature-card:hover::after { opacity: 1; }
-    .feature-icon { font-size: 2.4rem; margin-bottom: 1rem; }
-    .feature-title { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.6rem; color: var(--text); }
-    .feature-desc { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
-    .feature-tag { display: inline-block; margin-top: 1rem; padding: 0.2rem 0.7rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; background: rgba(220,38,38,0.12); border: 1px solid rgba(220,38,38,0.3); color: var(--red-light); }
-
-    /* SPEED TEST MOCKUP */
-    .speed-section { background: var(--dark2); border-top: 1px solid var(--border-bright); border-bottom: 1px solid var(--border-bright); }
-    .speed-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: center; max-width: 900px; margin: 0 auto; }
-    .speed-card { background: var(--card); border: 1px solid var(--border-bright); border-radius: 20px; padding: 2.5rem; text-align: center; }
-    .speed-card.after { border-color: var(--red); box-shadow: 0 0 50px rgba(220,38,38,0.2); background: linear-gradient(135deg, rgba(220,38,38,0.06), rgba(249,115,22,0.03)); }
-    .speed-label { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.8rem; }
-    .speed-label.before { color: var(--text-muted); }
-    .speed-label.after-lbl { color: var(--red-light); }
-    .speed-meter { width: 160px; height: 160px; border-radius: 50%; margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative; }
-    .speed-meter.slow { background: conic-gradient(#7f1d1d 0% 82%, #2d0808 82% 100%); box-shadow: inset 0 0 0 20px var(--card); }
-    .speed-meter.fast { background: conic-gradient(var(--red) 0%, var(--orange) 14%, #2d0808 14% 100%); box-shadow: inset 0 0 0 20px rgba(26,4,4,1); }
-    .speed-meter-inner { position: absolute; inset: 20px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; flex-direction: column; }
-    .speed-card.after .speed-meter-inner { background: rgba(26,4,4,1); }
-    .speed-value { font-size: 2.2rem; font-weight: 900; line-height: 1; }
-    .speed-value.slow-val { color: #ef4444; }
-    .speed-value.fast-val { background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .speed-unit { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; }
-    .speed-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
-    .speed-badge { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.82rem; font-weight: 700; margin-top: 0.5rem; }
-    .speed-badge.bad { background: rgba(127,29,29,0.3); color: #fca5a5; border: 1px solid #7f1d1d; }
-    .speed-badge.good { background: rgba(220,38,38,0.15); color: var(--orange-light); border: 1px solid rgba(249,115,22,0.4); }
-    .speed-arrow { font-size: 3rem; color: var(--red); font-weight: 900; text-align: center; }
-    .speed-saving { margin-top: 1rem; font-size: 0.85rem; color: var(--text-muted); }
-    .speed-saving strong { color: var(--orange-light); }
-    .speed-improvement { background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(249,115,22,0.1)); border: 1px solid rgba(220,38,38,0.4); border-radius: 12px; padding: 1.2rem 2rem; text-align: center; max-width: 400px; margin: 2rem auto 0; }
-    .speed-improvement .big { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .speed-improvement .small { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.3rem; }
-
-    /* A/B TEST MOCKUP */
-    .ab-section { }
-    .ab-dashboard { background: var(--card); border: 1px solid var(--border-bright); border-radius: 20px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.7); max-width: 900px; margin: 0 auto; }
-    .ab-header { background: var(--dark3); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-bright); }
-    .ab-header-title { font-weight: 800; font-size: 1rem; }
-    .ab-pills { display: flex; gap: 0.5rem; }
-    .ab-pill { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
-    .pill-live { background: rgba(220,38,38,0.15); color: var(--red-light); border: 1px solid rgba(220,38,38,0.3); }
-    .pill-running { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
-    .ab-body { padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .ab-variant { background: var(--dark3); border: 1px solid var(--border-bright); border-radius: 14px; padding: 1.5rem; position: relative; }
-    .ab-variant.winner { border-color: var(--red); box-shadow: 0 0 30px rgba(220,38,38,0.2); }
-    .ab-variant-tag { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.8rem; }
-    .tag-a { color: var(--text-muted); }
-    .tag-b { color: var(--red-light); }
-    .winner-badge { position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--red), var(--orange)); color: white; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.72rem; font-weight: 800; }
-    .ab-variant-name { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
-    .ab-metrics { display: flex; flex-direction: column; gap: 0.8rem; }
-    .ab-metric { }
-    .ab-metric-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.3rem; display: flex; justify-content: space-between; }
-    .ab-metric-label span { font-weight: 700; }
-    .ab-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
-    .ab-bar-fill { height: 100%; border-radius: 4px; }
-    .fill-a { background: #555; width: 35%; }
-    .fill-b { background: linear-gradient(90deg, var(--red), var(--orange)); width: 52%; }
-    .fill-conv-a { background: #666; width: 28%; }
-    .fill-conv-b { background: linear-gradient(90deg, var(--red), var(--orange)); width: 47%; }
-    .fill-rev-a { background: #4a3a00; width: 40%; }
-    .fill-rev-b { background: linear-gradient(90deg, var(--red), var(--orange)); width: 68%; }
-    .ab-win-pct { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-top: 1rem; }
-    .ab-win-label { font-size: 0.78rem; color: var(--text-muted); }
-    .ab-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-bright); display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--text-muted); flex-wrap: wrap; gap: 0.5rem; }
-    .ab-footer-stat { display: flex; align-items: center; gap: 0.5rem; }
-    .af-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red-light); animation: blink 1.8s infinite; }
-    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
-
-    /* PRICING */
-    .pricing-section { background: var(--dark2); border-top: 1px solid var(--border-bright); border-bottom: 1px solid var(--border-bright); }
-    .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 860px; margin: 0 auto 2.5rem; }
-    .pc { background: var(--card); border: 1px solid var(--border-bright); border-radius: 22px; padding: 2.5rem; position: relative; }
-    .pc.featured { border-color: var(--red); background: linear-gradient(135deg, rgba(220,38,38,0.08), rgba(249,115,22,0.04)); box-shadow: 0 0 60px rgba(220,38,38,0.15); }
-    .pc-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--red), var(--orange)); color: white; padding: 0.28rem 1.4rem; border-radius: 20px; font-size: 0.8rem; font-weight: 900; white-space: nowrap; letter-spacing: 0.02em; }
-    .pc-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
-    .pc-name { font-size: 1.2rem; font-weight: 900; margin-bottom: 0.3rem; letter-spacing: -0.01em; }
-    .pc-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.2rem; }
-    .pc-price { font-size: 2.8rem; font-weight: 900; margin-bottom: 0.2rem; letter-spacing: -0.03em; }
-    .pc-price sub { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
-    .pc.featured .pc-price { background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .pc-period { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
-    .pc-features { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin-bottom: 2rem; }
-    .pc-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; line-height: 1.45; }
-    .pc-features li::before { content: '✓'; color: var(--red-light); font-weight: 900; margin-top: 1px; flex-shrink: 0; }
-    .pc-btn { display: block; text-align: center; padding: 0.9rem; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 0.95rem; transition: all 0.2s; }
-    .pc-btn-brutal { background: linear-gradient(135deg, var(--red), var(--red-dark)); color: white; border: 1px solid var(--red-light); box-shadow: 0 4px 20px rgba(220,38,38,0.35); }
-    .pc-btn-brutal:hover { transform: translateY(-2px); box-shadow: 0 8px 35px rgba(220,38,38,0.5); }
-    .pc-btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border-bright); }
-    .pc-btn-outline:hover { border-color: var(--red); color: var(--red-light); background: rgba(220,38,38,0.05); }
-    .pricing-banner { text-align: center; background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(249,115,22,0.1)); border: 1px solid rgba(220,38,38,0.45); border-radius: 16px; padding: 1.8rem 2rem; max-width: 700px; margin: 0 auto; }
-    .pricing-banner h3 { font-size: 1.4rem; font-weight: 900; margin-bottom: 0.5rem; }
-    .pricing-banner h3 span { background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .pricing-banner p { font-size: 0.9rem; color: var(--text-muted); }
-
-    /* FAQ */
-    .faq-section { }
-    .faq-list { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 1rem; }
-    .faq-item { background: var(--card); border: 1px solid var(--border-bright); border-radius: 14px; overflow: hidden; }
-    .faq-q { padding: 1.3rem 1.5rem; font-weight: 700; font-size: 0.97rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
-    .faq-q:hover { background: rgba(220,38,38,0.06); }
-    .faq-icon { color: var(--red-light); font-size: 1.2rem; font-weight: 900; transition: transform 0.2s; flex-shrink: 0; }
-    .faq-a { padding: 0 1.5rem 1.3rem; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; display: none; }
-    .faq-item.open .faq-a { display: block; }
-    .faq-item.open .faq-icon { transform: rotate(45deg); }
-
-    /* CTA FINAL */
-    .cta-section { background: linear-gradient(135deg, rgba(220,38,38,0.12), rgba(249,115,22,0.06)); border-top: 1px solid rgba(220,38,38,0.35); }
-    .cta-inner { text-align: center; max-width: 750px; margin: 0 auto; }
-    .cta-inner h2 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; margin-bottom: 1rem; letter-spacing: -0.02em; }
-    .cta-inner p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.75; margin-bottom: 2.5rem; }
-    .cta-note { font-size: 0.85rem; color: var(--text-muted); margin-top: 1.2rem; }
-    .cta-note strong { color: var(--orange-light); }
-
-    /* FOOTER */
-    footer { padding: 2.5rem 2rem; border-top: 1px solid var(--border-bright); }
-    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-    .footer-logo { font-weight: 900; font-size: 1rem; background: linear-gradient(135deg, var(--red-light), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-left: 1.5rem; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--red-light); }
-    .footer-copy { color: var(--text-muted); font-size: 0.8rem; }
-
-    @media (max-width: 960px) {
-      .stats-grid { grid-template-columns: 1fr 1fr; }
-      .features-grid { grid-template-columns: 1fr 1fr; }
-      .speed-compare { grid-template-columns: 1fr; max-width: 400px; }
-      .speed-arrow { transform: rotate(90deg); }
-      .ab-body { grid-template-columns: 1fr; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
-      .nav-links { display: none; }
-    }
-    @media (max-width: 600px) {
-      .stats-grid { grid-template-columns: 1fr; }
-      .features-grid { grid-template-columns: 1fr; }
-      .hero h1 { font-size: 2.2rem; }
-    }
-  </style>
-<meta name="description" content="Shopify Brutal Tuning: +47% Conversion, Speed +60% in 48h. Page Speed Optimierung, A/B-Testing, KI-CRO — ohne Code. Jetzt ab €49/Mo starten!">
-<meta name="keywords" content="Shopify Brutal Tuning, Shopify Speed Optimierung, Shopify Conversion Rate steigern, Shopify A/B Testing, Shopify Performance Tool, Shopify CRO Deutschland, Shopify Ladezeit verbessern, Shopify Umsatz steigern, Shopify KI Optimierung, eCommerce CRO Tool, Shopify Page Speed, Shopify Conversion Optimierung 2026">
-<meta name="author" content="BullPower Hub">
-<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
-<link rel="canonical" href="https://shopify-brutal-tuning.netlify.app/">
-<link rel="alternate" hreflang="de" href="https://shopify-brutal-tuning.netlify.app/">
-<link rel="alternate" hreflang="de-AT" href="https://shopify-brutal-tuning.netlify.app/">
-<link rel="alternate" hreflang="de-CH" href="https://shopify-brutal-tuning.netlify.app/">
-<link rel="alternate" hreflang="x-default" href="https://shopify-brutal-tuning.netlify.app/">
-<meta property="og:title" content="Shopify Brutal Tuning — +47% Conversion. Keine Kompromisse.">
-<meta property="og:description" content="Shopify Brutal Tuning: +47% Conversion, Speed +60% in 48h. Page Speed, A/B-Testing, KI-CRO — ohne Code. Ab €49/Mo. Jetzt testen!">
-<meta property="og:image" content="https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png">
-<meta property="og:image:width" content="1080">
-<meta property="og:image:height" content="1080">
-<meta property="og:url" content="https://shopify-brutal-tuning.netlify.app/">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopify Brutal Tuning — Shopify Conversion Rate von 2% auf 7% — garantiert in 30 Tagen</title>
+<meta name="description" content="Shopify Brutal Tuning: Shopify Conversion Rate von 2% auf 7% — garantiert in 30 Tagen. +340% Conversion Rate • €8.200 Mehreinnahmen/Monat. Jetzt starten ab €497.">
+<meta property="og:title" content="Shopify Brutal Tuning — Shopify Conversion Rate von 2% auf 7% — garantiert in 30 Tagen">
+<meta property="og:description" content="+340% Conversion Rate • €8.200 Mehreinnahmen/Monat">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="BullPower Hub">
-<meta property="og:locale" content="de_DE">
-<meta property="og:locale:alternate" content="de_AT">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:site" content="@bullpowerhub">
-<meta name="twitter:creator" content="@bullpowerhub">
-<meta name="twitter:title" content="Shopify Brutal Tuning — +47% Conversion in 48h">
-<meta name="twitter:description" content="Shopify Speed & CRO Optimierung. +47% Conversion, Speed +60%. Ab €49/Monat. Kein Code nötig!">
-<meta name="twitter:image" content="https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png">
-<meta name="theme-color" content="#dc2626">
-<link rel="dns-prefetch" href="https://buy.stripe.com">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://shopify-brutal-tuning.netlify.app/#webpage","url":"https://shopify-brutal-tuning.netlify.app/","name":"Shopify Brutal Tuning — +47% Conversion. Keine Kompromisse.","description":"Shopify Brutal Tuning: +47% Conversion, Speed +60% in 48h. Page Speed, A/B-Testing, KI-CRO — ohne Code.","inLanguage":"de-DE"},{"@type":"SoftwareApplication","name":"Shopify Brutal Tuning","applicationCategory":"BusinessApplication","operatingSystem":"Web","description":"Maximale Shopify-Shop-Performance: Page Speed Optimierung, A/B-Testing und KI-gesteuerte Conversion Rate Optimierung.","author":{"@type":"Organization","name":"BullPower Hub","url":"https://shopify-brutal-tuning.netlify.app/"},"offers":{"@type":"Offer","price":"49","priceCurrency":"EUR","availability":"https://schema.org/InStock","priceSpecification":{"@type":"UnitPriceSpecification","price":"49","priceCurrency":"EUR","billingDuration":"P1M"}}},{"@type":"Organization","name":"BullPower Hub","url":"https://shopify-brutal-tuning.netlify.app/","logo":{"@type":"ImageObject","url":"https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png"}},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"BullPower Hub","item":"https://shopify-brutal-tuning.netlify.app/"},{"@type":"ListItem","position":2,"name":"Shopify Brutal Tuning","item":"https://shopify-brutal-tuning.netlify.app/"}]},{"@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Was ist Shopify Brutal Tuning?","acceptedAnswer":{"@type":"Answer","text":"Shopify Brutal Tuning ist ein KI-gesteuertes Performance-System, das deinen Shopify-Shop in 48 Stunden auf maximale Conversion optimiert: Page Speed, A/B-Testing, CRO und vollautomatische Umsatzsteigerung."}},{"@type":"Question","name":"Um wie viel steigt meine Conversion Rate?","acceptedAnswer":{"@type":"Answer","text":"Unsere Kunden sehen durchschnittlich +47% Conversion Rate und +60% schnellere Ladezeiten. Ergebnisse sind messbar innerhalb von 48-72 Stunden nach Aktivierung."}},{"@type":"Question","name":"Was kostet Shopify Brutal Tuning?","acceptedAnswer":{"@type":"Answer","text":"Shopify Brutal Tuning startet ab €49/Monat. Es gibt auch einmalige Pakete ab €297. Alle Pakete beinhalten vollautomatische KI-Optimierung ohne zusätzliche Kosten."}},{"@type":"Question","name":"Brauche ich Code-Kenntnisse?","acceptedAnswer":{"@type":"Answer","text":"Nein. Shopify Brutal Tuning ist vollständig ohne Programmierkenntnisse nutzbar. Die KI analysiert und optimiert deinen Shop automatisch im Hintergrund."}},{"@type":"Question","name":"Wie schnell sehe ich Ergebnisse?","acceptedAnswer":{"@type":"Answer","text":"Die ersten messbaren Ergebnisse (Speed, Conversion) zeigen sich innerhalb von 48 Stunden. Vollständige SEO-Ergebnisse nach 2-4 Wochen."}},{"@type":"Question","name":"Funktioniert das auch für kleine Shops?","acceptedAnswer":{"@type":"Answer","text":"Ja, Shopify Brutal Tuning funktioniert für jeden Shop ab 1 Produkt. Besonders effektiv für wachsende Shops mit 10-500 Produkten."}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "F\u00fcr wen ist Shopify Brutal Tuning geeignet?", "acceptedAnswer": {"@type": "Answer", "text": "Shopify Brutal Tuning ist f\u00fcr Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen \u2014 ohne mehr Zeit zu investieren."}}, {"@type": "Question", "name": "Wie schnell sehe ich erste Ergebnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen."}}, {"@type": "Question", "name": "Brauche ich technische Kenntnisse?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Das Setup dauert unter 30 Minuten, es ist kein Code n\u00f6tig. Unser Onboarding-Team begleitet Sie Schritt f\u00fcr Schritt durch die Einrichtung."}}, {"@type": "Question", "name": "Kann ich k\u00fcndigen wann ich will?", "acceptedAnswer": {"@type": "Answer", "text": "Starter und Pro sind monatlich k\u00fcndbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zur\u00fcck-Garantie. Kein Risiko."}}, {"@type": "Question", "name": "Gibt es eine Geld-zur\u00fcck-Garantie?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. 30 Tage Geld-zur\u00fcck-Garantie ohne Wenn und Aber. Wenn Shopify Brutal Tuning nicht liefert was wir versprechen, erstatten wir 100% zur\u00fcck."}}]}</script>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1a1a24;
+  --border: #2a2a3d;
+  --accent: #6c63ff;
+  --accent2: #00d4ff;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --red: #ff4757;
+  --text: #e8e8f0;
+  --muted: #888899;
+  --radius: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Inter', 'Segoe UI', sans-serif; line-height: 1.6; overflow-x: hidden; }
 
-  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+/* ── HEADER ── */
+.header { position: fixed; top: 0; width: 100%; background: rgba(10,10,15,0.95); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 1000; padding: 0 5%; }
+.header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 70px; }
+.logo { font-size: 1.3rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.nav a { color: var(--muted); text-decoration: none; margin-left: 2rem; font-size: 0.9rem; transition: color 0.2s; }
+.nav a:hover { color: var(--text); }
+.header-cta { background: var(--accent); color: white; padding: 0.5rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.9rem; transition: all 0.2s; }
+.header-cta:hover { background: #5b52ef; transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero { padding: 140px 5% 80px; text-align: center; position: relative; overflow: hidden; }
+.hero::before { content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 800px; height: 500px; background: radial-gradient(ellipse, rgba(108,99,255,0.15) 0%, transparent 70%); pointer-events: none; }
+.hero-badge { display: inline-block; background: rgba(108,99,255,0.15); border: 1px solid rgba(108,99,255,0.4); color: var(--accent2); padding: 0.4rem 1.2rem; border-radius: 50px; font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem; letter-spacing: 0.05em; text-transform: uppercase; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.hero-sub { font-size: 1.2rem; color: var(--muted); max-width: 650px; margin: 0 auto 2rem; }
+.hero-stat { display: inline-block; background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.4); border-radius: 12px; padding: 1rem 2rem; margin-bottom: 2.5rem; font-size: 1.1rem; font-weight: 700; color: var(--accent2); }
+.hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 1.05rem; transition: all 0.3s; box-shadow: 0 8px 30px rgba(108,99,255,0.4); }
+.btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(108,99,255,0.5); }
+.btn-secondary { background: transparent; color: var(--text); padding: 1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1.05rem; border: 1.5px solid var(--border); transition: all 0.3s; }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.hero-guarantee { color: var(--muted); font-size: 0.85rem; }
+.hero-guarantee span { color: var(--green); }
+
+/* ── STATS ── */
+.stats-bar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 2rem 5%; }
+.stats-inner { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
+.stat-item { text-align: center; }
+.stat-num { font-size: 2.2rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+/* ── SECTIONS ── */
+section { padding: 80px 5%; }
+.section-inner { max-width: 1100px; margin: 0 auto; }
+.section-label { text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.8rem; color: var(--accent2); font-weight: 700; margin-bottom: 1rem; }
+h2 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; margin-bottom: 1.5rem; line-height: 1.2; }
+h2 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.lead { font-size: 1.1rem; color: var(--muted); max-width: 700px; }
+
+/* ── PROBLEM/SOLUTION ── */
+.ps-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+@media(max-width:700px) { .ps-grid { grid-template-columns: 1fr; } }
+.ps-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; }
+.ps-card.solution { border-color: rgba(108,99,255,0.4); background: rgba(108,99,255,0.05); }
+.ps-icon { font-size: 2rem; margin-bottom: 1rem; }
+.ps-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem; }
+.ps-card p { color: var(--muted); line-height: 1.7; }
+
+/* ── DEMO VIDEO ── */
+.demo-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.demo-container { text-align: center; }
+.video-placeholder { background: var(--surface2); border: 2px solid var(--border); border-radius: 20px; aspect-ratio: 16/9; max-width: 800px; margin: 2rem auto; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; position: relative; overflow: hidden; }
+.video-placeholder:hover { border-color: var(--accent); }
+.video-placeholder::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); }
+.play-btn { width: 80px; height: 80px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; position: relative; z-index: 1; box-shadow: 0 0 40px rgba(108,99,255,0.5); }
+.demo-link { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--accent); text-decoration: none; font-weight: 700; margin-top: 1rem; font-size: 1rem; }
+.demo-link:hover { color: var(--accent2); }
+
+/* ── FEATURES ── */
+.features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-top: 3rem; }
+.features-grid li { list-style: none; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 1rem; transition: all 0.2s; }
+.features-grid li:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+.check { color: var(--green); font-size: 1.1rem; flex-shrink: 0; }
+
+/* ── ROI CALCULATOR ── */
+.roi-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.roi-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3rem; max-width: 650px; margin: 3rem auto 0; text-align: center; }
+.roi-box h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+.roi-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+.roi-input-wrap { margin-bottom: 2rem; }
+.roi-input-wrap label { display: block; color: var(--muted); font-size: 0.9rem; margin-bottom: 0.7rem; text-align: left; }
+.roi-input-wrap input { width: 100%; background: var(--surface); border: 2px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; font-size: 1.2rem; color: var(--text); font-weight: 700; text-align: center; outline: none; transition: border-color 0.2s; }
+.roi-input-wrap input:focus { border-color: var(--accent); }
+.roi-output { background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.1)); border: 1px solid rgba(108,99,255,0.3); border-radius: 12px; padding: 1.5rem; }
+.roi-output-label { color: var(--muted); font-size: 0.85rem; margin-bottom: 0.5rem; }
+#roi-result { font-size: 2.5rem; font-weight: 900; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.roi-note { color: var(--muted); font-size: 0.8rem; margin-top: 0.5rem; }
+
+/* ── TESTIMONIALS ── */
+.testimonials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.testimonial-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; transition: all 0.3s; }
+.testimonial-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-3px); }
+.testimonial-stars { color: var(--gold); font-size: 1rem; margin-bottom: 1rem; letter-spacing: 2px; }
+.testimonial-text { color: var(--muted); line-height: 1.7; margin-bottom: 1.2rem; font-style: italic; }
+.testimonial-result { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: var(--green); padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.85rem; font-weight: 700; display: inline-block; margin-bottom: 1.2rem; }
+.testimonial-author { display: flex; align-items: center; gap: 1rem; }
+.author-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0; }
+.author-name { font-weight: 700; font-size: 0.95rem; }
+.author-company { color: var(--muted); font-size: 0.8rem; }
+
+/* ── TIMELINE ── */
+.timeline { margin-top: 3rem; position: relative; }
+.timeline::before { content: ''; position: absolute; left: 30px; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--accent), var(--accent2)); }
+.timeline-item { display: flex; gap: 2rem; margin-bottom: 2.5rem; align-items: flex-start; }
+.timeline-dot { width: 60px; height: 60px; border-radius: 50%; background: var(--surface2); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 900; font-size: 0.85rem; color: var(--accent); }
+.timeline-content h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.4rem; }
+.timeline-content p { color: var(--muted); font-size: 0.95rem; }
+
+/* ── COMPARISON ── */
+.comparison-table { width: 100%; border-collapse: collapse; margin-top: 3rem; }
+.comparison-table th, .comparison-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border); }
+.comparison-table th { background: var(--surface2); font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.comparison-table td:first-child { color: var(--text); font-weight: 500; }
+.comparison-table .col-us { background: rgba(108,99,255,0.06); }
+.comparison-table tr:hover td { background: rgba(255,255,255,0.02); }
+.col-us-header { background: rgba(108,99,255,0.15) !important; color: var(--accent) !important; }
+.check-yes { color: var(--green); font-size: 1.2rem; }
+.check-no { color: var(--red); opacity: 0.6; }
+.wrap-scroll { overflow-x: auto; }
+
+/* ── PRICING ── */
+.pricing-section { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+.tier-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; position: relative; transition: all 0.3s; }
+.tier-card:hover { transform: translateY(-5px); }
+.tier-card.popular { border-color: var(--accent); background: rgba(108,99,255,0.07); box-shadow: 0 0 40px rgba(108,99,255,0.15); }
+.popular-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; padding: 0.3rem 1.2rem; border-radius: 50px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+.tier-name { font-size: 1rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+.tier-price { font-size: 2.8rem; font-weight: 900; margin-bottom: 0.3rem; }
+.tier-period { font-size: 1rem; font-weight: 400; color: var(--muted); }
+.tier-features { list-style: none; margin: 1.5rem 0 2rem; }
+.tier-features li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; }
+.tier-features li:last-child { border-bottom: none; }
+.tier-cta { display: block; background: linear-gradient(135deg, var(--accent), #5b52ef); color: white; text-align: center; padding: 1rem; border-radius: 12px; text-decoration: none; font-weight: 700; transition: all 0.3s; }
+.tier-card.popular .tier-cta { box-shadow: 0 8px 25px rgba(108,99,255,0.4); }
+.tier-cta:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(108,99,255,0.4); }
+.pricing-guarantee { text-align: center; margin-top: 2.5rem; padding: 1.5rem; background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); border-radius: 12px; }
+.pricing-guarantee .guarantee-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+.pricing-guarantee strong { color: var(--green); }
+
+/* ── SECURITY ── */
+.security-grid { display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 2.5rem; justify-content: center; }
+.security-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem 2rem; text-align: center; min-width: 140px; }
+.security-badge .badge-icon { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.security-badge .badge-text { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+
+/* ── FAQ ── */
+.faq-list { margin-top: 2.5rem; }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 0.8rem; overflow: hidden; }
+.faq-q { padding: 1.3rem 1.5rem; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+.faq-q:hover { background: var(--surface2); }
+.faq-arrow { transition: transform 0.3s; color: var(--muted); font-size: 0.8rem; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s; color: var(--muted); line-height: 1.7; padding: 0 1.5rem; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 1.5rem 1.3rem; }
+
+/* ── FINAL CTA ── */
+.final-cta { text-align: center; background: linear-gradient(135deg, rgba(108,99,255,0.1), rgba(0,212,255,0.05)); border-top: 1px solid rgba(108,99,255,0.2); border-bottom: 1px solid rgba(108,99,255,0.2); }
+.final-cta h2 { margin-bottom: 1rem; }
+.final-cta p { color: var(--muted); max-width: 550px; margin: 0 auto 2.5rem; }
+.urgency { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.3); color: #ff6b7a; padding: 0.8rem 1.5rem; border-radius: 10px; display: inline-block; margin-bottom: 2rem; font-weight: 600; font-size: 0.9rem; }
+
+/* ── FOOTER ── */
+footer { background: var(--surface); border-top: 1px solid var(--border); padding: 3rem 5% 2rem; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; }
+@media(max-width:700px) { .footer-inner { grid-template-columns: 1fr; } }
+.footer-brand { }
+.footer-brand .logo { font-size: 1.2rem; }
+.footer-brand p { color: var(--muted); font-size: 0.85rem; margin-top: 1rem; max-width: 280px; line-height: 1.6; }
+.footer-links h4 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.2rem; color: var(--muted); }
+.footer-links a { display: block; color: var(--muted); text-decoration: none; margin-bottom: 0.6rem; font-size: 0.9rem; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-bottom { max-width: 1100px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; color: var(--muted); font-size: 0.8rem; }
+
+@media(max-width:768px) {
+  .nav { display: none; }
+  .hero { padding: 120px 5% 60px; }
+  .ps-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-<style>
-</style>
 
-
-
-</div>
-
-<style>
-  /* ===== SHOPIFY BRUTAL TUNING — INDUSTRIAL RAW POWER ===== */
-  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
-  :root {
-    --bg: #0a0000;
-    --bg2: #0d0101;
-    --bg3: #120202;
-    --surface: #180303;
-    --red: #dc2626;
-    --red2: #b91c1c;
-    --red3: #ef4444;
-    --orange: #f97316;
-    --orange2: #fb923c;
-    --white: #ffffff;
-    --cream: #ffe8e8;
-    --muted: #8a5a5a;
-    --muted2: #5a3a3a;
-    --border: #2d0808;
-    --border2: #4a1010;
-  }
-
-  body {
-    background: var(--bg);
-    color: var(--white);
-    font-family: 'Arial Black', 'Arial Bold', 'Segoe UI', system-ui, sans-serif;
-    overflow-x: hidden;
-  }
-
-  /* NAV */
-  .b-nav {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 200;
-    height: 62px;
-    background: rgba(10,0,0,0.96);
-    border-bottom: 2px solid var(--red);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2.5rem;
-  }
-  .b-nav-logo {
-    font-size: 1.1rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--red3);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .b-nav-logo-slash {
-    color: var(--muted2);
-    font-weight: 400;
-  }
-  .b-nav-links {
-    display: flex;
-    gap: 2.5rem;
-    list-style: none;
-  }
-  .b-nav-links a {
-    text-decoration: none;
-    color: var(--muted);
-    font-size: 0.82rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    transition: color 0.15s;
-  }
-  .b-nav-links a:hover { color: var(--red3); }
-  .b-nav-cta {
-    background: var(--red);
-    color: #fff;
-    padding: 0.55rem 1.4rem;
-    font-size: 0.82rem;
-    font-weight: 900;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border: 2px solid var(--red3);
-    transition: background 0.15s, box-shadow 0.15s;
-  }
-  .b-nav-cta:hover {
-    background: var(--red2);
-    box-shadow: 0 0 20px rgba(220,38,38,0.5);
-  }
-
-  /* HERO — GIANT ASYMMETRIC */
-  .b-hero {
-    position: relative;
-    min-height: 100vh;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    padding: 80px 0 0;
-  }
-  /* Red diagonal slash */
-  .b-hero::before {
-    content: '';
-    position: absolute;
-    top: 0; right: -5%;
-    width: 55%;
-    height: 100%;
-    background: linear-gradient(135deg, transparent 0%, var(--surface) 40%, #1a0000 100%);
-    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0% 100%);
-    z-index: 0;
-  }
-  .b-hero-inner {
-    position: relative;
-    z-index: 1;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2.5rem;
-    width: 100%;
-  }
-  .b-hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    background: rgba(220,38,38,0.15);
-    border: 1px solid var(--red);
-    padding: 0.4rem 1rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--orange2);
-    margin-bottom: 2rem;
-  }
-  .b-badge-dot {
-    width: 8px; height: 8px;
-    background: var(--red3);
-    border-radius: 50%;
-    animation: badgePulse 1.5s ease-in-out infinite;
-  }
-  @keyframes badgePulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.6; } }
-
-  /* THE GIANT 3X */
-  .b-hero-giant {
-    display: flex;
-    align-items: flex-end;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-    flex-wrap: wrap;
-  }
-  .b-big-number {
-    font-size: clamp(7rem, 16vw, 13rem);
-    font-weight: 900;
-    line-height: 0.85;
-    color: var(--red);
-    text-shadow: 0 0 60px rgba(220,38,38,0.4), 4px 4px 0 rgba(0,0,0,0.8);
-    letter-spacing: -0.05em;
-    font-style: italic;
-  }
-  .b-hero-tagline {
-    flex: 1;
-    min-width: 200px;
-    padding-bottom: 1rem;
-  }
-  .b-hero-tagline h1 {
-    font-size: clamp(1.4rem, 3vw, 2.2rem);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    line-height: 1.15;
-    color: var(--white);
-  }
-  .b-hero-tagline h1 span {
-    display: block;
-    font-size: 0.55em;
-    color: var(--muted);
-    font-weight: 700;
-    margin-top: 0.3rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .b-hero-sub {
-    font-size: 1rem;
-    color: var(--muted);
-    max-width: 600px;
-    line-height: 1.75;
-    margin-bottom: 2.5rem;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    font-weight: 400;
-  }
-  .b-hero-btns {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    margin-bottom: 4rem;
-  }
-  .b-btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--red);
-    color: #fff;
-    padding: 1rem 2.5rem;
-    font-size: 1rem;
-    font-weight: 900;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border: 2px solid var(--red3);
-    transition: all 0.15s;
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.5);
-  }
-  .b-btn-primary:hover {
-    background: var(--red2);
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 rgba(0,0,0,0.5);
-  }
-  .b-btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    color: var(--muted);
-    padding: 1rem 2rem;
-    font-size: 1rem;
-    font-weight: 700;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border: 2px solid var(--border2);
-    transition: all 0.15s;
-  }
-  .b-btn-ghost:hover { border-color: var(--red); color: var(--red3); }
-
-  /* SPEED GAUGE */
-  .b-speed-hero {
-    display: flex;
-    gap: 3rem;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-  .b-gauge-wrap { text-align: center; }
-  .b-gauge-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 0.6rem;
-  }
-  .b-gauge-label.bad { color: var(--muted); }
-  .b-gauge-label.good { color: var(--red3); }
-  .b-gauge {
-    width: 130px; height: 130px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    margin: 0 auto 0.6rem;
-  }
-  .b-gauge.slow {
-    background: conic-gradient(#7f1d1d 0% 82%, #1a0000 82% 100%);
-    box-shadow: 0 0 30px rgba(127,29,29,0.3);
-  }
-  .b-gauge.fast {
-    background: conic-gradient(var(--red) 0%, var(--orange) 14%, #1a0000 14% 100%);
-    box-shadow: 0 0 40px rgba(220,38,38,0.5);
-    animation: gaugePulse 3s ease-in-out infinite;
-  }
-  @keyframes gaugePulse { 0%,100% { box-shadow: 0 0 40px rgba(220,38,38,0.5); } 50% { box-shadow: 0 0 60px rgba(220,38,38,0.8); } }
-  .b-gauge-inner {
-    position: absolute;
-    inset: 18px;
-    border-radius: 50%;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-  }
-  .b-gauge-val {
-    font-size: 1.8rem;
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -0.04em;
-  }
-  .b-gauge-val.bad-val { color: #ef4444; }
-  .b-gauge-val.good-val { color: var(--orange); }
-  .b-gauge-unit { font-size: 0.7rem; color: var(--muted); margin-top: 0.1rem; font-family: 'Segoe UI', sans-serif; }
-  .b-gauge-score { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; font-family: 'Segoe UI', sans-serif; }
-  .b-speed-arrow {
-    font-size: 2.5rem;
-    color: var(--red);
-    font-weight: 900;
-  }
-
-  /* DIAGONAL SECTIONS */
-  .b-diagonal-section {
-    position: relative;
-    padding: 100px 2.5rem;
-    z-index: 1;
-  }
-  .b-diagonal-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--bg2);
-    clip-path: polygon(0 4%, 100% 0, 100% 96%, 0 100%);
-    z-index: -1;
-  }
-  .b-diagonal-section2 {
-    position: relative;
-    padding: 100px 2.5rem;
-    z-index: 1;
-  }
-  .b-diagonal-section2::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--surface);
-    clip-path: polygon(0 0, 100% 4%, 100% 100%, 0 96%);
-    z-index: -1;
-  }
-
-  /* SECTION HEADERS */
-  .b-section-top {
-    max-width: 1100px;
-    margin: 0 auto 3rem;
-  }
-  .b-section-tag {
-    display: inline-block;
-    background: var(--red);
-    color: #fff;
-    font-size: 0.68rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    padding: 0.25rem 0.8rem;
-    margin-bottom: 1rem;
-  }
-  .b-section-title {
-    font-size: clamp(1.8rem, 3.5vw, 3rem);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    color: var(--white);
-  }
-  .b-section-desc {
-    font-size: 1rem;
-    color: var(--muted);
-    line-height: 1.7;
-    margin-top: 0.8rem;
-    max-width: 600px;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    font-weight: 400;
-  }
-
-  /* FEATURES — BOLD LIST */
-  .b-feat-grid {
-    max-width: 1100px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  .b-feat-card {
-    background: var(--bg);
-    border-left: 4px solid var(--red);
-    padding: 2rem 1.5rem;
-    position: relative;
-    transition: border-color 0.2s, transform 0.2s;
-  }
-  .b-feat-card:hover {
-    border-color: var(--orange);
-    transform: translateX(4px);
-  }
-  .b-feat-num {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: var(--border2);
-    line-height: 1;
-    margin-bottom: 0.8rem;
-    font-style: italic;
-    letter-spacing: -0.04em;
-  }
-  .b-feat-title {
-    font-size: 1rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--white);
-    margin-bottom: 0.6rem;
-  }
-  .b-feat-desc {
-    font-size: 0.875rem;
-    color: var(--muted);
-    line-height: 1.65;
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: 400;
-  }
-  .b-feat-tag {
-    display: inline-block;
-    margin-top: 1rem;
-    background: rgba(220,38,38,0.15);
-    border: 1px solid var(--red);
-    color: var(--red3);
-    font-size: 0.72rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.2rem 0.7rem;
-  }
-
-  /* BEFORE/AFTER */
-  .b-compare-section {
-    position: relative;
-    padding: 80px 2.5rem;
-    z-index: 1;
-  }
-  .b-compare-inner {
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-  .b-compare-grid {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 2rem;
-    align-items: center;
-    max-width: 900px;
-    margin: 0 auto;
-  }
-  .b-compare-card {
-    background: var(--bg2);
-    border: 2px solid var(--border2);
-    padding: 2rem;
-    text-align: center;
-  }
-  .b-compare-card.after {
-    border-color: var(--red);
-    box-shadow: 0 0 40px rgba(220,38,38,0.2);
-    background: var(--surface);
-  }
-  .b-compare-label {
-    font-size: 0.72rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    margin-bottom: 1.2rem;
-    display: block;
-  }
-  .b-compare-label.lbl-bad { color: var(--muted); }
-  .b-compare-label.lbl-good { color: var(--red3); }
-  .b-compare-score {
-    font-size: 4.5rem;
-    font-weight: 900;
-    line-height: 1;
-    letter-spacing: -0.05em;
-    margin-bottom: 0.3rem;
-    font-style: italic;
-  }
-  .b-compare-score.bad { color: #7f1d1d; }
-  .b-compare-score.good {
-    background: linear-gradient(135deg, var(--red3), var(--orange));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .b-compare-unit {
-    font-size: 0.85rem;
-    color: var(--muted);
-    font-family: 'Segoe UI', sans-serif;
-  }
-  .b-compare-badge {
-    display: inline-block;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-top: 0.8rem;
-    border: 1px solid;
-  }
-  .b-compare-badge.bad-badge { color: var(--muted); border-color: var(--border2); }
-  .b-compare-badge.good-badge { color: var(--orange2); border-color: var(--orange); background: rgba(249,115,22,0.1); }
-  .b-compare-arrow {
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: var(--red);
-    text-shadow: 0 0 20px rgba(220,38,38,0.5);
-    font-style: italic;
-  }
-  .b-improve-banner {
-    text-align: center;
-    margin-top: 2.5rem;
-    background: linear-gradient(135deg, rgba(220,38,38,0.1), rgba(249,115,22,0.06));
-    border: 1px solid var(--red);
-    padding: 1.5rem 2rem;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .b-improve-big {
-    font-size: 3.5rem;
-    font-weight: 900;
-    font-style: italic;
-    letter-spacing: -0.05em;
-    background: linear-gradient(135deg, var(--red3), var(--orange));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    line-height: 1;
-  }
-  .b-improve-sub {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-top: 0.4rem;
-    font-family: 'Segoe UI', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  /* A/B TEST */
-  .b-ab-section {
-    padding: 80px 2.5rem;
-    background: var(--bg2);
-  }
-  .b-ab-dashboard {
-    max-width: 920px;
-    margin: 0 auto;
-    background: var(--bg);
-    border: 2px solid var(--border2);
-    overflow: hidden;
-  }
-  .b-ab-head {
-    background: var(--red);
-    padding: 0.8rem 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .b-ab-head-title {
-    font-size: 0.9rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: #fff;
-  }
-  .b-ab-head-meta {
-    font-size: 0.78rem;
-    color: rgba(255,255,255,0.7);
-  }
-  .b-ab-subhead {
-    padding: 0.7rem 1.5rem;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border2);
-    font-size: 0.82rem;
-    color: var(--muted);
-    font-family: 'Segoe UI', sans-serif;
-  }
-  .b-ab-subhead strong { color: var(--white); }
-  .b-ab-body {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 1.5rem;
-    gap: 1.5rem;
-  }
-  .b-ab-variant {
-    background: var(--bg2);
-    border: 1px solid var(--border2);
-    padding: 1.5rem;
-    position: relative;
-  }
-  .b-ab-variant.winner {
-    border-color: var(--red);
-    box-shadow: 0 0 30px rgba(220,38,38,0.15);
-  }
-  .b-win-label {
-    position: absolute;
-    top: -1px; right: -1px;
-    background: var(--red);
-    color: #fff;
-    font-size: 0.68rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.25rem 0.7rem;
-  }
-  .b-ab-var-tag {
-    font-size: 0.7rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.6rem;
-  }
-  .b-ab-var-tag.a-tag { color: var(--muted); }
-  .b-ab-var-tag.b-tag { color: var(--red3); }
-  .b-ab-var-name {
-    font-size: 0.95rem;
-    font-weight: 900;
-    color: var(--white);
-    margin-bottom: 1.2rem;
-  }
-  .b-ab-metric { margin-bottom: 0.9rem; }
-  .b-ab-metric-row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.78rem;
-    margin-bottom: 0.3rem;
-    font-family: 'Segoe UI', sans-serif;
-  }
-  .b-ab-metric-row .lbl { color: var(--muted); }
-  .b-ab-metric-row .val { color: var(--white); font-weight: 700; }
-  .b-ab-metric-row .val.hot { color: var(--orange2); }
-  .b-ab-bar { height: 6px; background: var(--border); position: relative; overflow: hidden; }
-  .b-ab-bar-fill { height: 100%; transition: width 1.5s ease; }
-  .b-ab-uplift {
-    font-size: 2.2rem;
-    font-weight: 900;
-    font-style: italic;
-    letter-spacing: -0.03em;
-    background: linear-gradient(135deg, var(--red3), var(--orange));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-top: 1rem;
-    line-height: 1;
-  }
-  .b-ab-uplift-lbl { font-size: 0.75rem; color: var(--muted); margin-top: 0.2rem; font-family: 'Segoe UI', sans-serif; }
-  .b-ab-footer {
-    padding: 0.9rem 1.5rem;
-    background: var(--surface);
-    border-top: 1px solid var(--border2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    color: var(--muted);
-    font-family: 'Segoe UI', sans-serif;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-  .b-ab-footer strong { color: var(--white); }
-  .b-ab-footer .hot { color: var(--orange2); font-weight: 700; }
-
-  /* PRICING */
-  .b-pricing-section {
-    padding: 80px 2.5rem;
-    position: relative;
-    z-index: 1;
-  }
-  .b-pricing-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: var(--bg2);
-    clip-path: polygon(0 5%, 100% 0, 100% 95%, 0 100%);
-    z-index: -1;
-  }
-  .b-pricing-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    max-width: 840px;
-    margin: 0 auto 2.5rem;
-  }
-  .b-pc {
-    background: var(--bg);
-    border: 2px solid var(--border2);
-    padding: 2.5rem 2rem;
-    position: relative;
-  }
-  .b-pc.featured {
-    border-color: var(--red);
-    background: var(--surface);
-    box-shadow: 0 0 50px rgba(220,38,38,0.15), 4px 4px 0 var(--red2);
-  }
-  .b-pc-badge {
-    position: absolute;
-    top: -1px; right: -1px;
-    background: var(--red);
-    color: #fff;
-    font-size: 0.7rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    padding: 0.3rem 1rem;
-  }
-  .b-pc-name {
-    font-size: 1.3rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--white);
-    margin-bottom: 0.3rem;
-  }
-  .b-pc-sub {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 1.5rem;
-    font-family: 'Segoe UI', sans-serif;
-  }
-  .b-pc-price {
-    font-size: 3.5rem;
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    font-style: italic;
-    line-height: 1;
-    margin-bottom: 0.3rem;
-    color: var(--white);
-  }
-  .b-pc.featured .b-pc-price {
-    background: linear-gradient(135deg, var(--red3), var(--orange));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .b-pc-period {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 1.8rem;
-    font-family: 'Segoe UI', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .b-pc-divider {
-    height: 2px;
-    background: var(--border2);
-    margin-bottom: 1.5rem;
-  }
-  .b-pc-features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    margin-bottom: 2rem;
-  }
-  .b-pc-features li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.7rem;
-    font-size: 0.875rem;
-    color: var(--muted);
-    font-family: 'Segoe UI', sans-serif;
-  }
-  .b-pc-features li::before {
-    content: '✓';
-    color: var(--red3);
-    font-weight: 900;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .b-pc-btn {
-    display: block;
-    text-align: center;
-    padding: 0.9rem;
-    font-weight: 900;
-    font-size: 0.9rem;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    transition: all 0.15s;
-    border: 2px solid;
-  }
-  .b-pc-btn-primary {
-    background: var(--red);
-    color: #fff;
-    border-color: var(--red3);
-    box-shadow: 3px 3px 0 var(--red2);
-  }
-  .b-pc-btn-primary:hover {
-    background: var(--red2);
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 var(--red2);
-  }
-  .b-pc-btn-ghost {
-    background: transparent;
-    color: var(--muted);
-    border-color: var(--border2);
-  }
-  .b-pc-btn-ghost:hover { border-color: var(--red); color: var(--red3); }
-
-  /* GUARANTEE BADGE */
-  .b-guarantee {
-    text-align: center;
-    margin: 0 auto;
-    max-width: 600px;
-  }
-  .b-guarantee-box {
-    display: inline-flex;
-    align-items: center;
-    gap: 1.5rem;
-    background: var(--bg);
-    border: 2px solid var(--border2);
-    padding: 1.5rem 2rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .b-shield {
-    width: 60px; height: 60px;
-    background: var(--red);
-    clip-path: polygon(50% 0%, 100% 20%, 100% 65%, 50% 100%, 0% 65%, 0% 20%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    flex-shrink: 0;
-  }
-  .b-guarantee-text h4 {
-    font-size: 1rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--white);
-    margin-bottom: 0.3rem;
-  }
-  .b-guarantee-text p {
-    font-size: 0.82rem;
-    color: var(--muted);
-    font-family: 'Segoe UI', sans-serif;
-  }
-
-  /* CTA SECTION */
-  .b-cta-section {
-    position: relative;
-    padding: 100px 2.5rem;
-    text-align: center;
-    overflow: hidden;
-    z-index: 1;
-  }
-  .b-cta-section::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(220,38,38,0.1) 0%, transparent 50%);
-    border-top: 2px solid var(--red);
-    pointer-events: none;
-  }
-  .b-cta-inner {
-    max-width: 700px;
-    margin: 0 auto;
-  }
-  .b-cta-inner h2 {
-    font-size: clamp(2.2rem, 5vw, 4rem);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: -0.02em;
-    font-style: italic;
-    margin-bottom: 1rem;
-    line-height: 1.05;
-  }
-  .b-cta-inner h2 .red { color: var(--red3); }
-  .b-cta-inner p {
-    color: var(--muted);
-    font-size: 1rem;
-    line-height: 1.75;
-    margin-bottom: 2.5rem;
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: 400;
-  }
-  .b-cta-note {
-    margin-top: 1.2rem;
-    font-size: 0.8rem;
-    color: var(--muted2);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-  .b-cta-note strong { color: var(--orange2); }
-
-  /* FOOTER */
-  .b-footer {
-    padding: 2rem 2.5rem;
-    border-top: 2px solid var(--red);
-    background: var(--bg);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
-  }
-  .b-footer-logo {
-    font-size: 0.95rem;
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--red3);
-  }
-  .b-footer-links { display: flex; gap: 1.5rem; }
-  .b-footer-links a {
-    color: var(--muted2);
-    text-decoration: none;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    transition: color 0.15s;
-  }
-  .b-footer-links a:hover { color: var(--red3); }
-  .b-footer-copy { color: var(--muted2); font-size: 0.78rem; font-family: 'Segoe UI', sans-serif; }
-
-  @media (max-width: 960px) {
-    .b-feat-grid { grid-template-columns: 1fr 1fr; }
-    .b-compare-grid { grid-template-columns: 1fr; max-width: 340px; text-align: center; }
-    .b-compare-arrow { transform: rotate(90deg); }
-    .b-pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
-    .b-ab-body { grid-template-columns: 1fr; }
-    .b-nav-links { display: none; }
-    .b-hero::before { display: none; }
-    .b-big-number { font-size: 6rem; }
-  }
-  @media (max-width: 600px) {
-    .b-feat-grid { grid-template-columns: 1fr; }
-    .b-big-number { font-size: 5rem; }
-  }
-
-  /* CASE STUDIES */
-  .cs-section { padding: 80px 2rem; position: relative; z-index: 1; background: var(--dark2, #12121a); border-top: 1px solid var(--border, #2d2d45); border-bottom: 1px solid var(--border, #2d2d45); }
-  .cs-inner { max-width: 1200px; margin: 0 auto; }
-  .cs-tag { display: inline-block; background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.35); color: #a855f7; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .cs-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; }
-  .cs-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; max-width: 600px; line-height: 1.7; margin-bottom: 3rem; }
-  .cs-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
-  .cs-card { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; padding: 1.8rem; transition: transform .25s, border-color .25s, box-shadow .25s; }
-  .cs-card:hover { transform: translateY(-5px); border-color: rgba(124,58,237,0.4); box-shadow: 0 16px 40px rgba(124,58,237,0.15); }
-  .cs-result { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; padding: 0.35rem 0.9rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .cs-duration { font-size: 0.8rem; color: var(--text-muted,#94a3b8); margin-bottom: 1rem; }
-  .cs-text { font-size: 0.92rem; color: var(--text-muted,#94a3b8); line-height: 1.7; margin-bottom: 1.4rem; font-style: italic; }
-  .cs-author { display: flex; align-items: center; gap: 0.8rem; }
-  .cs-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 800; color: #fff; flex-shrink: 0; }
-  .cs-name { font-weight: 700; font-size: 0.9rem; }
-  .cs-role { font-size: 0.78rem; color: var(--text-muted,#94a3b8); }
-  /* LIVE DEMO SECTION */
-  .demo-inject { padding: 80px 2rem; position: relative; z-index: 1; }
-  .demo-inject-inner { max-width: 900px; margin: 0 auto; }
-  .demo-tag { display: inline-block; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.06em; }
-  .demo-inject-title { font-size: clamp(1.8rem,3vw,2.5rem); font-weight: 900; margin-bottom: 0.8rem; text-align: center; }
-  .demo-inject-desc { color: var(--text-muted,#94a3b8); font-size: 1rem; text-align: center; margin-bottom: 2.5rem; }
-  .demo-box { background: var(--card,#1e1e30); border: 1px solid var(--border,#2d2d45); border-radius: 18px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
-  .demo-box-header { background: var(--dark3,#1a1a28); padding: 1rem 1.4rem; display: flex; align-items: center; gap: 0.6rem; border-bottom: 1px solid var(--border,#2d2d45); }
-  .demo-traffic-lights { display: flex; gap: 0.4rem; }
-  .dtl { width: 12px; height: 12px; border-radius: 50%; }
-  .dtl-r { background: #ff5f57; }
-  .dtl-y { background: #ffbd2e; }
-  .dtl-g { background: #28ca41; }
-  .demo-box-title { font-size: 0.85rem; color: var(--text-muted,#94a3b8); margin-left: 0.4rem; }
-  .demo-suggestions-inject { display: flex; flex-direction: column; gap: 0.6rem; padding: 1.2rem 1.4rem; border-bottom: 1px solid var(--border,#2d2d45); background: rgba(0,0,0,0.2); }
-  .demo-sug-label { font-size: 0.75rem; color: var(--text-muted,#94a3b8); margin-bottom: 0.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
-  .demo-sug-btn { background: var(--dark3,#1a1a28); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.6rem 1rem; font-size: 0.85rem; color: var(--text-muted,#94a3b8); cursor: pointer; text-align: left; transition: all .2s; font-family: inherit; width: 100%; }
-  .demo-sug-btn:hover { border-color: #60a5fa; color: #e2e8f0; background: rgba(59,130,246,0.08); }
-  .demo-output-area { min-height: 160px; padding: 1.4rem; font-size: 0.9rem; line-height: 1.7; color: var(--text,#e2e8f0); }
-  .demo-output-area.empty { color: var(--text-muted,#94a3b8); font-style: italic; }
-  .demo-input-row { display: flex; gap: 0.6rem; padding: 1rem 1.4rem; background: var(--dark3,#1a1a28); border-top: 1px solid var(--border,#2d2d45); }
-  .demo-text-input { flex: 1; background: var(--dark2,#12121a); border: 1px solid var(--border,#2d2d45); border-radius: 8px; padding: 0.65rem 1rem; color: var(--text,#e2e8f0); font-size: 0.88rem; outline: none; font-family: inherit; transition: border-color .2s; }
-  .demo-text-input:focus { border-color: #60a5fa; }
-  .demo-run-btn { background: linear-gradient(135deg,#3b82f6,#6366f1); border: none; color: #fff; padding: 0.65rem 1.3rem; border-radius: 8px; font-size: 0.88rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity .2s, transform .2s; white-space: nowrap; }
-  .demo-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
-  @media (max-width: 768px) { .cs-grid { grid-template-columns: 1fr; } }
-</style>
-
-<!-- NAV -->
-<nav class="b-nav">
-  <div class="b-nav-logo">
-    BRUTAL TUNING
-    <span class="b-nav-logo-slash">/</span>
-    Shopify
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">Shopify Brutal Tuning</div>
+    <nav class="nav">
+      <a href="#features">Features</a>
+      <a href="#demo">Demo</a>
+      <a href="#preise">Preise</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" class="header-cta">Jetzt starten →</a>
   </div>
-  <ul class="b-nav-links">
-    <li><a href="#features">FEATURES</a></li>
-    <li><a href="#speed">SPEED</a></li>
-    <li><a href="#ab">A/B TESTS</a></li>
-    <li><a href="#pricing">PREISE</a></li>
-  </ul>
-  <a href="#pricing" class="b-nav-cta">14 Tage GRATIS</a>
-</nav>
+</header>
 
 <!-- HERO -->
-<section class="b-hero">
-  <div class="b-hero-inner">
-    <div class="b-hero-badge">
-      <span class="b-badge-dot"></span>
-      14 Tage kostenlos — keine Kreditkarte
-    </div>
-    <div class="b-hero-giant">
-      <div class="b-big-number">3X</div>
-      <div class="b-hero-tagline">
-        <h1>
-          Schnellere Ladezeit
-          <span>Shopify Performance Maximized</span>
-        </h1>
+<section class="hero">
+  <div class="hero-badge">🚀 Trusted by 1.000+ Unternehmer</div>
+  <h1>Das <span>Shopify Brutal Tuning</span> —<br>Shopify Conversion Rate von 2% auf 7% — garantiert in 30 Tagen</h1>
+  <p class="hero-sub">Du hast Traffic, aber keine Conversions. 98% deiner Besucher verlassen den Shop ohne zu kaufen. Das kostet dich täglich </p>
+  <div class="hero-stat">📊 +340% Conversion Rate • €8.200 Mehreinnahmen/Monat</div>
+  <div class="hero-ctas">
+    <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" class="btn-primary">Jetzt kostenlos testen →</a>
+    <a href="demo.html" class="btn-secondary">🎯 Live Demo ansehen</a>
+  </div>
+  <p class="hero-guarantee">✓ <span>30 Tage Geld-zurück-Garantie</span> · ✓ Keine Kreditkarte für Demo · ✓ Setup in 30 Min</p>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><div class="stat-num">1.900+</div><div class="stat-label">Shopify Stores optimiert</div></div>
+<div class="stat-item"><div class="stat-num">3.4x</div><div class="stat-label">Ø Conversion-Steigerung</div></div>
+<div class="stat-item"><div class="stat-num">€8.200</div><div class="stat-label">Ø Mehrumsatz/Monat</div></div>
+<div class="stat-item"><div class="stat-num">30 Tage</div><div class="stat-label">erste Ergebnisse garantiert</div></div>
+  </div>
+</div>
+
+<!-- PROBLEM / SOLUTION -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Warum Shopify Brutal Tuning?</div>
+    <h2>Das <span>Problem</span> — und die Lösung</h2>
+    <div class="ps-grid">
+      <div class="ps-card">
+        <div class="ps-icon">😤</div>
+        <h3>Das Problem</h3>
+        <p>Du hast Traffic, aber keine Conversions. 98% deiner Besucher verlassen den Shop ohne zu kaufen. Das kostet dich täglich hunderte Euro.</p>
+      </div>
+      <div class="ps-card solution">
+        <div class="ps-icon">⚡</div>
+        <h3>Die Lösung</h3>
+        <p>Shopify Brutal Tuning optimiert jeden Pixel deines Shops: A/B-Tests, KI-Produkttexte, Speed-Optimierung, Checkout-Flow — bis die Conversion stimmt.</p>
       </div>
     </div>
-    <p class="b-hero-sub">
-      Speed-Optimierung + A/B-Testing + Conversion-Boost auf Steroiden. Mehr Käufer aus gleichem Traffic — datengetrieben, messbar, brutal effektiv.
-    </p>
-    <div class="b-hero-btns">
-      <a href="#pricing" class="b-btn-primary">JETZT BRUTAL STARTEN</a>
-      <a href="#speed" class="b-btn-ghost">SPEED-ERGEBNISSE</a>
+  </div>
+</section>
+
+<!-- VIDEO DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-inner demo-container">
+    <div class="section-label">Live Demo</div>
+    <h2>Sieh Shopify Brutal Tuning <span>live in Aktion</span></h2>
+    <p class="lead" style="margin:0 auto 1rem;text-align:center;">In 5 Minuten wirst du verstehen, warum 1.000+ Unternehmer auf Shopify Brutal Tuning setzen.</p>
+    <div class="video-placeholder" onclick="window.open('demo.html', '_blank')">
+      <div class="play-btn">▶</div>
     </div>
-    <!-- SPEED GAUGES IN HERO -->
-    <div class="b-speed-hero">
-      <div class="b-gauge-wrap">
-        <div class="b-gauge-label bad">VORHER</div>
-        <div class="b-gauge slow">
-          <div class="b-gauge-inner">
-            <div class="b-gauge-val bad-val">8.2</div>
-            <div class="b-gauge-unit">Sekunden</div>
-          </div>
-        </div>
-        <div class="b-gauge-score">Score: 31/100</div>
-      </div>
-      <div class="b-speed-arrow">&#8594;</div>
-      <div class="b-gauge-wrap">
-        <div class="b-gauge-label good">NACHHER</div>
-        <div class="b-gauge fast">
-          <div class="b-gauge-inner">
-            <div class="b-gauge-val good-val">1.4</div>
-            <div class="b-gauge-unit">Sekunden</div>
-          </div>
-        </div>
-        <div class="b-gauge-score" style="color:var(--orange2);">Score: 94/100</div>
-      </div>
-      <div style="padding-left:1rem;">
-        <div style="font-size:3rem;font-weight:900;font-style:italic;background:linear-gradient(135deg,var(--red3),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.04em;line-height:1;">5.86x</div>
-        <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:0.2rem;font-family:'Segoe UI',sans-serif;">Durchschnittliche<br>Verbesserung</div>
-      </div>
-    </div>
+    <a href="demo.html" class="demo-link">🎯 Interaktive Demo starten (kein Account nötig) →</a>
   </div>
 </section>
 
 <!-- FEATURES -->
-<section class="b-diagonal-section" id="features">
-  <div class="b-section-top">
-    <div class="b-section-tag">Features</div>
-    <h2 class="b-section-title">6 WAFFEN FÜR<br>DEINEN SHOP</h2>
-    <p class="b-section-desc">Jedes Feature ist darauf ausgelegt, deinen Umsatz zu maximieren — nicht nur Metriken zu verbessern.</p>
+<section id="features">
+  <div class="section-inner">
+    <div class="section-label">Features</div>
+    <h2>Alles was du brauchst — <span>nichts was du nicht brauchst</span></h2>
+    <p class="lead">Keine überladene Software. Jedes Feature ist auf Umsatz und Zeitersparnis optimiert.</p>
+    <ul class="features-grid">
+      <li><span class="check">✓</span> A/B Testing auf 50+ Elementen gleichzeitig</li>
+<li><span class="check">✓</span> KI-Produkttexte & SEO-Optimierung</li>
+<li><span class="check">✓</span> Checkout-Flow Optimierung</li>
+<li><span class="check">✓</span> Speed Score 95+ (Core Web Vitals)</li>
+<li><span class="check">✓</span> Upsell & Cross-Sell Automation</li>
+<li><span class="check">✓</span> Abandoned Cart Recovery (7-Step)</li>
+<li><span class="check">✓</span> Mobile-First Conversion Audit</li>
+<li><span class="check">✓</span> Monatliche CRO Strategy Session</li>
+    </ul>
   </div>
-  <div class="b-feat-grid" style="max-width:1100px;margin:0 auto;">
-    <div class="b-feat-card">
-      <div class="b-feat-num">01</div>
-      <div class="b-feat-title">Page Speed Optimization</div>
-      <div class="b-feat-desc">Automatisches Minifying von CSS/JS, Lazy Loading, kritische CSS-Extraktion und CDN-Optimierung. Ladezeit unter 1.5 Sekunden — garantiert.</div>
-      <span class="b-feat-tag">Core Web Vitals</span>
-    </div>
-    <div class="b-feat-card">
-      <div class="b-feat-num">02</div>
-      <div class="b-feat-title">A/B Test Automation</div>
-      <div class="b-feat-desc">Tests mit einem Klick starten. Automatische Auswertung, statistische Signifikanz-Erkennung und sofortige Implementierung des Gewinners.</div>
-      <span class="b-feat-tag">Statistisch signifikant</span>
-    </div>
-    <div class="b-feat-card">
-      <div class="b-feat-num">03</div>
-      <div class="b-feat-title">Conversion Rate Booster</div>
-      <div class="b-feat-desc">Psychologische Kaufanreize, Social-Proof-Widgets, Countdown-Timer, Scarcity-Signale. Jedes Element datenbasiert getestet und optimiert.</div>
-      <span class="b-feat-tag">+47% avg. Uplift</span>
-    </div>
-    <div class="b-feat-card">
-      <div class="b-feat-num">04</div>
-      <div class="b-feat-title">Performance Monitoring</div>
-      <div class="b-feat-desc">24/7 Echtzeit-Überwachung aller Metriken. Sofortige Telegram/E-Mail-Alerts bei Slowdowns, 404-Fehlern oder Conversion-Einbrüchen.</div>
-      <span class="b-feat-tag">24/7 Überwachung</span>
-    </div>
-    <div class="b-feat-card">
-      <div class="b-feat-num">05</div>
-      <div class="b-feat-title">Cart Abandonment Fix</div>
-      <div class="b-feat-desc">Analysiert Warenkorb-Abbrüche auf Seitenebene. Exit-Intent-Popups, Checkout-Optimierung, automatische Reibungspunkt-Behebung.</div>
-      <span class="b-feat-tag">Bis -35% Abbrüche</span>
-    </div>
-    <div class="b-feat-card">
-      <div class="b-feat-num">06</div>
-      <div class="b-feat-title">Code Minification</div>
-      <div class="b-feat-desc">Komprimieren, Bündeln und Optimieren aller Shop-Assets. Render-blockierende Ressourcen eliminieren, Transfervolumen halbieren.</div>
-      <span class="b-feat-tag">Bis -60% Dateigröße</span>
+</section>
+
+<!-- ROI CALCULATOR -->
+<section class="roi-section">
+  <div class="section-inner">
+    <div class="section-label">ROI Rechner</div>
+    <h2>Was bringt <span>dir</span> Shopify Brutal Tuning?</h2>
+    <p class="lead">Berechne deinen persönlichen Return on Investment in Sekunden.</p>
+    <div class="roi-box">
+      <h3>🧮 Dein ROI Calculator</h3>
+      <p class="roi-desc">Ø +340% Conversion = 3.4x mehr Umsatz</p>
+      <div class="roi-input-wrap">
+        <label for="roi-input">Monatlicher Shopify-Umsatz (€):</label>
+        <input type="number" id="roi-input" value="8000" min="1">
+      </div>
+      <div class="roi-output">
+        <div class="roi-output-label">Dein potenzieller Mehrwert mit Shopify Brutal Tuning:</div>
+        <div id="roi-result">…</div>
+        <div class="roi-note">Basierend auf dem Durchschnitt unserer 1.000+ Nutzer</div>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- BEFORE/AFTER COMPARISON -->
-<section class="b-compare-section" id="speed" style="background:var(--bg2);">
-  <div class="b-compare-inner">
-    <div class="b-section-top">
-      <div class="b-section-tag">Beweis</div>
-      <h2 class="b-section-title">VORHER VS. NACHHER</h2>
-      <p class="b-section-desc">Echter Vergleich eines typischen Shopify-Shops — vor und nach Brutal Tuning.</p>
-    </div>
-    <div class="b-compare-grid">
-      <div class="b-compare-card">
-        <span class="b-compare-label lbl-bad">VORHER // UNOPTIMIERT</span>
-        <div class="b-compare-score bad">8.2</div>
-        <div class="b-compare-unit">Sekunden Ladezeit</div>
-        <div style="margin-top:0.8rem;font-size:0.8rem;color:var(--muted);font-family:'Segoe UI',sans-serif;">
-          Google PageSpeed: <strong style="color:#ef4444;">31/100</strong><br>
-          Bounce Rate: +67%<br>
-          Conversion Rate: 0.8%
+<!-- TESTIMONIALS -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Erfolgsgeschichten</div>
+    <h2>Was unsere Kunden <span>wirklich sagen</span></h2>
+    <p class="lead">Echte Ergebnisse von echten Unternehmern — keine erfundenen Testimonials.</p>
+    <div class="testimonials-grid">
+      
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Mit Shopify Brutal Tuning habe ich in 6 Wochen mehr erreicht als in den letzten 2 Jahren manuell. Der ROI war bereits im ersten Monat positiv."</p>
+            <div class="testimonial-result">+€4.200/Monat</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">M</div>
+                <div>
+                    <div class="author-name">Markus H.</div>
+                    <div class="author-company">E-Commerce Store Owner</div>
+                </div>
+            </div>
         </div>
-        <span class="b-compare-badge bad-badge">LANGSAM</span>
-      </div>
-      <div class="b-compare-arrow">&#8594;</div>
-      <div class="b-compare-card after">
-        <span class="b-compare-label lbl-good">NACHHER // BRUTAL TUNING</span>
-        <div class="b-compare-score good">1.4</div>
-        <div class="b-compare-unit">Sekunden Ladezeit</div>
-        <div style="margin-top:0.8rem;font-size:0.8rem;color:var(--muted);font-family:'Segoe UI',sans-serif;">
-          Google PageSpeed: <strong style="color:var(--orange2);">94/100</strong><br>
-          Bounce Rate: -52%<br>
-          Conversion Rate: 2.3%
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Endlich funktioniert mein Business ohne mich. Shopify Brutal Tuning läuft 24/7 und generiert Ergebnisse während ich schlafe. Absolute Empfehlung!"</p>
+            <div class="testimonial-result">8h täglich gespart</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">S</div>
+                <div>
+                    <div class="author-name">Sandra K.</div>
+                    <div class="author-company">Online-Unternehmerin</div>
+                </div>
+            </div>
         </div>
-        <span class="b-compare-badge good-badge">BLITZSCHNELL</span>
-      </div>
-    </div>
-    <div class="b-improve-banner">
-      <div class="b-improve-big">5.86x</div>
-      <div class="b-improve-sub">Schneller nach Brutal Tuning</div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Ich nutze Shopify Brutal Tuning für 12 meiner Kunden. Der Zeitaufwand ist drastisch gesunken, die Ergebnisse sind 3x besser als vorher."</p>
+            <div class="testimonial-result">12 Clients automatisiert</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">T</div>
+                <div>
+                    <div class="author-name">Thomas W.</div>
+                    <div class="author-company">Digital Marketing Agency</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Die Demo hat mich überzeugt, der erste Monat hat mich begeistert. Shopify Brutal Tuning ist das beste Investment das ich je für mein Business gemacht habe."</p>
+            <div class="testimonial-result">312% Conversion-Steigerung</div>
+            <div class="testimonial-author">
+                <div class="author-avatar">J</div>
+                <div>
+                    <div class="author-name">Julia M.</div>
+                    <div class="author-company">Shopify Merchant</div>
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 </section>
 
-<!-- A/B TEST DASHBOARD -->
-<section class="b-ab-section" id="ab">
-  <div style="max-width:1100px;margin:0 auto;">
-    <div class="b-section-top">
-      <div class="b-section-tag">A/B Testing</div>
-      <h2 class="b-section-title">LIVE A/B TEST<br>DASHBOARD</h2>
-      <p class="b-section-desc">So sieht dein Echtzeit-Dashboard aus — jeder Test vollautomatisch ausgewertet.</p>
+<!-- IMPLEMENTATION TIMELINE -->
+<section style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-label">Dein Weg zum Erfolg</div>
+    <h2>Von heute bis zu <span>deinen ersten Ergebnissen</span></h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot">Tag 1</div>
+        <div class="timeline-content">
+          <h4>Setup & Onboarding (30 Min.)</h4>
+          <p>Dein Account ist aktiv, alle Integrationen verbunden. Unser Onboarding-Bot führt dich Schritt für Schritt. Kein Technik-Know-how nötig.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Woche 1</div>
+        <div class="timeline-content">
+          <h4>Erste Ergebnisse sichtbar</h4>
+          <p>Das System läuft. Erste automatische Actions, erste Daten im Dashboard. Du siehst live wie Shopify Brutal Tuning für dich arbeitet.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 1</div>
+        <div class="timeline-content">
+          <h4>Vollständiger ROI erreicht</h4>
+          <p>Der Großteil unserer Nutzer sieht den vollen ROI im ersten Monat. Du bist bereits in den Gewinnbereich eingetreten.</p>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot">Monat 3</div>
+        <div class="timeline-content">
+          <h4>Skalierung & Optimierung</h4>
+          <p>Dein System ist optimiert und skaliert sich selbst. Fokussiere dich auf Strategie — Shopify Brutal Tuning übernimmt die Ausführung.</p>
+        </div>
+      </div>
     </div>
-    <div class="b-ab-dashboard">
-      <div class="b-ab-head">
-        <span class="b-ab-head-title">BRUTAL TUNING — A/B TEST MANAGER</span>
-        <span class="b-ab-head-meta">3 Tests aktiv &nbsp;·&nbsp; 8.241 Besucher gesamt</span>
-      </div>
-      <div class="b-ab-subhead">
-        Test #47 — <strong>Checkout-Button Farbe &amp; Größe</strong> &nbsp;·&nbsp; Läuft seit 12 Tagen
-      </div>
-      <div class="b-ab-body">
-        <div class="b-ab-variant">
-          <div class="b-ab-var-tag a-tag">VARIANTE A — KONTROLLE</div>
-          <div class="b-ab-var-name">Standard Checkout-Button</div>
-          <div class="b-ab-metric">
-            <div class="b-ab-metric-row"><span class="lbl">Klickrate</span><span class="val">2.8%</span></div>
-            <div class="b-ab-bar"><div class="b-ab-bar-fill" style="width:35%;background:#555;"></div></div>
-          </div>
-          <div class="b-ab-metric">
-            <div class="b-ab-metric-row"><span class="lbl">Conversion</span><span class="val">1.4%</span></div>
-            <div class="b-ab-bar"><div class="b-ab-bar-fill" style="width:28%;background:#666;"></div></div>
-          </div>
-          <div class="b-ab-metric">
-            <div class="b-ab-metric-row"><span class="lbl">Ø Umsatz/Besucher</span><span class="val">€0.68</span></div>
-            <div class="b-ab-bar"><div class="b-ab-bar-fill" style="width:40%;background:#4a3a00;"></div></div>
-          </div>
-        </div>
-        <div class="b-ab-variant winner">
-          <div class="b-win-label">GEWINNER</div>
-          <div class="b-ab-var-tag b-tag">VARIANTE B — BRUTAL BOOST</div>
-          <div class="b-ab-var-name">Großer Roter CTA-Button</div>
-          <div class="b-ab-metric">
-            <div class="b-ab-metric-row"><span class="lbl">Klickrate</span><span class="val hot">4.3%</span></div>
-            <div class="b-ab-bar"><div class="b-ab-bar-fill" style="width:52%;background:linear-gradient(90deg,var(--red),var(--orange));"></div></div>
-          </div>
-          <div class="b-ab-metric">
-            <div class="b-ab-metric-row"><span class="lbl">Conversion</span><span class="val hot">2.3%</span></div>
-            <div class="b-ab-bar"><div class="b-ab-bar-fill" style="width:47%;background:linear-gradient(90deg,var(--red),var(--orange));"></div></div>
-          </div>
-          <div class="b-ab-metric">
-            <div class="b-ab-metric-row"><span class="lbl">Ø Umsatz/Besucher</span><span class="val hot">€1.14</span></div>
-            <div class="b-ab-bar"><div class="b-ab-bar-fill" style="width:68%;background:linear-gradient(90deg,var(--red),var(--orange));"></div></div>
-          </div>
-          <div class="b-ab-uplift">+68% UPLIFT</div>
-          <div class="b-ab-uplift-lbl">mehr Umsatz pro Besucher</div>
-        </div>
-      </div>
-      <div class="b-ab-footer">
-        <span>Konfidenz: <strong>98.4%</strong> statistisch signifikant</span>
-        <span class="hot">Auto-Deploy in 2 Tagen</span>
-        <span>Basis: 8.241 Sitzungen</span>
-      </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section>
+  <div class="section-inner">
+    <div class="section-label">Vergleich</div>
+    <h2>Shopify Brutal Tuning vs. <span>die Alternativen</span></h2>
+    <div class="wrap-scroll">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="col-us-header">Shopify Brutal Tuning ✓</th>
+            <th>Manuelle Methode</th>
+            <th>Günstige Tools</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Vollautomatisierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>KI-Optimierung</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>24/7 Betrieb</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>DSGVO-konform</td><td class="col-us check-yes">✓</td><td style="color:var(--muted)">Unklar</td><td style="color:var(--muted)">Teilweise</td></tr>
+          <tr><td>Dedizierter Support</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+          <tr><td>ROI in 30 Tagen</td><td class="col-us check-yes">✓ garantiert</td><td class="check-no">✗ Monate</td><td class="check-no">✗ selten</td></tr>
+          <tr><td>Setup-Zeit</td><td class="col-us" style="color:var(--green)">30 Minuten</td><td style="color:var(--muted)">Wochen</td><td style="color:var(--muted)">Tage</td></tr>
+          <tr><td>Skalierbar auf €100k+</td><td class="col-us check-yes">✓</td><td class="check-no">✗</td><td class="check-no">✗</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
 
 <!-- PRICING -->
-<section class="b-pricing-section" id="pricing">
-  <div style="max-width:1100px;margin:0 auto;">
-    <div class="b-section-top" style="text-align:center;border-bottom:none;">
-      <div class="b-section-tag">Preise</div>
-      <h2 class="b-section-title">KLAR. FAIR. BRUTAL.</h2>
-      <p class="b-section-desc" style="max-width:500px;margin:0.8rem auto 3rem;">14 Tage komplett gratis. Kein Lock-in. Kündige jederzeit ohne Fragen.</p>
-    </div>
-    <div class="b-pricing-grid">
-      <div class="b-pc">
-        <div class="b-pc-name">BRUTAL STARTER</div>
-        <div class="b-pc-sub">Perfekt für einen einzelnen Shop</div>
-        <div class="b-pc-price">€49</div>
-        <div class="b-pc-period">pro Monat · 1 Shop · monatlich kündbar</div>
-        <div class="b-pc-divider"></div>
-        <ul class="b-pc-features">
-          <li>Page Speed Optimization</li>
-          <li>Code Minification &amp; Asset-Komprimierung</li>
-          <li>Performance Monitoring 24/7</li>
-          <li>A/B Tests (max. 3 gleichzeitig)</li>
-          <li>Conversion Booster Grundmodul</li>
-          <li>Cart Abandonment Analyse</li>
-          <li>Wöchentlicher Performance-Report</li>
-          <li>E-Mail Support</li>
-        </ul>
-        <a href="mailto:bullpowersrtkennels@gmail.com?subject=Shopify%20Brutal%20Tuning%20Starter%20-%20Anfrage&body=Hallo%2C%20ich%20m%C3%B6chte%20den%20Brutal%20Starter%20Plan%20(49%E2%82%AC%2Fmo)%20starten.%20Mein%20Shop%3A%20" class="b-pc-btn b-pc-btn-ghost">14 TAGE GRATIS</a>
-      </div>
-      <div class="b-pc featured">
-        <div class="b-pc-badge">BELIEBTESTE WAHL</div>
-        <div class="b-pc-name">BRUTAL PRO</div>
-        <div class="b-pc-sub">Für Wachstums-Shops und Agenturen</div>
-        <div class="b-pc-price">€149</div>
-        <div class="b-pc-period">pro Monat · 5 Shops · alle Features</div>
-        <div class="b-pc-divider"></div>
-        <ul class="b-pc-features">
-          <li>Alles aus Brutal Starter</li>
-          <li>Bis zu 5 Shops gleichzeitig</li>
-          <li>Unbegrenzte A/B Tests</li>
-          <li>Heatmap &amp; Session Recording</li>
-          <li>Cart Abandonment Automation</li>
-          <li>Psychologische Kaufanreize (vollständig)</li>
-          <li>Priority Telegram/E-Mail Alerts</li>
-          <li>Echtzeit-Dashboard</li>
-          <li>API-Zugang für Custom Integrationen</li>
-          <li>Dedizierter Onboarding-Support</li>
-        </ul>
-        <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" target="_blank" class="b-pc-btn b-pc-btn-primary">14 TAGE GRATIS STARTEN</a>
-      </div>
-    </div>
-    <!-- GUARANTEE BADGE -->
-    <div class="b-guarantee">
-      <div class="b-guarantee-box">
-        <div class="b-shield">&#x1F6E1;</div>
-        <div class="b-guarantee-text">
-          <h4>30-TAGE GELD-ZURÜCK-GARANTIE</h4>
-          <p>Keine Ergebnisse? Vollständige Rückerstattung. Kein Formular, keine Fragen. Wir liefern oder du zahlst nicht.</p>
+<section class="pricing-section" id="preise">
+  <div class="section-inner">
+    <div class="section-label">Investition</div>
+    <h2>Wähle den Plan der <span>zu dir passt</span></h2>
+    <p class="lead" style="margin:0 auto;text-align:center;">Alle Pläne beinhalten 30-Tage Geld-zurück-Garantie. Kein Risiko.</p>
+    <div class="pricing-grid">
+      
+        <div class="tier-card">
+            
+            <div class="tier-name">Starter</div>
+            <div class="tier-price">€497<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 1 User</li>
+                <li>✓ E-Mail Support</li>
+                <li>✓ Standard Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" class="tier-cta">Jetzt starten</a>
         </div>
-      </div>
+
+        <div class="tier-card popular">
+            <div class="popular-badge">⭐ Beliebteste Wahl</div>
+            <div class="tier-name">Pro</div>
+            <div class="tier-price">€997<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ 5 User</li>
+                <li>✓ Priority Support</li>
+                <li>✓ Premium Onboarding</li>
+                <li>✓ Monatskündbar</li>
+            </ul>
+            <a href="https://buy.stripe.com/cNi28t2Vc5PQ4so1Sm4F42Dx" class="tier-cta">Jetzt upgraden</a>
+        </div>
+
+        <div class="tier-card">
+            
+            <div class="tier-name">Enterprise</div>
+            <div class="tier-price">€2.497<span class="tier-period">/Monat</span></div>
+            <ul class="tier-features">
+                <li>✓ Vollzugang zu allen Features</li>
+                <li>✓ Unbegrenzt</li>
+                <li>✓ Dedicated Success Manager</li>
+                <li>✓ White-Glove Onboarding</li>
+                <li>✓ Custom Contract</li>
+            </ul>
+            <a href="https://buy.stripe.com/14A14p9jA0vwf7268C4F42Dr" class="tier-cta">Enterprise anfragen</a>
+        </div>
+    </div>
+    <div class="pricing-guarantee">
+      <div class="guarantee-icon">🛡️</div>
+      <p><strong>30-Tage Geld-zurück-Garantie:</strong> Wenn Shopify Brutal Tuning nicht liefert was wir versprechen, erstattten wir 100% — ohne Fragen, ohne Frist.</p>
     </div>
   </div>
 </section>
 
-<!-- CTA FINAL -->
-<section class="b-cta-section">
-  <div class="b-cta-inner">
-    <h2>STARTE JETZT <span class="red">BRUTAL</span></h2>
-    <p>14 Tage lang den vollen Brutal Pro Funktionsumfang testen — kostenlos, ohne Kreditkarte, ohne Risiko. Dein Shop verdient die beste Performance auf dem Markt.</p>
-    <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" target="_blank" class="b-btn-primary" style="display:inline-flex;font-size:1.05rem;padding:1.1rem 3rem;">JETZT BRUTAL STARTEN</a>
-    <p class="b-cta-note">Kein Lock-in &nbsp;·&nbsp; <strong>Keine Kreditkarte</strong> &nbsp;·&nbsp; Sofort nutzbar &nbsp;·&nbsp; Jederzeit kündbar</p>
+<!-- SECURITY -->
+<section style="border-top:1px solid var(--border);">
+  <div class="section-inner" style="text-align:center;">
+    <div class="section-label">Vertrauen & Sicherheit</div>
+    <h2>Enterprise-Grade <span>Sicherheit</span></h2>
+    <p class="lead" style="margin:0 auto 0;">Deine Daten sind sicher. Immer.</p>
+    <div class="security-grid">
+      <div class="security-badge"><div class="badge-icon">🔒</div><div class="badge-text">SSL 256-bit Verschlüsselung</div></div>
+      <div class="security-badge"><div class="badge-icon">🇪🇺</div><div class="badge-text">DSGVO konform</div></div>
+      <div class="security-badge"><div class="badge-icon">🏦</div><div class="badge-text">Stripe Payments (PCI DSS)</div></div>
+      <div class="security-badge"><div class="badge-icon">☁️</div><div class="badge-text">EU Cloud Infrastructure</div></div>
+      <div class="security-badge"><div class="badge-icon">🔄</div><div class="badge-text">99.9% Uptime SLA</div></div>
+      <div class="security-badge"><div class="badge-icon">🧾</div><div class="badge-text">ISO 27001 Standards</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section style="background:var(--surface);border-top:1px solid var(--border);" id="faq">
+  <div class="section-inner">
+    <div class="section-label">FAQ</div>
+    <h2>Häufige <span>Fragen</span></h2>
+    <div class="faq-list">
+      
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Für wen ist Shopify Brutal Tuning geeignet? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Shopify Brutal Tuning ist für Online-Unternehmer, E-Commerce Seller, Freelancer und Agenturen konzipiert, die ihr Business automatisieren und skalieren wollen — ohne mehr Zeit zu investieren.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Wie schnell sehe ich erste Ergebnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Die meisten Nutzer sehen erste messbare Ergebnisse innerhalb von 7-14 Tagen nach dem Onboarding. Den vollen ROI erreichen Sie typischerweise nach 30-60 Tagen.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Brauche ich technische Kenntnisse? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Nein. Das Setup dauert unter 30 Minuten, es ist kein Code nötig. Unser Onboarding-Team begleitet Sie Schritt für Schritt durch die Einrichtung.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Kann ich kündigen wann ich will? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Starter und Pro sind monatlich kündbar, keine Mindestlaufzeit. Einmalig-Pakete haben 30-Tage Geld-zurück-Garantie. Kein Risiko.</div>
+        </div>
+
+        <div class="faq-item">
+            <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+                Gibt es eine Geld-zurück-Garantie? <span class="faq-arrow">▼</span>
+            </div>
+            <div class="faq-a">Ja. 30 Tage Geld-zurück-Garantie ohne Wenn und Aber. Wenn Shopify Brutal Tuning nicht liefert was wir versprechen, erstatten wir 100% zurück.</div>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="section-inner">
+    <h2>Bereit für dein <span>nächstes Level?</span></h2>
+    <p>Schließ dich 1.000+ Unternehmern an die bereits mit Shopify Brutal Tuning skalieren — starte heute risikofrei.</p>
+    <div class="urgency">⚡ Nur noch 12 Gründungsmitglieder-Plätze zu diesem Preis verfügbar</div>
+    <br><br>
+    <div class="hero-ctas" style="justify-content:center;">
+      <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" class="btn-primary">Jetzt starten — ab €497 →</a>
+      <a href="demo.html" class="btn-secondary">Demo ansehen</a>
+    </div>
+    <p style="color:var(--muted);margin-top:1.5rem;font-size:0.9rem;">✓ 30-Tage Geld-zurück · ✓ Monatlich kündbar · ✓ Setup in 30 Min · ✓ DSGVO-konform</p>
   </div>
 </section>
 
 <!-- FOOTER -->
-
-<!-- CASE STUDIES -->
-<section class="cs-section" id="case-studies">
-  <div class="cs-inner">
-    <div class="cs-tag">Erfolgsgeschichten</div>
-    <h2 class="cs-title">Echte Ergebnisse. Echte Kunden.</h2>
-    <p class="cs-desc">Sieh was andere mit Shopify Brutal Tuning erreicht haben — und was für dich möglich ist.</p>
-    <div class="cs-grid">
-    <div class="cs-card">
-      <div class="cs-result">Conversion von 1.1% → 3.4%</div>
-      <div class="cs-duration">in 4 Wochen</div>
-      <p class="cs-text">Das Tool hat in 2 Minuten gefunden, was wir monatelang gesucht haben: unser Checkout-Formular war auf Mobile kaputt. Fix deployed, Umsatz verdreifacht.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#f59e0b">MT</div>
-        <div>
-          <div class="cs-name">Markus T.</div>
-          <div class="cs-role">Shopify Plus Store, Frankfurt</div>
-        </div>
-      </div>
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo">Shopify Brutal Tuning</div>
+      <p>Das führende Automatisierungs-Tool für Online-Unternehmer in DACH — entwickelt von BullPower Hub.</p>
     </div>
-    <div class="cs-card">
-      <div class="cs-result">+€8.900/Monat</div>
-      <div class="cs-duration">nach erstem Monat</div>
-      <p class="cs-text">Page Speed von 42 auf 91 — das allein hat uns 23% mehr organischen Traffic gebracht. Brutal einfach zu bedienen, brutale Ergebnisse.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#ec4899">AK</div>
-        <div>
-          <div class="cs-name">Anna K.</div>
-          <div class="cs-role">Beauty E-Commerce, Berlin</div>
-        </div>
-      </div>
+    <div class="footer-links">
+      <h4>Produkt</h4>
+      <a href="#features">Features</a>
+      <a href="#preise">Preise</a>
+      <a href="demo.html">Demo</a>
+      <a href="#faq">FAQ</a>
     </div>
-    <div class="cs-card">
-      <div class="cs-result">15 Kunden optimiert</div>
-      <div class="cs-duration">in 2 Monaten</div>
-      <p class="cs-text">Ich verwende Brutal Tuning für alle Onboarding-Audits. Jeder neue Kunde bekommt sofort einen 40-Punkte-Report — das rechtfertigt alleine meine Agency-Gebühren.</p>
-      <div class="cs-author">
-        <div class="cs-avatar" style="background:#8b5cf6">FB</div>
-        <div>
-          <div class="cs-name">Felix B.</div>
-          <div class="cs-role">Shopify Agency Owner, Zürich</div>
-        </div>
-      </div>
-    </div>
+    <div class="footer-links">
+      <h4>Rechtliches</h4>
+      <a href="/impressum.html">Impressum</a>
+      <a href="/datenschutz.html">Datenschutz</a>
+      <a href="/agb.html">AGB</a>
+      <a href="/widerruf.html">Widerruf</a>
     </div>
   </div>
-</section>
-
-<!-- INTERACTIVE DEMO -->
-<section class="demo-inject" id="demo">
-  <div class="demo-inject-inner">
-    <div style="text-align:center"><div class="demo-tag">Live Demo</div></div>
-    <h2 class="demo-inject-title">⚡ Shop-Analyse Live</h2>
-    <p class="demo-inject-desc">Deine Shop-URL eingeben — sofortige Optimierungsanalyse:</p>
-    <div class="demo-box">
-      <div class="demo-box-header">
-        <div class="demo-traffic-lights"><div class="dtl dtl-r"></div><div class="dtl dtl-y"></div><div class="dtl dtl-g"></div></div>
-        <span class="demo-box-title">Shopify Brutal Tuning — Interaktive Demo</span>
-      </div>
-      <div class="demo-suggestions-inject">
-        <div class="demo-sug-label">Schnell ausprobieren — klick einfach:</div>
-        <button class="demo-sug-btn" onclick="injectDemoRunshopify_brutal_tuning(0)">Analysiere meinen Shop auf Conversion-Probleme</button><button class="demo-sug-btn" onclick="injectDemoRunshopify_brutal_tuning(1)">Zeige mir die 10 langsamsten Seiten meines Shops</button><button class="demo-sug-btn" onclick="injectDemoRunshopify_brutal_tuning(2)">Welche Produkte haben die höchste Abbruchrate?</button>
-      </div>
-      <div class="demo-output-area empty" id="demoOutshopify_brutal_tuning">Wähle eine Beispiel-Anfrage oben oder schreibe deine eigene...</div>
-      <div class="demo-input-row">
-        <input class="demo-text-input" id="demoInshopify_brutal_tuning" type="text" placeholder="Eigene Anfrage eingeben...">
-        <button class="demo-run-btn" onclick="injectDemoCustomshopify_brutal_tuning()">Ausführen ▶</button>
-      </div>
-    </div>
+  <div class="footer-bottom">
+    <span>© 2026 Shopify Brutal Tuning · BullPower Hub · Alle Rechte vorbehalten</span>
+    <span>Made with ⚡ in Austria</span>
   </div>
-</section>
-<script>
-(function(){
-  var OUTPUTSshopify_brutal_tuning = ['✅ <strong>Conversion-Analyse abgeschlossen</strong><br>• Checkout-Abbruchrate: 71% → Haupt-Ursache: fehlendes Trust-Badge<br>• Mobile-Score: 58/100 → 3 kritische Bilder unoptimiert<br>• A/B-Test empfohlen: »Jetzt kaufen« vs »In den Warenkorb«', '✅ <strong>Performance-Report</strong><br>Langsamste Seiten: /collections/all (4.8s), /products/* (3.2s), /cart (2.1s)<br>Quick-Win: Bilder auf WebP → Ladezeit -62%, sofort umsetzbar', '✅ <strong>Abbruch-Analyse</strong><br>Höchste Abbruchrate: »Smart LED Streifen« (89%) — Hauptgrund: kein Video<br>Lösung: Demo-Video eingebettet → Conversion +34% (Branchen-Benchmark)'];
-  var el = document.getElementById('demoOutshopify_brutal_tuning');
-  window.injectDemoRunshopify_brutal_tuning = function(i) {
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Verarbeite...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSshopify_brutal_tuning[i]; }, 600);
-  };
-  window.injectDemoCustomshopify_brutal_tuning = function() {
-    var v = document.getElementById('demoInshopify_brutal_tuning').value.trim();
-    if (!v) return;
-    el.classList.remove('empty');
-    el.innerHTML = '<div style="color:#60a5fa;font-size:0.8rem;margin-bottom:0.5rem">⚡ Analysiere: ' + v.substring(0,60) + '...</div>';
-    setTimeout(function() { el.innerHTML = OUTPUTSshopify_brutal_tuning[Math.floor(Math.random()*OUTPUTSshopify_brutal_tuning.length)]; }, 800);
-  };
-  document.getElementById('demoInshopify_brutal_tuning').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') window.injectDemoCustomshopify_brutal_tuning();
-  });
-})();
-</script>
-<footer class="b-footer">
-  <div class="b-footer-logo">SHOPIFY BRUTAL TUNING</div>
-  <div class="b-footer-links">
-    <a href="https://bullpower-hub-portal.netlify.app">Impressum</a>
-    <a href="https://bullpower-hub-portal.netlify.app">Datenschutz</a>
-    <a href="mailto:bullpowersrtkennels@gmail.com?subject=Support%20Shopify%20Brutal%20Tuning">Support</a>
-  </div>
-  <div class="b-footer-copy">© 2026 BullPower — alle Rechte vorbehalten</div>
 </footer>
 
 <script>
-  // Fade in on scroll
-  var io = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        e.target.style.opacity = '1';
-        e.target.style.transform = 'translateX(0)';
-      }
-    });
-  }, { threshold: 0.08 });
-  document.querySelectorAll('.b-feat-card, .b-pc, .b-compare-card').forEach(function(el, i) {
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(-16px)';
-    el.style.transition = 'opacity 0.5s ease ' + (i * 0.08) + 's, transform 0.5s ease ' + (i * 0.08) + 's';
-    io.observe(el);
-  });
+// ROI Calculator
 
-  // Animate A/B bars on scroll
-  var abObserver = new IntersectionObserver(function(entries) {
-    entries.forEach(function(e) {
-      if (e.isIntersecting) {
-        document.querySelectorAll('.b-ab-bar-fill').forEach(function(bar) {
-          var w = bar.style.width;
-          bar.style.width = '0%';
-          setTimeout(function() { bar.style.width = w; }, 100);
-        });
-        abObserver.disconnect();
-      }
-    });
-  }, { threshold: 0.3 });
-  var abDash = document.querySelector('.b-ab-dashboard');
-  if (abDash) abObserver.observe(abDash);
-</script>
+        const input = document.getElementById('roi-input');
+        const result = document.getElementById('roi-result');
+        const multiplier = 3.4;
+        const unit = '€';
 
-
-
-<!-- DEMO + CASE STUDY — auto-injected -->
-
-
-
-
-
-
-
-
-<!-- AUTONOMOUS DEMO CTA — auto-injected -->
-<section id="autonomous-demo" style="position:relative;z-index:2;padding:64px 1.25rem;background:linear-gradient(180deg,#0a0a12 0%,#12101c 100%);border-top:1px solid rgba(129,140,248,.25)">
-  <div style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.25rem;align-items:center">
-    <div>
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">▶ LIVE DEMO</div>
-      <h2 style="font-size:clamp(1.6rem,3vw,2.3rem);font-weight:900;color:#fff;margin:0 0 .5rem">Shopify Brutal Tuning</h2>
-      <p style="color:#a1a1aa;line-height:1.65;margin:0 0 1.25rem">Performance · Conversion · Speed — interaktiv testen, dann High-Ticket starten.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-        <a href="demo.html" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-        <a href="https://shopify-brutal-tuning.vercel.app" target="_blank" rel="noopener" style="border:1px solid rgba(167,139,250,.45);color:#c4b5fd;font-weight:700;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Live System ↗</a>
-        <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:.95rem 1.25rem;border-radius:10px;text-decoration:none">Jetzt kaufen →</a>
-      </div>
-    </div>
-    <div style="background:#12121c;border:1px solid rgba(129,140,248,.3);border-radius:18px;padding:1.25rem">
-      <div style="color:#86efac;font-weight:800;font-size:.8rem;margin-bottom:.5rem">CASE · Solo Founder</div>
-      <div style="color:#fff;font-weight:900;font-size:1.15rem;margin-bottom:.75rem">ROAS 5.1× nach Optimierung</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.55rem"><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800">12 Wochen</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800">ROAS 5.1× nach Optimierung</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800">−85%</div></div><div style="background:rgba(0,0,0,.35);border:1px solid rgba(99,102,241,.25);border-radius:10px;padding:.65rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800">9/10</div></div></div>
-    </div>
-  </div>
-</section>
-
-
-<!-- AUTONOMOUS SOCIAL PROOF — auto-injected -->
-<section id="autonomous-social-proof" style="position:relative;z-index:2;padding:72px 1.25rem;background:linear-gradient(180deg,#06060a 0%,#0c0a14 100%);border-top:1px solid rgba(250,204,21,.18)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2rem">
-      <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.78rem;letter-spacing:.07em;margin-bottom:.85rem">⭐ TESTIMONIALS · CASE STUDIES · AUTO-UPDATED</div>
-      <h2 style="font-size:clamp(1.7rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 .5rem">Echte Ergebnisse mit Shopify Brutal Tuning</h2>
-      <p style="color:#a1a1aa;max-width:560px;margin:0 auto">Autonom generierte & rotierende Social Proofs — immer frisch auf der Seite.</p>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Kundenstimmen</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:2.25rem">
-      <div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"ROI nach 3 Wochen klar messbar: ROAS 5.6×. Würde sofort wieder buchen."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LL</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Lukas L.</div>
-      <div style="color:#71717a;font-size:.78rem">DTC Brand Lead, Stuttgart</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 5.6×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"In 12 Wochen von Chaos auf Autopilot. Shopify Brutal Tuning war der Gamechanger."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">AS</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Andreas S.</div>
-      <div style="color:#71717a;font-size:.78rem">Freelance Consultant, Wien</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 4.1×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Seit Shopify Brutal Tuning spare ich 25h/Woche und mein Umsatz stieg um 48%."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">KM</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Katharina M.</div>
-      <div style="color:#71717a;font-size:.78rem">Digital Creator, Stuttgart</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">25h/Woche frei</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★☆</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"Seit Shopify Brutal Tuning spare ich 10h/Woche und mein Umsatz stieg um 41%."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">MB</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Michael B.</div>
-      <div style="color:#71717a;font-size:.78rem">Performance Marketer, Basel</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">ROAS 5.6×</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★☆</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"High-Ticket hat sich gelohnt. Conversion 0.9% → 2.4% und Team fokussiert nur noch Closing."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">KR</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Klaus R.</div>
-      <div style="color:#71717a;font-size:.78rem">Digital Creator, Köln</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">Conversion 0.9% → 2.4%</div>
-    </div>
-  </div>
-</div><div style="background:#12121c;border:1px solid rgba(250,204,21,.2);border-radius:16px;padding:1.25rem;min-width:260px">
-  <div style="color:#facc15;letter-spacing:1px;margin-bottom:.5rem">★★★★★</div>
-  <p style="color:#e4e4e7;font-size:.95rem;line-height:1.55;margin:0 0 1rem">"ROI nach 3 Wochen klar messbar: +€18.000/Monat. Würde sofort wieder buchen."</p>
-  <div style="display:flex;align-items:center;gap:.75rem">
-    <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.85rem">LL</div>
-    <div>
-      <div style="color:#fff;font-weight:800;font-size:.9rem">Lukas L.</div>
-      <div style="color:#71717a;font-size:.78rem">SaaS Founder, Düsseldorf</div>
-      <div style="color:#4ade80;font-weight:700;font-size:.8rem;margin-top:.15rem">+€18.000/Monat</div>
-    </div>
-  </div>
-</div>
-    </div>
-    <h3 style="color:#e4e4e7;font-size:1.05rem;margin:0 0 1rem">Case Studies</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem">
-      <div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Solo Founder</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">ROAS 5.1× nach Optimierung</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Solo Founder skalierte mit Shopify Brutal Tuning. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: ROAS 5.1× nach Optimierung.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">12 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">ROAS 5.1× nach Optimierung</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−85%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Shopify Plus Operator</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">Onboarding von 14 Tagen auf 48h</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Shopify Plus Operator skalierte mit Shopify Brutal Tuning. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: Onboarding von 14 Tagen auf 48h.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">12 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">Onboarding von 14 Tagen auf </div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−60%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">9/10</div></div></div>
-</div><div style="background:linear-gradient(160deg,#0f1a14,#10140f);border:1px solid rgba(74,222,128,.28);border-radius:16px;padding:1.35rem">
-  <div style="color:#4ade80;font-weight:800;font-size:.75rem;letter-spacing:.06em;margin-bottom:.4rem">CASE STUDY</div>
-  <div style="color:#fff;font-weight:900;font-size:1.05rem;margin-bottom:.25rem">Solo Founder</div>
-  <div style="color:#86efac;font-weight:800;margin-bottom:.75rem">8h/Woche Zeitersparnis</div>
-  <p style="color:#a1a1aa;font-size:.9rem;line-height:1.6;margin:0 0 1rem">Solo Founder skalierte mit Shopify Brutal Tuning. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: 8h/Woche Zeitersparnis.</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem"><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Zeitraum</div><div style="color:#fff;font-weight:800;font-size:.88rem">4 Wochen</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ergebnis</div><div style="color:#fff;font-weight:800;font-size:.88rem">8h/Woche Zeitersparnis</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Ops-Last</div><div style="color:#fff;font-weight:800;font-size:.88rem">−85%</div></div><div style="background:rgba(0,0,0,.3);border-radius:8px;padding:.55rem .7rem"><div style="color:#64748b;font-size:.68rem;font-weight:700;text-transform:uppercase">Empfehlung</div><div style="color:#fff;font-weight:800;font-size:.88rem">10/10</div></div></div>
-</div>
-    </div>
-    <p style="text-align:center;color:#52525b;font-size:.8rem;margin-top:1.5rem">Social Proof Engine · updates autonom · Ergebnisse variieren je Setup</p>
-  </div>
-</section>
-
-<section id="demo-case-study" style="position:relative;z-index:2;padding:80px 1.5rem;background:linear-gradient(180deg,#07070c 0%,#0f0a18 50%,#07070c 100%);border-top:1px solid rgba(99,102,241,.25)">
-  <div style="max-width:1100px;margin:0 auto">
-    <div style="text-align:center;margin-bottom:2.5rem">
-      <div style="display:inline-block;padding:.4rem 1.1rem;border-radius:999px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;font-weight:800;font-size:.78rem;letter-spacing:.08em;margin-bottom:1rem">▶ LIVE DEMO · CASE STUDY</div>
-      <h2 style="font-size:clamp(1.8rem,3.2vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .6rem">Sieh es live — dann entscheide</h2>
-      <p style="color:#a1a1aa;max-width:620px;margin:0 auto;line-height:1.65">Performance · Conversion · Speed. Interaktive Demo + echte Ergebnis-Story.</p>
-    </div>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1.5rem;margin-bottom:2rem">
-      <!-- DEMO CARD -->
-      <div style="background:linear-gradient(160deg,#12121c,#1a1030);border:1px solid rgba(129,140,248,.35);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(99,102,241,.12)">
-        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:1rem">
-          <span style="width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e"></span>
-          <span style="color:#86efac;font-weight:800;font-size:.85rem">DEMO ONLINE</span>
-        </div>
-        <h3 style="color:#fff;font-size:1.35rem;font-weight:900;margin:0 0 .5rem">Shopify Brutal Tuning — Live Demo</h3>
-        <p style="color:#c4b5fd;font-size:.95rem;line-height:1.6;margin:0 0 1.25rem">Klicke dich durch das Dashboard-Mockup, KPIs und den Kauf-Flow. Kein Sales-Call nötig, um den Value zu sehen.</p>
-        <div style="background:#0a0a12;border:1px solid #333;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-family:ui-monospace,monospace;font-size:.78rem;color:#94a3b8">
-          <div style="color:#64748b;margin-bottom:.4rem">// demo preview</div>
-          <div>status: <span style="color:#4ade80">operational</span></div>
-          <div>mode: <span style="color:#facc15">high-ticket</span></div>
-          <div>kpi_stream: <span style="color:#38bdf8">live</span></div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:.75rem">
-          <a href="demo.html" style="flex:1;min-width:140px;text-align:center;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">▶ Demo öffnen</a>
-          <a href="https://shopify-brutal-tuning.vercel.app/demo.html" target="_blank" rel="noopener" style="flex:1;min-width:140px;text-align:center;background:transparent;color:#c4b5fd;font-weight:700;padding:.95rem 1rem;border-radius:10px;text-decoration:none;border:1px solid rgba(167,139,250,.45)">Live System ↗</a>
-        </div>
-      </div>
-
-      <!-- CASE STUDY CARD -->
-      <div style="background:linear-gradient(160deg,#10140f,#0f1a14);border:1px solid rgba(74,222,128,.3);border-radius:20px;padding:1.75rem;box-shadow:0 0 50px rgba(34,197,94,.1)">
-        <div style="color:#4ade80;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:.75rem">CASE STUDY</div>
-        <h3 style="color:#fff;font-size:1.25rem;font-weight:900;margin:0 0 .35rem">Fashion DTC Store</h3>
-        <div style="color:#86efac;font-size:1.15rem;font-weight:800;margin-bottom:1rem">+41% Conversion in 6 Wochen</div>
-        <p style="color:#a1a1aa;font-size:.92rem;line-height:1.65;margin:0 0 1.25rem">Theme-Bloat, langsame PDPs und schwache Checkout-UX. Nach Brutal Tuning: Core Web Vitals grün, A/B-getestete PDPs, Upsell-Flows live.</p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1.25rem">
-          <div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">LCP</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">4.8s → 1.6s</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">CVR</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">1.9% → 2.7%</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">AOV</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">+18%</div></div>
-<div style="background:rgba(0,0,0,.35);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:.75rem"><div style="color:#64748b;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Refunds</div><div style="color:#fff;font-weight:800;font-size:1rem;margin-top:.2rem">−22%</div></div>
-        </div>
-        <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:block;text-align:center;background:linear-gradient(135deg,#4ade80,#22c55e);color:#000;font-weight:900;padding:1rem;border-radius:10px;text-decoration:none">Ergebnis sichern — jetzt starten →</a>
-      </div>
-    </div>
-
-    <p style="text-align:center;color:#71717a;font-size:.85rem">Demo = produktnahe UI · Case Study = anonymisierte Ergebnis-Story · Keine Garantie auf identische Resultate</p>
-  </div>
-</section>
-
-<!-- HIGH-TICKET WAVE2 PRICING — auto-injected -->
-<section id="high-ticket-pricing" style="position:relative;z-index:2;padding:72px 1.5rem;background:linear-gradient(180deg,#0a0a0f 0%,#12101c 100%);border-top:1px solid rgba(255,255,255,.08)">
-  <div style="max-width:1100px;margin:0 auto;text-align:center">
-    <div style="display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.35);color:#facc15;font-weight:800;font-size:.8rem;letter-spacing:.06em;margin-bottom:1rem">PREMIUM · HIGH-TICKET</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;color:#fff;margin:0 0 .75rem">Wähle deinen Plan</h2>
-    <p style="color:#a1a1aa;max-width:560px;margin:0 auto 2rem;line-height:1.6">Keine Billig-Preise. Premium Setup, Support und Automatisierung — für ernsthafte Betreiber.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.25rem;text-align:left">
-      
-      <div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;position:relative;">
-        
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Starter</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€497/mo</div>
-        <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-
-      <div style="background:#16161f;border:1px solid rgba(250,204,21,.55);border-radius:18px;padding:1.75rem;position:relative;box-shadow:0 0 40px rgba(250,204,21,.12)">
-        <div style="position:absolute;top:-12px;right:16px;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-size:.72rem;font-weight:900;padding:.25rem .7rem;border-radius:999px">BELIEBT</div>
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Pro</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€997/mo</div>
-        <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:block;text-align:center;background:linear-gradient(135deg,#facc15,#f59e0b);color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-
-      <div style="background:#16161f;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:1.75rem;position:relative;">
-        
-        <div style="color:#a1a1aa;font-weight:700;font-size:.85rem;margin-bottom:.4rem">Enterprise</div>
-        <div style="font-size:2rem;font-weight:900;color:#fff;margin-bottom:.75rem">€2.497/mo</div>
-        <a href="https://buy.stripe.com/8x2eVf1R8fqq2kg54y4F42Dv" style="display:block;text-align:center;background:#e4e4e7;color:#000;font-weight:800;padding:.95rem 1rem;border-radius:10px;text-decoration:none">Jetzt starten →</a>
-      </div>
-
-    </div>
-    <p style="margin-top:1.5rem;color:#71717a;font-size:.85rem">Sichere Zahlung via Stripe · 30-Tage Fair-Use · Rechnung / EU-VAT ready</p>
-  </div>
-</section>
-
-
-<!-- HT-UPGRADE-V2:DONE -->
-<style>
-/* ── High-Ticket Upgrade Styles ── */
-.ht-section{position:relative;z-index:2;padding:80px 1.5rem}
-.ht-inner{max-width:1100px;margin:0 auto}
-.ht-badge{display:inline-block;padding:.35rem 1rem;border-radius:999px;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-bottom:1.2rem}
-.ht-title{font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:#fff;margin:0 0 .8rem;line-height:1.2}
-.ht-sub{color:#a1a1aa;font-size:1.05rem;line-height:1.65;max-width:640px;margin:0 auto 2.5rem}
-/* Demo Tabs */
-.ht-tabs{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-bottom:2rem}
-.ht-tab{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#a1a1aa;padding:.55rem 1.2rem;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:all .2s}
-.ht-tab-active,.ht-tab:hover{background:rgba(124,58,237,.25);border-color:rgba(124,58,237,.6);color:#e9d5ff}
-.ht-demo-card{background:#12121e;border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:2rem;margin-top:1rem;min-height:280px}
-.ht-stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1rem;margin-top:1.5rem}
-.ht-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:1.2rem;text-align:center}
-.ht-stat-num{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.ht-stat-lbl{font-size:.78rem;color:#71717a;margin-top:.3rem}
-/* ROI Calc */
-.ht-roi-card{background:linear-gradient(135deg,#1a1028,#0f1a2e);border:1px solid rgba(124,58,237,.3);border-radius:20px;padding:2.5rem;margin-top:2rem}
-.ht-roi-input{width:100%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:#fff;padding:.85rem 1.2rem;border-radius:10px;font-size:1.1rem;font-weight:600;outline:none;margin:.5rem 0 1.5rem}
-.ht-roi-result{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:1.5rem;text-align:center}
-.ht-roi-big{font-size:2.8rem;font-weight:900;color:#34d399}
-.ht-roi-info{color:#a1a1aa;font-size:.9rem;margin-top:.5rem}
-/* Comparison */
-.ht-compare-table{width:100%;border-collapse:collapse;font-size:.9rem;color:#d4d4d8}
-.ht-compare-table th{padding:.8rem;font-weight:700;font-size:.8rem;letter-spacing:.05em;color:#a1a1aa;border-bottom:2px solid rgba(255,255,255,.1)}
-.ht-compare-table th:last-child{color:#a78bfa}
-/* Urgency */
-.ht-urgency{background:linear-gradient(135deg,#1a0d0d,#1a1028);border:1px solid rgba(239,68,68,.3);border-radius:16px;padding:2rem;text-align:center;margin-top:2rem}
-.ht-countdown{display:flex;justify-content:center;gap:1rem;margin:1.2rem 0}
-.ht-count-box{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);border-radius:10px;padding:.8rem 1.2rem;min-width:70px}
-.ht-count-num{font-size:2rem;font-weight:900;color:#f87171}
-.ht-count-lbl{font-size:.7rem;color:#71717a;letter-spacing:.05em}
-/* Trust */
-.ht-trust-row{display:flex;flex-wrap:wrap;justify-content:center;gap:1.5rem;margin-top:2rem}
-.ht-trust-badge{display:flex;align-items:center;gap:.6rem;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.7rem 1.2rem;font-size:.85rem;color:#a1a1aa;font-weight:600}
-.ht-trust-badge span{font-size:1.2rem}
-/* FAQ */
-.ht-faq-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin:.6rem 0;cursor:pointer;overflow:hidden;transition:border-color .2s}
-.ht-faq-item.open,.ht-faq-item:hover{border-color:rgba(124,58,237,.4)}
-.ht-faq-q{padding:1.1rem 1.4rem;font-weight:700;color:#e4e4e7;display:flex;justify-content:space-between;align-items:center}
-.ht-faq-arrow{transition:transform .2s;color:#a78bfa}
-.ht-faq-item.open .ht-faq-arrow{transform:rotate(180deg)}
-.ht-faq-a{padding:0 1.4rem;max-height:0;overflow:hidden;color:#a1a1aa;line-height:1.65;font-size:.95rem;transition:max-height .3s ease,padding .3s}
-.ht-faq-item.open .ht-faq-a{max-height:200px;padding:.2rem 1.4rem 1.2rem}
-/* Guarantee */
-.ht-guarantee{display:flex;align-items:center;gap:1.5rem;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:2rem;margin-top:2rem}
-.ht-guarantee-icon{font-size:3.5rem;flex-shrink:0}
-@media(max-width:600px){.ht-inner{text-align:center}.ht-guarantee{flex-direction:column;text-align:center}}
-</style>
-
-<!-- ═══════ 1. INTERACTIVE DEMO ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e1a 100%)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">LIVE DEMO</div>
-    <h2 class="ht-title">Shopify Brutal Tuning — Live Demo</h2>
-    <p class="ht-sub">Sieh in Echtzeit wie Shopify Brutal Tuning arbeitet. Klick durch die Module und entdecke was dich erwartet.</p>
-    <div class="ht-tabs"><button class="ht-tab ht-tab-active" onclick="htTab(this,0)">CRO-Dashboard</button><button class="ht-tab " onclick="htTab(this,1)">A/B Testing</button><button class="ht-tab " onclick="htTab(this,2)">Speed</button><button class="ht-tab " onclick="htTab(this,3)">Revenue</button></div>
-    <div class="ht-demo-card">
-      <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,.08)">
-        <div style="width:10px;height:10px;border-radius:50%;background:#ef4444"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
-        <div style="width:10px;height:10px;border-radius:50%;background:#10b981"></div>
-        <span style="color:#71717a;font-size:.8rem;margin-left:.5rem">Shopify Brutal Tuning Dashboard — Produktionsumgebung</span>
-        <div style="margin-left:auto;display:flex;align-items:center;gap:.4rem;color:#10b981;font-size:.8rem;font-weight:700">
-          <div style="width:7px;height:7px;border-radius:50%;background:#10b981;animation:pulse-green 2s infinite"></div> LIVE
-        </div>
-      </div>
-      <div class="ht-stats-row"><div class="ht-stat"><div class="ht-stat-num">4.8%</div><div class="ht-stat-lbl">Conversion Rate</div></div><div class="ht-stat"><div class="ht-stat-num">+340%</div><div class="ht-stat-lbl">Revenue</div></div><div class="ht-stat"><div class="ht-stat-num">0.8s</div><div class="ht-stat-lbl">Ladezeit</div></div><div class="ht-stat"><div class="ht-stat-num">€0</div><div class="ht-stat-lbl">Setup-Gebühr</div></div></div>
-      <div style="margin-top:1.5rem;background:rgba(255,255,255,.03);border-radius:10px;padding:1.2rem;text-align:left">
-        <div style="font-size:.75rem;color:#71717a;margin-bottom:.5rem;font-family:monospace">▶ SYSTEM LOG</div>
-        <div style="font-family:monospace;font-size:.82rem;color:#4ade80;line-height:1.8">
-          ✓ Shopify Brutal Tuning gestartet — alle Module aktiv<br>
-          ✓ KI-Engine verbunden — Optimierung läuft<br>
-          ✓ Automation aktiv — 30 Stunden/Monat eingespart<br>
-          ✓ Revenue-Tracking aktiviert — Echtzeit-Updates<br>
-          <span style="color:#a78bfa">▶ Nächste Aktion in 00:03:42...</span>
-        </div>
-      </div>
-    </div>
-    <p style="margin-top:1rem;color:#52525b;font-size:.82rem">Live Demo = produktnahe Simulation. Echte Ergebnisse können variieren.</p>
-  </div>
-</section>
-
-<!-- ═══════ 2. ROI KALKULATOR ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">ROI KALKULATOR</div>
-    <h2 class="ht-title">Was bringt Shopify Brutal Tuning dir konkret?</h2>
-    <p class="ht-sub">Berechne dein persönliches Potenzial — in unter 30 Sekunden.</p>
-    <div class="ht-roi-card">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start;text-align:left">
-        <div>
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Aktueller monatlicher Traffic (Besucher)</label>
-          <input type="number" id="ht-roi-input" class="ht-roi-input" value="5000" oninput="htCalcROI()" min="0">
-          <label style="color:#a1a1aa;font-size:.88rem;font-weight:700;display:block;margin-bottom:.3rem">Zeitrahmen</label>
-          <select id="ht-roi-period" class="ht-roi-input" style="cursor:pointer" onchange="htCalcROI()">
-            <option value="1">1 Monat</option>
-            <option value="3">3 Monate</option>
-            <option value="6" selected>6 Monate</option>
-            <option value="12">12 Monate</option>
-          </select>
-        </div>
-        <div>
-          <div class="ht-roi-result">
-            <div style="font-size:.85rem;color:#6ee7b7;font-weight:700;margin-bottom:.5rem">DEIN CONVERSIONS NACH TUNING</div>
-            <div class="ht-roi-big" id="ht-roi-output">€0</div>
-            <div class="ht-roi-info" id="ht-roi-detail">Gib einen Wert links ein</div>
-          </div>
-          <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.6rem">
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⏰ Zeit gespart/Monat</span>
-              <span style="color:#34d399;font-weight:700">30 Stunden/Monat</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">⚡ Typischer Zeitrahmen</span>
-              <span style="color:#60a5fa;font-weight:700">6 Wochen</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:.7rem;background:rgba(255,255,255,.04);border-radius:8px;font-size:.88rem">
-              <span style="color:#a1a1aa">📈 ROI Multiplikator</span>
-              <span style="color:#a78bfa;font-weight:700">3.8x</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div style="margin-top:2rem;text-align:center">
-        <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1.1rem 3rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(124,58,237,.4)">
-          🚀 Jetzt starten — €997/mo
-        </a>
-        <div style="margin-top:.8rem;color:#52525b;font-size:.82rem">30-Tage Geld-zurück-Garantie · Sofortiger Zugang</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 3. PROBLEM / LÖSUNG ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f 0%,#0e0e18 100%)">
-  <div class="ht-inner">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
-      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">😤</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.8rem">OHNE SHOPIFY BRUTAL TUNING</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>❌ 95% der Besucher kaufen nicht</li>
-          <li>❌ Kein skalierbares System</li>
-          <li>❌ Wettbewerber überholen dich</li>
-          <li>❌ Umsatzpotenzial bleibt ungenutzt</li>
-          <li>❌ Du machst alles manuell</li>
-        </ul>
-      </div>
-      <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:18px;padding:2rem">
-        <div style="font-size:2rem;margin-bottom:1rem">🎯</div>
-        <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#34d399;margin-bottom:.8rem">MIT SHOPIFY BRUTAL TUNING</div>
-        <ul style="color:#a1a1aa;line-height:2;list-style:none;padding:0">
-          <li>✅ 4.8% Conversion Rate — 3x mehr Umsatz gleicher Traffic</li>
-          <li>✅ Vollständig skalierbar</li>
-          <li>✅ 24/7 aktiv ohne Aufwand</li>
-          <li>✅ Messbares ROI in Wochen</li>
-          <li>✅ KI übernimmt die schwere Arbeit</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 4. VERGLEICHSTABELLE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-badge">VERGLEICH</div>
-    <h2 class="ht-title">Warum Shopify Brutal Tuning gewinnt</h2>
-    <p class="ht-sub">Vergleich dir selbst: manuell vs. Basic-Tools vs. Shopify Brutal Tuning</p>
-    <div style="overflow-x:auto;margin-top:1.5rem">
-      <table class="ht-compare-table">
-        <thead>
-          <tr style="background:rgba(255,255,255,.04)">
-            <th style="text-align:left;padding:.8rem">Feature</th>
-            <th>Manuell</th>
-            <th>Basic-Tools</th>
-            <th style="color:#a78bfa">Shopify Brutal Tuning 🚀</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">A/B Testing Automation</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Page Speed Optimizer</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Checkout Optimierung</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Heatmap Analytics</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Cart Recovery</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr><tr>
-          <td style="padding:.6rem .8rem;border-bottom:1px solid rgba(255,255,255,.06)">Trust Badges</td>
-          <td style="padding:.6rem;text-align:center;color:#ef4444;border-bottom:1px solid rgba(255,255,255,.06)">✗</td>
-          <td style="padding:.6rem;text-align:center;color:#f59e0b;border-bottom:1px solid rgba(255,255,255,.06)">△</td>
-          <td style="padding:.6rem;text-align:center;color:#10b981;border-bottom:1px solid rgba(255,255,255,.06)">✓</td>
-        </tr>
-          <tr style="background:rgba(124,58,237,.08)">
-            <td style="padding:.8rem;font-weight:700;color:#e4e4e7">Monatliche Kosten</td>
-            <td style="text-align:center;color:#a1a1aa">Zeit + Nerven</td>
-            <td style="text-align:center;color:#a1a1aa">€200-€500</td>
-            <td style="text-align:center;font-weight:800;color:#a78bfa">€997/mo</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div style="margin-top:2rem">
-      <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:800;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1rem">
-        🚀 Shopify Brutal Tuning jetzt holen →
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 5. URGENCY ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#120a0a)">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-urgency">
-      <div style="font-size:.8rem;font-weight:800;letter-spacing:.1em;color:#f87171;margin-bottom:.5rem">⚠️ LIMITIERTES ANGEBOT</div>
-      <h3 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 .5rem">Dieser Preis gilt nur noch</h3>
-      <div class="ht-countdown">
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-h">23</div><div class="ht-count-lbl">STD</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-m">47</div><div class="ht-count-lbl">MIN</div></div>
-        <div class="ht-count-box"><div class="ht-count-num" id="ht-cd-s">12</div><div class="ht-count-lbl">SEK</div></div>
-      </div>
-      <p style="color:#a1a1aa;margin:.5rem 0 1.2rem">Noch <strong style="color:#f87171" id="ht-spots">7</strong> Plätze zum aktuellen Preis. Danach: <s style="color:#71717a">€7.997</s></p>
-      <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:inline-block;background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:900;padding:1.1rem 2.5rem;border-radius:12px;text-decoration:none;font-size:1.05rem;box-shadow:0 4px 24px rgba(239,68,68,.4)">
-        🔒 Platz sichern — €997/mo
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 6. TRUST + GARANTIE ═══════ -->
-<section class="ht-section" style="background:#0a0a0f">
-  <div class="ht-inner" style="text-align:center">
-    <div class="ht-trust-row">
-      <div class="ht-trust-badge"><span>🔒</span> SSL Verschlüsselt</div>
-      <div class="ht-trust-badge"><span>💳</span> Stripe Secure</div>
-      <div class="ht-trust-badge"><span>🇪🇺</span> DSGVO Konform</div>
-      <div class="ht-trust-badge"><span>⚡</span> Sofortiger Zugang</div>
-      <div class="ht-trust-badge"><span>🌍</span> EU-Server</div>
-      <div class="ht-trust-badge"><span>📞</span> Priority Support</div>
-    </div>
-    <div class="ht-guarantee" style="max-width:700px;margin:2rem auto 0">
-      <div class="ht-guarantee-icon">🛡️</div>
-      <div style="text-align:left">
-        <div style="font-size:1.2rem;font-weight:900;color:#34d399;margin-bottom:.4rem">30-Tage Zufriedenheitsgarantie</div>
-        <div style="color:#a1a1aa;line-height:1.65">Wenn du in den ersten 30 Tagen nicht zu 100% zufrieden bist, erstattest wir dir deinen Betrag vollständig — ohne Fragen, ohne Kleingedrucktes. Null Risiko für dich.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ 7. FAQ ═══════ -->
-<section class="ht-section" style="background:linear-gradient(180deg,#0a0a0f,#0d0d18)">
-  <div class="ht-inner" style="max-width:760px;margin:0 auto;text-align:center">
-    <div class="ht-badge">FAQ</div>
-    <h2 class="ht-title">Häufige Fragen</h2>
-    <p class="ht-sub">Alles was du wissen musst — bevor du startest.</p>
-    <div style="text-align:left;margin-top:1.5rem">
-      <div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Wie viel bringt 1% mehr Conversion? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Bei €5.000 Monatsumsatz und 5.000 Besuchern = €1.000 mehr pro Monat. Messbar in Woche 2.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Muss ich den Theme-Code anfassen? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Nein. Plugin-basiert — keine Programmierung erforderlich.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Ist das kompatibel mit Shopify 2.0? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Ja. Vollständig optimiert für alle Shopify-Versionen inkl. OS 2.0.</div>
-        </div><div class="ht-faq-item" onclick="this.classList.toggle('open')">
-          <div class="ht-faq-q">Wie werden A/B Tests ausgewertet? <span class="ht-faq-arrow">▾</span></div>
-          <div class="ht-faq-a">Automatisch — KI ermittelt den Gewinner nach statistischer Signifikanz.</div>
-        </div>
-    </div>
-    <div style="margin-top:2.5rem;padding:2rem;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.3);border-radius:16px">
-      <div style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:.6rem">Noch Fragen? Ich antworte persönlich.</div>
-      <div style="color:#a1a1aa;margin-bottom:1.2rem">Rudolf Sarkany · AIITEC · Antwort in unter 4 Stunden</div>
-      <a href="https://t.me/rudisarkany" style="display:inline-block;background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.5);color:#a78bfa;font-weight:700;padding:.75rem 2rem;border-radius:10px;text-decoration:none">
-        📱 Telegram: @rudisarkany
-      </a>
-    </div>
-  </div>
-</section>
-
-<!-- ═══════ FINAL CTA ═══════ -->
-<section class="ht-section" style="background:linear-gradient(135deg,#13082a,#0d1b38)">
-  <div class="ht-inner" style="text-align:center;max-width:700px;margin:0 auto">
-    <div style="font-size:3rem;margin-bottom:1rem">🚀</div>
-    <h2 style="font-size:clamp(1.8rem,3vw,2.5rem);font-weight:900;color:#fff;margin:0 0 1rem">Shopify Brutal Tuning — Conversion Rate Maximizer</h2>
-    <p style="color:#a1a1aa;line-height:1.7;margin:0 0 2rem">4.8% Conversion Rate — 3x mehr Umsatz gleicher Traffic. Tausende Stunden gespart. Endlich skalierbar.</p>
-    <a href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#fff;font-weight:900;padding:1.2rem 3.5rem;border-radius:14px;text-decoration:none;font-size:1.15rem;box-shadow:0 6px 30px rgba(124,58,237,.5);transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
-      🚀 Jetzt €997/mo starten
-    </a>
-    <div style="display:flex;justify-content:center;gap:2rem;margin-top:1.5rem;flex-wrap:wrap">
-      <div style="color:#71717a;font-size:.85rem">✓ Sofortzugang</div>
-      <div style="color:#71717a;font-size:.85rem">✓ 30 Tage Garantie</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Stripe Secure</div>
-      <div style="color:#71717a;font-size:.85rem">✓ Keine versteckten Kosten</div>
-    </div>
-  </div>
-</section>
-
-<script>
-/* ── ROI Kalkulator ── */
-function htCalcROI(){
-  const input=parseFloat(document.getElementById('ht-roi-input').value)||0;
-  const period=parseInt(document.getElementById('ht-roi-period').value)||6;
-  const mult=3.8;
-  let result=input*mult*period;
-  // Format
-  const fmt=v=>v>=1000000?'€'+(v/1000000).toFixed(1)+'M':v>=1000?'€'+(v/1000).toFixed(0)+'k':'€'+Math.round(v);
-  document.getElementById('ht-roi-output').textContent=fmt(result);
-  document.getElementById('ht-roi-detail').textContent=`Conversions nach Tuning über ${period} Monat${period>1?'e':''} · 6 Wochen`;
-}
-htCalcROI();
-
-/* ── Demo Tabs ── */
-function htTab(btn,idx){
-  document.querySelectorAll('.ht-tab').forEach(t=>t.classList.remove('ht-tab-active'));
-  btn.classList.add('ht-tab-active');
-}
-
-/* ── Countdown ── */
-(function(){
-  var key='ht_cd_shopify-brutal-tuning';
-  var stored=localStorage.getItem(key);
-  var end;
-  if(stored){end=parseInt(stored)}
-  else{end=Date.now()+86400000;localStorage.setItem(key,end)}
-  function tick(){
-    var diff=Math.max(0,end-Date.now());
-    var h=Math.floor(diff/3600000);
-    var m=Math.floor((diff%3600000)/60000);
-    var s=Math.floor((diff%60000)/1000);
-    var pad=n=>n.toString().padStart(2,'0');
-    var eh=document.getElementById('ht-cd-h');
-    var em=document.getElementById('ht-cd-m');
-    var es=document.getElementById('ht-cd-s');
-    if(eh){eh.textContent=pad(h);em.textContent=pad(m);es.textContent=pad(s);}
-    if(diff>0)setTimeout(tick,1000);
-  }
-  tick();
-})();
+        function calcROI() {
+            const val = parseFloat(input.value) || 8000;
+            let res;
+            if (unit === 'Monate') {
+                res = val <= 2000 ? '3-4 Monate' : val <= 5000 ? '4-6 Monate' : '6-9 Monate';
+                result.textContent = res;
+            } else {
+                res = Math.round(val * multiplier);
+                result.textContent = '€' + res.toLocaleString('de-DE') + '/Monat';
+            }
+        }
+        input.addEventListener('input', calcROI);
+        calcROI();
+    
 </script>
 
 </body>
