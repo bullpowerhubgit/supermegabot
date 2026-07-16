@@ -1,6 +1,14 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16**
 
+## ✅ DEMO + CASE STUDY — ALLE LANDINGS (2026-07-16)
+
+- **17 Landings** mit Section `#demo-case-study` (Live Demo + Case Study + KPIs + Buy-CTA)
+- **17× `demo.html`** interaktive Mock-Dashboards (Overview/Pipeline/Billing/Alerts)
+- **Demo Hub:** `netlify-deploy/demo-hub/index.html` — alle Demos verlinkt
+- Script: `scripts/inject_demo_case_studies.py` (re-run idempotent)
+- Jede Demo → High-Ticket Stripe Checkout + optional Live-System (Railway/Vercel)
+
 ## 💰 MONEY MAX — WAVE 2+3 LIVE (2026-07-16)
 
 **Ziel: GELD GENERIEREN — alles High-Ticket**
