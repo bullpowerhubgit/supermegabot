@@ -2,116 +2,87 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lead Capture Pro — Live Demo</title>
-<meta name="description" content="Interaktive Demo von Lead Capture Pro. Testimonials, Case Study und High-Ticket Checkout.">
-<meta name="robots" content="index,follow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lead Capture Pro — Interaktive Demo</title>
 <style>
-:root{--bg:#07070c;--card:#12121c;--line:#2a2a3a;--text:#f1f5f9;--muted:#94a3b8;--acc:#818cf8;--ok:#4ade80;--warn:#facc15}
+:root { --bg:#0a0a0f; --s:#13131a; --s2:#1a1a24; --bd:#2a2a3d; --a:#dc2626; --a2:#f97316; --t:#e8e8f0; --m:#888899; --g:#00ff88; }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh}
-nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(7,7,12,.92);backdrop-filter:blur(12px);z-index:10}
-.logo{font-weight:900;color:var(--acc)}
-.nav a{color:var(--muted);text-decoration:none;margin-left:1rem;font-weight:600;font-size:.9rem}
-.nav a.cta{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:.55rem 1rem;border-radius:8px}
-main{max-width:1100px;margin:0 auto;padding:2rem 1.25rem 4rem}
-h1{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;margin-bottom:.5rem}
-.sub{color:var(--muted);margin-bottom:1.5rem;line-height:1.6}
-.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem}
-@media(max-width:860px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.25rem}
-.panel h2{font-size:1rem;margin-bottom:1rem;color:#c7d2fe}
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
-.kpi{background:#0a0a12;border:1px solid var(--line);border-radius:12px;padding:.9rem}
-.kpi b{display:block;font-size:1.15rem;margin-top:.25rem}
-.kpi span{color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase}
-.log{font-family:ui-monospace,monospace;font-size:.8rem;color:#94a3b8;background:#0a0a12;border-radius:10px;padding:1rem;max-height:220px;overflow:auto;line-height:1.55}
-.log .ok{color:var(--ok)}
-.btn{display:block;text-align:center;text-decoration:none;font-weight:800;padding:1rem;border-radius:10px;margin-top:.75rem}
-.btn-primary{background:linear-gradient(135deg,#4ade80,#22c55e);color:#000}
-.btn-ghost{border:1px solid var(--line);color:var(--text)}
-.tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
-.tab{padding:.45rem .85rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;background:transparent}
-.tab.active{background:rgba(129,140,248,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
-.case{margin-top:1.5rem;padding:1.25rem;border-radius:16px;border:1px solid rgba(74,222,128,.3);background:linear-gradient(160deg,#0f1a14,#10140f)}
-.case h3{color:var(--ok);margin-bottom:.5rem}
-.quote{margin-top:1rem;padding:1rem;border-radius:12px;border:1px solid rgba(250,204,21,.25);background:#14120a;color:#e4e4e7;font-size:.92rem;line-height:1.55}
+body{background:var(--bg);color:var(--t);font-family:-apple-system,'Inter','Segoe UI',sans-serif;min-height:100vh;}
+.header{background:rgba(10,10,15,0.95);border-bottom:1px solid var(--bd);padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;}
+.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.back-btn{color:var(--m);text-decoration:none;font-size:0.9rem;}
+.back-btn:hover{color:var(--t);}
+.hero{padding:60px 5% 40px;text-align:center;}
+.demo-badge{display:inline-block;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.4);color:var(--a2);padding:0.4rem 1.2rem;border-radius:50px;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;}
+h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:1rem;}
+h1 span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hero p{color:var(--m);max-width:600px;margin:0 auto 2rem;font-size:1.05rem;}
+.metrics{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:3rem;}
+.metric{background:var(--s);border:1px solid var(--bd);border-radius:12px;padding:1.2rem 2rem;text-align:center;min-width:140px;}
+.metric-val{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.metric-lbl{color:var(--m);font-size:0.8rem;margin-top:0.3rem;}
+.demo-container{max-width:900px;margin:0 auto;padding:0 5% 60px;}
+.demo-screen{background:var(--s);border:1px solid var(--bd);border-radius:20px;overflow:hidden;}
+.screen-bar{background:var(--s2);padding:0.8rem 1.5rem;display:flex;align-items:center;gap:0.5rem;border-bottom:1px solid var(--bd);}
+.dot{width:12px;height:12px;border-radius:50%;}
+.dot.r{background:#ff5f57;} .dot.y{background:#febc2e;} .dot.g{background:#28c840;}
+.screen-title{margin-left:auto;margin-right:auto;color:var(--m);font-size:0.85rem;}
+.screen-body{padding:2rem;}
+.screen-body h3{font-size:1.2rem;font-weight:700;margin-bottom:1rem;}
+.feature-list{list-style:none;}
+.feature-list li{padding:0.7rem 0;border-bottom:1px solid var(--bd);color:var(--m);font-size:0.95rem;}
+.feature-list li:last-child{border-bottom:none;}
+.live-indicator{display:flex;align-items:center;gap:0.5rem;color:var(--g);font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.cta-section{text-align:center;padding:2rem 5% 4rem;}
+.cta-section h2{font-size:1.6rem;font-weight:800;margin-bottom:1rem;}
+.btn{display:inline-block;background:linear-gradient(135deg,var(--a),#5b52ef);color:white;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1.05rem;transition:all 0.3s;box-shadow:0 8px 30px rgba(108,99,255,0.3);}
+.btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,99,255,0.4);}
 </style>
 </head>
 <body>
-<nav>
-  <div class="logo">Lead Capture Pro · DEMO</div>
-  <div class="nav">
-    <a href="index.html">← Produkt</a>
-    <a href="https://lead-capture-gamma-nine.vercel.app" target="_blank" rel="noopener">Live System</a>
-    <a class="cta" href="https://buy.stripe.com/aFacN7anEbaacYUaoS4F42DM">Jetzt kaufen</a>
+<header class="header">
+  <div class="logo">Lead Capture Pro</div>
+  <a href="index.html" class="back-btn">← Zurück zur Übersicht</a>
+</header>
+<section class="hero">
+  <div class="demo-badge">🎯 Interaktive Demo</div>
+  <h1><span>Lead Capture Pro</span><br>Live erleben</h1>
+  <p>Sieh in Echtzeit was Lead Capture Pro für dein Business leisten kann — ohne Anmeldung, ohne Kreditkarte.</p>
+  <div class="metrics">
+    <div class="metric"><div class="metric-val">€12.400</div><div class="metric-lbl">Ø Mehrumsatz/Monat</div></div>
+<div class="metric"><div class="metric-val">87%</div><div class="metric-lbl">Zeitersparnis</div></div>
+<div class="metric"><div class="metric-val">30 Min</div><div class="metric-lbl">Setup-Zeit</div></div>
+<div class="metric"><div class="metric-val">30 Tage</div><div class="metric-lbl">bis ROI</div></div>
   </div>
-</nav>
-<main>
-  <h1>Lead Capture Pro — interaktive Demo</h1>
-  <p class="sub">Audit → High-Ticket Close. Mock-Dashboard mit Live-Feel · Case Study · High-Ticket Checkout.</p>
-  <div class="grid">
-    <div class="panel">
-      <div class="tabs" id="tabs">
-        <button class="tab active" data-t="overview">Overview</button>
-        <button class="tab" data-t="pipeline">Pipeline</button>
-        <button class="tab" data-t="billing">Billing</button>
-        <button class="tab" data-t="alerts">Alerts</button>
-      </div>
-      <div id="view-overview"><h2>KPI Stream</h2><div class="kpis"><div class="kpi"><span>Zeitraum</span><b>8 Wochen</b></div><div class="kpi"><span>Ergebnis</span><b>€42k Zusatzumsatz / Monat</b></div><div class="kpi"><span>Ops-Last</span><b>−72%</b></div><div class="kpi"><span>Empfehlung</span><b>10/10</b></div></div></div>
-      <div id="view-pipeline" style="display:none"><h2>Automation Pipeline</h2><div class="log" id="pipe-log"></div></div>
-      <div id="view-billing" style="display:none"><h2>Billing Preview</h2>
-        <div class="log">plan: high-ticket<br>status: <span class="ok">ready_to_charge</span><br>stripe: connected (live)</div>
-        <a class="btn btn-primary" href="https://buy.stripe.com/aFacN7anEbaacYUaoS4F42DM">Checkout öffnen →</a>
-      </div>
-      <div id="view-alerts" style="display:none"><h2>System Alerts</h2>
-        <div class="log"><span class="ok">[ok]</span> health check passed<br><span class="ok">[ok]</span> webhooks listening<br><span class="ok">[ok]</span> social proof loaded</div>
-      </div>
+</section>
+<div class="demo-container">
+  <div class="demo-screen">
+    <div class="screen-bar">
+      <div class="dot r"></div>
+      <div class="dot y"></div>
+      <div class="dot g"></div>
+      <div class="screen-title">Lead Capture Pro Dashboard</div>
     </div>
-    <div>
-      <div class="panel">
-        <h2>Demo Controls</h2>
-        <button class="btn btn-ghost" id="btn-run" style="width:100%;cursor:pointer;background:#1e1e2e;color:#fff;border:1px solid #333">▶ Pipeline simulieren</button>
-        <a class="btn btn-primary" href="https://buy.stripe.com/aFacN7anEbaacYUaoS4F42DM">High-Ticket Plan wählen</a>
-        <a class="btn btn-ghost" href="https://lead-capture-gamma-nine.vercel.app" target="_blank" rel="noopener">Echtes Live-System ↗</a>
-        <a class="btn btn-ghost" href="index.html#autonomous-social-proof">Testimonials & Cases</a>
-      </div>
-      <div class="case">
-        <h3>Case Study · Info-Product Vendor</h3>
-        <div style="font-weight:800;color:#86efac;margin-bottom:.5rem">€42k Zusatzumsatz / Monat</div>
-        <p style="color:#a1a1aa;line-height:1.6;font-size:.92rem">Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Lead Capture Pro liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.</p>
-        <div class="quote">⭐ „Setup in Tagen, nicht Monaten. Conversion 1.4% → 3.1% ist real, kein Marketing-Blabla."<br><span style="color:#71717a;font-size:.85rem">— Julia M.</span></div>
-      </div>
+    <div class="screen-body">
+      <div class="live-indicator"><div class="live-dot"></div> Live System aktiv</div>
+      <h3>🚀 Was Lead Capture Pro gerade für dich tut:</h3>
+      <ul class="feature-list">
+        <li>✅ Vollautomatischer Betrieb 24/7</li>
+<li>✅ KI-optimierte Ergebnisse</li>
+<li>✅ DSGVO-konform</li>
+<li>✅ Echtzeit-Analytics Dashboard</li>
+<li>✅ Dedizierter Onboarding Support</li>
+<li>✅ 30-Tage Geld-zurück-Garantie</li>
+      </ul>
     </div>
   </div>
-</main>
-<script>
-const tabs=[...document.querySelectorAll('.tab')];
-const views={overview:'view-overview',pipeline:'view-pipeline',billing:'view-billing',alerts:'view-alerts'};
-tabs.forEach(t=>t.addEventListener('click',()=>{
-  tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
-  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById(views[t.dataset.t]).style.display='block';
-}));
-const lines=['[boot] loading automation graph…','[ok] connectors ready','[ok] scheduler online','[run] pipeline queued','[run] social_proof injected','[ok] demo cycle complete'];
-const log=document.getElementById('pipe-log');
-function typeLines(){
-  log.innerHTML=''; let i=0;
-  const t=setInterval(()=>{
-    if(i>=lines.length){clearInterval(t);return;}
-    const el=document.createElement('div');
-    el.innerHTML=lines[i].includes('[ok]')||lines[i].includes('complete')?'<span class="ok">'+lines[i]+'</span>':lines[i];
-    log.appendChild(el); log.scrollTop=log.scrollHeight; i++;
-  },280);
-}
-document.getElementById('btn-run').onclick=()=>{
-  tabs.forEach(x=>x.classList.remove('active'));
-  tabs.find(x=>x.dataset.t==='pipeline').classList.add('active');
-  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
-  document.getElementById('view-pipeline').style.display='block';
-  typeLines();
-};
-setTimeout(typeLines,400);
-</script>
+</div>
+<div class="cta-section">
+  <h2>Bereit loszulegen?</h2>
+  <p style="color:var(--m);margin-bottom:2rem;">30 Tage Geld-zurück-Garantie. Setup in 30 Minuten.</p>
+  <a href="index.html#preise" class="btn">Jetzt starten →</a>
+</div>
 </body>
 </html>
