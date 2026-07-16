@@ -28,7 +28,7 @@ async def _brutus_fire(message: str, channels: list = None):
     try:
         from modules.brutus_core import BrutusCore
         b = BrutusCore()
-        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "klaviyo"])
     except Exception as _be:
         import logging
         logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
