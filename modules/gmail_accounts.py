@@ -35,6 +35,10 @@ ALIASES: List[Tuple[str, str, int]] = [
 
 _rr_idx = 0
 _GMAIL_DAILY_EXHAUSTED: set = set()  # Session-persistentes Set für 550-5.4.5-Accounts
+_GMAIL_AUTH_FAILED: set = set()  # BadCredentials — bis Restart/Refresh deaktiviert
+
+# Permanently skip accounts known bad until password rotated (env override)
+_DISABLED_ACCOUNTS_ENV = "GMAIL_DISABLED_INDEXES"  # e.g. "4,2"
 
 # ── Globaler Tages-Counter (verhindert 550-Overruns) ─────────────────────────
 import sqlite3 as _sqlite3
@@ -175,12 +179,29 @@ def list_accounts() -> List[GmailAccount]:
     return accounts
 
 
+def _disabled_indexes() -> set[int]:
+    raw = os.getenv(_DISABLED_ACCOUNTS_ENV, "4").strip()  # default: disable #4 looopwave until rotated
+    out: set[int] = set()
+    for part in raw.split(","):
+        part = part.strip()
+        if part.isdigit():
+            out.add(int(part))
+    return out
+
+
 def configured_accounts() -> List[GmailAccount]:
-    return [a for a in list_accounts() if a.configured]
+    disabled = _disabled_indexes()
+    return [
+        a for a in list_accounts()
+        if a.configured
+        and a.index not in disabled
+        and a.email.lower() not in _GMAIL_AUTH_FAILED
+        and a.email not in _GMAIL_DAILY_EXHAUSTED
+    ]
 
 
 def pick_account() -> Optional[GmailAccount]:
-    """Round-Robin über konfigurierte Konten."""
+    """Round-Robin über konfigurierte, nicht-gesperrte Konten."""
     global _rr_idx
     pool = configured_accounts()
     if not pool:
@@ -193,6 +214,8 @@ def pick_account() -> Optional[GmailAccount]:
 def test_smtp(account: GmailAccount, timeout: int = 12) -> Dict[str, Any]:
     if not account.configured:
         return {"ok": False, "email": account.email, "error": "no_password"}
+    if account.index in _disabled_indexes():
+        return {"ok": False, "email": account.email, "error": "disabled_until_password_rotated"}
     try:
         ctx = ssl.create_default_context()
         if account.smtp_port == 465:
@@ -202,7 +225,12 @@ def test_smtp(account: GmailAccount, timeout: int = 12) -> Dict[str, Any]:
             with smtplib.SMTP(account.smtp_host, account.smtp_port, timeout=timeout) as s:
                 s.starttls(context=ctx)
                 s.login(account.email, account.password.replace(" ", ""))
+        _GMAIL_AUTH_FAILED.discard(account.email.lower())
         return {"ok": True, "email": account.email, "host": account.smtp_host}
+    except smtplib.SMTPAuthenticationError as e:
+        _GMAIL_AUTH_FAILED.add(account.email.lower())
+        log.warning("Gmail AUTH failed — disabled for session: %s", account.email)
+        return {"ok": False, "email": account.email, "error": f"auth_failed: {str(e)[:80]}"}
     except Exception as e:
         return {"ok": False, "email": account.email, "error": str(e)[:120]}
 
@@ -289,6 +317,8 @@ def send_email(
         if _is_account_at_limit(acc.email):
             log.warning("SMTP %s Tages-Cap (%d) erreicht — übersprungen", acc.email, MAX_PER_ACCOUNT_PER_DAY)
             continue
+        if acc.email.lower() in _GMAIL_AUTH_FAILED or acc.index in _disabled_indexes():
+            continue
         try:
             msg = _build_message(acc, to_email, subject, body, html=html)
             _smtp_send(acc, msg, to_email)
@@ -296,6 +326,10 @@ def send_email(
             log.info("SMTP → %s via %s (%d/%d heute)", to_email, acc.email,
                      _account_count_today(acc.email), MAX_PER_ACCOUNT_PER_DAY)
             return True, acc.email
+        except smtplib.SMTPAuthenticationError as e:
+            _GMAIL_AUTH_FAILED.add(acc.email.lower())
+            log.warning("SMTP AUTH fail — skip account for session: %s (%s)", acc.email, e)
+            continue
         except smtplib.SMTPDataError as e:
             if e.smtp_code == 550 and b"5.4.5" in (e.smtp_error or b""):
                 _GMAIL_DAILY_EXHAUSTED.add(acc.email)
