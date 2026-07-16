@@ -29,9 +29,27 @@ _DB_PATH = _DATA_DIR / "email_guard.db"
 _DEDUP_HOURS = 48
 
 _NOREPLY_LOCALS = {"noreply", "no-reply", "donotreply", "do-not-reply", "bounce",
-                   "mailer-daemon", "postmaster", "daemon", "bounces"}
+                   "mailer-daemon", "postmaster", "daemon", "bounces", "null", "invalid",
+                   "nobody", "devnull", "abuse", "spam"}
 _DISPOSABLE = {"mailinator.com", "yopmail.com", "guerrillamail.com", "10minutemail.com",
                "tempmail.com", "throwam.com", "maildrop.cc", "spam4.me", "trashmail.com"}
+
+# Hard-block: known dead / test / never-contact domains & addresses
+_DEAD_DOMAINS = {
+    "wirecard.de", "wirecard.com",  # insolvent 2020
+    "example.com", "example.org", "example.net",
+    "test.com", "localhost", "invalid",
+    "supermegabot.com",  # internal test domain → bounces
+    "bullpower.de",      # no MX / test
+}
+_DEAD_EMAILS = {
+    "noreply@supermegabot.com",
+    "info@wirecard.de",
+    "test@bullpower.de",
+    "test@test.com",
+    "null@null.com",
+    "nobody@nowhere.com",
+}
 
 def _init_db():
     _DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -132,13 +150,21 @@ def validate_email(
     if m:
         errors.append(f"Spam/Placeholder im Body: '{m.group()}'")
 
-    # L3: Bounce/Noreply-Schutz
+    # L3: Bounce/Noreply-Schutz + Dead domains
     if to_email and "@" in to_email:
-        local, domain = to_email.lower().split("@", 1)
+        to_l = to_email.lower().strip()
+        local, domain = to_l.split("@", 1)
+        if to_l in _DEAD_EMAILS:
+            errors.append(f"Tote/Test-Adresse blockiert: {to_email}")
         if local in _NOREPLY_LOCALS:
             errors.append(f"Noreply-Adresse blockiert: {to_email}")
         if domain in _DISPOSABLE:
             errors.append(f"Wegwerf-Domain blockiert: {domain}")
+        if domain in _DEAD_DOMAINS:
+            errors.append(f"Tote Domain blockiert: {domain}")
+        # test@* / demo@* on any domain
+        if local in {"test", "testing", "demo", "asdf", "qwerty", "xxx"}:
+            errors.append(f"Test-Localpart blockiert: {to_email}")
 
     # L3b: Bounce-Blocklist-Check
     if to_email:
@@ -148,6 +174,11 @@ def validate_email(
                 errors.append(f"Adresse auf Bounce-Blocklist: {to_email}")
         except Exception:
             pass
+
+    # L3c: Name/None-Anrede schon im Subject/Body (zusätzlich zu _SPAM_PATTERNS)
+    combined = f"{s}\n{b}"
+    if re.search(r"(?i)hallo\s*,?\s*$", s) or re.search(r"(?i)dear\s+none\b", combined):
+        errors.append("Leere/None-Anrede erkannt")
 
     # L4: Duplikat-Check
     if not skip_dedup and to_email:
@@ -162,6 +193,31 @@ def validate_email(
         log.debug("EmailGuard OK: '%s' → %s", subject[:50], to_email)
 
     return len(errors) == 0, errors
+
+
+def require_valid_email(
+    subject: str,
+    body: str,
+    to_email: str = "",
+    skip_dedup: bool = False,
+) -> Tuple[bool, List[str]]:
+    """
+    FAIL-CLOSED wrapper for every outbound send path.
+    Never silently skip the guard — on internal errors, block the send.
+    """
+    try:
+        return validate_email(subject, body, to_email, skip_dedup=skip_dedup)
+    except Exception as exc:
+        log.error("EmailGuard internal error — BLOCKING send to %s: %s", to_email, exc)
+        return False, [f"EmailGuard-Fehler (fail-closed): {exc}"]
+
+
+def register_sent(to: str, subject: str, body: str) -> None:
+    """Call after a successful send so L5 dedup works."""
+    try:
+        _register_sent_db(to, subject, body)
+    except Exception:
+        pass
 
 
 async def validate_email_async(

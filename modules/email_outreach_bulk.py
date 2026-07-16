@@ -666,6 +666,11 @@ def _send_email(sender_idx: int, to_email: str, subject: str, body: str) -> bool
     if not _is_valid_recipient(to_email):
         log.warning(f"Ungültige/Noreply-Adresse übersprungen: {to_email}")
         return False
+    from modules.email_guard import require_valid_email, register_sent
+    ok_g, errs = require_valid_email(subject, body, to_email)
+    if not ok_g:
+        log.warning("EmailGuard blockiert bulk [%s]: %s", to_email, errs)
+        return False
     acct = _GMAIL_ACCOUNTS[sender_idx % len(_GMAIL_ACCOUNTS)]
     if not acct["pass"]:
         log.warning(f"Kein App-Passwort für {acct['user']} — überspringe")
@@ -681,6 +686,7 @@ def _send_email(sender_idx: int, to_email: str, subject: str, body: str) -> bool
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
             s.login(acct["user"], acct["pass"])
             s.sendmail(acct["user"], to_email, msg.as_string())
+        register_sent(to_email, subject, body)
         return True
     except Exception as e:
         log.error(f"SMTP Fehler an {to_email}: {e}")
