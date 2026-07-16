@@ -39,7 +39,7 @@ _DB   = _BASE / "data" / "post_validator.db"
 _DB.parent.mkdir(exist_ok=True)
 
 # ── Konfiguration ─────────────────────────────────────────────────────────────
-MIN_AI_SCORE     = 5     # Minimum KI-Score (1-10) — unter 5 → BLOCK (Groq kann für German B2B-Content variieren)
+MIN_AI_SCORE     = 4     # Minimum KI-Score (1-10) — unter 4 → BLOCK (1-3 = Spam/Fehler, 4+ = zulässig)
 MIN_TEXT_LEN     = 30    # Mindest-Textlänge
 MAX_TEXT_LEN     = 5000  # Maximum
 DEDUP_WINDOW_H   = 24    # Gleicher Text innerhalb 24h → BLOCK
