@@ -18,7 +18,7 @@ SCOPES = "pages_manage_posts,pages_read_engagement,instagram_basic,instagram_con
 
 def get_oauth_url() -> str:
     return (
-        f"https://www.facebook.com/v19.0/dialog/oauth?"
+        f"https://www.facebook.com/v21.0/dialog/oauth?"
         f"client_id={APP_ID}"
         f"&redirect_uri={CALLBACK_URL}"
         f"&scope={SCOPES}"
