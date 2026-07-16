@@ -204,9 +204,9 @@ def _fallback(platform: str, topic: str) -> str:
             f"Jetzt testen: {STRIPE_STARTER}"
         ),
         "hn": (
-            f"Show HN: SuperMegaBot — E-Commerce automation for DACH market\n\n"
-            f"Sends 1k cold B2B emails/day, syncs Shopify, AI phone agent for demos. "
-            f"Context: {topic}"
+            f"KI-Automatisierung für den DACH E-Commerce Markt 2026\n\n"
+            f"1.000 B2B-Emails/Tag, Shopify-Sync, KI-Telefonagent für Demos. "
+            f"Kontext: {topic}"
         ),
     }
     return d.get(platform, d["facebook"])

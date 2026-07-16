@@ -119,16 +119,17 @@ _L1_BLOCKED = [
 ]
 _L1_RE = [re.compile(p, re.IGNORECASE | re.DOTALL) for p in _L1_BLOCKED]
 
-# ── Layer 2: Spam-Phrasen (Nischen-Verstoß) ────────────────────────────────────
+# ── Layer 2: Spam-Phrasen (echte Scam-Inhalte, NICHT Marketing-Phrasen) ─────────
+# WICHTIG: Keine Brand-Namen (bullpower, supermegabot) und keine legitimen
+# Marketing-Phrasen (passives einkommen, finanzielle freiheit) hier eintragen!
+# Diese sind für Rudolf's E-Commerce-Business ERWÜNSCHT.
 _L2_SPAM = [
-    "passives einkommen", "passivem einkommen", "passiven einkommen",
-    "finanzielle freiheit", "reich werden", "schnell geld",
-    "während du schläfst verdient", "vollautomatisches einkommens",
-    "bullpower", "supermegabot", "super mega bot",
     "lorem ipsum", "test content", "sample text",
     "copy paste", "affiliate scam",
     "100% profit", "guaranteed income",
-    "work from home", "pyramid",
+    "pyramid scheme", "pyramid scam",
+    "get rich quick", "overnight millionaire",
+    "make money fast", "easy money online",
 ]
 
 # ── Layer 3: Nischen-Keywords (mindestens 1 STARKES muss vorhanden sein) ───────
