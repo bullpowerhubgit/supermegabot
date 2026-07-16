@@ -105,6 +105,7 @@
 
 | Commit | Datei | Fix |
 |--------|-------|-----|
+| `df9a2f11` | `modules/post_validator.py` | **LinkedIn-Fix ENDGÜLTIG**: L3-Nischen-Check für `platform=="linkedin"` übersprungen — PostGuardian prüft Nische bereits VOR http_guard (Doppelprüfung war zu strikt) |
 | `32807569` | `modules/revenue_engine.py:204` | AttributeError bei HttpGuard — `log.warning("FB: %s", getattr(e, 'message', None) or repr(e))` statt `str(e)` |
 
 Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `self.request_info.real_url` → NoneType-Crash → Railway-Restart. Gefixt + deployed.
