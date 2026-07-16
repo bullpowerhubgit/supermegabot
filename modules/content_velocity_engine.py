@@ -62,11 +62,29 @@ def _title_hash(title: str) -> str:
 
 # ── Trending Topics ───────────────────────────────────────────────────────────
 
+_ECOM_KW = {
+    "shopify", "e-commerce", "ecommerce", "onlineshop", "online shop", "dropshipping",
+    "amazon", "ebay", "etsy", "ki", "künstliche intelligenz", "automatisierung",
+    "automation", "saas", "marketing", "seo", "ads", "conversion", "umsatz", "revenue",
+    "social media", "influencer", "b2b", "startup", "gründung", "handel", "verkauf",
+    "logistik", "klaviyo", "stripe", "affiliate", "digistore", "solar", "gadget", "smart",
+}
+
+_VELOCITY_FALLBACK = [
+    "Shopify Automatisierung DACH 2026 — Was Händler jetzt wissen müssen",
+    "B2B-Leads mit KI: 1.000 Kontakte täglich vollautomatisch",
+    "Klaviyo E-Mail Flows: 30% mehr Umsatz durch Automatisierung",
+    "Social Media auf Autopilot — so posten AIITEC-Kunden ohne Aufwand",
+    "Stripe Zahlungen automatisieren: SaaS skalieren ohne manuellen Aufwand",
+    "Dropshipping 2026: Welche Nischen noch profitabel sind",
+    "AI-Content für Shopify-Shops — so geht SEO jetzt",
+    "LinkedIn B2B Outreach automatisieren: 100 Leads/Tag",
+]
+
 async def _fetch_trending() -> list[str]:
+    import re as _re
     try:
         import aiohttp
-        import re as _re
-        # Google Trends RSS — needs browser-like headers
         url = "https://trends.google.com/trends/trendingsearches/daily/rss?geo=DE"
         headers = {
             "User-Agent": "Mozilla/5.0 (compatible; BullPowerBot/2.0)",
@@ -77,12 +95,10 @@ async def _fetch_trending() -> list[str]:
                              allow_redirects=True) as r:
                 raw = await r.read()
 
-        # Strip BOM + invalid XML chars
         text = raw.decode("utf-8", errors="replace").lstrip("﻿")
         text = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
-        # Google returns HTML when rate-limited — skip HTML responses
         if not text.lstrip().startswith("<rss") and not text.lstrip().startswith("<?xml"):
-            log.warning("Trends: non-XML response (likely rate-limited) — using fallback")
+            log.warning("Trends: non-XML response (rate-limited) — using fallback")
             raise ValueError("non-XML")
 
         root = ET.fromstring(text)
@@ -90,18 +106,20 @@ async def _fetch_trending() -> list[str]:
         for item in root.iter("item"):
             t = item.find("title")
             if t is not None and t.text:
-                topics.append(t.text.strip())
+                title = t.text.strip()
+                # Nur E-Commerce/Business-relevante Trends
+                if any(kw in title.lower() for kw in _ECOM_KW):
+                    topics.append(title)
         if topics:
             return topics[:10]
+        log.info("Trends: keine relevanten E-Commerce-Themen gefunden — Fallback")
     except Exception as e:
         log.warning("Trends fetch error: %s", e)
 
-    # Fallback: curated high-converting topics
-    return [
-        "KI Geld verdienen 2026", "Passives Einkommen sofort",
-        "Shopify Automatisierung Deutschland", "AI Business Tools",
-        "Online Verkaufen ohne Lager", "Dropshipping 2026 Tipps",
-    ]
+    import random
+    pool = _VELOCITY_FALLBACK[:]
+    random.shuffle(pool)
+    return pool[:6]
 
 
 # ── Master Content Generator ──────────────────────────────────────────────────

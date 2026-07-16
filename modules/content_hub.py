@@ -138,7 +138,20 @@ async def _tg(msg: str) -> None:
 
 # ── Auto-post functions ────────────────────────────────────────────────────
 
+def _hub_guard(text: str, platform: str) -> bool:
+    """Inline-Guard: blockiert Off-Topic und fehlende Nischen-Keywords."""
+    try:
+        from modules.post_guardian import validate_post
+        ok, errors = validate_post(text, platform)
+        if not ok:
+            logger.warning("content_hub Guard BLOCK [%s]: %s", platform, errors)
+        return ok
+    except Exception:
+        return True  # Guard nicht verfügbar → durchlassen
+
 async def _post_twitter(text: str) -> bool:
+    if not _hub_guard(text, "twitter"):
+        return False
     if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET]):
         return False
     try:
@@ -173,6 +186,8 @@ async def _post_twitter(text: str) -> bool:
 
 
 async def _post_facebook(text: str) -> bool:
+    if not _hub_guard(text, "facebook"):
+        return False
     if not FACEBOOK_ACCESS_TOKEN or not FACEBOOK_PAGE_ID:
         return False
     try:

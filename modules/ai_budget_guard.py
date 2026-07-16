@@ -57,7 +57,7 @@ PPLX_COST_PER_REQ     = 0.005
 # ── Supabase State (überlebt Neustarts) ───────────────────────────────────────
 _SUPABASE_URL  = os.getenv("SUPABASE_URL", "")
 _SUPABASE_KEY  = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_ANON_KEY", "")
-_TABLE         = "agent_memory"   # existiert bereits in Supabase
+_TABLE         = "agent_memory"   # nutzt agent_role=key, content=value (JSON)
 _PROVIDERS     = ("anthropic", "openai", "perplexity")
 
 # Lokaler Cache — vermeidet DB-Hits bei jedem Token
@@ -122,8 +122,9 @@ def _sb_get(provider: str) -> dict | None:
 
     try:
         key_id = f"ai_budget_{provider}_{_today()}"
+        # agent_memory: agent_role=key, content=JSON-state, type='budget_state'
         url = (f"{_SUPABASE_URL}/rest/v1/{_TABLE}"
-               f"?select=value&key=eq.{key_id}&limit=1")
+               f"?select=content&agent_role=eq.{key_id}&type=eq.budget_state&limit=1")
         req = urllib.request.Request(url, headers={
             "apikey": _SUPABASE_KEY,
             "Authorization": f"Bearer {_SUPABASE_KEY}",
@@ -132,7 +133,7 @@ def _sb_get(provider: str) -> dict | None:
             rows = json.loads(r.read())
             _supabase_reachable = True
             if rows:
-                state = json.loads(rows[0]["value"])
+                state = json.loads(rows[0]["content"])
                 _local_cache[cache_key] = state
                 _cache_ts[cache_key] = now
                 _local_fallback_save(provider, state)  # Backup aktualisieren
@@ -173,22 +174,50 @@ def _sb_save(provider: str, state: dict) -> None:
 
     try:
         key_id = f"ai_budget_{provider}_{_today()}"
-        body = json.dumps({
-            "key": key_id,
-            "value": json.dumps(state),
-            "updated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        }).encode()
-        req = urllib.request.Request(
-            f"{_SUPABASE_URL}/rest/v1/{_TABLE}",
-            data=body,
-            headers={
-                "apikey": _SUPABASE_KEY,
-                "Authorization": f"Bearer {_SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "Prefer": "resolution=merge-duplicates,return=minimal",
-            },
-            method="POST",
-        )
+        content_json = json.dumps(state)
+
+        # Erst prüfen ob Zeile existiert
+        url_check = (f"{_SUPABASE_URL}/rest/v1/{_TABLE}"
+                     f"?select=id&agent_role=eq.{key_id}&type=eq.budget_state&limit=1")
+        req_check = urllib.request.Request(url_check, headers={
+            "apikey": _SUPABASE_KEY,
+            "Authorization": f"Bearer {_SUPABASE_KEY}",
+        })
+        with urllib.request.urlopen(req_check, timeout=5) as r:
+            existing = json.loads(r.read())
+
+        if existing:
+            # PATCH (UPDATE)
+            row_id = existing[0]["id"]
+            body = json.dumps({"content": content_json}).encode()
+            req = urllib.request.Request(
+                f"{_SUPABASE_URL}/rest/v1/{_TABLE}?id=eq.{row_id}",
+                data=body,
+                headers={
+                    "apikey": _SUPABASE_KEY,
+                    "Authorization": f"Bearer {_SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                },
+                method="PATCH",
+            )
+        else:
+            # INSERT
+            body = json.dumps({
+                "agent_role": key_id,
+                "type": "budget_state",
+                "content": content_json,
+            }).encode()
+            req = urllib.request.Request(
+                f"{_SUPABASE_URL}/rest/v1/{_TABLE}",
+                data=body,
+                headers={
+                    "apikey": _SUPABASE_KEY,
+                    "Authorization": f"Bearer {_SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal",
+                },
+                method="POST",
+            )
         with urllib.request.urlopen(req, timeout=5) as r:
             pass
     except Exception as e:
@@ -250,7 +279,7 @@ def is_allowed_pplx(caller: str = "") -> tuple[bool, str]:
 
 def record_usage(input_tokens: int, output_tokens: int, caller: str = "") -> None:
     cost = (input_tokens / 1000 * COST_PER_1K_IN) + (output_tokens / 1000 * COST_PER_1K_OUT)
-    state = _sb_get("anthropic")
+    state = _sb_get("anthropic") or {"date": _today(), "usd_spent": 0.0, "calls": 0}
     state["usd_spent"] = round(state["usd_spent"] + cost, 6)
     state["calls"] = state.get("calls", 0) + 1
     _sb_save("anthropic", state)
@@ -259,32 +288,36 @@ def record_usage(input_tokens: int, output_tokens: int, caller: str = "") -> Non
 
 def record_usage_oai(input_tokens: int, output_tokens: int, caller: str = "") -> None:
     cost = (input_tokens / 1000 * OAI_COST_PER_1K_IN) + (output_tokens / 1000 * OAI_COST_PER_1K_OUT)
-    state = _sb_get("openai")
+    state = _sb_get("openai") or {"date": _today(), "usd_spent": 0.0, "calls": 0}
     state["usd_spent"] = round(state["usd_spent"] + cost, 6)
     state["calls"] = state.get("calls", 0) + 1
     _sb_save("openai", state)
 
 
 def record_usage_pplx(caller: str = "") -> None:
-    state = _sb_get("perplexity")
+    state = _sb_get("perplexity") or {"date": _today(), "usd_spent": 0.0, "calls": 0}
     state["usd_spent"] = round(state["usd_spent"] + PPLX_COST_PER_REQ, 6)
     state["calls"] = state.get("calls", 0) + 1
     _sb_save("perplexity", state)
 
 
 def record_blocked() -> None:
-    state = _sb_get("anthropic")
+    state = _sb_get("anthropic") or {"date": _today(), "usd_spent": 0.0, "blocked": 0}
     state["blocked"] = state.get("blocked", 0) + 1
     _sb_save("anthropic", state)
 
 
+_UNAVAILABLE = {"usd_spent": 999.9, "calls": 0, "blocked": 0}  # Zeigt "Limit erreicht"
+
+
 def get_status() -> dict:
-    ant  = _sb_get("anthropic")
-    oai  = _sb_get("openai")
-    pplx = _sb_get("perplexity")
+    ant  = _sb_get("anthropic")  or _UNAVAILABLE
+    oai  = _sb_get("openai")     or _UNAVAILABLE
+    pplx = _sb_get("perplexity") or _UNAVAILABLE
     return {
         "date": _today(),
         "storage": "supabase" if (_SUPABASE_URL and _SUPABASE_KEY) else "local_file",
+        "supabase_reachable": _supabase_reachable,
         "anthropic": {
             "usd_spent":    ant["usd_spent"],
             "usd_limit":    DAILY_USD_LIMIT,
