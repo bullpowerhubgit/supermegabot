@@ -14092,8 +14092,9 @@ async def check_followup_leads() -> None:
 
     from datetime import datetime, timezone, timedelta
     now = datetime.now(timezone.utc)
-    ts_from = (now - timedelta(hours=25)).isoformat()
-    ts_to   = (now - timedelta(hours=23)).isoformat()
+    # isoformat() gibt "+00:00" zurück — in URL-Query wird "+" als Space interpretiert → "%2B"
+    ts_from = (now - timedelta(hours=25)).isoformat().replace("+00:00", "Z")
+    ts_to   = (now - timedelta(hours=23)).isoformat().replace("+00:00", "Z")
 
     headers = {
         "apikey": auth_key,
