@@ -48,23 +48,12 @@ async def _send_telegram(text: str) -> None:
 
 
 async def _call_claude(prompt: str, max_tokens: int = 1024) -> str:
-    """Call Claude API for agent reasoning."""
-    if not ANTHROPIC_API_KEY:
-        return "[Claude unavailable — no ANTHROPIC_API_KEY]"
+    """Call Claude via ai_client (Budget Guard + Haiku, nicht Sonnet direkt)."""
     try:
-        try:
-            import modules.anthropic_compat as anthropic
-        except ImportError:
-            import anthropic
-        client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
-        msg = await client.messages.create(
-            model="claude-sonnet-4-6",
-            max_tokens=max_tokens,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return msg.content[0].text
+        from modules.ai_client import call_ai
+        return await call_ai(prompt, max_tokens=max_tokens)
     except Exception as e:
-        log.error(f"Claude API error: {e}")
+        log.error("agent_teams _call_claude via ai_client failed: %s", e)
         return f"[Claude error: {e}]"
 
 

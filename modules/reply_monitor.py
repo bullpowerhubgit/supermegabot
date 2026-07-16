@@ -262,16 +262,7 @@ def extract_body(msg) -> str:
 
 # ── Claude Klassifikation ─────────────────────────────────────────────────────
 async def classify_reply(sender: str, subject: str, body: str) -> dict:
-    """Claude Haiku klassifiziert die Email-Antwort."""
-    if not ANTHROPIC_KEY:
-        return {"classification": "UNKNOWN", "product_key": "AI_ACT_REPORT", "reason": "kein API Key"}
-
-    try:
-        import modules.anthropic_compat as anthropic
-    except ImportError:
-        import anthropic
-    client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
-
+    """Claude Haiku klassifiziert die Email-Antwort — via ai_client (Budget Guard)."""
     prompt = f"""Du bist ein Sales-Assistent. Klassifiziere diese Email-Antwort:
 
 Von: {sender}
@@ -287,34 +278,25 @@ Antworte NUR mit JSON (kein Markdown):
   "reason": "1 Satz Erklärung"
 }}
 
-Produktwahl nach Kontext:
-- Erwähnt AI Act / Compliance / EU-KI → AI_ACT_REPORT oder AI_ACT_MONITORING
-- Erwähnt ZVG / Zwangsversteigerung / Immobilien → ZVG_BASIC oder ZVG_PRO
-- Erwähnt Handelsregister / GmbH / Gründung → HR_LEADS
-- Erwähnt Insolvenz / Factoring / Inkasso → INSOLVENZ_DEAL
-
-INTERESTED = DIREKTE persönliche Antwort mit klar positivem Kaufsignal ("ja", "schicken Sie mir", "Angebot annehmen", "wie kann ich kaufen", "Preis nennen"). NUR wenn es eine echte menschliche Antwort ist.
+INTERESTED = DIREKTE persönliche Antwort mit klar positivem Kaufsignal. NUR echte menschliche Antwort.
 QUESTION = Direkte persönliche Nachfrage ohne klares Kaufsignal.
-UNSUBSCRIBE = Abmeldewunsch, "kein Interesse", "bitte keine weiteren Emails".
-NOT_INTERESTED = Ablehnung ODER automatische Email, Newsletter, Sequenz-Email, Marketing-Email.
+UNSUBSCRIBE = Abmeldewunsch, "kein Interesse".
+NOT_INTERESTED = Ablehnung ODER automatische Email, Newsletter, Sequenz-Email.
 OUT_OF_OFFICE = Abwesenheitsnotiz oder Bounce.
 
-KRITISCH: Wenn die Email automatisch aussieht (Newsletter, Sequenz, kein direkter Bezug auf ein Angebot von uns), IMMER NOT_INTERESTED zurückgeben. Im Zweifel NOT_INTERESTED."""
+KRITISCH: Automatisch aussehende Emails → IMMER NOT_INTERESTED. Im Zweifel NOT_INTERESTED."""
 
     err_msg = "API nicht verfügbar"
     try:
-        resp = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=300,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        text = resp.content[0].text.strip()
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if match:
-            return json.loads(match.group())
+        from modules.ai_client import call_ai
+        text = await call_ai(prompt, max_tokens=300)
+        if text and not text.startswith("["):
+            match = re.search(r'\{.*\}', text, re.DOTALL)
+            if match:
+                return json.loads(match.group())
     except Exception as e:
         err_msg = str(e)
-        log.error(f"Claude Klassifikation Fehler: {e}")
+        log.error("classify_reply Fehler: %s", e)
 
     return {"classification": "UNKNOWN", "product_key": "AI_ACT_REPORT", "confidence": 0, "reason": err_msg}
 
