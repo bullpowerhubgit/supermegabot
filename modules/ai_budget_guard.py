@@ -40,10 +40,10 @@ REVENUE_MODULES = frozenset({
 DAILY_USD_LIMIT       = float(os.getenv("ANTHROPIC_DAILY_USD_LIMIT",   "8.0"))
 DAILY_OAI_USD_LIMIT   = float(os.getenv("OPENAI_DAILY_USD_LIMIT",      "8.0"))
 DAILY_PPLX_USD_LIMIT  = float(os.getenv("PERPLEXITY_DAILY_USD_LIMIT",  "5.0"))
-COST_PER_1K_IN        = 0.00025   # Haiku input  $/1K tokens
-COST_PER_1K_OUT       = 0.00125   # Haiku output $/1K tokens
-OAI_COST_PER_1K_IN    = 0.00015   # gpt-4o-mini input  $/1K tokens
-OAI_COST_PER_1K_OUT   = 0.00060   # gpt-4o-mini output $/1K tokens
+COST_PER_1K_IN        = 0.00080   # Haiku 4.5 input  $/1K tokens ($0.80/1M)
+COST_PER_1K_OUT       = 0.00400   # Haiku 4.5 output $/1K tokens ($4.00/1M)
+OAI_COST_PER_1K_IN    = 0.00015   # gpt-4o-mini input  $/1K tokens ($0.15/1M)
+OAI_COST_PER_1K_OUT   = 0.00060   # gpt-4o-mini output $/1K tokens ($0.60/1M)
 PPLX_COST_PER_REQ     = 0.005     # Sonar ~$0.005/Request (online search)
 
 _STATE_FILE      = Path("data/ai_budget_state.json")
