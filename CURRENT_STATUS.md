@@ -1,26 +1,21 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 22:00 UTC (Wave 11 — API Guard + FB v21.0 ÜBERALL)**
+**Stand: 2026-07-16 19:50 UTC (Wave 11 — FB Tokens Railway + Vercel PUBLIC + Infra Everywhere)**
 
-## 🔑 MANUELL ERFORDERLICH — TOTE API KEYS
+## ✅ INFRA EVERYWHERE FIX (2026-07-16) — DAUERHAFT
 
-| Key | Status | Wo erneuern |
-|-----|--------|-------------|
-| **OpenAI** | ❌ HTTP 401 | platform.openai.com → API Keys → Create new |
-| **Perplexity** | ❌ HTTP 401 | perplexity.ai/settings/api → New API Key |
-| **Groq** | ❌ HTTP 403 | console.groq.com → API Keys → Create new |
+| Fix | Status | Detail |
+|-----|--------|--------|
+| **FB_PAGE_TOKEN Railway** | ✅ | war EAAV0ehv… (alt) → jetzt AiiteC EAARagX8… |
+| **INSTAGRAM_TOKEN_AIITEC** | ✅ | war alt → AiiteC Page Token |
+| **12 Token-Aliase** | ✅ | alle = AiiteC Page Token (lokal + Railway) |
+| **MetaTokenResolver** | ✅ | `modules/meta_token_resolver.py` — Startup + CI |
+| **facebook_token_manager** | ✅ | BUGFIX: setzte FACEBOOK_PAGE_TOKEN=IWIN → jetzt AiiteC |
+| **Vercel Protection** | ✅ | **62/62** Projekte sso=None pw=None |
+| **Landing Probe** | ✅ | **12/12** High-Ticket 200 public, keine Login-Wall |
+| **Groq API** | ✅ | models+chat HTTP 200 (Key gsk_Q3Jm… live) |
+| **Script** | ✅ | `python3 scripts/fix_infra_everywhere.py` |
 
-**API Key Monitor läuft jetzt alle 2h** → Telegram-Alert wenn Key stirbt!
-
-## ⚠️ MANUELL ERFORDERLICH — VERCEL LOGIN-WALL
-
-Alle Landing Pages zeigen Vercel Authentication-Wall.
-**Fix:** vercel.com → Jedes Projekt → Settings → Deployment Protection → auf "None" setzen
-Betrifft: bullpower-hub, bullpower-ai, aiitec-all, autoincome-ai, cognitive-symphony,
-creatorai-ultra, creatorstudio-pro, digistore24-suite, gumroad-discord, icomeauto,
-launcher, lead-capture, master-dashboard, shopify-acquisition-engine, shopify-brutal-tuning,
-shopify-suite, steuercockpit, telegram-bot
-
-## ✅ HEUTE GEFIXT (2026-07-16 Wave 11)
+**Nie wieder nur eine Stelle:** Resolver + Token-Manager + Refresher + CI + Railway Sync.
 
 ## ✅ POSTING NEVER-TWICE — DAUERHAFT GESCHLOSSEN (2026-07-16)
 
