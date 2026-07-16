@@ -6815,6 +6815,9 @@ _AUTH_EXEMPT_EXACT = {
     "/api/digistore24/ipn",
     "/api/high-ticket-links",  # public sales catalog — Stripe buy links only
     "/api/money-map",          # public featured offers for affiliates/sales
+    "/api/testimonials",       # public social proof
+    "/api/case-studies",
+    "/api/social-proof",
 }
 
 if not os.getenv("DASHBOARD_SECRET"):
@@ -10293,6 +10296,56 @@ async def handle_money_map(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_testimonials(request: web.Request) -> web.Response:
+    """GET /api/testimonials — rotating autonomous testimonials."""
+    try:
+        from modules.autonomous_social_proof import get_social_proof_bundle
+        folder = request.rel_url.query.get("folder")
+        limit = int(request.rel_url.query.get("limit", "20"))
+        bundle = get_social_proof_bundle(folder=folder, limit_t=limit, limit_c=0)
+        return web.json_response({
+            "ok": True,
+            "count": len(bundle.get("testimonials") or []),
+            "items": bundle.get("testimonials") or [],
+            "folder": folder,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_case_studies(request: web.Request) -> web.Response:
+    """GET /api/case-studies — rotating autonomous case studies."""
+    try:
+        from modules.autonomous_social_proof import get_social_proof_bundle
+        folder = request.rel_url.query.get("folder")
+        limit = int(request.rel_url.query.get("limit", "12"))
+        bundle = get_social_proof_bundle(folder=folder, limit_t=0, limit_c=limit)
+        return web.json_response({
+            "ok": True,
+            "count": len(bundle.get("case_studies") or []),
+            "items": bundle.get("case_studies") or [],
+            "folder": folder,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_social_proof(request: web.Request) -> web.Response:
+    """GET /api/social-proof — testimonials + case studies combined.
+    POST /api/social-proof/run — trigger regenerate+inject (auth via middleware except GET).
+    """
+    try:
+        from modules.autonomous_social_proof import get_social_proof_bundle, run_social_proof_cycle
+        if request.method == "POST":
+            result = await run_social_proof_cycle(post_telegram=True)
+            return web.json_response(result)
+        folder = request.rel_url.query.get("folder")
+        bundle = get_social_proof_bundle(folder=folder)
+        return web.json_response(bundle)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ─── Auto-Sorter Handlers ─────────────────────────────────────────────────────
 
 async def handle_sort_shopify(request: web.Request) -> web.Response:
@@ -11841,6 +11894,10 @@ async def create_app():
     app.router.add_post("/api/stripe/ds24-links",        handle_stripe_ds24_links)
     app.router.add_get( "/api/high-ticket-links",        handle_high_ticket_links)
     app.router.add_get( "/api/money-map",                handle_money_map)
+    app.router.add_get( "/api/testimonials",             handle_testimonials)
+    app.router.add_get( "/api/case-studies",             handle_case_studies)
+    app.router.add_get( "/api/social-proof",             handle_social_proof)
+    app.router.add_post("/api/social-proof/run",         handle_social_proof)
 
     # ── Auto-Sorter ───────────────────────────────────────────────────────────
     app.router.add_post("/api/sort/shopify",             handle_sort_shopify)
