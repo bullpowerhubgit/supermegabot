@@ -1,0 +1,282 @@
+{
+  "account": "bullpowersrtkennels@gmail.com",
+  "account_id": "acct_1Tg1U0RJECiV6vSm",
+  "payment_links_detailed": [
+    {
+      "name": "Shopify Brutal Tuning Starter Monthly",
+      "url": "https://buy.stripe.com/9B65kF0N47XY9MI1Sm4F4358",
+      "eur": 497.0,
+      "interval": "month"
+    },
+    {
+      "name": "CreatorStudio Pro Monthly",
+      "url": "https://buy.stripe.com/7sY5kFfHYdii0c8aoS4F4357",
+      "eur": 19.0,
+      "interval": "month"
+    },
+    {
+      "name": "Freelance Gig Engine Pro",
+      "url": "https://buy.stripe.com/aFa7sN53k2DE3okaoS4F4356",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "AdPoster Engine Access",
+      "url": "https://buy.stripe.com/5kQeVf9jAguu4socx04F4355",
+      "eur": 39.0,
+      "interval": "month"
+    },
+    {
+      "name": "EU Compliance SaaS Pro",
+      "url": "https://buy.stripe.com/bJe4gB0N44LMcYU54y4F4354",
+      "eur": 149.0,
+      "interval": "month"
+    },
+    {
+      "name": "AdPoster Engine Access",
+      "url": "https://buy.stripe.com/14A3cxdzQa669MIdB44F4353",
+      "eur": 39.0,
+      "interval": "month"
+    },
+    {
+      "name": "EU Compliance SaaS Starter",
+      "url": "https://buy.stripe.com/8x2fZj53kemmgb6fJc4F4352",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "EU Compliance SaaS Pro",
+      "url": "https://buy.stripe.com/aFadRbanE5PQ7EA9kO4F4351",
+      "eur": 149.0,
+      "interval": "month"
+    },
+    {
+      "name": "RudiMaster Bot Premium",
+      "url": "https://buy.stripe.com/bJe9AVfHY9220c840u4F4350",
+      "eur": 19.0,
+      "interval": "month"
+    },
+    {
+      "name": "EU Compliance SaaS Starter",
+      "url": "https://buy.stripe.com/9B600l8fwfqq9MI9kO4F434Z",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "Analytics Marketing Pro Monthly",
+      "url": "https://buy.stripe.com/6oUeVf8fw7XYbUQ1Sm4F434Y",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "RudiMaster Bot Premium",
+      "url": "https://buy.stripe.com/14AeVfanE0vw8IEbsW4F434X",
+      "eur": 19.0,
+      "interval": "month"
+    },
+    {
+      "name": "Analytics Marketing Pro",
+      "url": "https://buy.stripe.com/14AaEZanEfqq0c8aoS4F434W",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "Cognitive Symphony Monthly",
+      "url": "https://buy.stripe.com/4gMdRb7bsguu6AwbsW4F434V",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "Cognitive Symphony DS24",
+      "url": "https://buy.stripe.com/14AfZj67odii3ok1Sm4F434U",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "Digistore24 Pro Suite",
+      "url": "https://buy.stripe.com/bJe14pfHY6TUf72cx04F434T",
+      "eur": 39.0,
+      "interval": "month"
+    },
+    {
+      "name": "Digistore24 Pro Suite Monthly",
+      "url": "https://buy.stripe.com/8x28wRdzQ5PQ8IE1Sm4F434S",
+      "eur": 39.0,
+      "interval": "month"
+    },
+    {
+      "name": "E-Commerce Autopilot Stack",
+      "url": "https://buy.stripe.com/7sY6oJ67o1zA7EA68C4F434R",
+      "eur": 149.0,
+      "interval": "month"
+    },
+    {
+      "name": "BullPower Hub Portal",
+      "url": "https://buy.stripe.com/cNi6oJ9jAguubUQ54y4F434Q",
+      "eur": 99.0,
+      "interval": "month"
+    },
+    {
+      "name": "CreatorAI Ultra Agency",
+      "url": "https://buy.stripe.com/14AbJ38fw0vw6Aw2Wq4F434P",
+      "eur": 99.0,
+      "interval": "month"
+    },
+    {
+      "name": "CreatorAI Ultra Pro",
+      "url": "https://buy.stripe.com/fZubJ33ZgdiiaQMfJc4F434O",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "CreatorAI Ultra Creator",
+      "url": "https://buy.stripe.com/7sY00leDU6TUgb6dB44F434N",
+      "eur": 19.0,
+      "interval": "month"
+    },
+    {
+      "name": "SEO Turbo Tools Pro",
+      "url": "https://buy.stripe.com/00w4gBeDU922cYU68C4F434M",
+      "eur": 79.0,
+      "interval": "month"
+    },
+    {
+      "name": "SEO Turbo Tools Starter",
+      "url": "https://buy.stripe.com/eVq8wR8fw1zAgb6eF84F434L",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "Shopify Acquisition Enterprise",
+      "url": "https://buy.stripe.com/dRm9AV9jAemmgb640u4F434K",
+      "eur": 299.0,
+      "interval": "month"
+    },
+    {
+      "name": "Shopify Acquisition Pro",
+      "url": "https://buy.stripe.com/cNi28tdzQ4LMaQM68C4F434J",
+      "eur": 99.0,
+      "interval": "month"
+    },
+    {
+      "name": "Shopify Acquisition Starter",
+      "url": "https://buy.stripe.com/00w9AVdzQemmgb60Oi4F434I",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "iComeAuto Pro",
+      "url": "https://buy.stripe.com/7sYeVfanEdiigb6bsW4F434H",
+      "eur": 79.0,
+      "interval": "month"
+    },
+    {
+      "name": "iComeAuto Starter",
+      "url": "https://buy.stripe.com/00w7sNfHY7XY6Aw2Wq4F434G",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "SteuercockPit Lifetime",
+      "url": "https://buy.stripe.com/fZu4gBcvMcee0c80Oi4F434F",
+      "eur": 149.0,
+      "interval": "one_time"
+    },
+    {
+      "name": "SteuercockPit Pro Monthly",
+      "url": "https://buy.stripe.com/8x200lbrI5PQbUQ8gK4F434E",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "SuperMegaBot Starter",
+      "url": "https://buy.stripe.com/3cIfZjgM26TUgb60Oi4F434D",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "SuperMegaBot Pro",
+      "url": "https://buy.stripe.com/aFa9AVanE0vwe2Y9kO4F434C",
+      "eur": 99.0,
+      "interval": "month"
+    },
+    {
+      "name": "SuperMegaBot Enterprise",
+      "url": "https://buy.stripe.com/aFa9AV1R8baa1gcaoS4F434B",
+      "eur": 299.0,
+      "interval": "month"
+    },
+    {
+      "name": "Shopify Brutal Tuning — Starter",
+      "url": "https://buy.stripe.com/aFa9AV7bsdii5wsdB44F434A",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "Shopify Brutal Tuning — Pro",
+      "url": "https://buy.stripe.com/dRmaEZanEcee9MI68C4F434z",
+      "eur": 59.0,
+      "interval": "month"
+    },
+    {
+      "name": "Shopify Brutal Tuning — Enterprise",
+      "url": "https://buy.stripe.com/cNi9AVeDU1zA5ws1Sm4F434y",
+      "eur": 99.0,
+      "interval": "month"
+    },
+    {
+      "name": "SuperMegaBot Starter",
+      "url": "https://buy.stripe.com/fZu14p8fw3HIe2YdB44F434x",
+      "eur": 49.0,
+      "interval": "month"
+    },
+    {
+      "name": "CreatorAI Ultra — Starter",
+      "url": "https://buy.stripe.com/8x2cN7cvMa669MI0Oi4F434w",
+      "eur": 29.0,
+      "interval": "month"
+    },
+    {
+      "name": "SuperMegaBot Pro",
+      "url": "https://buy.stripe.com/6oU9AV67o6TUgb6aoS4F434v",
+      "eur": 99.0,
+      "interval": "month"
+    }
+  ],
+  "payment_links_count": 100,
+  "products_count": 100,
+  "tweets_sent": [
+    {
+      "status": 201,
+      "id": "2077823270024294862"
+    },
+    {
+      "status": 201,
+      "id": "2077823283961950714"
+    },
+    {
+      "status": 201,
+      "id": "2077823297870340343"
+    },
+    {
+      "status": 201,
+      "id": "2077823311728222480"
+    },
+    {
+      "status": 201,
+      "id": "2077823325707894925"
+    },
+    {
+      "status": 402,
+      "id": null
+    },
+    {
+      "status": 402,
+      "id": null
+    },
+    {
+      "status": 402,
+      "id": null
+    }
+  ]
+}
