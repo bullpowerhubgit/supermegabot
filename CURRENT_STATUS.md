@@ -5,10 +5,14 @@
 
 | # | Problem | Link | Railway Var |
 |---|---------|------|-------------|
-| 1 | **aiitecbuuss@gmail.com App-PW** | accounts.google.com → Sicherheit → App-Passwörter | `GMAIL_APP_PASSWORD_5` |
-| 2 | **Resend API Keys BEIDE ungültig** | resend.com → API Keys → neu generieren | `RESEND_API_KEY` + `RESEND_API_KEY_2` |
-| 3 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings | — |
-| 4 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API → Appeal Draft in Gmail bereit | `PINTEREST_ACCESS_TOKEN` |
+| 1 | **Resend API Keys BEIDE ungültig** | resend.com → API Keys → neu generieren | `RESEND_API_KEY` + `RESEND_API_KEY_2` |
+| 2 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings | — |
+| 3 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API → Appeal Draft in Gmail bereit | `PINTEREST_ACCESS_TOKEN` |
+
+## ✅ HEUTE GELÖST (2026-07-16)
+| Fix | Detail |
+|-----|--------|
+| **aiitecbuuss@gmail.com App-PW** | Neues Passwort gesetzt → SMTP Login ✅ — alle 5 Gmail-Konten wieder aktiv |
 
 ## ✅ FIXES COMMITTED (2026-07-16)
 
