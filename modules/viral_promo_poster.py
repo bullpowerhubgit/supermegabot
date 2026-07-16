@@ -209,6 +209,13 @@ def _fallback_content(platform: str, angle: str, top_products: List[Dict]) -> st
             f"automatisch in Shopify importiert.\n\n"
             f"Alert ab €29/mo 👉 {SUBSCRIBE_URL}")
 
+def _vpp_guard(text: str, platform: str) -> tuple:
+    try:
+        from modules.post_guardian import validate_post
+        return validate_post(text, platform)
+    except Exception:
+        return True, []
+
 # ── Facebook ──────────────────────────────────────────────────────────────────
 
 async def post_facebook_page(text: str) -> Dict:
@@ -221,6 +228,10 @@ async def post_facebook_page(text: str) -> Dict:
 
 
 async def post_facebook_groups(text: str) -> List[Dict]:
+    ok, errs = _vpp_guard(text, "facebook")
+    if not ok:
+        log.warning("VPP FB Groups BLOCK: %s | %s", errs, text[:80])
+        return [{"ok": False, "blocked": True, "errors": errs}]
     token = _fb_user_token()
     if not token:
         return [{"ok": False, "error": "no FB user token"}]
@@ -335,6 +346,10 @@ async def _twitter_cookies_dict() -> Optional[dict]:
     return None
 
 async def post_twitter(text: str) -> Dict:
+    ok, errs = _vpp_guard(text, "twitter")
+    if not ok:
+        log.warning("VPP Twitter BLOCK: %s | %s", errs, text[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     text = text[:280]
     # GraphQL cookie-auth (works on Free tier, no API tier required)
     cookies = await _twitter_cookies_dict()
@@ -451,6 +466,10 @@ async def _reddit_token() -> Optional[str]:
 
 
 async def post_reddit(subreddit: str, title: str, text: str) -> Dict:
+    ok, errs = _vpp_guard(f"{title}\n{text}", "reddit")
+    if not ok:
+        log.warning("VPP Reddit BLOCK r/%s: %s | %s", subreddit, errs, title[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     try:
         from modules.reddit_cookie_poster import submit_post as _rcp_submit
         result = await _rcp_submit(subreddit=subreddit, title=title, text=text)
@@ -461,6 +480,10 @@ async def post_reddit(subreddit: str, title: str, text: str) -> Dict:
 # ── Telegram ──────────────────────────────────────────────────────────────────
 
 async def post_telegram_channels(text: str) -> Dict:
+    ok, errs = _vpp_guard(text, "telegram")
+    if not ok:
+        log.warning("VPP Telegram BLOCK: %s | %s", errs, text[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     token = _tg_token()
     chat  = _tg_chat()
     if not token or not chat:
@@ -480,6 +503,10 @@ async def post_telegram_channels(text: str) -> Dict:
 # ── Instagram Graph API ───────────────────────────────────────────────────────
 
 async def post_instagram(caption: str, image_url: str = "") -> Dict:
+    ok, errs = _vpp_guard(caption, "instagram")
+    if not ok:
+        log.warning("VPP Instagram BLOCK: %s | %s", errs, caption[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     token = _ig_token()
     ig_id = _ig_account_id()
     if not token:
