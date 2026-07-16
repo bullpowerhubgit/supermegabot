@@ -35,12 +35,11 @@ SHOPIFY_PATTERNS = [
 
 # Fallback-Liste bekannter öffentlicher Shopify-Stores (De-anonymisiert, öffentlich)
 SEED_STORES = [
-    "allbirds.com", "gymshark.com", "fashionnova.com", "kyliecosmetics.com",
-    "colourpop.com", "ruggable.com", "mvmt.com", "bombas.com",
-    "chubbies.com", "blendjet.com", "drmartens.com", "shop.lululemon.com",
-    "shop.sonos.com", "teslaMotors.com",
-    # Deutsche Shopify-Stores
-    "aboutyou.de", "babbel.com", "flaschenpost.de",
+    # DACH / erreichbare Stores (keine toten example-shops)
+    "allbirds.com", "gymshark.com", "bombas.com",
+    "blendjet.com", "drmartens.com", "babbel.com",
+    "aboutyou.de", "flaschenpost.de",
+    "ineedit.com.co",
 ]
 
 
@@ -48,7 +47,8 @@ async def discover_shopify_stores(limit: int = 20) -> list:
     """Findet Shopify-Stores via Web-Discovery."""
     stores = set(SEED_STORES[:limit])
     try:
-        async with aiohttp.ClientSession() as session:
+        connector = aiohttp.TCPConnector(ssl=False)
+        async with aiohttp.ClientSession(connector=connector) as session:
             for url in SHOPIFY_DISCOVERY_SOURCES[:2]:
                 try:
                     async with session.get(url, timeout=aiohttp.ClientTimeout(total=10),
@@ -68,7 +68,8 @@ async def discover_shopify_stores(limit: int = 20) -> list:
 async def scan_and_score_leads(stores: list) -> list:
     """Scannt eine Store-Liste und filtert Violation-Leads heraus."""
     qualified = []
-    async with aiohttp.ClientSession() as session:
+    connector = aiohttp.TCPConnector(ssl=False)
+    async with aiohttp.ClientSession(connector=connector) as session:
         tasks = [scan_shopify_store(store, session) for store in stores]
         results = await asyncio.gather(*tasks, return_exceptions=True)
 

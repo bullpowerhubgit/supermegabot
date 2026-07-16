@@ -60,7 +60,18 @@ FB_PAGE  = lambda: _e("FACEBOOK_PAGE_ID", "FACEBOOK_PAGE_ID_AIITEC")
 SHOP_API_DOMAIN = lambda: _e("SHOPIFY_SHOP_DOMAIN")
 SHOP_API_TOKEN  = lambda: _e("SHOPIFY_ADMIN_API_TOKEN", "SHOPIFY_ACCESS_TOKEN")
 SHOP_PUBLIC_URL = "https://ineedit.com.co"
-STRIPE_KEY      = lambda: _e("STRIPE_SECRET_KEY", "STRIPE_SECRET_KEY_AIITEC")
+def _stripe_key_fn() -> str:
+    try:
+        from modules.stripe_key_resolver import get_working_stripe_key
+        k = get_working_stripe_key()
+        if k:
+            return k
+    except Exception:
+        pass
+    return _e("STRIPE_SECRET_KEY", "STRIPE_SECRET_KEY_AIITEC")
+
+
+STRIPE_KEY = _stripe_key_fn
 SUPA_URL        = lambda: _e("SUPABASE_URL")
 SUPA_KEY        = lambda: _e("SUPABASE_SERVICE_KEY", "SUPABASE_ANON_KEY")
 

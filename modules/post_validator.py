@@ -39,7 +39,7 @@ _DB   = _BASE / "data" / "post_validator.db"
 _DB.parent.mkdir(exist_ok=True)
 
 # ── Konfiguration ─────────────────────────────────────────────────────────────
-MIN_AI_SCORE     = 7     # Minimum KI-Score (1-10) — unter 7 → BLOCK
+MIN_AI_SCORE     = 5     # Minimum KI-Score (1-10) — unter 5 → BLOCK (Groq kann für German B2B-Content variieren)
 MIN_TEXT_LEN     = 30    # Mindest-Textlänge
 MAX_TEXT_LEN     = 5000  # Maximum
 DEDUP_WINDOW_H   = 24    # Gleicher Text innerhalb 24h → BLOCK
@@ -463,6 +463,10 @@ async def validate_post(
 
     # ── Layer 4: KI-Qualitäts-Score ──────────────────────────────────────────
     score = await _ai_score(text_clean)
+    # Sicherheitsnetz: score=0 bedeutet API-Ausfall, NICHT schlechten Inhalt
+    if score == 0:
+        score = _keyword_fallback_score(text_clean)
+        log.debug("PostValidator: score=0 → keyword_fallback: %d", score)
     if score < MIN_AI_SCORE:
         reason = f"ki_score_zu_niedrig ({score}/10 < {MIN_AI_SCORE})"
         _remember(reason)

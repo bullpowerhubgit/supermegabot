@@ -377,20 +377,10 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
         log.error("HttpGuard NeverTwice fail-closed: %s", e)
         return False, f"never_twice_error_blocked: {e}"
 
-    # Wenn Text nur URL ist (Extraktion fehlgeschlagen):
-    # Für bekannte Social-Media-POST-Endpoints → DURCHLASSEN (falsch-positiv vermeiden)
-    # Für unbekannte URLs → blockieren
-    if text == url or len(text.strip()) < 15:
-        _SOCIAL_POST_ENDPOINTS = (
-            "graph.facebook.com", "graph.instagram.com",
-            "api.twitter.com", "api.linkedin.com",
-            "api.telegram.org", "api.pinterest.com",
-        )
-        url_str = str(url)
-        if any(ep in url_str for ep in _SOCIAL_POST_ENDPOINTS):
-            log.info("HttpGuard: Text-Extraktion fehlgeschlagen für bekannten Social-Endpoint → ALLOW: %s", url_str[:60])
-            return True, "social_endpoint_extraction_skipped"
-        log.warning("HttpGuard: Text-Extraktion fehlgeschlagen für %s — BLOCK", url_str[:60])
+    # Wenn Text nur URL ist (Extraktion fehlgeschlagen) → BLOCK (fail-closed)
+    # Niemals Social-Posts ohne lesbaren Content durchlassen (LinkedIn-Bug war: nur API-URL)
+    if text == url or len((text or "").strip()) < 15:
+        log.warning("HttpGuard: Text-Extraktion fehlgeschlagen für %s — BLOCK", str(url)[:60])
         return False, "text_extraktion_fehlgeschlagen"
 
     try:
