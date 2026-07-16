@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IcomeAuto OS — Das Income Automation Betriebssystem — alle Revenue-Streams, ein Dashboard</title>
-<meta name="description" content="IcomeAuto OS: Das Income Automation Betriebssystem — alle Revenue-Streams, ein Dashboard. 7 Income Streams in 14 Tagen vollautomatisiert. Jetzt starten ab €497.">
+<meta name="description" content="IcomeAuto OS: Das Income Automation Betriebssystem — alle Revenue-Streams, ein Dashboard. 7 Income Streams in 14 Tagen vollautomatisiert. Jetzt starten ab €997.">
 <meta property="og:title" content="IcomeAuto OS — Das Income Automation Betriebssystem — alle Revenue-Streams, ein Dashboard">
 <meta property="og:description" content="7 Income Streams in 14 Tagen vollautomatisiert">
 <meta property="og:type" content="website">
@@ -198,6 +198,27 @@ footer { background: var(--surface); border-top: 1px solid var(--border); paddin
   .hero { padding: 120px 5% 60px; }
   .ps-grid { grid-template-columns: 1fr; }
 }
+
+/* ── BONUS STACK ── */
+.bonus-stack{display:flex;flex-direction:column;gap:.9rem;margin-bottom:2.5rem;}
+.bonus-item{display:flex;align-items:center;gap:1.25rem;background:rgba(108,99,255,.06);border:1px solid rgba(108,99,255,.2);border-radius:12px;padding:1.1rem 1.5rem;transition:border-color .2s;}
+.bonus-item:hover{border-color:rgba(108,99,255,.45);}
+.bonus-check{width:34px;height:34px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#000;font-weight:900;font-size:.95rem;flex-shrink:0;}
+.bonus-name{font-weight:700;font-size:.95rem;margin-bottom:.25rem;}
+.bonus-strike{color:var(--muted);text-decoration:line-through;font-size:.82rem;}
+.bonus-free{background:linear-gradient(135deg,#00ff88,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:900;font-size:.95rem;margin-left:.6rem;}
+.bonus-total-box{text-align:center;background:rgba(0,255,136,.05);border:2px solid rgba(0,255,136,.25);border-radius:16px;padding:1.5rem;font-size:1rem;color:var(--muted);}
+.bonus-total-box strong{font-size:1.5rem;font-weight:900;color:var(--green);}
+/* ── GUARANTEE SEAL ── */
+.gs-wrap{text-align:center;padding:60px 5%;}
+.gs-flex{display:inline-flex;align-items:center;gap:2rem;background:linear-gradient(135deg,rgba(0,255,136,.06),rgba(0,212,255,.04));border:2px solid rgba(0,255,136,.3);border-radius:24px;padding:2rem 3rem;max-width:700px;}
+@media(max-width:600px){.gs-flex{flex-direction:column;gap:1.25rem;padding:2rem 1.5rem;text-align:center;}}
+.gs-ring{width:120px;height:120px;border-radius:50%;border:4px solid rgba(0,255,136,.5);background:radial-gradient(circle,rgba(0,255,136,.12) 0%,rgba(0,0,0,.3) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;animation:gs-pulse 3s ease-in-out infinite;}
+@keyframes gs-pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,.3);}50%{box-shadow:0 0 0 14px rgba(0,255,136,0);}}
+.gs-days{font-size:2.6rem;font-weight:900;color:var(--green);line-height:1;}
+.gs-tag{font-size:.58rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--green);}
+.gs-copy h3{font-size:1.4rem;font-weight:900;margin-bottom:.5rem;}
+.gs-copy p{color:var(--muted);font-size:.9rem;line-height:1.65;max-width:420px;}
 </style>
 </head>
 <body>
@@ -232,10 +253,10 @@ footer { background: var(--surface); border-top: 1px solid var(--border); paddin
 <!-- STATS BAR -->
 <div class="stats-bar">
   <div class="stats-inner">
-    <div class="stat-item"><div class="stat-num">1.600+</div><div class="stat-label">Nutzer weltweit</div></div>
-<div class="stat-item"><div class="stat-num">7</div><div class="stat-label">Income Streams automatisiert</div></div>
-<div class="stat-item"><div class="stat-num">4x</div><div class="stat-label">Ø Einnahmen-Multiplikator</div></div>
-<div class="stat-item"><div class="stat-num">14 Tage</div><div class="stat-label">bis zum laufenden System</div></div>
+    <div class="stat-item"><div class="stat-num" data-target="1.600+">1.600+</div><div class="stat-label">Nutzer weltweit</div></div>
+<div class="stat-item"><div class="stat-num" data-target="7">7</div><div class="stat-label">Income Streams automatisiert</div></div>
+<div class="stat-item"><div class="stat-num" data-target="4x">4x</div><div class="stat-label">Ø Einnahmen-Multiplikator</div></div>
+<div class="stat-item"><div class="stat-num" data-target="14 Tage">14 Tage</div><div class="stat-label">bis zum laufenden System</div></div>
   </div>
 </div>
 
@@ -653,6 +674,253 @@ function replayDemo(){
 </script>
 <!-- ── HIGH-TICKET INJECTION END ── -->
 
+<!-- ── HT-V2 INJECTION START ── -->
+<style>
+.ht2-section{padding:72px 5%;}
+.ht2-inner{max-width:1100px;margin:0 auto;}
+.ht2-label{font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#00d4ff;margin-bottom:.75rem;}
+.ht2-h2{font-size:clamp(1.6rem,3.5vw,2.4rem);font-weight:900;letter-spacing:-.03em;line-height:1.15;margin-bottom:1.5rem;}
+.ht2-h2 em{font-style:normal;background:linear-gradient(135deg,#6c63ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ht2-faq-item.open .ht2-faq-icon{transform:rotate(45deg);}
+.ht2-faq-item.open .ht2-faq-body{max-height:400px;}
+@keyframes ht2pulse{0%,100%{box-shadow:0 0 0 0 rgba(108,99,255,.4)}50%{box-shadow:0 0 0 14px rgba(108,99,255,0)}}
+</style>
+
+<!-- STATS COUNTER -->
+<section class="ht2-section" id="stats-icomeauto" style="background:linear-gradient(135deg,rgba(108,99,255,.07),rgba(0,212,255,.05));border-top:1px solid var(--border,#1a1a2e);border-bottom:1px solid var(--border,#1a1a2e)">
+  <div class="ht2-inner">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+      
+<div style="text-align:center;padding:1.5rem 1rem">
+  <div style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,#6c63ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"
+       data-cnt-icomeauto="24800.0" data-pfx="€" data-sfx="">€24.800</div>
+  <div style="font-size:.78rem;color:#555577;text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;font-weight:600">Passiveinkommen/Mo</div>
+</div>
+<div style="text-align:center;padding:1.5rem 1rem">
+  <div style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,#6c63ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"
+       data-cnt-icomeauto="5.0" data-pfx="" data-sfx="">5</div>
+  <div style="font-size:.78rem;color:#555577;text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;font-weight:600">Streams aktiv</div>
+</div>
+<div style="text-align:center;padding:1.5rem 1rem">
+  <div style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,#6c63ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"
+       data-cnt-icomeauto="365.0" data-pfx="" data-sfx="">365</div>
+  <div style="font-size:.78rem;color:#555577;text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;font-weight:600">Tage/J Autopilot</div>
+</div>
+<div style="text-align:center;padding:1.5rem 1rem">
+  <div style="font-size:clamp(2rem,5vw,3.2rem);font-weight:900;letter-spacing:-.04em;line-height:1;background:linear-gradient(135deg,#6c63ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"
+       data-cnt-icomeauto="78.0" data-pfx="" data-sfx="x">7.8x</div>
+  <div style="font-size:.78rem;color:#555577;text-transform:uppercase;letter-spacing:.08em;margin-top:.5rem;font-weight:600">ROAS auto-reinvest.</div>
+</div>
+    </div>
+    <div style="text-align:center;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(255,255,255,.06)">
+      <span style="font-size:.78rem;color:#555577;letter-spacing:.06em">Echte Zahlen unserer Kunden · Letzte Aktualisierung: Juli 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- BONUS STACK -->
+<section class="ht2-section" style="background:var(--bg,#0a0a0f)">
+  <div class="ht2-inner">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start">
+      <div>
+        <div class="ht2-label">Exklusive Boni</div>
+        <h2 class="ht2-h2">Alles was du brauchst<br><em>kostenlos dazu</em></h2>
+        <p style="color:#94a3b8;font-size:.95rem;line-height:1.65;margin-bottom:1.5rem">Im Pro &amp; Enterprise Plan bekommst du diese Boni kostenlos dazu. Gesamtwert:</p>
+        <div style="background:rgba(255,215,0,.06);border:1px solid rgba(255,215,0,.2);border-radius:14px;padding:1.25rem;text-align:center;margin-bottom:1.5rem">
+          <div style="font-size:.75rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Bonus-Gesamtwert</div>
+          <div style="font-size:2.6rem;font-weight:900;color:#ffd700;letter-spacing:-.04em">€1.888</div>
+          <div style="font-size:.78rem;color:#94a3b8;margin-top:.25rem">für dich kostenlos im Paket</div>
+        </div>
+        <a href="#preise" style="display:inline-block;padding:.85rem 2rem;background:linear-gradient(135deg,#6c63ff,#5a52e0);color:#fff;border-radius:10px;font-weight:800;font-size:.9rem;text-decoration:none;letter-spacing:.02em">Boni sichern →</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        
+<div style="display:flex;gap:1rem;align-items:flex-start;background:var(--surface2,#0c1220);border:1px solid rgba(108,99,255,.18);border-radius:14px;padding:1.25rem">
+  <div style="min-width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;flex-shrink:0">#1</div>
+  <div style="flex:1">
+    <div style="font-weight:800;font-size:.95rem;margin-bottom:.2rem">Income Stream Analyse</div>
+    <div style="font-size:.8rem;color:#94a3b8;line-height:1.5">Welche 5 Streams zu deinem Business passen</div>
+  </div>
+  <div style="text-align:right;flex-shrink:0">
+    <div style="font-size:.68rem;color:#555577;text-decoration:line-through">€497</div>
+    <div style="font-size:.78rem;font-weight:800;color:#00ff88">GRATIS</div>
+  </div>
+</div>
+<div style="display:flex;gap:1rem;align-items:flex-start;background:var(--surface2,#0c1220);border:1px solid rgba(108,99,255,.18);border-radius:14px;padding:1.25rem">
+  <div style="min-width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;flex-shrink:0">#2</div>
+  <div style="flex:1">
+    <div style="font-weight:800;font-size:.95rem;margin-bottom:.2rem">Reinvestitions-Algorithmus</div>
+    <div style="font-size:.8rem;color:#94a3b8;line-height:1.5">Automatisch Gewinne in die besten Kanäle stecken</div>
+  </div>
+  <div style="text-align:right;flex-shrink:0">
+    <div style="font-size:.68rem;color:#555577;text-decoration:line-through">€397</div>
+    <div style="font-size:.78rem;font-weight:800;color:#00ff88">GRATIS</div>
+  </div>
+</div>
+<div style="display:flex;gap:1rem;align-items:flex-start;background:var(--surface2,#0c1220);border:1px solid rgba(108,99,255,.18);border-radius:14px;padding:1.25rem">
+  <div style="min-width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;flex-shrink:0">#3</div>
+  <div style="flex:1">
+    <div style="font-weight:800;font-size:.95rem;margin-bottom:.2rem">Passive Income Tracking App</div>
+    <div style="font-size:.8rem;color:#94a3b8;line-height:1.5">Alle Einnahmen live in einem Dashboard</div>
+  </div>
+  <div style="text-align:right;flex-shrink:0">
+    <div style="font-size:.68rem;color:#555577;text-decoration:line-through">€197</div>
+    <div style="font-size:.78rem;font-weight:800;color:#00ff88">GRATIS</div>
+  </div>
+</div>
+<div style="display:flex;gap:1rem;align-items:flex-start;background:var(--surface2,#0c1220);border:1px solid rgba(108,99,255,.18);border-radius:14px;padding:1.25rem">
+  <div style="min-width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#6c63ff,#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.9rem;flex-shrink:0">#4</div>
+  <div style="flex:1">
+    <div style="font-weight:800;font-size:.95rem;margin-bottom:.2rem">Skalierungs-Blueprint</div>
+    <div style="font-size:.8rem;color:#94a3b8;line-height:1.5">Von €5k auf €25k/Mo passiv in 12 Monaten</div>
+  </div>
+  <div style="text-align:right;flex-shrink:0">
+    <div style="font-size:.68rem;color:#555577;text-decoration:line-through">€797</div>
+    <div style="font-size:.78rem;font-weight:800;color:#00ff88">GRATIS</div>
+  </div>
+</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GARANTIE BADGE -->
+<section class="ht2-section" style="background:var(--surface,#0f0f1a);border-top:1px solid var(--border,#1a1a2e);border-bottom:1px solid var(--border,#1a1a2e)">
+  <div class="ht2-inner" style="text-align:center">
+    <div style="display:inline-flex;flex-direction:column;align-items:center;gap:1.5rem;max-width:640px">
+      <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,rgba(0,255,136,.12),rgba(0,212,255,.08));border:2px solid rgba(0,255,136,.3);display:flex;align-items:center;justify-content:center;animation:ht2pulse 3s infinite">
+        <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+          <path d="M26 4L8 12v12c0 11.1 7.7 21.5 18 24 10.3-2.5 18-12.9 18-24V12L26 4z" fill="rgba(0,255,136,.15)" stroke="#00ff88" stroke-width="1.5"/>
+          <path d="M18 26l5.5 5.5 10.5-10.5" stroke="#00ff88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="ht2-label" style="text-align:center;color:#00ff88">Risikofreie Investition</div>
+        <h2 style="font-size:clamp(1.8rem,4vw,2.8rem);font-weight:900;letter-spacing:-.03em;line-height:1.15;margin-bottom:.75rem">30 Tage <em style="font-style:normal;color:#00ff88">Geld-zurück-Garantie</em></h2>
+        <p style="color:#94a3b8;font-size:1rem;line-height:1.7;margin-bottom:1.5rem">Teste IcomeAuto 30 Tage lang ohne Risiko. Wenn du nicht 100% zufrieden bist — aus welchem Grund auch immer — bekommst du das volle Geld zurück. Kein Kleingedrucktes. Kein Aufwand. Kein Risiko.</p>
+        <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap">
+          <div style="text-align:center">
+            <div style="font-size:1.6rem;font-weight:900;color:#00ff88">100%</div>
+            <div style="font-size:.72rem;color:#555577;text-transform:uppercase;letter-spacing:.07em">Rückerstattung</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:1.6rem;font-weight:900;color:#00d4ff">0</div>
+            <div style="font-size:.72rem;color:#555577;text-transform:uppercase;letter-spacing:.07em">Fragen gestellt</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:1.6rem;font-weight:900;color:#ffd700">30</div>
+            <div style="font-size:.72rem;color:#555577;text-transform:uppercase;letter-spacing:.07em">Tage Testzeit</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="ht2-section" style="background:var(--bg,#0a0a0f)">
+  <div class="ht2-inner" style="max-width:780px">
+    <div class="ht2-label">Häufige Fragen</div>
+    <h2 class="ht2-h2">Noch offene <em>Fragen?</em></h2>
+    
+<div class="ht2-faq-item" onclick="htFaqToggle(this)" style="border:1px solid rgba(108,99,255,.18);border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:.75rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.25rem;background:var(--surface2,#0c1220)">
+    <span style="font-weight:700;font-size:.9rem;line-height:1.4;padding-right:1rem">Wie viel Startkapital brauche ich?</span>
+    <span class="ht2-faq-icon" style="color:#6c63ff;font-size:1.3rem;font-weight:300;flex-shrink:0;transition:transform .25s">＋</span>
+  </div>
+  <div class="ht2-faq-body" style="max-height:0;overflow:hidden;transition:max-height .3s ease">
+    <div style="padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:#94a3b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.05)">Ab €0. Einige Streams (Affiliate, digitale Produkte) laufen ohne Startkapital. Mit €500+ skaliert es schneller.</div>
+  </div>
+</div>
+<div class="ht2-faq-item" onclick="htFaqToggle(this)" style="border:1px solid rgba(108,99,255,.18);border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:.75rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.25rem;background:var(--surface2,#0c1220)">
+    <span style="font-weight:700;font-size:.9rem;line-height:1.4;padding-right:1rem">Wie passiv ist das wirklich?</span>
+    <span class="ht2-faq-icon" style="color:#6c63ff;font-size:1.3rem;font-weight:300;flex-shrink:0;transition:transform .25s">＋</span>
+  </div>
+  <div class="ht2-faq-body" style="max-height:0;overflow:hidden;transition:max-height .3s ease">
+    <div style="padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:#94a3b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.05)">Nach Setup-Phase (2–4 Wochen): unter 4h/Woche Aufwand. Die meisten Kunden prüfen nur noch wöchentliche Reports.</div>
+  </div>
+</div>
+<div class="ht2-faq-item" onclick="htFaqToggle(this)" style="border:1px solid rgba(108,99,255,.18);border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:.75rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.25rem;background:var(--surface2,#0c1220)">
+    <span style="font-weight:700;font-size:.9rem;line-height:1.4;padding-right:1rem">Was sind die 5 Income-Streams?</span>
+    <span class="ht2-faq-icon" style="color:#6c63ff;font-size:1.3rem;font-weight:300;flex-shrink:0;transition:transform .25s">＋</span>
+  </div>
+  <div class="ht2-faq-body" style="max-height:0;overflow:hidden;transition:max-height .3s ease">
+    <div style="padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:#94a3b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.05)">Digitale Produkte, Affiliate Marketing, KI-Content, Subscription Communities und Investments. Mix je nach Profil.</div>
+  </div>
+</div>
+<div class="ht2-faq-item" onclick="htFaqToggle(this)" style="border:1px solid rgba(108,99,255,.18);border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:.75rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.25rem;background:var(--surface2,#0c1220)">
+    <span style="font-weight:700;font-size:.9rem;line-height:1.4;padding-right:1rem">Was wenn ein Stream nicht mehr funktioniert?</span>
+    <span class="ht2-faq-icon" style="color:#6c63ff;font-size:1.3rem;font-weight:300;flex-shrink:0;transition:transform .25s">＋</span>
+  </div>
+  <div class="ht2-faq-body" style="max-height:0;overflow:hidden;transition:max-height .3s ease">
+    <div style="padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:#94a3b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.05)">Automatische Umverteilung auf bessere Streams. Benachrichtigung per Telegram + Handlungsempfehlung.</div>
+  </div>
+</div>
+<div class="ht2-faq-item" onclick="htFaqToggle(this)" style="border:1px solid rgba(108,99,255,.18);border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:.75rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.25rem;background:var(--surface2,#0c1220)">
+    <span style="font-weight:700;font-size:.9rem;line-height:1.4;padding-right:1rem">Wie schnell kommt Geld rein?</span>
+    <span class="ht2-faq-icon" style="color:#6c63ff;font-size:1.3rem;font-weight:300;flex-shrink:0;transition:transform .25s">＋</span>
+  </div>
+  <div class="ht2-faq-body" style="max-height:0;overflow:hidden;transition:max-height .3s ease">
+    <div style="padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:#94a3b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.05)">Erste Einnahmen typischerweise in Woche 2–3. Vollständiger Ramp-Up in 60–90 Tagen.</div>
+  </div>
+</div>
+<div class="ht2-faq-item" onclick="htFaqToggle(this)" style="border:1px solid rgba(108,99,255,.18);border-radius:12px;overflow:hidden;cursor:pointer;margin-bottom:.75rem">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:1.1rem 1.25rem;background:var(--surface2,#0c1220)">
+    <span style="font-weight:700;font-size:.9rem;line-height:1.4;padding-right:1rem">30-Tage-Garantie?</span>
+    <span class="ht2-faq-icon" style="color:#6c63ff;font-size:1.3rem;font-weight:300;flex-shrink:0;transition:transform .25s">＋</span>
+  </div>
+  <div class="ht2-faq-body" style="max-height:0;overflow:hidden;transition:max-height .3s ease">
+    <div style="padding:1rem 1.25rem 1.25rem;font-size:.85rem;color:#94a3b8;line-height:1.7;border-top:1px solid rgba(255,255,255,.05)">Ja. Wenn du in 30 Tagen keine ersten automatisierten Einnahmen siehst, volles Geld zurück.</div>
+  </div>
+</div>
+    <div style="text-align:center;margin-top:2rem;padding:1.5rem;background:rgba(108,99,255,.06);border:1px solid rgba(108,99,255,.15);border-radius:14px">
+      <p style="color:#94a3b8;font-size:.9rem;margin-bottom:.75rem">Noch eine Frage? Wir antworten innerhalb von 2 Stunden.</p>
+      <a href="https://t.me/bullpowerhub" target="_blank" style="display:inline-block;padding:.7rem 1.75rem;background:#6c63ff;color:#fff;border-radius:10px;font-weight:700;font-size:.85rem;text-decoration:none">Telegram Support →</a>
+    </div>
+  </div>
+</section>
+
+<script>
+function htFaqToggle(el){
+  var isOpen=el.classList.contains('open');
+  document.querySelectorAll('.ht2-faq-item.open').forEach(function(x){x.classList.remove('open');});
+  if(!isOpen) el.classList.add('open');
+}
+</script>
+
+<script>
+(function(){
+  if(window.cntDone_icomeauto) return;
+  window.cntDone_icomeauto=true;
+  var counters=document.querySelectorAll('[data-cnt-icomeauto]');
+  var started=false;
+  function run(){
+    if(started) return; started=true;
+    counters.forEach(function(el){
+      var target=parseFloat(el.getAttribute('data-cnt-icomeauto'))||0;
+      var suffix=el.getAttribute('data-sfx')||'';
+      var prefix=el.getAttribute('data-pfx')||'';
+      var dur=2000, steps=60, step=0;
+      var iv=setInterval(function(){
+        step++;
+        var val=Math.round(target*(step/steps));
+        el.textContent=prefix+(target>1000?val.toLocaleString('de-DE'):val)+suffix;
+        if(step>=steps){ el.textContent=prefix+(target>1000?Math.round(target).toLocaleString('de-DE'):target)+suffix; clearInterval(iv); }
+      },dur/steps);
+    });
+  }
+  var obs=new IntersectionObserver(function(entries){entries.forEach(function(e){if(e.isIntersecting) run();});},{threshold:.3});
+  var sec=document.getElementById('stats-icomeauto');
+  if(sec) obs.observe(sec); else run();
+})();
+</script>
+<!-- ── HT-V2 INJECTION END ── -->
+
+
 <section class="pricing-section" id="preise">
   <div class="section-inner">
     <div class="section-label">Investition</div>
@@ -715,8 +983,22 @@ function replayDemo(){
             <a href="https://buy.stripe.com/3cI6oJcvMdii5ws0Oi4F42uQ" class="tier-cta">Enterprise anfragen</a>
         </div></div>
     </div>
-    <div class="pricing-guarantee">
-      <div class="guarantee-icon">🛡️</div>
+    
+<!-- GUARANTEE BADGE -->
+<div class="gs-wrap">
+  <div class="gs-flex">
+    <div class="gs-ring">
+      <div class="gs-days">30</div>
+      <div class="gs-tag">TAGE</div>
+      <div class="gs-tag" style="font-size:.48rem;margin-top:.1rem;">GARANTIE</div>
+    </div>
+    <div class="gs-copy">
+      <h3>100&nbsp;% Geld-zurück-Garantie</h3>
+      <p>Wenn du nach 30&nbsp;Tagen nicht vollständig zufrieden bist, erstatten wir jeden Cent zurück — ohne Fragen, ohne Bedingungen, ohne Stress. Du trägst null Risiko.</p>
+    </div>
+  </div>
+</div>
+
       <p><strong>30-Tage Geld-zurück-Garantie:</strong> Wenn IcomeAuto OS nicht liefert was wir versprechen, erstattten wir 100% — ohne Fragen, ohne Frist.</p>
     </div>
   </div>
@@ -792,7 +1074,7 @@ function replayDemo(){
     <div class="urgency">⚡ Nur noch 12 Gründungsmitglieder-Plätze zu diesem Preis verfügbar</div>
     <br><br>
     <div class="hero-ctas" style="justify-content:center;">
-      <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" class="btn-primary">Jetzt starten — ab €497 →</a>
+      <a href="https://buy.stripe.com/dRm7sN2Vcfqqe2Y2Wq4F42uF" class="btn-primary">Jetzt starten — ab €997 →</a>
       <a href="demo.html" class="btn-secondary">Demo ansehen</a>
     </div>
     <p style="color:var(--muted);margin-top:1.5rem;font-size:0.9rem;">✓ 30-Tage Geld-zurück · ✓ Monatlich kündbar · ✓ Setup in 30 Min · ✓ DSGVO-konform</p>
