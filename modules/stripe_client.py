@@ -23,11 +23,10 @@ STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 
 _STRIPE_KEY_NAMES = (
-    "STRIPE_SECRET_KEY",              # Main — primär (funktioniert)
-    "STRIPE_SECRET_KEY_AIITEC",       # oft 401 → auto-skip via probe
+    "STRIPE_SECRET_KEY",              # bullpowersrtkennels@gmail.com — IMMER diese!
     "STRIPE_TEST_SECRET_KEY",
-    "STRIPE_TEST_SECRET_KEY_AIITEC",
     "STRIPE_API_KEY",
+    # STRIPE_SECRET_KEY_AIITEC ENTFERNT — 401, falsches Konto
 )
 
 

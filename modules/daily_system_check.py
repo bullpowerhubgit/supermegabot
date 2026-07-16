@@ -179,7 +179,7 @@ async def check_facebook() -> CheckResult:
 
 # ── 5. Stripe Live ────────────────────────────────────────────────────────────
 async def check_stripe() -> CheckResult:
-    key = _env("STRIPE_SECRET_KEY", "STRIPE_SECRET_KEY_AIITEC")
+    key = _env("STRIPE_SECRET_KEY")
     if not key or not key.startswith("sk_live_"):
         return CheckResult("Stripe Live", False,
             "Kein Live-Key (sk_live_...) gesetzt", needs_manual=True)
