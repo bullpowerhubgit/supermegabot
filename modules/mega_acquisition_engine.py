@@ -779,6 +779,9 @@ async def _send_one(lead: Dict, template: str = "shop_promo",
     email = lead.get("email","")
     if not email or not _is_valid_email(email):
         return False
+    raw_name = lead.get("name") or ""
+    if str(raw_name).strip() in ("None", "none", "null", "N/A"):
+        lead = {**lead, "name": ""}  # blank → template uses fallback
 
     niche = lead.get("niche","shop")
     if template == "auto":
