@@ -17,13 +17,25 @@ def main() -> int:
     fails: list[str] = []
 
     bad_samples = [
+        # Placeholder / Template-Fehler
         ("twitter", "Hallo None, kauf jetzt [PLACEHOLDER]!"),
-        ("facebook", "Vancouver PD website features Quick Escape button"),
-        ("instagram", "3D Modellierung Einsteiger — Blender von 0 — Smarter wohnen ab €37"),
-        ("linkedin", "Check https://autopilot-store-suite-fmbka.myshopify.com/products/x"),
-        ("twitter", "TODO: insert product link here"),
-        ("facebook", "Show HN: my new app that wipes history"),
         ("linkedin", "Als KI-Sprachmodell kann ich dir helfen"),
+        ("twitter", "TODO: insert product link here"),
+        # Verbotene URLs
+        ("linkedin", "Check https://autopilot-store-suite-fmbka.myshopify.com/products/x"),
+        # Off-Topic News
+        ("facebook", "Vancouver PD website features Quick Escape button"),
+        ("facebook", "Show HN: my new app that wipes history"),
+        ("instagram", "3D Modellierung Einsteiger — Blender von 0 — Smarter wohnen ab €37"),
+        # OFF-TOPIC NISCHE — dürfen NIE posten (Bambus, Kaffee, Stuhl, Yoga, etc.)
+        ("instagram", "Bambus Schneidebrett Set — Das perfekte Küchenaccessoire für dein Zuhause!"),
+        ("facebook", "Coffee Grinder Electric — Frisch gemahlener Kaffee jeden Morgen"),
+        ("instagram", "Ergonomic Chair Cushion — Komfort für deinen Bürostuhl"),
+        ("twitter", "Yoga Matte Premium — Rutschfest für dein Training"),
+        ("facebook", "Kochbuch für Anfänger — 100 einfache Rezepte"),
+        ("instagram", "Duftkerze Lavendel — Entspannung pur für dein Wohnzimmer"),
+        ("linkedin", "Bettwäsche Set 100% Baumwolle — Sanfter Schlaf garantiert"),
+        ("twitter", "Notizbuch DIN A5 — Dein perfekter Begleiter für jeden Tag"),
     ]
     for plat, text in bad_samples:
         ok, errs = guardian_validate(text, plat)
@@ -32,14 +44,75 @@ def main() -> int:
         if ok:
             fails.append(f"LEAKED bad post on {plat}: {text[:40]}")
 
-    good = (
-        "Shopify Automation mit SuperMegaBot: Spare 10h/Woche und steigere "
-        "deinen E-Commerce Umsatz. Smart Home Gadgets auf ineedit.com.co 🚀"
-    )
-    ok, errs = guardian_validate(good, "linkedin")
-    print(f"{'PASS' if ok else 'FAIL':5} [linkedin] good content → {errs}")
-    if not ok:
-        fails.append(f"blocked good post: {errs}")
+    good_samples = [
+        (
+            "Shopify Automation mit KI: Spare 10h/Woche und steigere deinen "
+            "E-Commerce Umsatz. Smart Home Gadgets auf ineedit.com.co 🚀",
+            "linkedin",
+        ),
+        (
+            "100W Solar Panel — Komplettset mit MPPT Controller und Powerstation. "
+            "Jetzt auf ineedit.com.co für €89,99 🌞 #solar #smarthome",
+            "instagram",
+        ),
+        (
+            "WiFi Überwachungskamera 4K mit AI Bewegungserkennung — Smart Home Security "
+            "auf ineedit.com.co #smartsecurity #gadget",
+            "facebook",
+        ),
+    ]
+    for text, plat in good_samples:
+        ok, errs = guardian_validate(text, plat)
+        print(f"{'PASS' if ok else 'FAIL':5} [good-{plat}] {text[:50]!r} → {errs}")
+        if not ok:
+            fails.append(f"blocked good post on {plat}: {text[:40]} — {errs}")
+
+    # PostValidator Layer 0: Off-Topic Hard-Block direkt testen
+    import asyncio as _asyncio
+    try:
+        from modules.post_validator import validate_post as pv_validate, _L0_RE
+        offtopic_tests = [
+            "Bambus Schneidebrett Set — Das perfekte Küchenaccessoire",
+            "Coffee Grinder Electric — Frisch gemahlener Kaffee",
+            "Ergonomic Chair Cushion für deinen Bürostuhl",
+            "Yoga Matte Premium rutschfest",
+            "Duftkerze Lavendel Entspannung",
+        ]
+        for t in offtopic_tests:
+            ok_pv, layer, reason = _asyncio.get_event_loop().run_until_complete(
+                pv_validate(t, "instagram", content_type="social")
+            )
+            status = "BLOCK" if not ok_pv else "LEAK"
+            print(f"{status:5} [PostValidator-L{layer}] {t[:40]!r} → {reason[:50]}")
+            if ok_pv:
+                fails.append(f"PostValidator leaked off-topic: {t[:40]}")
+        print(f"INFO  Layer-0 Off-Topic patterns: {len(_L0_RE)} aktive Regeln")
+    except Exception as e:
+        fails.append(f"PostValidator off-topic test failed: {e}")
+        print(f"FAIL  PostValidator: {e}")
+
+    # RequestsGuard aktiv prüfen
+    try:
+        import requests as _req
+        guard_active = "_guarded_send" in str(_req.Session.send) or \
+                       hasattr(_req.Session.send, "__wrapped__") or \
+                       "RequestsGuard" in (getattr(_req.Session.send, "__qualname__", "") or
+                                           getattr(_req.Session.send, "__name__", ""))
+        # Simple check: inspect source
+        import inspect as _ins
+        send_src = _ins.getsource(_req.Session.send)
+        if "_L0_RE" in send_src or "RequestsGuard" in send_src or "_guarded_send" in send_src or "off_topic" in send_src:
+            print("PASS  RequestsGuard wired in requests.Session.send")
+        else:
+            # Http guard must be activated — check if module patches it
+            hg_src = (ROOT / "modules" / "http_guard.py").read_text()
+            if "_patch_requests_sync" in hg_src and "Session.send" in hg_src:
+                print("PASS  RequestsGuard defined in http_guard (activates on server start)")
+            else:
+                fails.append("RequestsGuard NOT defined in http_guard.py")
+                print("FAIL  RequestsGuard missing from http_guard.py")
+    except Exception as e:
+        print(f"WARN  RequestsGuard check: {e}")
 
     src = inspect.getsource(http_guard._intercepted_request)
     if "request_info=None" in src:

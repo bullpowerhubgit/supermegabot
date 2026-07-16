@@ -131,23 +131,51 @@ _L2_SPAM = [
     "work from home", "pyramid",
 ]
 
-# ── Layer 3: Nischen-Keywords (mindestens 1 muss vorhanden sein) ───────────────
+# ── Layer 3: Nischen-Keywords (mindestens 1 STARKES muss vorhanden sein) ───────
+# WICHTIG: Nur echte Tech/Smart/Digital-Keywords. Keine generischen Wörter.
+# Removed: "home", "product", "shop", "energy", "power", "efficiency",
+#          "innovative", "kaufen", "produkt", "sale", "deal", "service",
+#          "lösung", "kunde", "content", "instagram", "facebook" etc.
+#          — diese sind zu generisch und lassen Off-Topic-Posts durch.
 _L3_NICHE = [
-    "smart", "tech", "ki", "ai", "solar", "automatisierung", "automation",
-    "shopify", "e-commerce", "digital", "gadget", "robot", "sensor",
-    "wlan", "wifi", "app", "smart home", "e-bike", "powerstation",
-    "online", "shop", "umsatz", "revenue", "business", "marketing",
-    "led", "bluetooth", "usb", "akku", "energie", "kamera", "sicherheit",
-    "steckdose", "thermostat", "heizung", "produkt", "sale", "deal",
-    "kaufen", "ineedit", "aiitec", "amazon", "aliexpress", "ebay",
-    "saas", "software", "tool", "platform", "service", "lösung",
-    "lead", "kunde", "conversion", "traffic", "seo", "content",
-    "digistore", "ds24", "affiliate", "gumroad", "stripe", "payment",
-    "instagram", "facebook", "twitter", "linkedin", "pinterest", "tiktok",
-    "youtube", "telegram", "discord", "reddit",
-    # Englisch erlaubt für internationale Plattformen
-    "home", "technology", "product", "smart device", "gadget", "shop",
-    "energy", "power", "efficiency", "innovative",
+    # Direkte Tech/Smart-Produktkategorien
+    "smart home", "smart device", "smart watch", "smart speaker",
+    "e-bike", "e-scooter", "e-roller",
+    "powerstation", "solar panel", "balkonkraftwerk", "photovoltaik",
+    "wlan-kamera", "wifi-kamera", "überwachungskamera", "dashcam",
+    # Technologie-Begriffe
+    "solar", "photovoltaik", "wlan", "wifi", "bluetooth", "zigbee", "zwave",
+    "led", "rgb", "akku", "lithium", "powerbank",
+    "sensor", "detektor", "alarm", "kamera",
+    "robot", "roboter", "drohne", "drone",
+    "3d-druck", "3d printer", "laser cutter", "cnc",
+    "raspberry pi", "arduino", "microcontroller",
+    # Digitale Business-Begriffe (nur spezifische)
+    "shopify", "e-commerce", "ecommerce",
+    "saas", "software", "automation", "automatisierung",
+    "ai", "ki", "künstliche intelligenz", "artificial intelligence",
+    "machine learning", "chatgpt", "claude", "openai",
+    "api", "webhook", "workflow",
+    "digistore", "ds24", "affiliate",
+    "gumroad", "stripe", "paypal",
+    "seo", "conversion", "cpc", "cpm",
+    "ineedit", "aiitec",
+    # Spezifische Produkttypen die in Nische passen
+    "gadget", "tech", "technologie", "elektronik",
+    "steckdose", "thermostat", "heizung", "klimaanlage",
+    "usb", "hdmi", "lan", "ethernet",
+    "netzwerk", "router", "switch",
+    "powerstrip", "verlängerungskabel",
+    "ladegerät", "charger", "netzteil",
+    "mikrofon", "lautsprecher", "kopfhörer",
+    "projektor", "beamer",
+    # Automotive Tech
+    "obd", "can-bus", "fahrzeugdiagnose",
+    "reifendruckmonitor", "tpms",
+    # Digital Marketing spezifisch
+    "traffic", "lead", "funnel", "upsell",
+    "klaviyo", "mailchimp", "sendgrid",
+    "telegram", "discord",
 ]
 _L3_RE = [re.compile(r"\b" + re.escape(kw) + r"\b", re.IGNORECASE) for kw in _L3_NICHE]
 
@@ -349,6 +377,14 @@ async def validate_post(
             return False, 0, f"never_twice: {nt_errs[0] if nt_errs else 'blocked'}"
     except Exception as e:
         return False, 0, f"never_twice_error_blocked: {e}"
+
+    # ── Layer 0: Off-Topic Hard-Block (schnellste Prüfung, vor allem) ───────────
+    if content_type == "social":
+        for rx in _L0_RE:
+            if rx.search(text):
+                reason = f"off_topic_nische: {rx.pattern[:50]}"
+                await _notify_telegram(text, platform, 0, reason)
+                return False, 0, reason
 
     # ── Layer 1: Basis-Sanity ────────────────────────────────────────────────
     if not text or not text.strip():

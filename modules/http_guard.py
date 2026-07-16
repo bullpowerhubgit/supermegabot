@@ -432,6 +432,71 @@ def _patch_urllib_telegram() -> None:
     _urllib.urlopen = _guarded_urlopen
 
 
+def _patch_requests_sync() -> None:
+    """
+    Patcht die sync `requests`-Library um Off-Topic + Placeholder Posts zu blockieren.
+    Kein AI-Score (sync), aber Layer 0 (off-topic) + Layer 1 (placeholder) laufen.
+    """
+    try:
+        import requests as _req
+        from modules.post_validator import _L0_RE, _L1_RE, _L2_SPAM
+        _orig_send = _req.Session.send
+
+        def _guarded_send(self, prepared, **kwargs):
+            url = str(prepared.url or "")
+            method = str(prepared.method or "").upper()
+            if method == "POST":
+                is_social = any(p.search(url) for p in _SOCIAL_POST_PATTERNS)
+                if is_social:
+                    # Extrahiere Text aus Body
+                    body_text = ""
+                    if prepared.body:
+                        try:
+                            bd = json.loads(prepared.body) if isinstance(prepared.body, (bytes, str)) else {}
+                            body_text = str(bd.get("message") or bd.get("caption") or
+                                           bd.get("text") or bd.get("commentary") or
+                                           bd.get("note") or bd.get("title") or "")
+                        except Exception:
+                            body_text = str(prepared.body)[:500]
+
+                    if body_text and len(body_text) > 10:
+                        # Layer 0: Off-Topic
+                        for rx in _L0_RE:
+                            if rx.search(body_text):
+                                platform = _url_to_platform(url)
+                                log.warning("RequestsGuard BLOCK off_topic [%s]: %s", platform, rx.pattern[:40])
+                                try:
+                                    from modules.post_never_twice import remember_block
+                                    remember_block(body_text, platform, [f"off_topic:{rx.pattern[:30]}"], source_module="requests_guard")
+                                except Exception:
+                                    pass
+                                raise _req.exceptions.ConnectionError(f"RequestsGuard: off_topic blocked ({rx.pattern[:30]})")
+
+                        # Layer 1: Placeholder
+                        for rx in _L1_RE:
+                            if rx.search(body_text):
+                                platform = _url_to_platform(url)
+                                log.warning("RequestsGuard BLOCK placeholder [%s]: %s", platform, rx.pattern[:40])
+                                raise _req.exceptions.ConnectionError(f"RequestsGuard: placeholder blocked ({rx.pattern[:30]})")
+
+                        # Layer 2: Spam-Phrasen
+                        text_lower = body_text.lower()
+                        for phrase in _L2_SPAM:
+                            if phrase in text_lower:
+                                platform = _url_to_platform(url)
+                                log.warning("RequestsGuard BLOCK spam [%s]: %s", platform, phrase)
+                                raise _req.exceptions.ConnectionError(f"RequestsGuard: spam blocked ({phrase})")
+
+            return _orig_send(self, prepared, **kwargs)
+
+        _req.Session.send = _guarded_send
+        log.info("RequestsGuard AKTIV — sync requests.post ebenfalls überwacht")
+    except ImportError:
+        log.debug("requests-Library nicht installiert — RequestsGuard übersprungen")
+    except Exception as e:
+        log.warning("RequestsGuard patch fehlgeschlagen (non-fatal): %s", e)
+
+
 def activate() -> None:
     """Aktiviert den HTTP-Guard. Einmalig beim Server-Start aufrufen."""
     global _ACTIVATED
@@ -439,6 +504,7 @@ def activate() -> None:
         return
     ClientSession._request = _intercepted_request
     _patch_urllib_telegram()
+    _patch_requests_sync()
     # Stripe process-guards (urllib + stats) — aiohttp läuft bereits über uns
     try:
         from modules.stripe_guards import install_process_guards, self_check
