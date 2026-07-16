@@ -1177,8 +1177,17 @@ def _send_via_gmail_pool(to: str, subject: str, body: str) -> bool:
     return False
 
 
+_OWN_EMAILS = {
+    "aiitecbuuss@gmail.com", "bullpowersrtkennels@gmail.com",
+    "dragonadnp@gmail.com", "rudolf.sarkany.aiitec@gmail.com",
+    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com", "looopwave@gmail.com",
+}
+
 def _send_email(to: str, subject: str, body: str) -> bool:
     """Sendet Email: SendGrid primary (beste IP-Reputation) → Gmail-Pool Fallback."""
+    if to.lower() in _OWN_EMAILS:
+        log.warning("Eigene Adresse übersprungen: %s", to)
+        return False
     _reset_smtp_if_new_day()
 
     # 1. SendGrid primary — beste Zustellrate bei Enterprise-Servern

@@ -635,7 +635,16 @@ def _build_email_body(company: dict) -> Tuple[str, str]:
     return subject, body
 
 
+_OWN_EMAILS = {
+    "aiitecbuuss@gmail.com", "bullpowersrtkennels@gmail.com",
+    "dragonadnp@gmail.com", "rudolf.sarkany.aiitec@gmail.com",
+    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com", "looopwave@gmail.com",
+}
+
 def _send_email(sender_idx: int, to_email: str, subject: str, body: str) -> bool:
+    if to_email.lower() in _OWN_EMAILS:
+        log.warning(f"Eigene Adresse übersprungen: {to_email}")
+        return False
     acct = _GMAIL_ACCOUNTS[sender_idx % len(_GMAIL_ACCOUNTS)]
     if not acct["pass"]:
         log.warning(f"Kein App-Passwort für {acct['user']} — überspringe")
