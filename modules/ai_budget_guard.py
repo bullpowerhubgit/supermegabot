@@ -67,6 +67,8 @@ REVENUE_MODULES = frozenset({
     # Email & Reply-Klassifikation → Revenue
     "reply_monitor",
     "agent_teams",
+    # Traffic & Conversion
+    "traffic_maximizer",
 })
 
 # ── Tagesbudget — KONSERVATIV nach Credit-Verlust ──────────────────────────────

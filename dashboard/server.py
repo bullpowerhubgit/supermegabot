@@ -11158,12 +11158,16 @@ async def create_app():
     except Exception as _hg_err:
         log.warning("HttpGuard konnte nicht aktiviert werden: %s", _hg_err)
 
-    # NeverTwice — Legacy-Blocks aus post_gateway.db + post_guardian.db importieren
+    # NeverTwice — Legacy-Blocks importieren + transiente False-Positives bereinigen
     try:
-        from modules.post_never_twice import import_legacy_blocks, init_db
+        from modules.post_never_twice import import_legacy_blocks, init_db, purge_transient_blacklist
         init_db()
         r = import_legacy_blocks()
-        log.info("NeverTwice init: %d Legacy-Blocks importiert", r.get("imported", 0))
+        p = purge_transient_blacklist()
+        log.info(
+            "NeverTwice init: %d Legacy-Blocks importiert, %d transiente False-Positives bereinigt",
+            r.get("imported", 0), p.get("purged", 0),
+        )
     except Exception as _nt_err:
         log.warning("NeverTwice init: %s", _nt_err)
 

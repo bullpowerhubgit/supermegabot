@@ -229,6 +229,28 @@ def _sanitize_reason(r: str) -> str:
     return r[:120]
 
 
+_TRANSIENT_REASONS = frozenset({
+    "duplikat_innerhalb_24h",
+    "bereits_blockiert",
+    "text_extraktion_fehlgeschlagen",
+    "rate_limit",
+    "api_error",
+    "429",
+    "401",
+    "503",
+})
+
+
+def _is_transient(reasons: List[str]) -> bool:
+    """True wenn ALLE Gründe temporärer Natur sind — nicht permanent blacklisten."""
+    if not reasons:
+        return False
+    return all(
+        any(t in r.lower() for t in _TRANSIENT_REASONS)
+        for r in reasons
+    )
+
+
 def remember_block(
     text: str,
     platform: str,
@@ -238,6 +260,9 @@ def remember_block(
 ) -> dict:
     """
     Persist a block/fail so it can never succeed again.
+    Transiente Fehler (Duplikat-24h, Rate-Limit, bereits_blockiert) werden
+    NUR als Event gespeichert, NICHT in content_blacklist — sonst würde
+    content der nach 24h wieder gepostet werden darf, permanent verbannt.
     After 2 hits of same fingerprint → promote permanent rule if mappable.
     """
     init_db()
@@ -255,21 +280,22 @@ def remember_block(
                VALUES(?,?,?,?,?,?,?,?)""",
             (kind, platform, ch, fp, reason_s, preview, source_module, now),
         )
-        # content blacklist
-        existing = c.execute(
-            "SELECT hits FROM content_blacklist WHERE content_hash=?", (ch,)
-        ).fetchone()
-        if existing:
-            c.execute(
-                "UPDATE content_blacklist SET hits=hits+1, reason=? WHERE content_hash=?",
-                (reason_s, ch),
-            )
-        else:
-            c.execute(
-                """INSERT INTO content_blacklist(content_hash,platform,reason,first_seen,hits)
-                   VALUES(?,?,?,?,1)""",
-                (ch, platform, reason_s, now),
-            )
+        # content blacklist — NUR für dauerhafte Content-Qualitätsfehler
+        if not _is_transient(reasons):
+            existing = c.execute(
+                "SELECT hits FROM content_blacklist WHERE content_hash=?", (ch,)
+            ).fetchone()
+            if existing:
+                c.execute(
+                    "UPDATE content_blacklist SET hits=hits+1, reason=? WHERE content_hash=?",
+                    (reason_s, ch),
+                )
+            else:
+                c.execute(
+                    """INSERT INTO content_blacklist(content_hash,platform,reason,first_seen,hits)
+                       VALUES(?,?,?,?,1)""",
+                    (ch, platform, reason_s, now),
+                )
         # error class counter
         row = c.execute(
             "SELECT hits, promoted FROM error_classes WHERE fingerprint=?", (fp,)
@@ -390,6 +416,22 @@ def stats() -> dict:
                 ).fetchall()
             ],
         }
+
+
+def purge_transient_blacklist() -> dict:
+    """Entfernt alle content_blacklist-Einträge mit transienten Gründen
+    (duplikat_innerhalb_24h, bereits_blockiert, text_extraktion, rate_limit, api_error).
+    Diese wurden früher fälschlich permanent gespeichert — sind aber kein echter Content-Fehler.
+    """
+    init_db()
+    patterns = [f"%{t}%" for t in _TRANSIENT_REASONS]
+    deleted = 0
+    with _conn() as c:
+        for p in patterns:
+            result = c.execute("DELETE FROM content_blacklist WHERE reason LIKE ?", (p,))
+            deleted += result.rowcount
+    log.info("purge_transient_blacklist: %d Einträge entfernt", deleted)
+    return {"purged": deleted}
 
 
 def self_check() -> dict:
