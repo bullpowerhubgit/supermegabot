@@ -45,7 +45,7 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 | Anthropic API | ✅ OK | claude-haiku-4-5-20251001 antwortet |
 | OpenAI API | ✅ OK | 123 Modelle verfügbar |
 | Resend | ✅ OK | `re_XRHYX...` → HTTP 200 live ✅ |
-| Facebook | ⚠️ Rate Limit | Reset 17.07 ~06:00 |
+| Facebook | ✅ OK | Long-Lived Token (NEVER), 10 Ads AKTIV, €10/Tag DE/AT/CH |
 | Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
 | Pinterest | ❌ API ABGELEHNT | Email 07.07 bestätigt — Appeal + neuer Token nötig |
 
