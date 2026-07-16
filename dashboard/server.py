@@ -10175,7 +10175,7 @@ async def handle_stripe_ds24_links(request: web.Request) -> web.Response:
 
 
 async def handle_high_ticket_links(request: web.Request) -> web.Response:
-    """GET /api/high-ticket-links — Alle High-Ticket Payment Links (€497–€4997)."""
+    """GET /api/high-ticket-links — Alle High-Ticket Payment Links (€297–€4997)."""
     links = {
         "kdp_empire": {
             "name": "KDP Empire Builder — Done For You",
@@ -10222,12 +10222,40 @@ async def handle_high_ticket_links(request: web.Request) -> web.Response:
     }
     total_mrr = sum([997, 997, 497, 797])
     total_one_time = sum([1997, 4997, 1497])
+
+    # Wave 2 catalog (10 products × 3 tiers) — live Stripe payment links
+    wave2_path = Path(__file__).resolve().parent.parent / "config" / "high_ticket_wave2.json"
+    if not wave2_path.exists():
+        wave2_path = Path(__file__).resolve().parent.parent / "data" / "high_ticket_wave2.json"
+    wave2 = {}
+    try:
+        if wave2_path.exists():
+            import json as _json
+            w2 = _json.loads(wave2_path.read_text(encoding="utf-8"))
+            wave2 = w2.get("products") or {}
+            total_mrr += int(w2.get("mrr_potential") or 0)
+            total_one_time += int(w2.get("one_time_potential") or 0)
+            for key, prod in wave2.items():
+                tiers = prod.get("tiers") or []
+                featured = tiers[1] if len(tiers) > 1 else (tiers[0] if tiers else {})
+                links[key] = {
+                    "name": prod.get("name", key),
+                    "price": featured.get("price_label", ""),
+                    "price_id": featured.get("price_id", ""),
+                    "url": featured.get("url", ""),
+                    "tiers": tiers,
+                    "wave": "wave2",
+                }
+    except Exception as e:
+        log.warning("high_ticket wave2 load failed: %s", e)
+
     return web.json_response({
         "ok": True,
         "count": len(links),
         "potential_mrr_eur": total_mrr,
         "potential_one_time_eur": total_one_time,
         "products": links,
+        "wave2_count": len(wave2),
     })
 
 
