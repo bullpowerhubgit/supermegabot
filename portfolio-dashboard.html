@@ -270,7 +270,7 @@ const PROJECTS = [
     desc:'38 professionelle Landing Pages für Digistore24 Affiliate-Produkte. Dark Theme, Kaufbutton, Testimonials, FAQ.',
     tags:['HTML','Netlify','DS24','Affiliate'],
     status:'live',
-    url:'https://aiitec-ai-income-machine.netlify.app',
+    url:'https://bullpower-ai-tools.netlify.app/ai-income-machine/',
     path:'/tmp/netlify-ds24/products' },
 
   { cat:'live', title:'BullPower Hub', icon:'🐂',
@@ -1028,8 +1028,8 @@ function build() {
     d.className = 'netlify-card';
     d.innerHTML = `
       <div class="netlify-title">${n.title}${n.cat ? ' <span style="color:var(--warn);font-size:9px">KATEGORIE</span>' : ''}</div>
-      <div class="netlify-url">aiitec-${n.slug}.netlify.app</div>
-      <a class="netlify-open" href="https://aiitec-${n.slug}.netlify.app" target="_blank">→ Öffnen</a>`;
+      <div class="netlify-url">bullpower-ai-tools.netlify.app/${n.slug}/</div>
+      <a class="netlify-open" href="https://bullpower-ai-tools.netlify.app/${n.slug}/" target="_blank">→ Öffnen</a>`;
     netlifyGrid.appendChild(d);
   });
   netlifySection.appendChild(netlifyGrid);

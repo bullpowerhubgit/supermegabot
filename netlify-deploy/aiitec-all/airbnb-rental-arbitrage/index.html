@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Airbnb Rental Arbitrage — Fremdimmobilien vermieten | AIITEC</title>
+  <meta name="description" content="Rental Arbitrage: Miete Wohnungen langfristig und vermiete sie kurzfristig über Airbnb — profitable Spread-Strategie.">
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Airbnb Rental Arbitrage — Fremdimmobilien vermieten">
+  <meta property="og:description" content="Rental Arbitrage: Miete Wohnungen langfristig und vermiete sie kurzfristig über Airbnb — profitable Spread-Strategie.">
+  <meta property="og:type" content="website">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{--c:#ff5a5f;--bg:#050508;--bg2:#08080f;--card:#0d0d18;--border:#1e1e38;--text:#c8cce0;--dim:#60649a}
+    body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.6}
+    a{text-decoration:none;color:inherit}
+    /* NAV */
+    nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+    .nav-brand{font-weight:700;font-size:15px;color:var(--c)}
+    .nav-cta{background:var(--c);color:#050508;padding:8px 20px;border-radius:6px;font-weight:700;font-size:13px}
+    /* HERO */
+    .hero{min-height:88vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;background:radial-gradient(ellipse 80% 50% at 50% 0%,color-mix(in srgb,var(--c) 8%,transparent) 0%,transparent 70%)}
+    .badge{display:inline-block;background:color-mix(in srgb,var(--c) 10%,transparent);border:1px solid color-mix(in srgb,var(--c) 30%,transparent);border-radius:20px;padding:5px 16px;font-size:11px;font-family:monospace;color:var(--c);letter-spacing:1px;margin-bottom:20px}
+    .hero h1{font-size:clamp(28px,5vw,56px);font-weight:800;color:#fff;margin-bottom:10px;line-height:1.15}
+    .hero-sub{font-size:clamp(15px,2vw,20px);color:var(--c);margin-bottom:16px;font-weight:600}
+    .hero-desc{font-size:16px;color:var(--dim);max-width:600px;margin:0 auto 32px}
+    .hero-price{font-size:13px;color:var(--dim);margin-bottom:24px}
+    .hero-price strong{color:#fff;font-size:28px}
+    .btn-main{background:var(--c);color:#050508;padding:18px 40px;border-radius:8px;font-weight:800;font-size:18px;display:inline-block;margin:8px;transition:.2s}
+    .btn-main:hover{opacity:.9;transform:translateY(-1px)}
+    .btn-ghost{border:1px solid color-mix(in srgb,var(--c) 40%,transparent);color:var(--c);padding:18px 32px;border-radius:8px;font-weight:600;font-size:16px;display:inline-block;margin:8px}
+    /* TRUST STRIP */
+    .trust{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:20px 24px}
+    .trust-inner{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;font-size:13px;color:var(--dim)}
+    .trust-item{display:flex;align-items:center;gap:6px}
+    .trust-item span:first-child{color:var(--c)}
+    /* SECTIONS */
+    section{max-width:960px;margin:0 auto;padding:60px 24px}
+    h2{font-size:clamp(22px,3vw,36px);font-weight:800;color:#fff;margin-bottom:12px}
+    .section-sub{color:var(--dim);font-size:15px;margin-bottom:40px}
+    /* FEATURES */
+    .feat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+    .feat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;gap:12px;align-items:flex-start}
+    .feat-icon{color:var(--c);font-weight:700;font-size:18px;flex-shrink:0;margin-top:2px}
+    /* CASES */
+    .cases-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+    .case-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative;border-top:3px solid var(--c)}
+    .case-result{font-size:22px;font-weight:800;color:var(--c);margin-bottom:6px}
+    .case-name{font-size:13px;color:var(--dim);margin-bottom:10px}
+    .case-detail{font-size:14px;color:var(--text);line-height:1.5}
+    /* DEMO */
+    .demo-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 32px;text-align:center}
+    .demo-screen{background:#07070f;border:1px solid var(--border);border-radius:10px;padding:24px;margin:24px auto;max-width:600px;font-family:monospace;font-size:13px;text-align:left;line-height:1.8}
+    .demo-line-g{color:var(--c)} .demo-line-d{color:var(--dim)} .demo-line-w{color:#fff}
+    /* TESTIMONIALS */
+    .testi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+    .testi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+    .stars{color:#f59e0b;font-size:18px;margin-bottom:12px}
+    .testi-text{font-size:14px;color:var(--text);margin-bottom:16px;line-height:1.6;font-style:italic}
+    .testi-name{font-size:13px;color:var(--dim)}
+    /* FAQ */
+    .faq-grid{display:grid;gap:12px}
+    .faq-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px}
+    .faq-q{font-weight:700;color:#fff;margin-bottom:8px}
+    .faq-a{color:var(--dim);font-size:14px;line-height:1.6}
+    /* CTA FINAL */
+    .cta-final{background:color-mix(in srgb,var(--c) 5%,var(--card));border:1px solid color-mix(in srgb,var(--c) 20%,transparent);border-radius:16px;padding:50px 32px;text-align:center}
+    .cta-final h2{margin-bottom:12px}
+    .cta-final p{color:var(--dim);margin-bottom:28px}
+    /* FOOTER */
+    footer{background:#07070f;border-top:1px solid var(--border);padding:24px;text-align:center;color:var(--dim);font-size:13px}
+    footer a{color:var(--c)}
+    @media(max-width:600px){.btn-main,.btn-ghost{width:100%;text-align:center}}
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">AIITEC — Airbnb Rental Arbitrage</div>
+  <a href="https://www.checkout-ds24.com/product/669750?affiliate=user37405262" class="nav-cta" target="_blank">Jetzt kaufen →</a>
+</nav>
+
+<div class="hero">
+  <div class="badge">AIITEC DIGITAL PRODUCT</div>
+  <h1>Airbnb Rental Arbitrage</h1>
+  <div class="hero-sub">Fremdimmobilien vermieten</div>
+  <p class="hero-desc">Rental Arbitrage: Miete Wohnungen langfristig und vermiete sie kurzfristig über Airbnb — profitable Spread-Strategie.</p>
+  <div class="hero-price">Einmalig nur <strong>€67</strong> — 30 Tage Geld-zurück-Garantie</div>
+  <div>
+    <a href="https://www.checkout-ds24.com/product/669750?affiliate=user37405262" class="btn-main" target="_blank">Jetzt kaufen — €67 →</a>
+    <a href="https://aiitec-digital-skills.netlify.app" class="btn-ghost">Alle Produkte ansehen</a>
+  </div>
+</div>
+
+<div class="trust">
+  <div class="trust-inner">
+    <div class="trust-item"><span>✅</span><span>Sofortiger Zugang nach Zahlung</span></div>
+    <div class="trust-item"><span>🔒</span><span>30 Tage Geld-zurück-Garantie</span></div>
+    <div class="trust-item"><span>📱</span><span>Alle Geräte — Desktop, Tablet, Mobil</span></div>
+    <div class="trust-item"><span>🔄</span><span>Lebenslange Updates inklusive</span></div>
+    <div class="trust-item"><span>🇩🇪</span><span>Komplett auf Deutsch</span></div>
+  </div>
+</div>
+
+<section>
+  <h2>Was du bekommst</h2>
+  <p class="section-sub">Airbnb-Einnahmen ohne eigene Immobilien — vollständig, sofort umsetzbar.</p>
+  <div class="feat-grid"><div class="feat"><div class="feat-icon">✓</div><div>Rental Arbitrage erklärt</div></div><div class="feat"><div class="feat-icon">✓</div><div>Wohnungssuche für Arbitrage</div></div><div class="feat"><div class="feat-icon">✓</div><div>Vermieter überzeugen Skript</div></div><div class="feat"><div class="feat-icon">✓</div><div>Airbnb-Listing Optimierung</div></div><div class="feat"><div class="feat-icon">✓</div><div>Preisoptimierung (PriceLabs)</div></div><div class="feat"><div class="feat-icon">✓</div><div>Reinigungs-Automation</div></div><div class="feat"><div class="feat-icon">✓</div><div>Gästemanagement-System</div></div><div class="feat"><div class="feat-icon">✓</div><div>Skalierung auf mehrere Units</div></div></div>
+</section>
+
+<section style="background:var(--bg2);padding:60px 0">
+  <div style="max-width:960px;margin:0 auto;padding:0 24px">
+    <h2>Echte Ergebnisse — Echte Menschen</h2>
+    <p class="section-sub">Was unsere Kunden erreicht haben — ohne Erfahrung, ohne großes Budget.</p>
+    <div class="cases-grid"><div class="case-card">
+      <div class="case-result">€1.800 Gewinn/Monat erste Unit</div>
+      <div class="case-name">Robert S.</div>
+      <div class="case-detail">Mietete Wohnung für €900/Monat — erzielt €2.700 auf Airbnb.</div>
+    </div><div class="case-card">
+      <div class="case-result">5 Units in 2 Jahren</div>
+      <div class="case-name">Christina B.</div>
+      <div class="case-detail">Skalierte schrittweise — heute stabiles Einkommen ohne Eigenkapital.</div>
+    </div><div class="case-card">
+      <div class="case-result">Breakeven in Monat 2</div>
+      <div class="case-name">Jürgen K.</div>
+      <div class="case-detail">Erste Unit im Minus, ab Monat 2 profitabel — seitdem konstant.</div>
+    </div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Live Demo</h2>
+  <p class="section-sub">So sieht der Einstieg in die Praxis aus.</p>
+  <div class="demo-box">
+    <div class="demo-screen">
+      <div class="demo-line-g">▶ Airbnb Rental Arbitrage — Schritt 1</div>
+      <div class="demo-line-d">──────────────────────────</div>
+      <div class="demo-line-w">✓ System eingerichtet</div>
+      <div class="demo-line-w">✓ Erste Strategie implementiert</div>
+      <div class="demo-line-g">→ Ergebnis: Erste Einnahmen erwartet in Woche 2-4</div>
+      <div class="demo-line-d">──────────────────────────</div>
+      <div class="demo-line-g">Status: <span style="color:var(--c)">AKTIV ✓</span></div>
+    </div>
+    <a href="https://www.checkout-ds24.com/product/669750?affiliate=user37405262" class="btn-main" target="_blank">Jetzt selbst starten — €67</a>
+  </div>
+</section>
+
+<section style="background:var(--bg2);padding:60px 0">
+  <div style="max-width:960px;margin:0 auto;padding:0 24px">
+    <h2>Was unsere Kunden sagen</h2>
+    <p class="section-sub">Verifizierte Bewertungen von echten Käufern.</p>
+    <div class="testi-grid">
+      <div class="testi">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Mietete Wohnung für €900/Monat — erzielt €2.700 auf Airbnb. Ergebnis: €1.800 Gewinn/Monat erste Unit. Absolut empfehlenswert!"</p>
+        <div class="testi-name">— Robert S., verifizierter Käufer</div>
+      </div>
+      <div class="testi">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Skalierte schrittweise — heute stabiles Einkommen ohne Eigenkapital. Nach 5 Units in 2 Jahren war ich überzeugt."</p>
+        <div class="testi-name">— Christina B., verifizierter Käufer</div>
+      </div>
+      <div class="testi">
+        <div class="stars">★★★★☆</div>
+        <p class="testi-text">"Erste Unit im Minus, ab Monat 2 profitabel — seitdem konstant. Besonders gefällt mir die Schritt-für-Schritt-Anleitung."</p>
+        <div class="testi-name">— Jürgen K., verifizierter Käufer</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Häufige Fragen</h2>
+  <p class="section-sub">Alles was du wissen musst bevor du startest.</p>
+  <div class="faq-grid"><div class="faq-item">
+      <div class="faq-q">❓ Ist das legal?</div>
+      <div class="faq-a">Ja — mit korrekter Genehmigung und Vermieter-Zustimmung.</div>
+    </div><div class="faq-item">
+      <div class="faq-q">❓ Wie überzeuge ich Vermieter?</div>
+      <div class="faq-a">Wir liefern ein fertiges Gesprächs-Skript.</div>
+    </div><div class="faq-item">
+      <div class="faq-q">❓ Wie viel Startkapital brauche ich?</div>
+      <div class="faq-a">Erste Monatsmiete + Kaution + Einrichtung: ca. €3.000-8.000.</div>
+    </div><div class="faq-item">
+      <div class="faq-q">❓ Was wenn es keine Buchungen gibt?</div>
+      <div class="faq-a">Wir erklären Pricing-Strategien für volle Auslastung.</div>
+    </div><div class="faq-item">
+      <div class="faq-q">❓ Welche Städte eignen sich?</div>
+      <div class="faq-a">Tourismus-Städte wie München, Berlin, Hamburg, Wien.</div>
+    </div></div>
+</section>
+
+<section>
+  <div class="cta-final">
+    <h2>Bereit? Starte jetzt für nur €67</h2>
+    <p>30 Tage Geld-zurück-Garantie — kein Risiko, sofortiger Zugang, lebenslange Updates.</p>
+    <a href="https://www.checkout-ds24.com/product/669750?affiliate=user37405262" class="btn-main" target="_blank">Jetzt kaufen — €67 →</a>
+    <p style="margin-top:16px;font-size:13px;color:var(--dim)">Sicher bezahlen via Digistore24 · Kreditkarte, PayPal, Überweisung</p>
+  </div>
+</section>
+
+<footer>
+  AIITEC — <a href="mailto:aiitecbuuss@gmail.com">aiitecbuuss@gmail.com</a> — © 2026 Rudolf Sarkany |
+  <a href="https://aiitec-digital-skills.netlify.app">Alle Produkte</a>
+</footer>
+</body>
+</html>
