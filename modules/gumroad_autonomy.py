@@ -19,13 +19,20 @@ SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 GUMROAD_BASE  = "https://api.gumroad.com/v2"
 
 DIGITAL_PRODUCTS = [
-    {"name": "Shopify Automation Masterpack", "price": 2700, "desc": "50+ Automatisierungs-Templates für Shopify-Shops. Sofort einsetzbar.", "url": f"{SHOP_URL}/collections/digital"},
-    {"name": "ChatGPT Prompt Pack — 200 Business Prompts", "price": 1700, "desc": "200 getestete ChatGPT-Prompts für Marketing, Sales, Content Creation.", "url": f"{SHOP_URL}/collections/digital"},
-    {"name": "E-Commerce SEO Checkliste 2026", "price": 700, "desc": "87-Punkte SEO-Checkliste für Shopify und WooCommerce Shops.", "url": f"{SHOP_URL}/collections/digital"},
-    {"name": "Affiliate Marketing Blueprint", "price": 1200, "desc": "Kompletter Guide von 0 auf €1000/Monat mit Affiliate Marketing.", "url": f"{SHOP_URL}/collections/digital"},
-    {"name": "TikTok Content Kalender 2026", "price": 900, "desc": "365 TikTok-Ideen, Scripts und Hashtag-Strategien. Fertig zum Posten.", "url": f"{SHOP_URL}/collections/digital"},
-    {"name": "Dropshipping Lieferanten-Liste DACH", "price": 1500, "desc": "200+ geprüfte Dropshipping-Lieferanten für den deutschsprachigen Markt.", "url": f"{SHOP_URL}/collections/digital"},
-    {"name": "Email Funnel Template Pack", "price": 1900, "desc": "30 konvertierende Email-Sequenzen für Klaviyo und Mailchimp.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "Smart Home Dropshipping Bible 2026", "price": 2700,
+     "desc": "50+ Lieferanten-Quellen, Produktresearch-System, Pricing-Strategien, SEO-Optimierung für Amazon, eBay und eigenen Shop. 47 Seiten PDF + Lieferantenliste.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "AI-Powered E-Commerce Automation Kit", "price": 4700,
+     "desc": "Komplett-Kit: ChatGPT Prompts für Produktbeschreibungen, Klaviyo Flow-Templates, Shopify Automation Scripts, Telegram Bot Setup Guide. 120+ sofort nutzbare Templates.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "Shopify 10.000€/Monat Masterclass", "price": 9700,
+     "desc": "Schritt-für-Schritt von €0 auf €10k/Monat: Produktfindung, Supplier-Verhandlung, Facebook Ads, Email-Automation, Skalierung. Inkl. 30-Tage Action Plan.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "Digistore24 Affiliate System 2026", "price": 2900,
+     "desc": "Vollständiges DS24 Affiliate-System: Beste Produkte finden, Landingpages, Traffic, Email-Liste monetisieren. Praxis-getestet: €2.000+/Monat möglich.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "Telegram Subscription Bot Business", "price": 4700,
+     "desc": "Baue ein profitables Abo-Business mit Telegram: Bot-Setup, Payment-Integration (Stripe), Content-Strategie, 0→500 Abonnenten Schritt für Schritt. Inkl. Bot-Code Templates.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "E-Commerce SEO Masterclass DACH 2026", "price": 1900,
+     "desc": "Komplette SEO-Strategie für deutsche E-Commerce Shops: Keywords, Backlinks, Google Shopping, strukturierte Daten. 87-Punkte Checkliste + Video-Anleitung.", "url": f"{SHOP_URL}/collections/digital"},
+    {"name": "Dropshipping Lieferanten-Liste Premium DACH", "price": 1500,
+     "desc": "200+ geprüfte Dropshipping-Lieferanten für den deutschsprachigen Markt. Inkl. Mindestbestellmengen, Provisionen, Bewertungen und direktem Kontakt.", "url": f"{SHOP_URL}/collections/digital"},
 ]
 
 
