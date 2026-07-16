@@ -6817,6 +6817,7 @@ _AUTH_EXEMPT_EXACT = {
     "/api/money-map",          # public featured offers for affiliates/sales
     "/api/testimonials",       # public social proof
     "/api/case-studies",
+    "/api/demos",
     "/api/social-proof",
 }
 
@@ -10319,11 +10320,28 @@ async def handle_case_studies(request: web.Request) -> web.Response:
         from modules.autonomous_social_proof import get_social_proof_bundle
         folder = request.rel_url.query.get("folder")
         limit = int(request.rel_url.query.get("limit", "12"))
-        bundle = get_social_proof_bundle(folder=folder, limit_t=0, limit_c=limit)
+        bundle = get_social_proof_bundle(folder=folder, limit_t=0, limit_c=limit, limit_d=0)
         return web.json_response({
             "ok": True,
             "count": len(bundle.get("case_studies") or []),
             "items": bundle.get("case_studies") or [],
+            "folder": folder,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_demos(request: web.Request) -> web.Response:
+    """GET /api/demos — autonomous interactive demo catalog."""
+    try:
+        from modules.autonomous_social_proof import get_social_proof_bundle
+        folder = request.rel_url.query.get("folder")
+        limit = int(request.rel_url.query.get("limit", "30"))
+        bundle = get_social_proof_bundle(folder=folder, limit_t=0, limit_c=0, limit_d=limit)
+        return web.json_response({
+            "ok": True,
+            "count": len(bundle.get("demos") or []),
+            "items": bundle.get("demos") or [],
             "folder": folder,
         })
     except Exception as e:
@@ -11896,6 +11914,7 @@ async def create_app():
     app.router.add_get( "/api/money-map",                handle_money_map)
     app.router.add_get( "/api/testimonials",             handle_testimonials)
     app.router.add_get( "/api/case-studies",             handle_case_studies)
+    app.router.add_get( "/api/demos",                    handle_demos)
     app.router.add_get( "/api/social-proof",             handle_social_proof)
     app.router.add_post("/api/social-proof/run",         handle_social_proof)
 

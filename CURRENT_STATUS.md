@@ -1,7 +1,37 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16**
 
-## ✅ AUTONOMOUS SOCIAL PROOF (2026-07-16)
+## ✅ AUTONOMOUS DEMOS + TESTIMONIALS + CASES (2026-07-16)
+
+Ein Zyklus, alles überall:
+
+| Asset | Menge | Ziel |
+|-------|-------|------|
+| Testimonials | 96 rotierend | alle Landings + API |
+| Case Studies | 51 rotierend | alle Landings + Demo-Pages |
+| Interactive Demos | 17 `demo.html` + Demo-CTAs | alle Produkte + demo-hub |
+
+- Engine: `modules/autonomous_social_proof.py` → `run_social_proof_cycle()`
+- Scheduler: **alle 6h** regenerieren + reinjizieren
+- APIs (public): `/api/testimonials` · `/api/case-studies` · `/api/demos` · `/api/social-proof`
+- Manual: `POST /api/social-proof/run` (X-API-Key)
+
+## ✅ AUTONOMOUS DEMOS + TESTIMONIALS + CASES (2026-07-16)
+
+Ein Zyklus, alles überall:
+
+| Asset | Menge | Ziel |
+|-------|-------|------|
+| Testimonials | 96 rotierend | alle Landings + API |
+| Case Studies | 51 rotierend | alle Landings + Demo-Pages |
+| Interactive Demos | 17 `demo.html` + Demo-CTAs | alle Produkte + demo-hub |
+
+- Engine: `modules/autonomous_social_proof.py` → `run_social_proof_cycle()`
+- Scheduler: **alle 6h** regenerieren + reinjizieren
+- APIs (public): `/api/testimonials` · `/api/case-studies` · `/api/demos` · `/api/social-proof`
+- Manual: `POST /api/social-proof/run` (X-API-Key)
+
+## ✅ AUTONOMOUS SOCIAL PROOF (legacy note)
 
 - Engine: `modules/autonomous_social_proof.py`
 - **96 Testimonials** + **51 Case Studies** rotierend generiert

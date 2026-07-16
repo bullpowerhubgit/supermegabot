@@ -3503,14 +3503,16 @@ async def task_press_release_generate() -> str:
         return f"PressRelease error: {e}"
 
 async def task_autonomous_social_proof() -> str:
-    """Alle 6h: Testimonials + Case Studies neu generieren und in alle Landings injizieren."""
+    """Alle 6h: Testimonials + Case Studies + Demos generieren und überall injizieren."""
     try:
         from modules.autonomous_social_proof import run_social_proof_cycle
         r = await run_social_proof_cycle(post_telegram=True)
         return (
-            f"SocialProof: {r.get('testimonials', 0)} testimonials, "
+            f"SalesAssets: {r.get('testimonials', 0)} testimonials, "
             f"{r.get('case_studies', 0)} cases, "
+            f"{r.get('demos', 0)} demos, "
             f"{r.get('landings_updated', 0)} landings, "
+            f"demo_html={r.get('demos_written', 0)}, "
             f"tg={r.get('telegram', {}).get('posted')}"
         )
     except Exception as e:
