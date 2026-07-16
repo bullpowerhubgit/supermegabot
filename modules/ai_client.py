@@ -664,7 +664,14 @@ async def _ai_complete_inner(
             pass  # bereits gesetzt
 
     # ── 5. Anthropic Claude Haiku ─────────────────────────────────────────────
-    if _anthropic() and _cb_ok("Anthropic"):
+    try:
+        from modules.ai_budget_guard import is_allowed as _guard_ant, record_usage as _record_ant
+        _ant_ok, _ant_reason = _guard_ant()
+    except Exception:
+        _ant_ok, _ant_reason = True, "guard_import_failed"
+    if not _ant_ok:
+        log.debug("AIBudgetGuard: Anthropic blockiert — %s", _ant_reason)
+    elif _anthropic() and _cb_ok("Anthropic"):
         try:
             msg_list = [m for m in messages if m.get("role") != "system"]
             sys_text = system or next((m["content"] for m in messages if m.get("role") == "system"), "")
@@ -716,7 +723,14 @@ async def _ai_complete_inner(
             _cb_fail("Anthropic")
 
     # ── 6. OpenAI GPT-4o-mini ─────────────────────────────────────────────────
-    if _openai() and _cb_ok("OpenAI"):
+    try:
+        from modules.ai_budget_guard import is_allowed_oai as _guard_oai
+        _oai_ok, _oai_reason = _guard_oai()
+    except Exception:
+        _oai_ok = True
+    if not _oai_ok:
+        log.debug("AIBudgetGuard: OpenAI blockiert — %s", _oai_reason)
+    elif _openai() and _cb_ok("OpenAI"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
                 async with s.post(
@@ -743,7 +757,14 @@ async def _ai_complete_inner(
             _cb_fail("OpenAI")
 
     # ── 7. Perplexity ─────────────────────────────────────────────────────────
-    if _perplexity() and _cb_ok("Perplexity"):
+    try:
+        from modules.ai_budget_guard import is_allowed_pplx as _guard_pplx
+        _pplx_ok, _pplx_reason = _guard_pplx()
+    except Exception:
+        _pplx_ok = True
+    if not _pplx_ok:
+        log.debug("AIBudgetGuard: Perplexity blockiert — %s", _pplx_reason)
+    elif _perplexity() and _cb_ok("Perplexity"):
         pplx_enabled = os.getenv("PERPLEXITY_ENABLED", "true").lower() not in ("false", "0", "off")
         if pplx_enabled:
             try:
