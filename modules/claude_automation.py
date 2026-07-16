@@ -22,10 +22,19 @@ try:
 except ImportError:
     from anthropic import Anthropic
 
+try:
+    from modules.ai_budget_guard import is_allowed, record_usage, record_blocked
+    _GUARD_AVAILABLE = True
+except ImportError:
+    _GUARD_AVAILABLE = False
+    def is_allowed(caller=""): return (True, caller)
+    def record_usage(i, o, caller=""): pass
+    def record_blocked(): pass
+
 log = logging.getLogger(__name__)
 
-MODEL = "claude-sonnet-5"                    # schnell + stark; Alternative: "claude-opus-4-8"
-FAST_MODEL = "claude-haiku-4-5-20251001"     # billig, für Massen-Tasks
+MODEL = "claude-haiku-4-5-20251001"         # Haiku: billig, für alle Revenue-Tasks
+FAST_MODEL = "claude-haiku-4-5-20251001"
 
 _CLIENT: Optional[Anthropic] = None
 
@@ -34,12 +43,10 @@ _CLIENT: Optional[Anthropic] = None
 # Client / Health-Check
 # ---------------------------------------------------------------------------
 def is_configured() -> bool:
-    """True, wenn ein API-Key gesetzt ist. Für den Dashboard-Health-Check."""
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
 def _client() -> Anthropic:
-    """Lazy Singleton. Erzeugt den Client erst beim ersten Aufruf."""
     global _CLIENT
     if _CLIENT is None:
         key = os.environ.get("ANTHROPIC_API_KEY")
@@ -50,16 +57,23 @@ def _client() -> Anthropic:
 
 
 def is_available() -> bool:
-    """Schnellcheck ob Anthropic gerade erreichbar ist (kein API-Call)."""
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
 # ---------------------------------------------------------------------------
-# 1. Basis: eine Frage stellen
+# 1. Basis: eine Frage stellen (NUR Revenue-Module erlaubt)
 # ---------------------------------------------------------------------------
-def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 2000,
-        fallback: str = "") -> str:
-    log.debug("ask(): model=%s, prompt_len=%d", model, len(prompt))
+def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 1000,
+        fallback: str = "", caller: str = "") -> str:
+    allowed, reason = is_allowed(caller)
+    if not allowed:
+        log.warning("AI BLOCKED: %s", reason)
+        record_blocked()
+        if fallback:
+            return fallback
+        raise PermissionError(f"AI Budget Guard: {reason}")
+
+    log.debug("ask(): model=%s caller=%s", model, reason)
     try:
         resp = _client().messages.create(
             model=model,
@@ -67,9 +81,14 @@ def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 200
             system=system or "Du bist ein präziser Assistent. Antworte knapp.",
             messages=[{"role": "user", "content": prompt}],
         )
-        return resp.content[0].text
+        text = resp.content[0].text
+        usage = resp.usage
+        record_usage(usage.input_tokens, usage.output_tokens, reason)
+        return text
+    except PermissionError:
+        raise
     except Exception as e:
-        log.warning("Anthropic ask() fehlgeschlagen (%s) — Fallback genutzt", type(e).__name__)
+        log.warning("Anthropic ask() Fehler (%s)", type(e).__name__)
         if fallback:
             return fallback
         raise
