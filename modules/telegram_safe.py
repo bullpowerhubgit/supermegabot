@@ -21,7 +21,7 @@ log = logging.getLogger("TelegramSafe")
 
 TG_TOKEN    = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT     = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
-STORE_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN','ineedit.com.co')}"
+STORE_URL   = f"https://{os.getenv('SHOPIFY_PUBLIC_DOMAIN','ineedit.com.co')}"
 URL_TIMEOUT = 6   # Sekunden pro URL-Check
 MAX_URLS    = 5   # Maximal so viele URLs pro Post prüfen
 

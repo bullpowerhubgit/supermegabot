@@ -40,7 +40,7 @@ TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 PEXELS_KEY = os.getenv("PEXELS_API_KEY", "")
 
 GRAPH      = "https://graph.facebook.com/v21.0"
-SHOP_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}"
+SHOP_URL   = f"https://{os.getenv('SHOPIFY_PUBLIC_DOMAIN', 'ineedit.com.co')}"
 DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "")
 
 STATE_FILE = Path(__file__).parent.parent / "data" / "social_autoposter_state.json"
@@ -539,6 +539,18 @@ async def post_to_all(
     """
     if not message:
         message = await _ai_caption(topic or "Smart Home E-Commerce Automatisierung")
+
+    # ── PostErrorGuard: kritische Vorab-Prüfung (sync, fail-closed) ─────────
+    try:
+        from modules.post_error_guard import guard_post as _peg
+        _peg_ok, _peg_reason = _peg(message, url=link or SHOP_URL, platform="social",
+                                     source_module="social_autoposter")
+        if not _peg_ok:
+            log.warning("PostErrorGuard BLOCKIERT: %s", _peg_reason)
+            return {"ok": False, "blocked": True, "reason": _peg_reason}
+    except Exception as _peg_e:
+        log.error("PostErrorGuard fail-closed: %s", _peg_e)
+        return {"ok": False, "blocked": True, "reason": f"PostErrorGuard Fehler: {_peg_e}"}
 
     # ── PostGuard: Qualitätsprüfung vor jedem Post ────────────────────────
     try:
