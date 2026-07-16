@@ -120,13 +120,7 @@ async def _gql(query: str, variables: dict = None) -> dict:
 # ── AI content generation ─────────────────────────────────────────────────────
 
 async def _ai_generate_title(original_title: str, product_type: str) -> str:
-    """SEO-optimierten Alternativtitel via Claude Haiku generieren."""
-    key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not key:
-        if "smart" not in original_title.lower():
-            return f"Smart {original_title}"
-        return original_title + " – Premium"
-
+    """SEO-optimierten Alternativtitel via ai_client (Guard + Fallback-Chain)."""
     prompt = (
         f"Generate ONE alternative SEO-optimized German product title for this Shopify product.\n"
         f"Original: {original_title}\n"
@@ -136,35 +130,19 @@ async def _ai_generate_title(original_title: str, product_type: str) -> str:
         f"Reply with ONLY the new title, nothing else."
     )
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 100,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                body = await r.json()
-                text = body.get("content", [{}])[0].get("text", "").strip().strip('"')
-                return text[:80] if text else original_title
+        from modules.ai_client import ai_complete
+        text = await ai_complete(prompt, max_tokens=100)
+        text = text.strip().strip('"')
+        return text[:80] if text else original_title
     except Exception as exc:
         log.warning("AI title generation failed: %s", exc)
-        return original_title
+    if "smart" not in original_title.lower():
+        return f"Smart {original_title}"
+    return original_title + " – Premium"
 
 
 async def _ai_generate_description(title: str, current_html: str, product_type: str) -> str:
-    """Verbesserte Produktbeschreibung via Claude Haiku generieren."""
-    key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not key:
-        return ""
-
+    """Verbesserte Produktbeschreibung via ai_client (Guard + Fallback-Chain)."""
     current_text = re.sub(r"<[^>]+>", "", current_html)[:500]
     prompt = (
         f"Write an improved German product description for this Shopify product.\n"
@@ -180,24 +158,9 @@ async def _ai_generate_description(title: str, current_html: str, product_type: 
         f"Reply with ONLY the HTML description."
     )
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 500,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                body = await r.json()
-                text = body.get("content", [{}])[0].get("text", "").strip()
-                return text if len(text) > 50 else ""
+        from modules.ai_client import ai_complete
+        text = (await ai_complete(prompt, max_tokens=500)).strip()
+        return text if len(text) > 50 else ""
     except Exception as exc:
         log.warning("AI description generation failed: %s", exc)
         return ""

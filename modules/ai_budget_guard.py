@@ -20,20 +20,29 @@ log = logging.getLogger("AIBudgetGuard")
 
 # ── Whitelist — NUR diese Module dürfen Anthropic nutzen ──────────────────────
 REVENUE_MODULES = frozenset({
+    # Core Revenue
     "revenue_engine",
+    "bullpower_revenue_engine",
+    "megabot_umsatzmaschine",
+    "ds24_funnel_automation",
+    "ds24_affiliate_blaster",
+    # Shop & Conversion
+    "smart_product_finder",
+    "shopify_ab_tester",
     "service_delivery",
+    # Marketing & Email
+    "klaviyo_automation",
+    "email_outreach_bulk",
     "sys18_newsletter_ki",
+    # Content & Outreach
     "sys23_expose_ki",
     "sys37_mieterbrief_ki",
     "partner_channel",
     "compliance_outreach_all",
-    "smart_product_finder",
-    "ds24_affiliate_blaster",
+    # System (darf AI für Health/Strategy nutzen)
     "daily_system_check",
-    "megabot_umsatzmaschine",
-    "ds24_funnel_automation",
-    "klaviyo_automation",
-    "email_outreach_bulk",
+    "rudiclone",
+    "geheimwaffe",
 })
 
 # ── Tagesbudget ────────────────────────────────────────────────────────────────
