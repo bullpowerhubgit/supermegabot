@@ -360,19 +360,15 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
 
     if content_type:
         log.debug("HttpGuard prüft: %s %s", method, url[:80])
+        _post_text    = _extract_text(url, content_type, kwargs)
+        _post_platform = _url_to_platform(url)
         allowed, reason = await _guard_check(url, content_type, kwargs)
         if not allowed:
             log.warning("HttpGuard BLOCK [%s]: %s → %s", content_type, url[:80], reason)
-            text = _extract_text(url, content_type, kwargs)
             # NEVER-TWICE: speichern — gleicher Fehler nie wieder
             try:
                 from modules.post_never_twice import remember_block
-                remember_block(
-                    text,
-                    _url_to_platform(url),
-                    [str(reason)],
-                    source_module="http_guard",
-                )
+                remember_block(_post_text, _post_platform, [str(reason)], source_module="http_guard")
             except Exception:
                 pass
             # Telegram-Alert über blockierten Post
@@ -385,9 +381,8 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
                         f"Typ: {content_type}\n"
                         f"URL: {url[:60]}\n"
                         f"Grund: {reason}\n"
-                        f"Inhalt: <i>{text[:200]}</i>"
+                        f"Inhalt: <i>{_post_text[:200]}</i>"
                     )
-                    # Direkter urllib-Call um Rekursion zu vermeiden
                     import urllib.request, urllib.parse
                     payload = json.dumps({
                         "chat_id": tg_chat, "text": msg, "parse_mode": "HTML"
@@ -400,9 +395,17 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
                     urllib.request.urlopen(req, timeout=5)
             except Exception:
                 pass
-
-            # ClientError (NICHT ClientResponseError(None) — crasht bei str(e)!)
             raise aiohttp.ClientError(f"HttpGuard blocked [{content_type}]: {reason}")
+
+        # Erlaubter Post — nach Erfolg in NeverTwice registrieren (Duplikat-Schutz)
+        response = await _original_request(self, method, str_or_url, **kwargs)
+        if response.status in range(200, 300) and _post_text:
+            try:
+                from modules.post_never_twice import remember_sent
+                remember_sent(_post_text, _post_platform, source_module="http_guard")
+            except Exception:
+                pass
+        return response
 
     return await _original_request(self, method, str_or_url, **kwargs)
 
