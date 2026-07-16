@@ -43,11 +43,17 @@ REVENUE_MODULES = frozenset({
     "autonomous_social_proof",
     "post_content_generator",
     "rudibot_post_ai",
+    "post_guard",              # Post-Quality-AI-Score
     # Traffic & SEO
     "brutus_traffic_engine",
+    "brutus_core",
     "mega_seo_engine",
     "seo_content_engine",
     "full_seo_blast",
+    # Shop & Produkt-Automatisierung
+    "shopify_full_autonomy",
+    "product_generator",
+    "revenue_maximizer",
     # B2B Lead Gen → Revenue (Intent Radar + Outreach)
     "b2b_intent_radar",
     "mass_outreach_1000",

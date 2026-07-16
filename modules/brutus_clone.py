@@ -16,7 +16,7 @@ from typing import Any
 
 log = logging.getLogger("BrutusClone")
 
-_TELEGRAM_TOKEN   = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
+_TELEGRAM_TOKEN   = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")  # never hardcode tokens — run scripts/api_precheck.py first
 _TELEGRAM_CHANNEL = lambda: os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → channel
 _TELEGRAM_CHAT    = lambda: _TELEGRAM_CHANNEL() or ""               # no private spam
 

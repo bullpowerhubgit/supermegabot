@@ -1,6 +1,59 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16 19:50 UTC (Wave 11 — FB Tokens Railway + Vercel PUBLIC + Infra Everywhere)**
 
+
+
+
+## ✅ CREDENTIAL PRE-CHECK GATE (2026-07-16 19:02 UTC)
+
+**Regel (dauerhaft):** `python3 scripts/api_precheck.py` **VOR** jedem `.env`/Railway-Write.
+Nur PASS-Keys einbauen. FAIL = verwerfen.
+
+### Batch (YouTube + Gemini + TG + X + Resend)
+
+| Credential | Pre-check | Action |
+|------------|-----------|--------|
+| YouTube API Key `AIzaSyCYP…` | ✅ 200 channels | INSTALL |
+| YT SA `yt-tracker-sa@…` | ✅ token refresh | INSTALL (JSON lokal + Railway) |
+| Google OAuth Client IDs YT | meta only (IDs) | INSTALL |
+| Gemini AI Studio `AQ.Ab8RN6Lh…` | ✅ list models 200; gen flash 429 quota; **gemma-4** gen 200 | INSTALL + `GEMINI_DEFAULT_MODEL=gemma-4-26b-a4b-it` |
+| TG paste `@DudiRudibot` `…AAGhByAo…` | ❌ **401 Unauthorized** | **REJECT** — not installed |
+| TG paste `@RudiCludiBot` `…7C9F` | ❌ **401** (truncated) | **REJECT** |
+| TG restored from `.env.bak` | ✅ `@DudiRudibot` + `@RudiCludiBot` getMe 200 | KEEP/RESTORE |
+| Resend `re_SC7DJBGs…` | ❌ **403 Cloudflare 1010** | **REJECT** — not installed |
+| X OAuth1 rudibot84 | ✅ users/me 200 | INSTALL |
+
+**Script:** `scripts/api_precheck.py`
+
+## ✅ PINTEREST / AIITEC ALIGNMENT (2026-07-16 18:57 UTC)
+
+| Item | Status |
+|------|--------|
+| Problem | Nana REJECT: AIITEC/Rudibot ≠ BullPower-Portal-URL |
+| Fix | Eigenes **AIITEC** Portal live: Company AIITEC · App **rodibot** · ID 1582363 |
+| Website | https://aiitec-pinterest-portal.vercel.app/ |
+| Privacy | https://aiitec-pinterest-portal.vercel.app/privacy.html (200 public) |
+| Deletion | https://aiitec-pinterest-portal.vercel.app/data-deletion.html |
+| Netlify mirror | https://extraordinary-daffodil-239faa.netlify.app/ |
+| Token | ⚠️ weiterhin **401** — Trial Resubmit + neuer Token nötig (Browser) |
+| Docs | `config/PINTEREST_RESUBMIT.md` auf AIITEC-Pfad umgestellt |
+
+**Nächster Schritt (nur Portal):** Website/Privacy auf AIITEC-URLs setzen → Trial neu einreichen → Token paste.
+
+## ✅ X/TWITTER RUDIBOT84 KEYS (Wave 12 — 2026-07-16 18:50 UTC)
+
+| Item | Status |
+|------|--------|
+| App | `2067896954328113152` **rudibot84** (Pay Per Use, ACTIVE) |
+| OAuth1 users/me | ✅ HTTP 200 → id=`2067894499016085505` username=`rudibot84` |
+| Local `.env` | ✅ Consumer Key/Secret + Access Token/Secret + Bearer + OAuth2 + USER_ID |
+| Railway `supermegabot` | ✅ all TWITTER_* synced (USER_ID fixed from bad `33089706`) |
+| Tweet POST | ⚠️ **402 credits depleted** — Pay Per Use needs X credits before posting works |
+| Bearer app-only | ⚠️ 401 (expected on some PPU setups; posting uses OAuth1 user context) |
+| OAuth2 user token | ⚠️ 401 — may need refresh with Client Secret (not provided this paste) |
+
+**Blocker for live tweets:** Add X API credits in developer.x.com for app rudibot84 (Pay Per Use). Auth is correct; only billing blocks POST /2/tweets.
+
 ## ✅ INFRA EVERYWHERE FIX (2026-07-16) — DAUERHAFT
 
 | Fix | Status | Detail |
@@ -72,7 +125,7 @@
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 1 | **Pinterest API** | Mail 16.07: REJECTED (AIITEC/Rudibot ≠ Portal-URL). **Privacy/Datenschutz gefixt + live.** Noch im Developer Portal umbenennen auf BullPower Hub / BullPower Pins + Resubmit + Token | `PINTEREST_ACCESS_TOKEN` |
+| 1 | **Pinterest API** | AIITEC-Portal live (vercel). Im Developer Portal: Website/Privacy auf **aiitec-pinterest-portal.vercel.app** setzen, App **rodibot**, Company **AIITEC**, Trial resubmit, neuen Token paste | `PINTEREST_ACCESS_TOKEN` |
 | 2 | **Claude MCP Auth** | In Claude Code: `/mcp` → Slack / Microsoft 365 / Windsor.ai OAuth im Browser (optional) | — |
 | 3 | ~~Stripe AIITEC 401~~ | **ERLEDIGT:** nur noch bullpowersrtkennels (`acct_1Tg1U0…`) — AIITEC permanent verboten | `STRIPE_SECRET_KEY` |
 
@@ -92,7 +145,7 @@
 | **Pinterest Appeal** | ✅ Gesendet 16.07 15:03 — Tickets #16593704 + #16593708 — Antwort binnen 1 Werktag |
 | **eu-compliance-saas Build** | ✅ railway.toml: python3→python3.11 gefixt — Service läuft (health OK, Uptime 9h+) |
 | **"Hallo None" Bug** | ✅ full_revenue_expansion.py: `or ""` statt `get(key, "")` — Klaviyo-Revision 2026-04-15 |
-| **X Developer $5** | ✅ Bezahlt 16.07 16:30 — Basic Tier aktiv — WARTE auf neue API Keys von Rudolf |
+| **X Developer $5 / PPU** | ✅ Keys von Rudolf erhalten + .env+Railway live — **WARTE: X credits** (402) |
 | **Twitter rudibot84** | ✅ OAuth 1.0a getestet — `GET /2/users/me` → id=2067894499..., username=rudibot84 ✅ |
 | **LinkedIn Rudolf Sarkany** | ✅ Token erneuert — `GET /v2/userinfo` → name=Rudolf Sarkany, sub=YcxbqVN0ZR ✅ |
 | **Stripe AIITEC Key** | ⚠️ sk_live_51SwsoNF... → 401 Unauthorized — Konto möglicherweise neu/nicht aktiviert |
