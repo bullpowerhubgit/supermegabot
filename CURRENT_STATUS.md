@@ -72,7 +72,7 @@
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 1 | **Pinterest API** | App neu einreichen: Company "BullPower Hub", URL bullpower-hub-portal.netlify.app → neuen Token | `PINTEREST_ACCESS_TOKEN` |
+| 1 | **Pinterest API** | Mail 16.07: REJECTED (AIITEC/Rudibot ≠ Portal-URL). **Privacy/Datenschutz gefixt + live.** Noch im Developer Portal umbenennen auf BullPower Hub / BullPower Pins + Resubmit + Token | `PINTEREST_ACCESS_TOKEN` |
 | 2 | **Claude MCP Auth** | In Claude Code: `/mcp` → Slack / Microsoft 365 / Windsor.ai OAuth im Browser (optional) | — |
 | 3 | ~~Stripe AIITEC 401~~ | **ERLEDIGT:** nur noch bullpowersrtkennels (`acct_1Tg1U0…`) — AIITEC permanent verboten | `STRIPE_SECRET_KEY` |
 
