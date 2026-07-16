@@ -8441,14 +8441,19 @@ async def handle_fiverr_cycle(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_pinterest_status(request: web.Request) -> web.Response:
-    import os
-    token = bool(os.getenv("PINTEREST_ACCESS_TOKEN", ""))
-    return web.json_response({
-        "ok": True,
-        "configured": token,
-        "note": "Set PINTEREST_ACCESS_TOKEN in Railway" if not token else "Ready",
-        "board_configured": bool(os.getenv("PINTEREST_BOARD_ID", "")),
-    })
+    try:
+        from modules.pinterest_token_manager import full_status
+        status = await full_status()
+        return web.json_response(status)
+    except Exception as e:
+        import os
+        token = bool(os.getenv("PINTEREST_ACCESS_TOKEN", ""))
+        return web.json_response({
+            "ok": token,
+            "configured": token,
+            "note": "Set PINTEREST_ACCESS_TOKEN in Railway" if not token else "Ready",
+            "error": str(e) if not token else "",
+        })
 
 async def handle_youtube_trends(request: web.Request) -> web.Response:
     try:
