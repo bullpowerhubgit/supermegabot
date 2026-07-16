@@ -172,6 +172,10 @@ def _print_sync_result(result: dict) -> None:
 
     print(f"  {_ok(str(result['synced']) + ' vars synced to Railway')}")
 
+    if result.get("protected"):
+        print(f"  {_c('cyan', 'PROTECTED')} ({len(result['protected'])} vars never pushed — set in Railway manually): "
+              + ", ".join(result["protected"]))
+
     if result["skipped"]:
         print(f"  {_warn(str(result['skipped']) + ' vars skipped (errors)')}")
 
