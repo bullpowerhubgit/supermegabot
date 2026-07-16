@@ -683,7 +683,8 @@ def _send_email(sender_idx: int, to_email: str, subject: str, body: str) -> bool
         msg["Reply-To"] = "aiitecbuuss@gmail.com"
         msg.attach(MIMEText(body, "plain", "utf-8"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.ehlo()
             s.login(acct["user"], acct["pass"])
             s.sendmail(acct["user"], to_email, msg.as_string())
         register_sent(to_email, subject, body)

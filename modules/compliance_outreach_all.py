@@ -484,8 +484,19 @@ async def run_compliance_outreach_all(per_tool_limit: int = 15) -> Dict[str, Any
     """
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER", os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com"))
-    smtp_pass = os.getenv("SMTP_PASS", os.getenv("GMAIL_APP_PASSWORD_AIITEC", ""))
+
+    # Nutze gmail_accounts round-robin statt hardcoded aiitecbuuss (kann abgelaufen sein)
+    try:
+        from modules.gmail_accounts import pick_account
+        _acct = pick_account()
+        smtp_user = _acct.email if _acct else os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
+        smtp_pass = _acct.password if _acct else os.getenv("GMAIL_APP_PASSWORD_AIITEC", "")
+        if _acct:
+            smtp_host = _acct.smtp_host
+            smtp_port = _acct.smtp_port
+    except Exception:
+        smtp_user = os.getenv("SMTP_USER", os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com"))
+        smtp_pass = os.getenv("SMTP_PASS", os.getenv("GMAIL_APP_PASSWORD_AIITEC", ""))
 
     if not smtp_pass:
         log.warning("Compliance Outreach: SMTP-Passwort fehlt — übersprungen")
