@@ -5,7 +5,6 @@
 
 | # | Problem | Was tun | Railway Var |
 |---|---------|---------|-------------|
-| 1 | **Meta App-Domains** | developers.facebook.com → App 1535442684079797 → Grundlegendes → App-Domains → `developers.facebook.com` löschen → `supermegabot-production.up.railway.app` eintragen | — |
 | 2 | **Pinterest API — Appeal gesendet** | ✅ Tickets #16593704 + #16593708 erstellt (16.07 15:03). Antwort binnen 1 Werktag. Danach: developers.pinterest.com → neuer Token | `PINTEREST_ACCESS_TOKEN` |
 | 3 | **Stripe AIITEC 401** | stripe.com → AIITEC-Konto einloggen → Dashboard → API Keys → prüfen ob `sk_live_51SwsoNF...` aktiv ist | `STRIPE_SECRET_KEY_AIITEC` |
 
