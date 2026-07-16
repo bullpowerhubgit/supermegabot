@@ -5977,6 +5977,42 @@ async def task_product_generator() -> str:
         return f"Product Generator Fehler: {e}"
 
 
+async def task_saas_factory_cycle() -> str:
+    """Autonomous SaaS Factory: Problem→MVP→Stripe/Gumroad→Landing (dauerhaft)."""
+    try:
+        from modules.autonomous_saas_factory import run_daily_cycle
+        r = await run_daily_cycle()
+        return (
+            f"SaaS Factory: {r.get('mvps_built', 0)} MVPs / "
+            f"{r.get('problems_found', 0)} Probleme | {r.get('products', [])}"
+        )
+    except Exception as e:
+        return f"SaaS Factory Fehler: {e}"
+
+
+async def task_saas_factory_feedback() -> str:
+    """SaaS Factory Feedback: Churn/Stripe Insights → Iteration."""
+    try:
+        from modules.autonomous_saas_factory import run_feedback_cycle
+        r = await run_feedback_cycle()
+        return f"SaaS Feedback: {r.get('analyzed', 0)} analysiert | {r.get('iterations', [])}"
+    except Exception as e:
+        return f"SaaS Feedback Fehler: {e}"
+
+
+async def task_saas_radar_scan() -> str:
+    """SaaS Radar: Reddit/HN Pain Points scannen (Problem-Identifikation)."""
+    try:
+        from modules.saas_radar import run_saas_radar
+        r = await run_saas_radar()
+        return (
+            f"SaaS Radar: scanned={r.get('scanned', 0)} fresh={r.get('fresh', 0)} "
+            f"validated={r.get('validated', 0)}"
+        )
+    except Exception as e:
+        return f"SaaS Radar Fehler: {e}"
+
+
 # ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────────
 
 async def task_shopify_daily_healer() -> str:
@@ -8132,6 +8168,10 @@ TASKS = [
     ("dynamic_pricing",        task_dynamic_pricing,        14400, 1500),  # 4h  — Shopify Preise nach Nachfrage
     ("product_bundles",        task_product_bundle_engine,  43200, 1540),  # 12h — Profitable Bundles erstellen
     ("product_generator",      task_product_generator,      28800, 1580),  # 8h  — Produkt-Ideen aus Trends
+    # ── AUTONOMOUS SAAS FACTORY (Problem→MVP→Sell→Iterate, dauerhaft) ─────────
+    ("saas_radar_scan",        task_saas_radar_scan,        21600, 1590),  # 6h  — Pain Points Reddit/HN
+    ("saas_factory_cycle",     task_saas_factory_cycle,     43200, 1620),  # 12h — 1 MVP: Stripe+Landing+Gumroad
+    ("saas_factory_feedback",  task_saas_factory_feedback,  86400, 1680),  # 24h — Churn/Feedback iterieren
     # ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────
     ("shopify_daily_healer",   task_shopify_daily_healer,   86400, 600),   # 24h — Inventory+Desc+Preis auto-heilen
     ("shopify_full_autonomy",  task_shopify_full_autonomy,  21600, 1620),  # 6h  — SEO+Collections+Restock+Titel
