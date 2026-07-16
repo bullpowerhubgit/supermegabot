@@ -126,15 +126,13 @@ def sitemap_ping() -> dict:
 
 async def maybe_twitter() -> dict:
     try:
-        # best-effort if module exists
-        from modules import twitter_client  # type: ignore
-        if hasattr(twitter_client, "post_tweet"):
-            msg = (
-                "High-Ticket Automation live ⚡ Full-Stack Empire €4.997/mo "
-                "https://buy.stripe.com/fZueVf9jAguu1gc9kO4F42Ev"
-            )
-            r = await twitter_client.post_tweet(msg)
-            return {"ok": True, "result": str(r)[:120]}
+        from modules.twitter_auto_poster import post_tweet  # type: ignore
+        msg = (
+            "High-Ticket Automation live ⚡ Full-Stack Empire €4.997/mo "
+            "https://buy.stripe.com/fZueVf9jAguu1gc9kO4F42Ev"
+        )
+        r = await post_tweet(msg)
+        return {"ok": True, "result": str(r)[:120]}
     except Exception as e:
         return {"ok": False, "error": str(e)[:120]}
     return {"ok": False, "skipped": True}
