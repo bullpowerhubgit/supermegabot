@@ -1,5 +1,10 @@
 {
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "framework": null
+  "version": 2,
+  "builds": [
+    {"src": "*.html", "use": "@vercel/static"},
+    {"src": "*.xml", "use": "@vercel/static"},
+    {"src": "*.txt", "use": "@vercel/static"},
+    {"src": "robots.txt", "use": "@vercel/static"},
+    {"src": "bullpower2026indexnow", "use": "@vercel/static"}
+  ]
 }
