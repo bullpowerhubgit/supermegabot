@@ -1,64 +1,60 @@
-# Pinterest API — Neueinreichung (nach Ablehnung App 1582389)
-# Stand: 2026-06-18
+# Pinterest API Resubmit — AIITEC / rodibot (App 1582363)
 
-## Problem (Ablehnungsgründe von Nana/Pinterest Support):
-1. Beschreibung "Automatisierung eigenes Tool" — zu vage
-2. Datenschutz-URL führt zu 404 (Netlify-Credits aufgebraucht)
-3. Firmenname "AIITEC" und App-Name "Rudibottttttt" passen nicht zu bullpower-hub-portal.netlify.app
+**Status:** Trial Access REJECTED (Nana, tickets 16593704 / 16593708)  
+**Grund:** Company **AIITEC** + App **Rudibot/rodibot** passten nicht zur Website
+`https://bullpower-hub-portal.netlify.app/` (BullPower-Branding).
 
-## Lösung (alle 3 gefixt):
-1. Professionelle App-Beschreibung geschrieben
-2. Neue Datenschutz-URL: https://bullpowerhubgit.github.io/bullpower-legal/datenschutz.html (LIVE ✅)
-3. Konsistenter Name: BullPower Hub / BullPower Social Automation
+## ✅ Fix (2026-07-16) — AIITEC-only Portal LIVE
 
----
+| Item | URL / Value |
+|------|-------------|
+| **Company** | AIITEC |
+| **App name** | rodibot |
+| **App ID** | 1582363 |
+| **Website** | https://aiitec-pinterest-portal.netlify.app/ |
+| **Privacy** | https://aiitec-pinterest-portal.netlify.app/privacy.html |
+| **Datenschutz** | https://aiitec-pinterest-portal.netlify.app/datenschutz |
+| **Data deletion** | https://aiitec-pinterest-portal.netlify.app/data-deletion.html |
+| **Kontakt** | aiitecbuuss@gmail.com |
+| **Vercel mirror** | https://aiitec-pinterest-portal.vercel.app/ (same pages) |
 
-## ANLEITUNG: Pinterest Neu einreichen
+Kein BullPower / Rudibot-Mismatch mehr auf den Compliance-Seiten.
 
-### Schritt 1: Auf Pinterest antworten
-Antwort an Nana (Pinterest Support) senden:
+## ⚠️ Was NUR im Pinterest Developer Portal geht (Browser — Rudolf)
 
----
-Betreff: Re: Ihre App-Anfrage 1582389
+1. https://developers.pinterest.com → App **1582363**
+2. Company name: **AIITEC** (lassen / exakt so)
+3. App name: **rodibot** (nicht “Rudibot”, nicht BullPower Pins)
+4. Website: **https://aiitec-pinterest-portal.netlify.app/**
+5. Privacy policy: **https://aiitec-pinterest-portal.netlify.app/privacy.html**
+6. Data deletion: **https://aiitec-pinterest-portal.netlify.app/data-deletion.html**
+7. **Re-submit Trial Access**
+8. Nach Approve: neuen Access Token + Refresh Token + App Secret erzeugen:
+   - `PINTEREST_ACCESS_TOKEN`
+   - `PINTEREST_REFRESH_TOKEN`
+   - `PINTEREST_APP_SECRET`
 
-Hallo Nana,
+## Token-Status jetzt
 
-vielen Dank für die detaillierte Rückmeldung. Ich habe alle drei Punkte behoben:
+| Check | Result |
+|-------|--------|
+| `pina_…` in `.env` | **401 Authentication failed** |
+| Refresh | unmöglich ohne `PINTEREST_APP_SECRET` + `PINTEREST_REFRESH_TOKEN` |
+| Railway | wartet auf neuen Token nach Trial-Approve |
 
-1. **Beschreibung verbessert** — klare Erklärung der App-Funktion (siehe neue Einreichung)
-2. **Datenschutzrichtlinien-URL repariert** — neue URL ist live: https://bullpowerhubgit.github.io/bullpower-legal/datenschutz.html
-3. **Namen konsistent** — Firmenname und App-Name stimmen jetzt überein
+## Env (lokal gesetzt)
 
-Ich reiche die App neu unter App ID [neue ID nach Erstellung] ein.
+```
+PINTEREST_COMPANY_NAME=AIITEC
+PINTEREST_APP_NAME=rodibot
+PINTEREST_APP_ID=1582363
+PINTEREST_WEBSITE_URL=https://aiitec-pinterest-portal.netlify.app/
+PINTEREST_PRIVACY_URL=https://aiitec-pinterest-portal.netlify.app/privacy.html
+PINTEREST_DATA_DELETION_URL=https://aiitec-pinterest-portal.netlify.app/data-deletion.html
+```
 
-Mit freundlichen Grüßen,
-Rudolf Sarkany
-BullPower Hub
-bullpowersrtkennels@gmail.com
----
+## Alternativ-Pfad (nicht empfohlen, falls Nana auf BullPower beharrt)
 
-### Schritt 2: Neue Pinterest App erstellen
-URL: https://developers.pinterest.com/apps/
-
-Felder:
-- **App Name:** BullPower Social Automation
-- **Description (EN):** Automation software for Shopify merchants that automatically publishes product images and SEO content as Pinterest Pins. The app posts exclusively on behalf of the authenticated user via OAuth 2.0. Use case: e-commerce product promotion and content marketing automation.
-- **Description (DE):** Automatisierungssoftware für Shopify-Händler, die Produktbilder und SEO-Inhalte automatisch als Pinterest-Pins veröffentlicht. Die App postet ausschließlich im Namen des authentifizierten Nutzers über OAuth 2.0.
-- **Company Name:** BullPower Hub
-- **Website URL:** https://bullpower-hub-portal.netlify.app
-- **Privacy Policy URL:** https://bullpowerhubgit.github.io/bullpower-legal/datenschutz.html
-- **Redirect URI:** https://supermegabot-production.up.railway.app/api/pinterest/callback
-
-### Schritt 3: Env-Var setzen sobald App genehmigt
-railway variables set PINTEREST_API_KEY=<neue App ID>
-railway variables set PINTEREST_API_SECRET=<App Secret>
-railway variables set PINTEREST_BOARD_ID=<Board ID>
-
----
-
-## Status
-- [x] Datenschutz-URL erstellt und live
-- [ ] Antwort an Nana senden
-- [ ] Neue App einreichen (developers.pinterest.com)
-- [ ] App-Genehmigung abwarten (1-3 Werktage)
-- [ ] Pinterest Deploy in BRUTUS aktivieren
+Company+App auf BullPower Hub / BullPower Pins umbenennen und
+`https://bullpower-hub-portal.netlify.app/` nutzen — dann müsste Portal-App umbenannt werden.
+**Aktueller Default: AIITEC-Pfad** (passt zu Company im Ticket).
