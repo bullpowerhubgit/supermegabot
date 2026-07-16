@@ -317,18 +317,24 @@ async def create_stripe_payment_link(product: dict) -> dict:
             if not price_id:
                 return {"ok": False, "error": str(price_obj)[:200]}
 
-            # Payment Link
+            # Payment Link (Redirect-URL via stripe_guards → nie url_invalid)
+            from modules.stripe_guards import build_thank_you_url, sanitize_post_data
+            _thanks = (
+                os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/")
+                + "/api/ds24/dankeseite"
+            )
+            _plink = sanitize_post_data("/payment_links", {
+                "line_items[0][price]": price_id,
+                "line_items[0][quantity]": "1",
+                "after_completion[type]": "redirect",
+                "after_completion[redirect][url]": build_thank_you_url(
+                    _thanks, product_name=name
+                ),
+            })
             async with s.post(
                 "https://api.stripe.com/v1/payment_links",
                 auth=aiohttp.BasicAuth(STRIPE_KEY, ""),
-                data={
-                    "line_items[0][price]": price_id,
-                    "line_items[0][quantity]": "1",
-                    "after_completion[type]": "redirect",
-                    "after_completion[redirect][url]": (
-                        os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/") + "/api/ds24/dankeseite"
-                    ),
-                },
+                data=_plink,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r2:
                 link_obj = await r2.json()

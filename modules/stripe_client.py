@@ -50,8 +50,11 @@ def _stripe_key() -> str:
 
 def _stripe_request(key: str, path: str, params: dict | None = None) -> dict:
     import base64
+    from modules.stripe_guards import sanitize_get_params
 
     url = f"{STRIPE_API_BASE}{path}"
+    # Dauerhaft: type aus /prices-Query entfernen
+    params = sanitize_get_params(path, params)
     if params:
         qs = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{qs}"

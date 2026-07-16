@@ -7,15 +7,21 @@ import base64
 import logging
 import json
 from datetime import datetime, timezone
-from urllib.parse import quote as urlquote
 import aiohttp
 from aiohttp import web
 
+from modules.stripe_guards import (
+    build_thank_you_url,
+    resolve_stripe_key,
+    sanitize_get_params,
+    sanitize_post_data,
+)
+
 log = logging.getLogger(__name__)
 
-STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_SECRET_KEY = resolve_stripe_key() or os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_API_BASE  = "https://api.stripe.com/v1"
-SHOP_THANK_YOU   = "https://ineedit.com.co/pages/danke"
+SHOP_THANK_YOU   = os.getenv("STRIPE_THANK_YOU_URL", "https://ineedit.com.co/pages/danke")
 
 
 def _stripe_auth() -> str:
@@ -26,13 +32,17 @@ def _stripe_auth() -> str:
 
 async def _stripe_get(session: aiohttp.ClientSession, path: str, params: dict = None) -> dict:
     url = f"{STRIPE_API_BASE}{path}"
-    async with session.get(url, params=params, headers={"Authorization": _stripe_auth()}) as r:
+    # Dauerhaft: type aus /prices strippen
+    safe_params = sanitize_get_params(path, params)
+    async with session.get(url, params=safe_params, headers={"Authorization": _stripe_auth()}) as r:
         return await r.json()
 
 
 async def _stripe_post(session: aiohttp.ClientSession, path: str, data: dict) -> dict:
     url = f"{STRIPE_API_BASE}{path}"
-    async with session.post(url, data=data, headers={"Authorization": _stripe_auth()}) as r:
+    # Dauerhaft: Redirect-URLs immer URL-safe
+    safe_data = sanitize_post_data(path, data)
+    async with session.post(url, data=safe_data, headers={"Authorization": _stripe_auth()}) as r:
         return await r.json()
 
 
@@ -93,8 +103,10 @@ async def create_payment_links_for_all_products() -> list:
                 log.debug("Payment link already exists for price %s — skipping", pid)
                 continue
 
-            safe_name = urlquote(price["product_name"], safe="")[:120]
-            redirect_url = f"{SHOP_THANK_YOU}?product={safe_name}"
+            # Dauerhaft: urlquote via stripe_guards (verhindert url_invalid)
+            redirect_url = build_thank_you_url(
+                SHOP_THANK_YOU, product_name=price["product_name"]
+            )
 
             payload = {
                 "line_items[0][price]":    pid,
