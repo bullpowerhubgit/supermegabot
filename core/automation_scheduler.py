@@ -2026,6 +2026,22 @@ async def task_shopify_ab_analyze() -> str:
         return f"shopify_ab_analyze Fehler: {exc}"
 
 
+async def task_monetize_master() -> str:
+    try:
+        from modules.monetize_master import run_monetize_master
+        result = await run_monetize_master()
+        kv = result.get("summary", {}).get("klaviyo", {})
+        soc = result.get("summary", {}).get("social", {})
+        return (
+            f"MonetizeMaster: {result.get('streams', 0)} Streams · "
+            f"Klaviyo {kv.get('created', 0)} Kampagnen · "
+            f"Social {len(soc.get('posted', []))} Posts · "
+            f"{result.get('duration_s', 0)}s"
+        )
+    except Exception as exc:
+        return f"monetize_master Fehler: {exc}"
+
+
 async def task_ai_content_calendar() -> str:
     """Täglich 06:00: KI-Inhaltskalender für 7 Tage generieren."""
     try:
@@ -8147,6 +8163,7 @@ TASKS = [
     ("ab_test_analyze",         task_ab_test_analyze,        43200,  510),   # 12h — A/B Gewinner auswählen
     ("shopify_ab_run",          task_shopify_ab_run,         86400,  515),   # 24h — neue Shopify A/B Tests starten
     ("shopify_ab_analyze",      task_shopify_ab_analyze,    172800,  516),   # 48h — Shopify A/B Gewinner auswählen
+    ("monetize_master",         task_monetize_master,         21600,  517),   # 6h — Master Revenue Orchestrator
     ("ai_content_calendar",     task_ai_content_calendar,    86400,  520),   # daily 06:00 — KI-Kalender
     ("revenue_optimize",        task_revenue_optimize,       43200,  530),   # 12h — Revenue-KI-Empfehlungen
     # ── REVOLUTION PACK — SEO + Traffic + Automation Max ─────────────────
