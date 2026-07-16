@@ -1,5 +1,5 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 (Wave 8 — Meta Ads LIVE)**
+**Stand: 2026-07-16 16:15 UTC (Wave 8 — Flash Sale VOLL EINGERICHTET)**
 
 ## 🔴 OFFENE BLOCKER — NUR RUDOLF KANN DAS FIXEN
 
@@ -13,7 +13,9 @@
 | Fix | Detail |
 |-----|--------|
 | **Meta Ads Kampagne LIVE** | Campaign 23858766912160790 AKTIV — Start 17.07 08:00 — Ad 23858776167940790 IN_PROCESS — €10/Tag DE/AT/CH |
-| **Meta Ads Creative** | Existierender Page-Post als Creative — App-Mode-Einschränkung umgangen! Creative ID: 1413151370861273 |
+| **Meta Ads Creative v2** | Flash Sale Post 17.07 als Creative — ID: 1736882491064064 — Ad IN_PROCESS (Review nach Creative-Update) |
+| **FB Flash Sale Posts** | 6 Scheduled Posts (17.07 08:00 → 21.07 18:00) — täglich mit Sale-Content |
+| **Pinterest Appeal** | ✅ Gesendet 16.07 15:03 — Tickets #16593704 + #16593708 — Antwort binnen 1 Werktag |
 | **aiitecbuuss@gmail.com App-PW** | hvzgpgyufricmenj — IMAP+SMTP Login ✅ — alle 5 Gmail-Konten aktiv — Railway ✅ |
 | **Resend API Key** | re_XRHYX... → Test OK (id: 5aba12f6) — .env + Railway ✅ |
 | **Perplexity API** | Key in .env gültig — sonar antwortet ✅ — Railway ✅ |
@@ -98,7 +100,7 @@ looopwave@gmail.com: **dauerhaft entfernt** (nicht benötigt) — Gmail-Pool ohn
 | Telegram | 2 Broadcasts an Rudolf |
 | Klaviyo | **16 neue Kampagnen** erstellt (1 Flash-Sale + 15 Themen-Kampagnen) |
 | Vercel (17 Seiten) | Social Proof + Demo injiziert — alle live |
-| FB Page | Rate Limit Code 368 — noch gesperrt |
+| FB Page | ✅ 6 Flash Sale Posts geplant (17.07 08:00 — 21.07 18:00) |
 
 **IG-Posts heute:** WiFi-Kamera, Solar 100W, RGB-Lampe, Flex-Solar, Leinwand, Solarregler, RC-Body, Dashcam, Mini-Cam, Dashcam 2, Pet-Robot-Cam, Solar-Security-Cam, Action-Cam, Luftqualitätsmesser + diverse
 
