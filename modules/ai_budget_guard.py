@@ -70,17 +70,55 @@ def _today() -> str:
     return time.strftime("%Y-%m-%d")
 
 
-def _sb_get(provider: str) -> dict:
-    """Liest aktuellen Tagesstand aus Supabase (mit lokalem Cache)."""
+_FAILSAFE_FILE = Path("data/ai_budget_failsafe.json")
+_supabase_reachable = True  # globaler Health-Status, initial optimistisch
+
+
+def _local_fallback_get(provider: str) -> dict | None:
+    """Liest lokale Backup-Datei (nur wenn Supabase nicht erreichbar)."""
+    try:
+        if _FAILSAFE_FILE.exists():
+            data = json.loads(_FAILSAFE_FILE.read_text())
+            return data.get(f"{provider}:{_today()}")
+    except Exception:
+        pass
+    return None
+
+
+def _local_fallback_save(provider: str, state: dict) -> None:
+    """Schreibt in lokale Backup-Datei."""
+    try:
+        _FAILSAFE_FILE.parent.mkdir(exist_ok=True)
+        existing = {}
+        if _FAILSAFE_FILE.exists():
+            try:
+                existing = json.loads(_FAILSAFE_FILE.read_text())
+            except Exception:
+                pass
+        existing[f"{provider}:{_today()}"] = state
+        _FAILSAFE_FILE.write_text(json.dumps(existing))
+    except Exception:
+        pass
+
+
+def _sb_get(provider: str) -> dict | None:
+    """Liest aktuellen Tagesstand aus Supabase (mit lokalem Cache).
+    Gibt None zurück wenn Supabase UND lokaler Fallback nicht verfügbar → BLOCK!
+    """
+    global _supabase_reachable
     now = time.time()
     cache_key = f"{provider}:{_today()}"
     if cache_key in _local_cache and now - _cache_ts.get(cache_key, 0) < _CACHE_TTL:
         return _local_cache[cache_key]
 
-    default = {"date": _today(), "usd_spent": 0.0, "calls": 0, "blocked": 0}
-
     if not _SUPABASE_URL or not _SUPABASE_KEY:
-        return default
+        # Kein Supabase konfiguriert — lokale Datei als Backup
+        fallback = _local_fallback_get(provider)
+        if fallback is None:
+            fallback = {"date": _today(), "usd_spent": 0.0, "calls": 0, "blocked": 0}
+        _local_cache[cache_key] = fallback
+        _cache_ts[cache_key] = now
+        return fallback
 
     try:
         key_id = f"ai_budget_{provider}_{_today()}"
@@ -92,17 +130,29 @@ def _sb_get(provider: str) -> dict:
         })
         with urllib.request.urlopen(req, timeout=5) as r:
             rows = json.loads(r.read())
+            _supabase_reachable = True
             if rows:
                 state = json.loads(rows[0]["value"])
                 _local_cache[cache_key] = state
                 _cache_ts[cache_key] = now
+                _local_fallback_save(provider, state)  # Backup aktualisieren
                 return state
+            # Kein Eintrag = neuer Tag → Default
+            default = {"date": _today(), "usd_spent": 0.0, "calls": 0, "blocked": 0}
+            _local_cache[cache_key] = default
+            _cache_ts[cache_key] = now
+            return default
     except Exception as e:
-        log.debug("AIBudgetGuard Supabase read error: %s", e)
-
-    _local_cache[cache_key] = default
-    _cache_ts[cache_key] = now
-    return default
+        log.warning("AIBudgetGuard: Supabase nicht erreichbar! %s → Fallback", e)
+        _supabase_reachable = False
+        # Fail-safe: lokale Datei verwenden
+        fallback = _local_fallback_get(provider)
+        if fallback is not None:
+            _local_cache[cache_key] = fallback
+            _cache_ts[cache_key] = now
+            return fallback
+        # Weder Supabase noch lokale Datei → None = BLOCK
+        return None
 
 
 def _sb_save(provider: str, state: dict) -> None:
@@ -163,6 +213,9 @@ def is_allowed(caller: str = "") -> tuple[bool, str]:
         log.warning("AIBudgetGuard: '%s' BLOCKIERT (nicht in Whitelist)", module)
         return False, f"Modul '{module}' nicht in Revenue-Whitelist"
     state = _sb_get("anthropic")
+    if state is None:  # FAIL-CLOSED: Supabase + lokales Backup nicht verfügbar
+        log.error("AIBudgetGuard: Kein State-Backend! Anthropic BLOCKIERT (fail-closed)")
+        return False, "State-Backend nicht verfügbar — fail-closed"
     if state["usd_spent"] >= DAILY_USD_LIMIT:
         log.warning("AIBudgetGuard: Anthropic Tageslimit $%.2f erreicht!", DAILY_USD_LIMIT)
         return False, f"Anthropic Tageslimit ${DAILY_USD_LIMIT:.2f} erreicht"
@@ -174,6 +227,9 @@ def is_allowed_oai(caller: str = "") -> tuple[bool, str]:
     if module not in REVENUE_MODULES:
         return False, f"Modul '{module}' nicht in Revenue-Whitelist"
     state = _sb_get("openai")
+    if state is None:
+        log.error("AIBudgetGuard: Kein State-Backend! OpenAI BLOCKIERT (fail-closed)")
+        return False, "State-Backend nicht verfügbar — fail-closed"
     if state["usd_spent"] >= DAILY_OAI_USD_LIMIT:
         return False, f"OpenAI Tageslimit ${DAILY_OAI_USD_LIMIT:.2f} erreicht"
     return True, module
@@ -184,6 +240,9 @@ def is_allowed_pplx(caller: str = "") -> tuple[bool, str]:
     if module not in REVENUE_MODULES:
         return False, f"Modul '{module}' nicht in Revenue-Whitelist"
     state = _sb_get("perplexity")
+    if state is None:
+        log.error("AIBudgetGuard: Kein State-Backend! Perplexity BLOCKIERT (fail-closed)")
+        return False, "State-Backend nicht verfügbar — fail-closed"
     if state["usd_spent"] >= DAILY_PPLX_USD_LIMIT:
         return False, f"Perplexity Tageslimit ${DAILY_PPLX_USD_LIMIT:.2f} erreicht"
     return True, module

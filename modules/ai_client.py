@@ -667,8 +667,8 @@ async def _ai_complete_inner(
     try:
         from modules.ai_budget_guard import is_allowed as _guard_ant, record_usage as _record_ant
         _ant_ok, _ant_reason = _guard_ant()
-    except Exception:
-        _ant_ok, _ant_reason = True, "guard_import_failed"
+    except Exception as _ge:
+        _ant_ok, _ant_reason = False, f"guard_import_failed:{_ge}"  # FAIL-CLOSED
     if not _ant_ok:
         log.debug("AIBudgetGuard: Anthropic blockiert — %s", _ant_reason)
     elif _anthropic() and _cb_ok("Anthropic"):
@@ -726,8 +726,8 @@ async def _ai_complete_inner(
     try:
         from modules.ai_budget_guard import is_allowed_oai as _guard_oai
         _oai_ok, _oai_reason = _guard_oai()
-    except Exception:
-        _oai_ok = True
+    except Exception as _goe:
+        _oai_ok, _oai_reason = False, f"guard_import_failed:{_goe}"  # FAIL-CLOSED
     if not _oai_ok:
         log.debug("AIBudgetGuard: OpenAI blockiert — %s", _oai_reason)
     elif _openai() and _cb_ok("OpenAI"):
@@ -760,8 +760,8 @@ async def _ai_complete_inner(
     try:
         from modules.ai_budget_guard import is_allowed_pplx as _guard_pplx
         _pplx_ok, _pplx_reason = _guard_pplx()
-    except Exception:
-        _pplx_ok = True
+    except Exception as _gpe:
+        _pplx_ok, _pplx_reason = False, f"guard_import_failed:{_gpe}"  # FAIL-CLOSED
     if not _pplx_ok:
         log.debug("AIBudgetGuard: Perplexity blockiert — %s", _pplx_reason)
     elif _perplexity() and _cb_ok("Perplexity"):
