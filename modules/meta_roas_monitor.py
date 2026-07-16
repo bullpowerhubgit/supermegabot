@@ -3,8 +3,8 @@
 Meta ROAS Monitor — Automatisches Budget-Scaling
 =================================================
 Prüft täglich ROAS aller aktiven Meta-Kampagnen.
-- ROAS >= 3.0 → Budget +20% (max €50/Tag)
-- ROAS >= 5.0 → Budget +50% (max €100/Tag)
+- ROAS >= 3.0 → Budget +20% (max €15/Tag)
+- ROAS >= 5.0 → Budget +50% (max €15/Tag)
 - ROAS < 0.5 und Spend > €5 → Kampagne pausieren (optional)
 """
 from __future__ import annotations
@@ -26,7 +26,7 @@ API_BASE    = "https://graph.facebook.com/v21.0"
 
 ROAS_SCALE_LOW    = 3.0    # +20% Budget
 ROAS_SCALE_HIGH   = 5.0    # +50% Budget
-MAX_DAILY_BUDGET  = 10000  # Cent — €100/Tag Obergrenze
+MAX_DAILY_BUDGET  = 1500   # Cent — €15/Tag Obergrenze (sicher)
 MIN_SPEND_EUR     = 2.0    # Mindest-Spend bevor Entscheidung
 
 
