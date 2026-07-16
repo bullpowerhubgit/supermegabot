@@ -137,7 +137,7 @@ async def _meta_spend_today() -> float:
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(
-                f"https://graph.facebook.com/v20.0/{META_ACCOUNT}/insights",
+                f"https://graph.facebook.com/v21.0/{META_ACCOUNT}/insights",
                 params={
                     "fields": "spend",
                     "time_range": json.dumps({"since": today, "until": today}),

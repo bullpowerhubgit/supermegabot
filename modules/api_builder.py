@@ -254,7 +254,7 @@ KNOWN_APIS: Dict[str, Dict] = {
     "facebook": {
         "name": "Facebook/Meta Graph",
         "category": "Social",
-        "base_url": lambda: "https://graph.facebook.com/v19.0",
+        "base_url": lambda: "https://graph.facebook.com/v21.0",
         "headers":  lambda: {},
         "test_path": f"/me?access_token={_e('FACEBOOK_APP_ID')}|{_e('FACEBOOK_APP_SECRET')}",
         "test_method": "GET",

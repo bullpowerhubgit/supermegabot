@@ -93,7 +93,7 @@ async def _fb_exchange_token(current_token: str) -> dict:
     Tauscht kurz/lang-lebigen Token gegen neuen 60-Tage-Token aus.
     Endpoint: GET /oauth/access_token?grant_type=fb_exchange_token
     """
-    url = "https://graph.facebook.com/v20.0/oauth/access_token"
+    url = "https://graph.facebook.com/v21.0/oauth/access_token"
     params = {
         "grant_type": "fb_exchange_token",
         "client_id": FB_APP_ID,
@@ -120,7 +120,7 @@ async def _fb_exchange_token(current_token: str) -> dict:
 
 async def _fb_debug_token(token: str) -> dict:
     """Prüft Token-Gültigkeit und Ablaufdatum via debug_token."""
-    url = "https://graph.facebook.com/v20.0/debug_token"
+    url = "https://graph.facebook.com/v21.0/debug_token"
     params = {
         "input_token": token,
         "access_token": f"{FB_APP_ID}|{FB_APP_SECRET}",

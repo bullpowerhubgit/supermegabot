@@ -24,7 +24,7 @@ SUPABASE_URL          = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY  = os.getenv("SUPABASE_SERVICE_KEY", "")
 PRICE_FLOOR           = float(os.getenv("PRICE_FLOOR_EUR", "0.30"))
 
-FB_GRAPH = "https://graph.facebook.com/v18.0"
+FB_GRAPH = "https://graph.facebook.com/v21.0"
 _HAIKU   = "claude-haiku-4-5-20251001"
 
 

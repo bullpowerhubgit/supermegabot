@@ -18,7 +18,7 @@ import aiohttp
 
 log = logging.getLogger("InstagramPipeline")
 
-FB_BASE        = "https://graph.facebook.com/v19.0"
+FB_BASE        = "https://graph.facebook.com/v21.0"
 PAGE_ID        = os.getenv("FACEBOOK_PAGE_ID_AIITEC", "1016738738178786")
 IG_USER_ID     = os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")

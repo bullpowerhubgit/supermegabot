@@ -193,7 +193,7 @@ async def _post_facebook(text: str) -> bool:
     try:
         async with aiohttp.ClientSession() as s:
             r = await s.post(
-                f"https://graph.facebook.com/v19.0/{FACEBOOK_PAGE_ID}/feed",
+                f"https://graph.facebook.com/v21.0/{FACEBOOK_PAGE_ID}/feed",
                 params={"access_token": FACEBOOK_ACCESS_TOKEN},
                 json={"message": text},
                 timeout=aiohttp.ClientTimeout(total=10),

@@ -241,7 +241,7 @@ async def post_facebook_groups(text: str) -> List[Dict]:
     try:
         async with _session() as s:
             async with s.get(
-                "https://graph.facebook.com/v19.0/me/groups",
+                "https://graph.facebook.com/v21.0/me/groups",
                 params={"access_token": token, "fields": "id,name", "limit": "50"}
             ) as r:
                 data = await r.json()
@@ -261,7 +261,7 @@ async def post_facebook_groups(text: str) -> List[Dict]:
         try:
             async with _session() as s:
                 async with s.post(
-                    f"https://graph.facebook.com/v19.0/{gid}/feed",
+                    f"https://graph.facebook.com/v21.0/{gid}/feed",
                     params={"access_token": token},
                     data={"message": text}
                 ) as r:

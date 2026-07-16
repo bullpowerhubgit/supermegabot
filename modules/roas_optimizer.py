@@ -39,7 +39,7 @@ _ACC_INEEDIT = "act_2215713609248740"
 _PIXEL    = (os.getenv("FACEBOOK_PIXEL_ID") or "4215456142051261").strip()
 _TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-_API      = "https://graph.facebook.com/v20.0"
+_API      = "https://graph.facebook.com/v21.0"
 
 # ── Thresholds ────────────────────────────────────────────────────────────────
 ROAS_SCALE   = float(os.getenv("ROAS_SCALE_THRESHOLD", "3.5"))   # scale if >

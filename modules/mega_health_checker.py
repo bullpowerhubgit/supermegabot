@@ -269,7 +269,7 @@ def check_sendgrid() -> dict:
 
 def check_meta_ads() -> dict:
     """
-    GET https://graph.facebook.com/v20.0/me?access_token={token}
+    GET https://graph.facebook.com/v21.0/me?access_token={token}
     Returns {ok, name, error}
     """
     token = _env("META_ADS_TOKEN")
@@ -278,7 +278,7 @@ def check_meta_ads() -> dict:
         logger.warning("check_meta_ads: %s", msg)
         return {"ok": False, "error": msg}
     params = urllib.parse.urlencode({"access_token": token})
-    url = f"https://graph.facebook.com/v20.0/me?{params}"
+    url = f"https://graph.facebook.com/v21.0/me?{params}"
     try:
         status, data = _json_get(url)
         if status == 200 and isinstance(data, dict) and "id" in data:

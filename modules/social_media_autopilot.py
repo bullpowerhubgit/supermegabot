@@ -51,7 +51,7 @@ SHOP_DOMAIN = _e("SHOPIFY_SHOP_DOMAIN", "")
 SHOP_TOKEN  = _e("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOP_VER    = _e("SHOPIFY_API_VERSION", "2025-01")
 
-GRAPH = "https://graph.facebook.com/v19.0"
+GRAPH = "https://graph.facebook.com/v21.0"
 STATE_FILE = Path(__file__).parent.parent / "data" / "social_autopilot_state.json"
 
 

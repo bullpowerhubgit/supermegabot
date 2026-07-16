@@ -341,7 +341,7 @@ async def post_facebook_content(
         params["link"] = link
     try:
         async with session.post(
-            f"https://graph.facebook.com/v18.0/{page_id}/feed",
+            f"https://graph.facebook.com/v21.0/{page_id}/feed",
             params=params,
             timeout=aiohttp.ClientTimeout(total=15),
         ) as r:

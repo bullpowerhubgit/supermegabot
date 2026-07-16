@@ -203,10 +203,10 @@ async def _post_facebook(text: str, image_url: str = "") -> dict:
     if not token:
         return {"ok": False, "error": "Kein FB-Token"}
 
-    url = f"https://graph.facebook.com/v19.0/{page_id}/feed"
+    url = f"https://graph.facebook.com/v21.0/{page_id}/feed"
     payload = {"message": text, "access_token": token}
     if image_url:
-        url = f"https://graph.facebook.com/v19.0/{page_id}/photos"
+        url = f"https://graph.facebook.com/v21.0/{page_id}/photos"
         payload["url"] = image_url
         payload["caption"] = text
 
@@ -237,7 +237,7 @@ async def _post_instagram(caption: str, image_url: str = "") -> dict:
     if not image_url:
         return {"ok": False, "error": "Instagram braucht ein Bild — kein image_url"}
 
-    graph = "https://graph.facebook.com/v19.0"
+    graph = "https://graph.facebook.com/v21.0"
     try:
         async with aiohttp.ClientSession() as s:
             # Schritt 1: Container erstellen

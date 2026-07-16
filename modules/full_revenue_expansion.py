@@ -71,7 +71,7 @@ _KLAVIYO_KEY = lambda: os.getenv("KLAVIYO_API_KEY", "")
 _KLAVIYO_LIST= lambda: os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 _YT_KEY      = lambda: os.getenv("YOUTUBE_API_KEY", "")
 
-GRAPH_URL    = "https://graph.facebook.com/v19.0"
+GRAPH_URL    = "https://graph.facebook.com/v21.0"
 SHOP_URL     = lambda: f"https://{_SHOP_DOMAIN()}"
 DS24_LINK    = lambda: os.getenv("DS24_AFFILIATE_LINK", "")
 GUMROAD_124  = lambda: os.getenv("GUMROAD_124_URL", os.getenv("GUMROAD_PRODUCT_URL", ""))

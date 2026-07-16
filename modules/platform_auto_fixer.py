@@ -184,7 +184,7 @@ async def check_meta(s: aiohttp.ClientSession) -> list[dict]:
     results = []
     if not FB_TOKEN:
         return [{"check": "fb_token", "ok": False, "error": "kein Token"}]
-    graph = "https://graph.facebook.com/v19.0"
+    graph = "https://graph.facebook.com/v21.0"
 
     # 1. Page-Token gültig
     try:

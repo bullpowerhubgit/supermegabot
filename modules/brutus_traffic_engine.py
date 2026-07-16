@@ -540,7 +540,7 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
         import aiohttp
         async with aiohttp.ClientSession() as s:
             async with s.post(
-                f"https://graph.facebook.com/v19.0/{page_id}/feed",
+                f"https://graph.facebook.com/v21.0/{page_id}/feed",
                 data={"message": post_text, "access_token": page_token},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
@@ -586,7 +586,7 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
         async with aiohttp.ClientSession() as s:
             # Step 1: Create media container (image_url required for IG — use a hosted pixel)
             async with s.post(
-                f"https://graph.facebook.com/v19.0/{ig_user_id}/media",
+                f"https://graph.facebook.com/v21.0/{ig_user_id}/media",
                 data={
                     "image_url": "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png",
                     "caption": post_text,
@@ -605,7 +605,7 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
 
             # Step 2: Publish
             async with s.post(
-                f"https://graph.facebook.com/v19.0/{ig_user_id}/media_publish",
+                f"https://graph.facebook.com/v21.0/{ig_user_id}/media_publish",
                 data={"creation_id": container_id, "access_token": page_token},
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:

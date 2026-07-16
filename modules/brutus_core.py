@@ -284,7 +284,7 @@ async def _whatsapp(text: str, session: aiohttp.ClientSession) -> bool:
         return False
     try:
         async with session.post(
-            f"https://graph.facebook.com/v18.0/{WA_PHONE_ID}/messages",
+            f"https://graph.facebook.com/v21.0/{WA_PHONE_ID}/messages",
             headers={"Authorization": f"Bearer {WA_ACCESS_TOKEN}", "Content-Type": "application/json"},
             json={"messaging_product": "whatsapp", "to": wa_to,
                   "type": "text", "text": {"body": text[:4096]}},

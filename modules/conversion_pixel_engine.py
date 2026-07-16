@@ -19,7 +19,7 @@ log = logging.getLogger("ConversionPixel")
 
 _TOKEN    = os.getenv("META_ADS_TOKEN", os.getenv("META_ACCESS_TOKEN", ""))
 _PIXEL_ID = os.getenv("FACEBOOK_PIXEL_ID", "4215456142051261")
-_API      = "https://graph.facebook.com/v20.0"
+_API      = "https://graph.facebook.com/v21.0"
 
 
 def _hash(value: str) -> str:

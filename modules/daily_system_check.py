@@ -161,7 +161,7 @@ async def check_facebook() -> CheckResult:
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(
-                "https://graph.facebook.com/v19.0/me",
+                "https://graph.facebook.com/v21.0/me",
                 params={"access_token": token, "fields": "id,name"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:

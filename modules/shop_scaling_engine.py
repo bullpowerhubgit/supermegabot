@@ -58,7 +58,7 @@ ANTHROPIC_KEY  = _e("ANTHROPIC_API_KEY")
 TG_TOKEN       = _e("TELEGRAM_BOT_TOKEN")
 TG_CHAT        = _e("TELEGRAM_CHAT_ID")
 
-FB_BASE        = "https://graph.facebook.com/v19.0"
+FB_BASE        = "https://graph.facebook.com/v21.0"
 FB_PAGE_ID     = _e("FACEBOOK_PAGE_ID_AIITEC", "1016738738178786")
 FB_PAGE_TOKEN  = _e("FACEBOOK_PAGE_TOKEN_AIITEC") or _e("FACEBOOK_PAGE_TOKEN", "")
 IG_USER_ID     = _e("INSTAGRAM_ACCOUNT_ID", "17841478315197796")

@@ -176,7 +176,7 @@ class PinterestConnector:
 # ---------------------------------------------------------------------------
 
 class MetaConnector:
-    BASE = "https://graph.facebook.com/v19.0"
+    BASE = "https://graph.facebook.com/v21.0"
 
     def __init__(self) -> None:
         self.access_token = _env("META_ACCESS_TOKEN")

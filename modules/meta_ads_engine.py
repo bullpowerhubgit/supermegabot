@@ -20,7 +20,7 @@ import aiohttp
 log = logging.getLogger("MetaAds")
 
 _DB = Path(__file__).parent.parent / "data" / "meta_ads.db"
-_API = "https://graph.facebook.com/v20.0"
+_API = "https://graph.facebook.com/v21.0"
 
 # Live-Kampagnen (erstellt 2026-07-14)
 LIVE_CAMPAIGN_ID  = "23858745481070790"   # Aiitec — DACH E-Commerce 25-55
