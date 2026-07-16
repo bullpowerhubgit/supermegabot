@@ -7858,6 +7858,64 @@ async def handle_product_trends(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_saas_factory_status(req):
+    """GET /api/saas-factory/status — Status der autonomen SaaS Factory."""
+    try:
+        from modules.autonomous_saas_factory import get_status, PRODUCT_TYPES
+        st = get_status()
+        st["ok"] = True
+        st["product_types"] = list(PRODUCT_TYPES)
+        st["pipeline"] = [
+            "problem_identify",
+            "mvp_build",
+            "early_sell",
+            "feedback_iterate",
+        ]
+        return web.json_response(st)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_saas_factory_run(req):
+    """POST /api/saas-factory/run — manueller Trigger (läuft im Hintergrund)."""
+    async def _bg():
+        try:
+            from modules.autonomous_saas_factory import run_daily_cycle
+            await run_daily_cycle()
+        except Exception as e:
+            log.error("saas_factory run: %s", e)
+
+    asyncio.create_task(_bg())
+    return web.json_response({
+        "ok": True,
+        "message": "SaaS Factory Zyklus gestartet (Problem→MVP→Sell→Notify)",
+    })
+
+
+async def handle_saas_factory_feedback(req):
+    """POST /api/saas-factory/feedback — Feedback/Churn-Iteration."""
+    async def _bg():
+        try:
+            from modules.autonomous_saas_factory import run_feedback_cycle
+            await run_feedback_cycle()
+        except Exception as e:
+            log.error("saas_factory feedback: %s", e)
+
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "message": "SaaS Factory Feedback-Zyklus gestartet"})
+
+
+async def handle_saas_radar(req):
+    """GET /api/saas-factory/radar — Pain-Point Scan (Reddit/HN)."""
+    try:
+        from modules.saas_radar import run_saas_radar
+        result = await run_saas_radar()
+        result["ok"] = True
+        return web.json_response(result, dumps=lambda o: __import__("json").dumps(o, default=str))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ── GCP handlers ─────────────────────────────────────────────────────────────
 
 async def handle_gcp_ping(req):
@@ -12071,6 +12129,11 @@ async def create_app():
     app.router.add_post("/api/products/generate-niche",   handle_product_generate_niche)
     app.router.add_post("/api/products/generate-keywords",handle_product_generate_keywords)
     app.router.add_get( "/api/products/trends",           handle_product_trends)
+    # Autonomous SaaS Factory — Problem→MVP→Sell→Iterate (dauerhaft)
+    app.router.add_get( "/api/saas-factory/status",       handle_saas_factory_status)
+    app.router.add_post("/api/saas-factory/run",          handle_saas_factory_run)
+    app.router.add_post("/api/saas-factory/feedback",     handle_saas_factory_feedback)
+    app.router.add_get( "/api/saas-factory/radar",        handle_saas_radar)
 
     # NEXUS-1 routes
     app.router.add_get( "/api/nexus/status",          handle_nexus_status)
