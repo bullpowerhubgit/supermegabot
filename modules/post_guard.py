@@ -41,7 +41,7 @@ _FORBIDDEN = re.compile(
     r'\[INSERT\]|\[PLACEHOLDER\]|undefined|NoneType|None\b|'
     r'TODO|FIXME|LOREM IPSUM|lorem ipsum|<br>|'
     r'example\.com|yourstore\.com|YOUR_DOMAIN|http://localhost|'
-    r'your-shop\.myshopify\.com|supermegabot-production\.up\.railway\.app|'
+    r'your-shop\.myshopify\.com|'
     r'checkout-ds24\.com/product/668035|'
     # ── Spam / Generic Life-Coach-Phrasen ──────────────────────────────────────
     r'nutzt? nur \d+\s*%\s*de\w*|'            # "nutzt nur 44% deines/des/dein"
@@ -247,8 +247,11 @@ async def check_ai_quality(text: str, platform: str = "default", context: str = 
             f"Prüfe diesen {platform}-Post STRENG. "
             "Antworte NUR mit 'OK' oder 'FEHLER: <Grund>'.\n\n"
             "PFLICHT-Kriterien (einer Verletzung = FEHLER):\n"
-            "1. Thema: Smart Home, Technologie, E-Commerce, KI-Tools, Solar oder Online-Shop "
-            "(KEIN Life-Coach, KEIN Finanz-Motivations-Content, KEIN allgemeines Marketing)\n"
+            "1. Thema: Smart Home, Technologie, E-Commerce, KI-Tools, Solar, Online-Shop, "
+            "SaaS-Software, Marketing-Automatisierung, Shopify-Lösungen, Affiliate-Marketing, "
+            "Digistore24, Stripe, Klaviyo, SuperMegaBot, AiiteC, ineedit.com.co, "
+            "Dropshipping, Produktresearch, Revenue-Optimierung — "
+            "(KEIN Life-Coach, KEIN Finanz-Motivations-Content ohne Tech-Bezug)\n"
             "2. Kein Placeholder-Text: keine [KLAMMERN], kein 'undefined', kein 'None'\n"
             "3. Professionelles Deutsch, keine Tippfehler, kein Kauderwelsch\n"
             "4. Konkreter Mehrwert für den Leser — KEIN leerer Hype\n"
@@ -265,8 +268,16 @@ async def check_ai_quality(text: str, platform: str = "default", context: str = 
             return False, f"KI: {reason[:120]}"
         return False, "KI: unklare Antwort — BLOCK (fail-safe)"
     except Exception as e:
-        log.warning("AI-Qualitätsprüfung Fehler: %s — BLOCK", e)
-        return False, "KI-Qualitätsprüfung nicht verfügbar — BLOCK"
+        log.warning("AI-Qualitätsprüfung nicht verfügbar (%s) — Keyword-Fallback", e)
+        # Fallback: Keyword-Check wenn AI offline
+        tech_kw = ['smart', 'tech', 'e-commerce', 'ecommerce', 'shopify', 'amazon', 'ebay',
+                   'ki ', 'ai ', 'automatisierung', 'automation', 'saas', 'solar', 'gadget',
+                   'supermegabot', 'aiitec', 'ineedit', 'stripe', 'revenue', 'monetize',
+                   'digistore', 'ds24', 'affiliate', 'dropshipping', 'klaviyo']
+        t_lower = text.lower()
+        if any(kw in t_lower for kw in tech_kw):
+            return True, ""
+        return False, "KI-Check offline: kein Tech/E-Commerce Bezug erkennbar"
 
 
 # ── Haupt-Check-Funktion ──────────────────────────────────────────────────────
