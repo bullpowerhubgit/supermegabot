@@ -51,13 +51,12 @@ TEST_ONLY_PAYMENT_METHODS: frozenset[str] = frozenset({
 _TEST_PM_PREFIXES = ("pm_card_", "tok_")
 
 # Stripe secret key env names — NUR bullpowersrtkennels@gmail.com Konto!
-# NIEMALS STRIPE_SECRET_KEY_AIITEC verwenden (401, falsches Konto)
+# NIEMALS STRIPE_SECRET_KEY_AIITEC — FALSCHES KONTO, DAUERHAFT VERBOTEN
 _KEY_ENV_NAMES = (
-    "STRIPE_SECRET_KEY_FULL",
-    "STRIPE_SECRET_KEY",   # bullpowersrtkennels@gmail.com — IMMER diese!
+    "STRIPE_SECRET_KEY",        # bullpowersrtkennels@gmail.com — IMMER DIESE!
+    "STRIPE_SECRET_KEY_FULL",   # nur wenn same account
     "STRIPE_API_KEY",
     "STRIPE_SECRET",
-    "STRIPE_TEST_SECRET_KEY",
 )
 
 DEFAULT_THANK_YOU = "https://ineedit.com.co/pages/danke"
@@ -66,19 +65,39 @@ DEFAULT_THANK_YOU = "https://ineedit.com.co/pages/danke"
 # ── Key / mode ───────────────────────────────────────────────────────────────
 
 def resolve_stripe_key() -> str:
-    """Return the active Stripe secret key (FULL has priority)."""
+    """Return bullpowersrtkennels Stripe key ONLY — never AIITEC."""
+    try:
+        from modules.stripe_key_resolver import get_working_stripe_key, assert_bullpower_only
+        k = get_working_stripe_key()
+        if k:
+            return assert_bullpower_only(k)
+    except Exception as e:
+        log.warning("stripe_key_resolver: %s", e)
     for name in _KEY_ENV_NAMES:
         val = (os.getenv(name) or "").strip()
-        if val:
+        if not val:
+            continue
+        # Hard ban AIITEC prefix
+        if val.startswith("sk_live_51Swso") or val.startswith("sk_test_51Swso"):
+            log.error("resolve_stripe_key: BLOCKED AIITEC key in %s", name)
+            continue
+        if val.startswith("sk_live_51Tg1U") or val.startswith("rk_live_51Tg1U"):
             return val
     return ""
 
 
 def resolve_stripe_key_source() -> tuple[str, str]:
-    """Return (env_name, key) for the first configured secret key."""
+    """Return (env_name, key) for bullpower key only."""
+    try:
+        from modules.stripe_key_resolver import get_working_stripe_key, get_working_stripe_key_name
+        k = get_working_stripe_key()
+        if k:
+            return get_working_stripe_key_name() or "STRIPE_SECRET_KEY", k
+    except Exception:
+        pass
     for name in _KEY_ENV_NAMES:
         val = (os.getenv(name) or "").strip()
-        if val:
+        if val and val.startswith("sk_live_51Tg1U"):
             return name, val
     return "", ""
 

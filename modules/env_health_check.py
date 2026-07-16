@@ -45,11 +45,18 @@ REQUIRED_KEYS: list[str] = [
 # This prevents a Railway→.env pull followed by .env→Railway push from clobbering
 # manually-created credentials (e.g. a freshly created Stripe AIITEC key).
 PROTECTED_VARS: frozenset[str] = frozenset({
-    "STRIPE_SECRET_KEY_AIITEC",   # Rudolf creates this manually; Railway value wins
-    "STRIPE_WEBHOOK_SECRET_AIITEC",
+    # STRIPE: nur STRIPE_SECRET_KEY (bullpowersrtkennels) — AIITEC ist VERBOTEN
+    "STRIPE_SECRET_KEY",           # bullpowersrtkennels@gmail.com acct_1Tg1U0… — nie überschreiben
     "GOOGLE_OAUTH_CLIENT_SECRET",  # Google Cloud Console — must be set per-project
     "GROQ_API_KEY",                # Expires; must be renewed at console.groq.com
     "PERPLEXITY_API_KEY",
+})
+
+# Diese Stripe-Vars dürfen NIE für API-Calls genutzt werden (falsches Konto)
+FORBIDDEN_STRIPE_ENV: frozenset[str] = frozenset({
+    "STRIPE_SECRET_KEY_AIITEC",
+    "STRIPE_TEST_SECRET_KEY_AIITEC",
+    "STRIPE_CLI_KEY_AIITEC",
 })
 
 # Placeholder strings that count as "missing"

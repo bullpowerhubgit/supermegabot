@@ -63,6 +63,13 @@ try:
 except Exception as _mtr_err:
     pass  # logging not ready yet
 
+# DAUERHAFT: Stripe NUR bullpowersrtkennels@gmail.com — AIITEC-Keys aus Process löschen
+try:
+    from modules.stripe_key_resolver import enforce_bullpower_only
+    enforce_bullpower_only()
+except Exception:
+    pass
+
 log = logging.getLogger("Dashboard")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
@@ -11128,6 +11135,20 @@ async def create_app():
         )
     except Exception as _mtr_err:
         log.warning("MetaTokenResolver: %s", _mtr_err)
+
+    # Stripe BULLPOWER-ONLY — bullpowersrtkennels, nie AIITEC
+    try:
+        from modules.stripe_key_resolver import enforce_bullpower_only, self_check as _stripe_sc
+        _bp = enforce_bullpower_only()
+        _sc = _stripe_sc()
+        log.info(
+            "Stripe BULLPOWER-ONLY: ok=%s account=%s source=%s purged=%s",
+            _bp.get("ok"), _bp.get("account_id"), _bp.get("source"), _bp.get("purged_env"),
+        )
+        if not _sc.get("ok"):
+            log.error("Stripe self_check FAILED: %s", _sc)
+    except Exception as _bp_err:
+        log.warning("Stripe BULLPOWER-ONLY enforce: %s", _bp_err)
 
     # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
     # + StripeGuard (pm_card_visa@live, url_invalid, type=recurring auf /prices)
