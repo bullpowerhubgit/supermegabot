@@ -23,7 +23,7 @@ log = logging.getLogger("MetaROASMax")
 
 _BASE   = Path(__file__).parent.parent
 _DB     = _BASE / "data" / "meta_roas_max.db"
-_GRAPH  = "https://graph.facebook.com/v20.0"
+_GRAPH  = "https://graph.facebook.com/v21.0"
 
 # ── Credentials ───────────────────────────────────────────────────────────────
 

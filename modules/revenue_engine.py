@@ -194,7 +194,7 @@ async def _fb(message: str, link: str = "") -> bool:
             payload["link"] = link
         async with aiohttp.ClientSession() as s:
             async with s.post(
-                f"https://graph.facebook.com/v19.0/{page}/feed",
+                f"https://graph.facebook.com/v21.0/{page}/feed",
                 data=payload,
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:

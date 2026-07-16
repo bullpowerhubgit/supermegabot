@@ -320,7 +320,7 @@ class TrendVelocityPipeline:
             f"{keyword.title()} im Trend — limitiert verfuegbar!",
         ]
 
-        creatives_url = f"https://graph.facebook.com/v20.0/act_{self.meta_ad_account_id}/adcreatives"
+        creatives_url = f"https://graph.facebook.com/v21.0/act_{self.meta_ad_account_id}/adcreatives"
         ad_ids = []
         for variant in variants:
             payload = {

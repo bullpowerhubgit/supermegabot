@@ -66,7 +66,7 @@ async def _check_page_token(token: str, name: str, session: aiohttp.ClientSessio
     """Prüft Page Token via /me Endpoint."""
     try:
         async with session.get(
-            f"https://graph.facebook.com/v19.0/me",
+            f"https://graph.facebook.com/v21.0/me",
             params={"access_token": token, "fields": "id,name"}
         ) as r:
             data = await r.json()
@@ -81,7 +81,7 @@ async def _try_refresh_user_token(old_token: str, session: aiohttp.ClientSession
     """Versucht, einen User-Token via fb_exchange_token zu verlängern."""
     try:
         async with session.get(
-            "https://graph.facebook.com/v19.0/oauth/access_token",
+            "https://graph.facebook.com/v21.0/oauth/access_token",
             params={
                 "grant_type": "fb_exchange_token",
                 "client_id": FB_APP_ID,

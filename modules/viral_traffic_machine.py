@@ -57,8 +57,31 @@ def _content_hash(text: str) -> str:
 
 # ── Trending Topics ───────────────────────────────────────────────────────────
 
+_VTM_ECOM_KW = {
+    "shopify", "e-commerce", "ecommerce", "onlineshop", "online shop", "dropshipping",
+    "amazon", "ebay", "etsy", "ki", "künstliche intelligenz", "automatisierung",
+    "automation", "saas", "marketing", "seo", "ads", "conversion", "umsatz", "revenue",
+    "social media", "b2b", "startup", "gründung", "handel", "verkauf",
+    "solar", "gadget", "smart home", "smart", "technik", "tech",
+}
+
+_VTM_FALLBACK_TOPICS = [
+    "KI Business 2026", "Passives Einkommen Online",
+    "Shopify Automatisierung", "AI Tools verdienen Geld",
+    "Online Business Deutschland", "Dropshipping ohne Risiko",
+]
+
+
+def _vtm_guard(text: str, platform: str) -> tuple:
+    try:
+        from modules.post_guardian import validate_post
+        return validate_post(text, platform)
+    except Exception:
+        return True, []
+
+
 async def get_trending_topics() -> list[str]:
-    """Fetch trending topics from Google Trends RSS (DE)."""
+    """Fetch trending topics from Google Trends RSS (DE), filtered for e-commerce relevance."""
     try:
         import aiohttp
         import re as _re
@@ -75,19 +98,20 @@ async def get_trending_topics() -> list[str]:
             log.warning("Trends: non-XML response — using fallback")
             raise ValueError("non-XML")
         root = ET.fromstring(text)
-        topics = [item.find("title").text.strip()
-                  for item in root.iter("item")
-                  if item.find("title") is not None and item.find("title").text]
+        topics = []
+        for item in root.iter("item"):
+            t = item.find("title")
+            if t is not None and t.text:
+                title = t.text.strip()
+                if any(kw in title.lower() for kw in _VTM_ECOM_KW):
+                    topics.append(title)
         if topics:
-            log.info("Trending topics fetched: %d", len(topics))
+            log.info("Trending topics (filtered): %d", len(topics))
             return topics[:10]
+        log.info("Trends: keine relevanten E-Commerce-Themen — Fallback")
     except Exception as e:
         log.warning("Trending fetch error: %s", e)
-    return [
-        "KI Business 2026", "Passives Einkommen Online",
-        "Shopify Automatisierung", "AI Tools verdienen Geld",
-        "Online Business Deutschland", "Dropshipping ohne Risiko",
-    ]
+    return _VTM_FALLBACK_TOPICS[:]
 
 
 # ── Content Generation ────────────────────────────────────────────────────────
@@ -147,6 +171,11 @@ async def _get_reddit_token(session) -> str | None:
 
 async def post_to_reddit(content: dict, subreddits: list[str] | None = None) -> dict:
     """Post to Reddit subreddits via OAuth2."""
+    post_text = content.get("reddit_post", content.get("body", ""))
+    ok, errs = _vtm_guard(post_text, "reddit")
+    if not ok:
+        log.warning("VTM Reddit BLOCK: %s | %s", errs, post_text[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     if not all([REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD]):
         return {"ok": False, "error": "no Reddit credentials"}
 
@@ -230,6 +259,10 @@ async def post_to_medium(title: str, body: str, tags: list[str] | None = None) -
 
 async def post_to_linkedin(text: str) -> dict:
     """Share post to LinkedIn."""
+    ok, errs = _vtm_guard(text, "linkedin")
+    if not ok:
+        log.warning("VTM LinkedIn BLOCK: %s | %s", errs, text[:80])
+        return {"ok": False, "blocked": True, "errors": errs}
     if not LINKEDIN_TOKEN or not LINKEDIN_USER_ID:
         return {"ok": False, "error": "no LINKEDIN_ACCESS_TOKEN or LINKEDIN_USER_ID"}
     try:

@@ -161,7 +161,7 @@ async def check_meta() -> Dict:
     if not token:
         return {"platform": "meta", "ok": False, "error": "token missing"}
     status, body = await _get(
-        f"https://graph.facebook.com/v18.0/{page_id}",
+        f"https://graph.facebook.com/v21.0/{page_id}",
         headers={"Authorization": f"Bearer {token}"},
     )
     ok = status == 200 and isinstance(body, dict)
