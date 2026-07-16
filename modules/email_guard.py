@@ -76,7 +76,8 @@ def _is_duplicate(to: str, subject: str, body: str) -> Tuple[bool, str]:
 # ── Verbotene Subject-/Body-Patterns ────────────────────────────────────────
 _SPAM_PATTERNS = re.compile(
     r'\[PRODUKT\]|\[LINK\]|\[DATUM\]|\[PREIS\]|\[NAME\]|\[URL\]|'
-    r'\[INSERT\]|\[PLACEHOLDER\]|undefined|NoneType|None\b|'
+    r'\[INSERT\]|\[PLACEHOLDER\]|undefined|NoneType|'
+    r'(?:^|[\s,—])\bNone\b|Hallo\s+None|— None\b|für None\b|'
     r'TODO|FIXME|lorem ipsum|YOUR_EMAIL|YOUR_NAME|example\.com|'
     r'yourstore\.com|YOUR_DOMAIN|http://localhost|'
     # Life-Coach-Spam

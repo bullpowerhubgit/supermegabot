@@ -118,6 +118,14 @@ def _send_gmail(user: str, password: str, to: str, subject: str, body: str) -> b
 
 def _send_email(to: str, subject: str, body: str) -> Tuple[bool, str]:
     global _pool_idx
+    try:
+        from modules.email_guard import validate_email
+        ok, errs = validate_email(subject, body, to)
+        if not ok:
+            log.warning("EmailGuard blockiert [%s]: %s", to, errs)
+            return False, ""
+    except Exception as eg:
+        log.debug("EmailGuard skip: %s", eg)
     pool = _smtp_pool()
     if not pool:
         log.error("Kein SMTP-Account konfiguriert")
@@ -300,6 +308,9 @@ async def find_affiliate_targets(limit: int = 50) -> List[Dict]:
 
 async def send_affiliate_pitch(email: str, name: str, platform: str,
                                stage: int = 1) -> bool:
+    if not name or str(name).strip() in ("None", "none", "null", "", "N/A"):
+        log.warning("Affiliate-Pitch abgebrochen — kein Name für %s", email)
+        return False
     """Sendet personalisierten Affiliate-Pitch oder Follow-up."""
     with _db() as conn:
         already = conn.execute(

@@ -539,6 +539,14 @@ async def _log_campaign(company_id: int, product_key: str, stage: int, subject: 
 
 def _send_email(to: str, subject: str, body: str) -> bool:
     try:
+        from modules.email_guard import validate_email
+        ok, errs = validate_email(subject, body, to)
+        if not ok:
+            log.warning("EmailGuard blockiert [%s]: %s", to, errs)
+            return False
+    except Exception as eg:
+        log.debug("EmailGuard skip: %s", eg)
+    try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"]    = f"Rudolf Sarkany | AiiteC <{_GMAIL_USER()}>"
@@ -562,9 +570,12 @@ def _personalize(company: dict, stage: int) -> tuple[str, str]:
     prod     = PRODUCTS[product_key]
     template = TEMPLATES.get(product_key, TEMPLATES["aiitec_leasing"]).get(
         stage, TEMPLATES["aiitec_leasing"][1])
+    raw_name = company.get("name") or "Ihr Unternehmen"
+    if str(raw_name).strip() in ("None", "none", "null", "N/A", ""):
+        raw_name = "Ihr Unternehmen"
     ctx = {
-        "name":         company.get("name", "Ihr Unternehmen"),
-        "branche":      company.get("branche", "Ihrer Branche"),
+        "name":         raw_name,
+        "branche":      company.get("branche") or "Ihrer Branche",
         "product_name": prod["name"],
         "product_price": prod["price"],
         "product_promise": prod["promise"],
