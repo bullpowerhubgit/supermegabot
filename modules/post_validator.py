@@ -454,8 +454,10 @@ async def validate_post(
             return False, 2, reason
 
     # ── Layer 3: Nischen-Check ───────────────────────────────────────────────
+    # LinkedIn: PostGuardian prüft Nische bereits vor http_guard → L3 überspringen
+    # Sonst: minimum 1 starkes Nischen-Keyword für Social-Posts erforderlich
     has_niche = any(rx.search(text_clean) for rx in _L3_RE)
-    if not has_niche and content_type == "social":
+    if not has_niche and content_type == "social" and platform not in ("linkedin",):
         reason = "kein_nischen_keyword (Smart Home/Tech/Shop erforderlich)"
         _remember(reason)
         await _notify_telegram(text_clean, platform, 3, reason)
