@@ -346,7 +346,8 @@ async def safe_post(
         except Exception as e:
             log.debug("remember_block: %s", e)
 
-    # Schicht 0: NEVER-TWICE — gleicher Fehler/Content nie wieder
+    # Schicht 0: NEVER-TWICE — gleicher Content/Violation nie wieder
+    # WICHTIG: fail-open bei technischen Fehlern (DB-Fehler, Import) — nur bei echten Content-Violations blocken
     try:
         from modules.post_never_twice import check_never_twice
         nt_ok, nt_errs = check_never_twice(text, platform)
@@ -358,10 +359,8 @@ async def safe_post(
             log.warning("NeverTwice BLOCK [%s] %s: %s", platform, source_module, nt_errs)
             return result
     except Exception as e:
-        result["errors"] = [f"NeverTwice fail-closed: {e}"]
-        result["blocked"] = True
-        log.error("NeverTwice error — BLOCK: %s", e)
-        return result
+        # Fail-OPEN: technischer NeverTwice-Fehler darf Posts NICHT blockieren
+        log.warning("NeverTwice nicht verfügbar (%s) — Post wird trotzdem geprüft", e)
 
     # Schicht 1a: PostGuardian (Off-Topic, Nische, Placeholder, KI-Text)
     try:
@@ -456,12 +455,9 @@ async def safe_post(
         err = api_result.get("error", "Unbekannter API-Fehler")
         result["errors"] = [err]
         _log_post(platform, "failed", text, [err])
-        _log_blocked(platform, err, text)
-        try:
-            from modules.post_never_twice import remember_block
-            remember_block(text, platform, [err], source_module=source_module, kind="fail")
-        except Exception:
-            pass
+        # KEIN remember_block bei API-Fehlern (falscher Token, Netzwerk, Rate-Limit)!
+        # Nur Content-Violations werden dauerhaft geblockt — nicht technische API-Fehler.
+        # Sonst: korrigierter Token → gleicher Content bleibt für immer gesperrt.
         await _alert(
             f"❌ <b>Post FEHLGESCHLAGEN</b> [{platform}] von {source_module}\n"
             f"Fehler: {err}\nPreview: {text[:100]!r}"

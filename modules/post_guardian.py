@@ -184,8 +184,8 @@ def validate_post(content: str, platform: str = "default",
                 pass
             return False, errors
     except Exception as e:
-        log.error("NeverTwice fail-closed in guardian: %s", e)
-        return False, [f"NeverTwice fail-closed: {e}"]
+        # Fail-OPEN: technischer NeverTwice-Fehler soll Posts nicht blockieren
+        log.warning("NeverTwice nicht verfügbar in guardian (%s) — weiter ohne NeverTwice", e)
 
     # 1. Mindestlänge
     if len(text) < limits["min_chars"]:
