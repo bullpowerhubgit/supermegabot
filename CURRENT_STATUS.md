@@ -17,7 +17,7 @@
 2. Facebook Groups: Meta App Review ausstehend
 3. GMC Identitätsverifizierung: merchants.google.com → Banner "Identität bestätigen" → Personalausweis
 4. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
-5. **Stripe Live Keys rotieren** → stripe.com/dashboard/apikeys → "Roll key" (Keys waren in git history)
+5. ~~Stripe Live Keys rotieren~~ ✅ ERLEDIGT (2026-07-16)
 
 ## 🤖 AUTONOMER CHECK 2026-07-15 19:00 UTC
 | Fehler | Fix | Status |
