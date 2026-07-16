@@ -741,9 +741,12 @@ async def _autonomous_loop():
         await asyncio.sleep(6 * 3600)
 
 
+async def _on_startup(app):
+    asyncio.create_task(_autonomous_loop())
+
 def create_app():
     app = web.Application()
-    app.on_startup.append(lambda a: asyncio.create_task(_autonomous_loop()))
+    app.on_startup.append(_on_startup)
     app.router.add_get("/", handle_root)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/success", handle_success)
