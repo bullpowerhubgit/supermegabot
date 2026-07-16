@@ -180,7 +180,11 @@ async def _ai_caption(topic: str = "", lang: str = "de") -> str:
                 f"{topic or 'AI e-commerce automation'}. "
                 f"Max 200 chars. No income claims. 2-3 hashtags. CTA: {SHOP_URL}"
             )
-        return await ai_complete(prompt, max_tokens=150)
+        result = await ai_complete(prompt, max_tokens=150)
+        # ai_complete returns "" when budget guard blocks — fall back to template
+        if result and len(result.strip()) > 20:
+            return result
+        return _pick_template(lang)
     except Exception:
         return _pick_template(lang)
 
