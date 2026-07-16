@@ -89,7 +89,13 @@ async def test_stripe_payment() -> dict:
         result["details"] = f"Stripe Key ungültig (beginnt mit: {key[:8]}...)"
         return result
 
-    # Erstelle Test-PaymentIntent über Stripe API
+    # pm_card_visa is a test-only token — skip the PaymentIntent test in live mode
+    if key.startswith("sk_live_"):
+        result["ok"] = True
+        result["details"] = "Live-Modus: PaymentIntent-Test übersprungen (pm_card_visa nur im Test-Modus)"
+        return result
+
+    # Erstelle Test-PaymentIntent über Stripe API (nur im Test-Modus)
     try:
         import aiohttp
         async with aiohttp.ClientSession() as s:
@@ -98,7 +104,7 @@ async def test_stripe_payment() -> dict:
                 data={
                     "amount": "499",       # 4,99 € Test
                     "currency": "eur",
-                    "payment_method": "pm_card_visa",  # Stripe Test-Karte
+                    "payment_method": "pm_card_visa",  # Stripe Test-Karte (nur sk_test_!)
                     "confirm": "false",
                     "description": "SuperMegaBot Test-Zahlung",
                     "metadata[test]": "true",

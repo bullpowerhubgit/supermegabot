@@ -7,6 +7,7 @@ import base64
 import logging
 import json
 from datetime import datetime, timezone
+from urllib.parse import quote as urlquote
 import aiohttp
 from aiohttp import web
 
@@ -92,7 +93,7 @@ async def create_payment_links_for_all_products() -> list:
                 log.debug("Payment link already exists for price %s — skipping", pid)
                 continue
 
-            safe_name = price["product_name"].replace(" ", "_").replace("/", "-")
+            safe_name = urlquote(price["product_name"], safe="")[:120]
             redirect_url = f"{SHOP_THANK_YOU}?product={safe_name}"
 
             payload = {
