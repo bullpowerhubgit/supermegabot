@@ -38,12 +38,15 @@
 - **STRIPE_RESTRICTED_KEY**: gespeichert (rk_live_51Tg1U0...) ✅ lokal + Railway
 - **36 PLINK_ Vars**: alle auf Railway ✅ (waren zuvor 0 — war Hauptblocker)
 - **18 STRIPE_PAYMENT_LINK_* Vars**: auf Railway ✅
-- **Dauerhafte Live-API-Guards** (`modules/stripe_guards.py`) ✅:
-  1. `pm_card_visa` / Test-PMs → im Live-Modus blockiert (HTTP-Ebene + test_purchase)
-  2. Payment-Link Redirect-URLs → immer `urlencode`/`urlquote` (kein `url_invalid`)
+- **Dauerhafte Live-API-Guards** (`modules/stripe_guards.py` + `http_guard`) ✅:
+  1. `pm_card_visa` / Test-PMs → im Live-Modus blockiert (process-wide)
+  2. Payment-Link Redirect-URLs → immer encoded (kein `url_invalid`)
   3. GET `/prices` → `type=recurring` wird aus Query gestrippt, Filter lokal
-  - Wired in: revenue_activator, payment_links, auto_billing, client, autonomous_pipeline, test_purchase
-  - Offline `self_check()` läuft bei jedem Funnel-Test
+  - **Process-wide**: HttpGuard interceptiert ALLE `api.stripe.com` aiohttp-Calls
+  - **urllib** ebenfalls gepatcht (sync clients)
+  - Startup: `create_app()` → activate + self_check
+  - CI: `.github/workflows/deploy.yml` StripeGuard regression (9 checks)
+  - Module-Level: revenue_activator, payment_links, auto_billing, client, autonomous_pipeline, test_purchase
 - **15 Webhooks**: alle `enabled` ✅
 - **API-Test bestanden**: charges_enabled=True, payouts_enabled=True ✅
 - **Stripe Connect v2**: deployed ✅ (Accounts, Onboarding, Event Destinations, Checkout)

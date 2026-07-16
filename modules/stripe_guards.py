@@ -344,6 +344,253 @@ def sanitize_post_data(path: str, data: Optional[MutableMapping[str, Any]] = Non
     return d
 
 
+# ── Process-level interceptor (aiohttp + urllib) ─────────────────────────────
+
+_PROCESS_GUARD_ACTIVE = False
+_BLOCKED_STATS: dict[str, int] = {
+    "payment_method_live": 0,
+    "type_stripped": 0,
+    "url_sanitized": 0,
+}
+
+
+def key_from_auth_header(headers: Any) -> str:
+    """Extract Stripe secret key from Authorization header (Bearer or Basic)."""
+    if not headers:
+        return resolve_stripe_key()
+    try:
+        if hasattr(headers, "get"):
+            auth = headers.get("Authorization") or headers.get("authorization") or ""
+        elif isinstance(headers, Mapping):
+            auth = headers.get("Authorization") or headers.get("authorization") or ""
+        else:
+            auth = ""
+    except Exception:
+        auth = ""
+    auth = str(auth)
+    if auth.startswith("Bearer "):
+        return auth[7:].strip()
+    if auth.startswith("Basic "):
+        import base64
+        try:
+            decoded = base64.b64decode(auth[6:].strip()).decode()
+            return decoded.split(":", 1)[0]
+        except Exception:
+            pass
+    return resolve_stripe_key()
+
+
+def _params_to_dict(params: Any) -> dict[str, Any]:
+    if params is None:
+        return {}
+    if isinstance(params, Mapping):
+        return dict(params)
+    if isinstance(params, (list, tuple)):
+        out: dict[str, Any] = {}
+        for item in params:
+            if isinstance(item, (list, tuple)) and len(item) >= 2:
+                out[str(item[0])] = item[1]
+        return out
+    return {}
+
+
+def _data_to_mutable(data: Any) -> Optional[MutableMapping[str, Any]]:
+    if data is None:
+        return None
+    if isinstance(data, MutableMapping):
+        return data
+    if isinstance(data, Mapping):
+        return dict(data)
+    if isinstance(data, (list, tuple)):
+        out: dict[str, Any] = {}
+        for item in data:
+            if isinstance(item, (list, tuple)) and len(item) >= 2:
+                out[str(item[0])] = item[1]
+        return out
+    return None
+
+
+class StripeGuardBlocked(RuntimeError):
+    """Raised when a live-mode request would hit Stripe with a test-only PM."""
+
+
+def sanitize_outgoing_request(
+    method: str,
+    url: str,
+    *,
+    params: Any = None,
+    data: Any = None,
+    headers: Any = None,
+) -> tuple[str, Any, Any, Optional[str]]:
+    """
+    Sanitize any outgoing Stripe API call.
+
+    Returns (url, params, data, block_reason).
+    If block_reason is set, caller MUST NOT send the request to Stripe.
+    """
+    if "api.stripe.com" not in (url or ""):
+        return url, params, data, None
+
+    method_u = (method or "GET").upper()
+    parts = urlsplit(url)
+    path = parts.path or ""
+    # Query embedded in URL
+    q = dict(parse_qsl(parts.query, keep_blank_values=True))
+    pdict = _params_to_dict(params)
+    if pdict:
+        q.update({str(k): v for k, v in pdict.items()})
+
+    # 3) GET /prices — strip type forever
+    if method_u == "GET" and ("/prices" in path or path.rstrip("/").endswith("prices")):
+        before = dict(q)
+        q = sanitize_prices_params(q)
+        if "type" in before or "type[]" in before:
+            _BLOCKED_STATS["type_stripped"] += 1
+            log.info("stripe_guards[process]: stripped type from GET %s", path)
+        # Alles in params, URL-Query leeren → kein Doppel-Encoding durch aiohttp
+        url = urlunsplit((parts.scheme, parts.netloc, parts.path, "", parts.fragment))
+        params = q
+        return url, params, data, None
+
+    # POST body guards
+    if method_u in ("POST", "PUT", "PATCH"):
+        mdata = _data_to_mutable(data)
+        if mdata is not None:
+            # 1) payment_intents + test PM in live
+            if "payment_intents" in path:
+                key = key_from_auth_header(headers)
+                _, skip = sanitize_payment_intent_data(key, mdata)
+                if skip:
+                    _BLOCKED_STATS["payment_method_live"] += 1
+                    log.warning("stripe_guards[process]: BLOCKED %s — %s", path, skip)
+                    return url, params, mdata, skip
+
+            # 2) payment_links / checkout redirect URLs
+            if "payment_links" in path or "checkout/sessions" in path:
+                before_urls = {
+                    k: mdata.get(k)
+                    for k in list(mdata.keys())
+                    if "url" in k.lower()
+                }
+                mdata = sanitize_post_data(path, mdata)
+                after_urls = {
+                    k: mdata.get(k)
+                    for k in list(mdata.keys())
+                    if "url" in k.lower()
+                }
+                if before_urls != after_urls:
+                    _BLOCKED_STATS["url_sanitized"] += 1
+                    log.info("stripe_guards[process]: sanitized redirect URL on %s", path)
+            data = mdata
+
+    return url, params, data, None
+
+
+def install_process_guards() -> bool:
+    """
+    Install process-wide Stripe guards on aiohttp + urllib.
+    Safe to call multiple times. Chains with HttpGuard if already patched.
+    """
+    global _PROCESS_GUARD_ACTIVE
+    if _PROCESS_GUARD_ACTIVE:
+        return True
+
+    try:
+        import aiohttp
+        from aiohttp import ClientSession
+    except ImportError:
+        log.warning("stripe_guards: aiohttp missing — process guard partial")
+        ClientSession = None  # type: ignore
+        aiohttp = None  # type: ignore
+
+    if ClientSession is not None:
+        _prev = ClientSession._request
+
+        async def _stripe_safe_request(self, method, str_or_url, **kwargs):
+            url = str(str_or_url)
+            if "api.stripe.com" in url:
+                params = kwargs.get("params")
+                data = kwargs.get("data")
+                headers = kwargs.get("headers")
+                new_url, new_params, new_data, block = sanitize_outgoing_request(
+                    method, url, params=params, data=data, headers=headers,
+                )
+                if block:
+                    raise aiohttp.ClientError(f"StripeGuard blocked: {block}")
+                str_or_url = new_url
+                if new_params is not None:
+                    kwargs["params"] = new_params
+                elif "params" in kwargs and new_params is None:
+                    pass
+                if new_data is not None:
+                    kwargs["data"] = new_data
+            return await _prev(self, method, str_or_url, **kwargs)
+
+        ClientSession._request = _stripe_safe_request  # type: ignore[method-assign]
+        log.info("stripe_guards: aiohttp ClientSession._request patched (process-wide)")
+
+    # urllib for sync clients (stripe_client etc.)
+    try:
+        import urllib.request as _urllib
+
+        _orig_urlopen = _urllib.urlopen
+
+        def _guarded_urlopen(req, *args, **kwargs):
+            url = req.full_url if hasattr(req, "full_url") else str(req)
+            if "api.stripe.com" in url:
+                method = getattr(req, "get_method", lambda: "GET")()
+                headers = dict(req.headers) if hasattr(req, "headers") else {}
+                # data on Request
+                body = getattr(req, "data", None)
+                data_map = None
+                if body and isinstance(body, (bytes, bytearray)):
+                    try:
+                        data_map = dict(parse_qsl(body.decode(), keep_blank_values=True))
+                    except Exception:
+                        data_map = None
+                new_url, _, new_data, block = sanitize_outgoing_request(
+                    method, url, params=None, data=data_map, headers=headers,
+                )
+                if block:
+                    raise RuntimeError(f"StripeGuard blocked: {block}")
+                if new_url != url and hasattr(req, "full_url"):
+                    req.full_url = new_url
+                if new_data is not None and method.upper() in ("POST", "PUT", "PATCH"):
+                    encoded = urlencode(
+                        {k: str(v) for k, v in new_data.items()},
+                        quote_via=quote,
+                        safe="",
+                    ).encode()
+                    req.data = encoded
+                    # Request may use full_url only
+                    try:
+                        req.full_url = new_url
+                    except Exception:
+                        pass
+            return _orig_urlopen(req, *args, **kwargs)
+
+        _urllib.urlopen = _guarded_urlopen  # type: ignore[assignment]
+        log.info("stripe_guards: urllib.urlopen patched (process-wide)")
+    except Exception as exc:
+        log.warning("stripe_guards: urllib patch failed: %s", exc)
+
+    _PROCESS_GUARD_ACTIVE = True
+    return True
+
+
+def is_process_guard_active() -> bool:
+    return _PROCESS_GUARD_ACTIVE
+
+
+def guard_stats() -> dict[str, Any]:
+    return {
+        "active": _PROCESS_GUARD_ACTIVE,
+        "stats": dict(_BLOCKED_STATS),
+        "mode": stripe_mode(),
+        "key_set": bool(resolve_stripe_key()),
+    }
+
+
 # ── Self-check (no network) ──────────────────────────────────────────────────
 
 def self_check() -> dict[str, Any]:
@@ -358,6 +605,15 @@ def self_check() -> dict[str, Any]:
     ok2, _ = guard_payment_method("sk_test_x", "pm_card_visa")
     results.append({"name": "allow_pm_card_visa_test", "ok": ok2})
 
+    # 1c) process sanitizer blocks live PI
+    _, _, _, block = sanitize_outgoing_request(
+        "POST",
+        "https://api.stripe.com/v1/payment_intents",
+        data={"payment_method": "pm_card_visa", "amount": "100"},
+        headers={"Authorization": "Bearer sk_live_testkey"},
+    )
+    results.append({"name": "process_block_live_pm", "ok": bool(block)})
+
     # 2) product name encoded
     url = build_thank_you_url("https://example.com/danke", product_name="Abo Pro / 99€")
     encoded_ok = " " not in url and "/ " not in url and "99" in url and "product=" in url
@@ -369,6 +625,22 @@ def self_check() -> dict[str, Any]:
     })
     u = fixed["after_completion[redirect][url]"]
     results.append({"name": "sanitize_redirect_spaces", "ok": " " not in u, "url": u})
+
+    # 2c) process sanitizer encodes payment_links URL
+    _, _, pdata, _ = sanitize_outgoing_request(
+        "POST",
+        "https://api.stripe.com/v1/payment_links",
+        data={
+            "after_completion[redirect][url]": "https://x.com/danke?product=Hello World",
+            "line_items[0][price]": "price_1",
+        },
+    )
+    redir = (pdata or {}).get("after_completion[redirect][url]", "")
+    results.append({
+        "name": "process_sanitize_plink_url",
+        "ok": isinstance(redir, str) and " " not in redir,
+        "url": redir,
+    })
 
     # 3) type stripped from prices params
     cleaned = sanitize_prices_params({"active": "true", "type": "recurring", "limit": "100"})
@@ -386,8 +658,32 @@ def self_check() -> dict[str, Any]:
     rec = filter_prices_by_type(sample, "recurring")
     results.append({"name": "local_recurring_filter", "ok": len(rec) == 1 and rec[0]["id"] == "1"})
 
+    # 3c) process sanitizer strips type from URL query → params
+    new_url, new_params, _, _ = sanitize_outgoing_request(
+        "GET",
+        "https://api.stripe.com/v1/prices?active=true&type=recurring&limit=100",
+    )
+    p = new_params or {}
+    results.append({
+        "name": "process_strip_type_from_url",
+        "ok": (
+            "type=" not in (new_url or "")
+            and "type" not in p
+            and str(p.get("active")) == "true"
+        ),
+        "url": new_url,
+        "params": p,
+    })
+
     all_ok = all(r["ok"] for r in results)
-    return {"ok": all_ok, "checks": results, "mode": stripe_mode(), "key_set": bool(resolve_stripe_key())}
+    return {
+        "ok": all_ok,
+        "checks": results,
+        "mode": stripe_mode(),
+        "key_set": bool(resolve_stripe_key()),
+        "process_guard": _PROCESS_GUARD_ACTIVE,
+        "stats": dict(_BLOCKED_STATS),
+    }
 
 
 if __name__ == "__main__":

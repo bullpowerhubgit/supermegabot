@@ -308,6 +308,32 @@ _original_request = ClientSession._request
 async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any):
     url = str(str_or_url)
 
+    # ── StripeGuard — dauerhaft ALLE api.stripe.com Calls sanitizen ───────────
+    # Verhindert: pm_card_visa@live, url_invalid, type=recurring on GET /prices
+    if "api.stripe.com" in url:
+        try:
+            from modules.stripe_guards import sanitize_outgoing_request
+            new_url, new_params, new_data, block = sanitize_outgoing_request(
+                method,
+                url,
+                params=kwargs.get("params"),
+                data=kwargs.get("data"),
+                headers=kwargs.get("headers"),
+            )
+            if block:
+                log.warning("StripeGuard BLOCK via HttpGuard: %s", block)
+                raise aiohttp.ClientError(f"StripeGuard blocked: {block}")
+            str_or_url = new_url
+            url = new_url
+            if new_params is not None:
+                kwargs["params"] = new_params
+            if new_data is not None:
+                kwargs["data"] = new_data
+        except aiohttp.ClientError:
+            raise
+        except Exception as _sg_err:
+            log.debug("StripeGuard non-fatal: %s", _sg_err)
+
     # ── Telegram Rate Limiter — greift für ALLE sendMessage Calls ─────────────
     if method.upper() == "POST" and "api.telegram.org" in url and "sendMessage" in url:
         allowed = await _tg_rate_check()
@@ -393,9 +419,25 @@ def activate() -> None:
         return
     ClientSession._request = _intercepted_request
     _patch_urllib_telegram()
+    # Stripe process-guards (urllib + stats) — aiohttp läuft bereits über uns
+    try:
+        from modules.stripe_guards import install_process_guards, self_check
+        # Mark process guard; urllib patch still useful for sync clients
+        install_process_guards()
+        # Re-bind aiohttp to OUR interceptor (install_process_guards may have wrapped)
+        # Chain: our intercept → (maybe stripe layer) → original
+        # Ensure HttpGuard stays outermost for social + stripe
+        ClientSession._request = _intercepted_request
+        sc = self_check()
+        if sc.get("ok"):
+            log.info("StripeGuard self_check OK — 3 Live-Error-Klassen dauerhaft geblockt")
+        else:
+            log.error("StripeGuard self_check FAILED: %s", sc)
+    except Exception as e:
+        log.warning("StripeGuard activate failed (non-fatal): %s", e)
     _ACTIVATED = True
     log.info(
-        "HttpGuard AKTIV — %d Social + %d Email + %d SMS + %d Shopify Patterns + Telegram Rate-Limit",
+        "HttpGuard AKTIV — %d Social + %d Email + %d SMS + %d Shopify Patterns + Telegram Rate-Limit + StripeGuard",
         len(_SOCIAL_POST_PATTERNS),
         len(_EMAIL_POST_PATTERNS),
         len(_SMS_POST_PATTERNS),

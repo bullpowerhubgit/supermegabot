@@ -20,5 +20,24 @@ jobs:
           python3 -m py_compile dashboard/server.py
           for f in modules/*.py core/*.py; do python3 -m py_compile "$f"; done
           echo "All Python files OK"
+      - name: StripeGuard permanent regression
+        run: |
+          python3 - <<'PY'
+          from modules.stripe_guards import self_check
+          r = self_check()
+          assert r["ok"], r
+          names = {c["name"] for c in r["checks"]}
+          required = {
+              "block_pm_card_visa_live",
+              "process_block_live_pm",
+              "urlquote_product_name",
+              "process_sanitize_plink_url",
+              "strip_type_from_prices",
+              "process_strip_type_from_url",
+          }
+          missing = required - names
+          assert not missing, f"missing checks: {missing}"
+          print("StripeGuard self_check OK:", len(r["checks"]), "checks")
+          PY
       - name: Deploy note
         run: echo "✅ Syntax OK — Railway GitHub App deployt automatisch auf push zu main"

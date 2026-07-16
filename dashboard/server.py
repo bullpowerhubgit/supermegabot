@@ -10880,11 +10880,25 @@ async def _auto_register_brevo_ip() -> None:
 
 async def create_app():
     # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
+    # + StripeGuard (pm_card_visa@live, url_invalid, type=recurring auf /prices)
     try:
         from modules.http_guard import activate as _hg_activate
         _hg_activate()
     except Exception as _hg_err:
         log.warning("HttpGuard konnte nicht aktiviert werden: %s", _hg_err)
+
+    # StripeGuard Fallback — falls HttpGuard fehlschlägt, trotzdem process-wide patchen
+    try:
+        from modules.stripe_guards import install_process_guards, self_check, is_process_guard_active
+        if not is_process_guard_active():
+            install_process_guards()
+        _sg = self_check()
+        log.info(
+            "StripeGuard: active=%s self_check=%s mode=%s",
+            is_process_guard_active(), _sg.get("ok"), _sg.get("mode"),
+        )
+    except Exception as _sg_err:
+        log.warning("StripeGuard Fallback: %s", _sg_err)
 
     try:
         from modules.connect_all import normalize_env_aliases, reset_circuit_breakers
