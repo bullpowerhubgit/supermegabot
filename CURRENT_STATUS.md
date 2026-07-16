@@ -1,6 +1,18 @@
 # SuperMegaBot — CURRENT STATUS
 **Stand: 2026-07-16 00:30 UTC — 3 NEUE RAILWAY-SERVICES DEPLOYED ✅**
 
+## ✅ STRIPE KEYS ROTIERT + VERTEILT (2026-07-16)
+- Neue Keys aus Desktop/Neuer Ordner 3 extrahiert → SK4 (`...JkY2jgpL`) aktiv
+- PK: `pk_live_...Xy9OtPLU` (neu)
+- Alle 8 Railway-Services aktualisiert: supermegabot, steuercockpit, icomeauto, shopify-acquisition, eu-compliance-saas, stripe-connect-saas, seo-turbo-tools, analytics-marketing
+- .env lokal aktualisiert
+
+## ✅ SHOPIFY BRUTAL TUNING GEFIXT (2026-07-16)
+- Starter €49/mo: `buy.stripe.com/4gM6oJ53k5PQ...` (war: mailto!)
+- Pro €149/mo: `buy.stripe.com/9B6aEZ3Zg922...` (war: abgelaufener Key)
+- GitHub `shopify-brutal-tuning-landing` → Netlify auto-deploy läuft
+- Live: https://shopify-brutal-tuning.netlify.app
+
 ## 🚀 NEU DEPLOYED (2026-07-16)
 | Service | URL | Status |
 |---------|-----|--------|
