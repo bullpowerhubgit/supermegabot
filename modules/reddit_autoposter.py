@@ -113,7 +113,7 @@ async def _post_to_subreddit(subreddit: str, title: str, text: str, token: str) 
 async def run_reddit_blast(topic: str = "passives Einkommen KI 2026") -> dict:
     """Post to up to 3 subreddits per run — Cookie Auth primary, OAuth2 fallback."""
     title = f"[Guide] {topic} — Vollständiger Leitfaden 2026"
-    text = (
+    text = (  # noqa: E501 — guard runs below after text construction
         f"Hey alle!\n\nIch wollte meine Erfahrungen teilen, wie man mit KI-Tools wirklich passives Einkommen aufbaut.\n\n"
         f"**Was wirklich funktioniert:**\n\n"
         f"1. **Automatisierte Shops** — Shopify + KI-Produktbeschreibungen + Auto-Fulfillment\n"
@@ -123,6 +123,15 @@ async def run_reddit_blast(topic: str = "passives Einkommen KI 2026") -> dict:
         f"Hat jemand ähnliche Erfahrungen? Gerne im Kommentar teilen!\n\n"
         f"---\n*Eigene Erfahrungen, kein bezahlter Post*"
     )
+
+    try:
+        from modules.post_guardian import validate_post
+        ok, errs = validate_post(f"{title}\n{text}", "reddit")
+        if not ok:
+            log.warning("RedditAutoposter BLOCK: %s | %s", errs, title[:80])
+            return {"ok": False, "blocked": True, "errors": errs, "posted": 0}
+    except Exception:
+        pass
 
     # Rotate subreddits based on hour to spread posts over time
     hour = datetime.now(timezone.utc).hour
