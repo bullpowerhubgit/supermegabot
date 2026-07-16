@@ -6162,6 +6162,24 @@ async def task_pinterest_token_health() -> str:
         return f"Pinterest Token-Check Fehler: {e}"
 
 
+async def task_email_monitor() -> str:
+    """Gmail IMAP Monitor: alle 2min neue Emails prüfen — Pinterest, API-Alerts etc."""
+    try:
+        from modules.email_inbox_monitor import run_email_monitor
+        return await run_email_monitor()
+    except Exception as e:
+        return f"Email Monitor Fehler: {e}"
+
+
+async def task_api_key_health() -> str:
+    """API-Key Health Check: OpenAI, Resend, Anthropic, OpenRouter (alle 12h)."""
+    try:
+        from modules.email_inbox_monitor import run_api_key_health_check
+        return await run_api_key_health_check()
+    except Exception as e:
+        return f"API Health Fehler: {e}"
+
+
 async def task_sendgrid_daily() -> str:
     """SendGrid: tägliche Revenue-Email an alle Klaviyo-Profile (täglich)."""
     try:
@@ -7995,6 +8013,9 @@ TASKS = [
     ("upwork_cycle",           task_upwork_cycle,           43200, 780),   # 12h — Upwork Proposals Auto
     # ── Klaviyo Email Automation ──────────────────────────────────────────────
     ("klaviyo_cycle",          task_klaviyo_cycle,          28800, 820),   # 8h — Klaviyo Kampagnen
+    # ── Email & API Monitoring ────────────────────────────────────────────────
+    ("email_monitor",            task_email_monitor,              120,    5),  # alle 2min — Gmail IMAP: Pinterest/API Alerts
+    ("api_key_health",           task_api_key_health,           43200,   15),  # alle 12h — API-Key Validierung + Alert
     # ── Pinterest Traffic ─────────────────────────────────────────────────────
     ("pinterest_cycle",          task_pinterest_cycle,          14400,  860),  # 4h — Pinterest autonomy
     ("pinterest_traffic",        task_pinterest_traffic_cycle,   7200,  870),  # 2h — Smart Home Pins ineedit.com.co
