@@ -641,9 +641,30 @@ _OWN_EMAILS = {
     "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com", "looopwave@gmail.com",
 }
 
+_SKIP_PREFIXES = (
+    "noreply@", "no-reply@", "no_reply@", "donotreply@", "do-not-reply@",
+    "mailer-daemon@", "postmaster@", "bounce@", "bounces@", "notification@",
+    "notifications@", "info-noreply@", "auto@", "automated@",
+)
+
+def _is_valid_recipient(addr: str) -> bool:
+    a = addr.lower().strip()
+    if not a or "@" not in a:
+        return False
+    local = a.split("@")[0]
+    if any(a.startswith(p) for p in _SKIP_PREFIXES):
+        return False
+    if local in ("noreply", "no-reply", "no_reply", "donotreply", "bounce",
+                 "bounces", "postmaster", "mailer-daemon", "auto", "automated"):
+        return False
+    return True
+
 def _send_email(sender_idx: int, to_email: str, subject: str, body: str) -> bool:
     if to_email.lower() in _OWN_EMAILS:
         log.warning(f"Eigene Adresse übersprungen: {to_email}")
+        return False
+    if not _is_valid_recipient(to_email):
+        log.warning(f"Ungültige/Noreply-Adresse übersprungen: {to_email}")
         return False
     acct = _GMAIL_ACCOUNTS[sender_idx % len(_GMAIL_ACCOUNTS)]
     if not acct["pass"]:
