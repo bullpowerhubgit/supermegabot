@@ -293,7 +293,7 @@ class DropshippingWorkflow:
 
         if shopify_token and shopify_domain and HAS_AIOHTTP:
             try:
-                url = f"https://{shopify_domain}/admin/api/2024-01/products.json"
+                url = f"https://{shopify_domain}/admin/api/2026-04/products.json"
                 headers = {
                     "X-Shopify-Access-Token": shopify_token,
                     "Content-Type": "application/json",

@@ -59,7 +59,7 @@ async def _klaviyo_event(event_name: str, properties: dict) -> bool:
                 "attributes": {
                     "metric": {"data": {"type": "metric", "attributes": {"name": event_name}}},
                     "properties": properties,
-                    "profile": {"data": {"type": "profile", "attributes": {"email": "broadcast@bullpowerhub.com"}}},
+                    "profile": {"data": {"type": "profile", "attributes": {"email": "aiitecbuuss@gmail.com"}}},
                 }
             }
         }

@@ -1754,7 +1754,7 @@ async def task_pinterest_auto_post() -> str:
             return "Shopify nicht konfiguriert"
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             async with s.get(
-                f"https://{domain}/admin/api/2024-01/products.json?limit=10&published_status=published",
+                f"https://{domain}/admin/api/2026-04/products.json?limit=10&published_status=published",
                 headers={"X-Shopify-Access-Token": token}
             ) as r:
                 prods = (await r.json()).get("products", [])
@@ -1830,7 +1830,7 @@ async def task_instagram_auto_post() -> str:
             return "Shopify nicht konfiguriert"
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             async with s.get(
-                f"https://{domain}/admin/api/2024-01/products.json?limit=10&published_status=published",
+                f"https://{domain}/admin/api/2026-04/products.json?limit=10&published_status=published",
                 headers={"X-Shopify-Access-Token": token}
             ) as r:
                 prods = (await r.json()).get("products", [])

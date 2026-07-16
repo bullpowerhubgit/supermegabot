@@ -99,7 +99,7 @@ async def _shopify_today() -> dict:
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(
-                f"https://{SHOPIFY_DOMAIN}/admin/api/2024-01/orders.json",
+                f"https://{SHOPIFY_DOMAIN}/admin/api/2026-04/orders.json",
                 params={"status": "any", "created_at_min": today, "limit": 250},
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
                 timeout=aiohttp.ClientTimeout(total=15),

@@ -103,7 +103,7 @@ def _json_post(
 
 def check_shopify() -> dict:
     """
-    GET /admin/api/2024-01/shop.json
+    GET /admin/api/2026-04/shop.json
     Returns {ok, name, plan, error}
     """
     domain = _env("SHOPIFY_SHOP_DOMAIN")
@@ -112,7 +112,7 @@ def check_shopify() -> dict:
         msg = "Missing SHOPIFY_SHOP_DOMAIN or SHOPIFY_ADMIN_API_TOKEN"
         logger.warning("check_shopify: %s", msg)
         return {"ok": False, "error": msg}
-    url = f"https://{domain}/admin/api/2024-01/shop.json"
+    url = f"https://{domain}/admin/api/2026-04/shop.json"
     headers = {"X-Shopify-Access-Token": token}
     try:
         status, data = _json_get(url, headers=headers)

@@ -41,7 +41,7 @@ def _get_admin_token() -> str:
 
 
 def _api_base(shop_domain: str) -> str:
-    return f"https://{shop_domain}/admin/api/2024-01/webhooks.json"
+    return f"https://{shop_domain}/admin/api/2026-04/webhooks.json"
 
 
 # ---------------------------------------------------------------------------
