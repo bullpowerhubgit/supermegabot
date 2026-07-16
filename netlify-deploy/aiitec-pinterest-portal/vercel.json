@@ -1,0 +1,19 @@
+{
+  "rewrites": [
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/privacy/", "destination": "/privacy.html" },
+    { "source": "/datenschutz", "destination": "/privacy.html" },
+    { "source": "/datenschutz/", "destination": "/privacy.html" },
+    { "source": "/data-deletion", "destination": "/data-deletion.html" },
+    { "source": "/data-deletion/", "destination": "/data-deletion.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "index, follow" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
+      ]
+    }
+  ]
+}
