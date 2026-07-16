@@ -30,10 +30,7 @@ log = logging.getLogger("RevenueDashboard")
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 
 # ── Credentials ────────────────────────────────────────────────────────────────
-_STRIPE_KEY  = lambda: (
-    os.getenv("STRIPE_SECRET_KEY")
-    or os.getenv("STRIPE_SECRET_KEY_AIITEC", "")
-)
+_STRIPE_KEY  = lambda: os.getenv("STRIPE_SECRET_KEY", "")
 _SHOP_DOMAIN = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
 _SHOP_TOK    = lambda: os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 _SHOP_VER    = lambda: os.getenv("SHOPIFY_API_VERSION", "2026-04")

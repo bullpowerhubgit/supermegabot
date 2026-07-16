@@ -68,7 +68,7 @@ def _stripe_key_fn() -> str:
             return k
     except Exception:
         pass
-    return _e("STRIPE_SECRET_KEY", "STRIPE_SECRET_KEY_AIITEC")
+    return _e("STRIPE_SECRET_KEY")
 
 
 STRIPE_KEY = _stripe_key_fn
