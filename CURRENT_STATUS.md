@@ -214,7 +214,52 @@ Featured:
 ### LinkedIn Posts ✅
 - 3 Posts live: DS24 Pro Suite, AutoIncome AI, Shopify Suite Pro
 
-## Fixes 2026-07-16 (commit 9331cb96)
-- ✅ monetize_master: run_cart_recovery_emails → run_cart_recovery_cycle (korrekter Funktionsname)
-- ✅ email_revenue_engine: SQL-Fehler "no such column: name" behoben → company/branche
-- ✅ ai_client: OpenRouter-Modelle aktualisiert (7 aktuelle freie Modelle)
+## ✅ SESSION 2026-07-16 WAVE 5 — INSTAGRAM + LINKEDIN + KLAVIYO
+
+### Instagram Posts LIVE ✅ (@aaiitecc — 4.800 Follower)
+- Post 1: 100W Solar-Anlagesatz €119,99 | ID: 18022282622684573
+- Post 2: Mini HD Sicherheitskamera €17,99 | ID: 18169518667441728
+- Post 3: PTZ Outdoor Kamera 8MP €84,99 | ID: 18327749161279555
+- Post 4: 100-120 Zoll Projektionsleinwand €134,99 | ID: 17975207654904800
+- Post 5: AI Income Machine DS24 Affiliate | ID: 18098203319225386
+- Methode: Graph API v21.0 via FACEBOOK_USER_TOKEN + PAGE_TOKEN
+
+### LinkedIn ✅
+- KI-Income Streams 2026 Artikel: urn:li:share:7483379377913806848
+
+### Klaviyo ✅ 13 Campaigns heute erstellt
+- run_daily_klaviyo_campaigns(3) + mass_create_klaviyo_campaigns(10)
+
+### Telegram ✅
+- Broadcast Revenue Update (msg 183785) gesendet
+
+### Facebook ❌ Rate-Limited (Code 368, Subcode 1390008) — ~24h Sperre
+### Twitter ❌ Cookie-Auth abgelaufen (7 Tage seit letztem Login) — Chrome Login nötig
+
+---
+
+## Monetarisierung Aktivierung 2026-07-16
+
+### Aktionen heute:
+- ✅ **10 Fake-Gumroad-Produkte gelöscht** (News-Headlines als Namen)
+- ✅ **7 Premium Gumroad-Produkte definiert** (€15-€97, Smart Home/E-Commerce Nische) → gehen MORGEN live (Daily-Limit heute erreicht)
+- ✅ **8 Telegram Broadcasts** gesendet (5× High-Ticket + 3× DS24 Affiliates)
+- ✅ **3 LinkedIn Posts** live (Announcement + DS24 Affiliate + Shopify Traffic)
+- ✅ **3 Klaviyo Flows** auf "live" gesetzt
+- ✅ **Klaviyo Campaign** erstellt (email_blast_engine)
+- ✅ **DS24 bestätigt** 449 Produkte × 50% Provision → scheduler blasts aktiv
+- ✅ **Shopify** 10.752 Produkte live
+
+### Fixes heute (commits 9331cb96 → dad636e0):
+- ✅ monetize_master: run_cart_recovery_emails → run_cart_recovery_cycle
+- ✅ email_revenue_engine: SQL "no such column: name" → company/branche behoben
+- ✅ ai_client: OpenRouter-Modelle aktualisiert (7 aktuelle)
+- ✅ post_guard: Railway-URL nicht mehr blockiert, AI-Fallback auf Keywords
+- ✅ gumroad_autonomy: 7 Premium-Produkte (€15-€97)
+
+### Gesperrt heute (erneuern nötig):
+- ❌ Gmail + SendGrid: Daily Limit erschöpft → morgen wieder frei
+- ❌ Twitter OAuth: 401 Unauthorized → neu generieren auf developer.twitter.com
+- ❌ Pinterest Token: 401 → neu auth auf developers.pinterest.com
+- ❌ Meta Ads: ads_management fehlt für act_878505274898620 → Business Manager Settings
+- ❌ KI-APIs: Anthropic invalid, OpenAI quota, OpenRouter daily limit → $10 auf openrouter.ai
