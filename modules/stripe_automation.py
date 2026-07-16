@@ -2,7 +2,9 @@
 """
 Stripe Payment Automation
 Charges, Customers, Subscriptions, Revenue Tracking, Telegram Alerts
-Account: aiitec (acct_1SwsoNFZGd8ei10Q)
+Account: bullpowersrtkennels@gmail.com (acct_1Tg1U0RJECiV6vSm)
+NIEMALS acct_1SwsoNFZGd8ei10Q (AIITEC) verwenden — nur bullpowersrtkennels!
+Key: STRIPE_SECRET_KEY (sk_live_51Tg1U0RJECiV6vSm...)
 """
 
 import asyncio
