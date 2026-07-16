@@ -95,7 +95,9 @@ _PLACEHOLDER = re.compile(
     r'\[PLATZHALTER\]|\[PLACEHOLDER\]|\[TODO\]|\[INSERT\]|\[NAME\]|\[LINK\]|\[URL\]|\[PRODUKT\]'
     r'|lorem ipsum|TODO:|FIXME:|BEISPIEL:|BEISPIELTEXT'
     r'|\{\{[^}]+\}\}'  # {{variable}}
-    r'|\{[a-z_]{3,}\}',  # {placeholder} aber nicht {0}
+    r'|\{[a-z_]{3,}\}'  # {placeholder} aber nicht {0}
+    r'|myshopify\.com|Hallo\s+None|—\s*None\b'
+    r'|blender|3d\s*modellierung|vancouver\s+pd|hacker\.news|show\s+hn',
     re.IGNORECASE
 )
 _AI_REVEAL = re.compile(

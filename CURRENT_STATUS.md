@@ -1,6 +1,22 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16 17:35 UTC (Wave 9 — Alle Keys gesetzt + Tests OK)**
 
+## ✅ POSTING SYSTEM — FINAL HARDENING (2026-07-16)
+
+**Ziel: ENDE der fehlerhaften Posts**
+
+| Check | Status |
+|-------|--------|
+| HttpGuard | ✅ `ClientError` statt crashendem `ClientResponseError(None)` |
+| PostGuardian | ✅ Off-Topic (HN/Polizei/Blender/News) + myshopify ban + None |
+| PostGuard | ✅ myshopify + None + Fake-Content Patterns |
+| PostGateway | ✅ myshopify/HN ban im Placeholder-Regex |
+| Twitter | ✅ fail-closed (kein silent skip mehr) |
+| product_hub | ✅ deaktiviert (Fake-Produkte) |
+| Audit Script | ✅ `scripts/audit_posting_system.py` — CI-pflichtig |
+
+Audit: alle Bad-Samples BLOCK, Good-Sample PASS.
+
 ## 🔴 OFFENE BLOCKER — NUR RUDOLF KANN DAS FIXEN
 
 | # | Problem | Was tun | Railway Var |
