@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# DAUERHAFT DEAKTIVIERT 2026-07-16 — erzeugt Fake-Produkte (Reddit/HN-Posts als Shopify-Produkte).
+# Scheduler-Task product_hub ebenfalls deaktiviert. Reaktivierung NUR nach OK von Rudolf.
 """
 Product Intelligence Hub — Unified Orchestrator
 ================================================
@@ -228,12 +230,9 @@ async def _send_hub_alert(idea: Dict, results: Dict):
 # ── Haupt-Orchestrator ────────────────────────────────────────────────────────
 
 async def run_hub_cycle() -> Dict:
-    """
-    Kompletter Hub-Zyklus:
-    1. viral_window_scanner → Signale + Scoring + Saturation + FB Ads
-    2. Für top Items → autonomous_product_pipeline → Multi-Platform Listing
-    3. Subscriber-Alert mit vollständigem Paket
-    """
+    # DAUERHAFT DEAKTIVIERT — erzeugt Fake-Produkte. Reaktivierung NUR nach OK von Rudolf.
+    log.critical("run_hub_cycle DISABLED — Fake-Produkte verboten (Reddit/HN-Posts)")
+    return {"ok": False, "error": "DISABLED — Fake-Produkte verboten", "created": 0}
     log.info("=== Product Intelligence Hub gestartet ===")
     start = time.time()
 
@@ -358,7 +357,7 @@ def _guess_category(kw: str) -> str:
 
 # ── Hub-Zyklus Update mit Intent Bridge ──────────────────────────────────────
 
-async def run_hub_cycle() -> Dict:
+async def run_hub_cycle_v2() -> Dict:  # umbenannt — wird nicht mehr aufgerufen
     """
     Kompletter Hub-Zyklus:
     1. viral_window_scanner → Signale + Scoring + Saturation + FB Ads

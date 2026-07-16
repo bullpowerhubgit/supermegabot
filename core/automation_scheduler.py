@@ -7963,7 +7963,8 @@ TASKS = [
     ("mega_command_center",    task_mega_command_center,    14400,  72),  # 4h — MEGA Geldmaschine (alle Systeme)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
-    ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
+    # DISABLED 2026-07-16 — erzeugt Fake-Produkte (Reddit/HN-Posts ohne Gatekeeper) — Rudolf hat verboten
+    # ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
     ("viral_promo",         task_viral_promo_poster,       21600, 2100), # 6h — Multi-Channel Promo (35min startup delay)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 2400), # 6h — FB+IG+TG+LI+Reddit+Discord (40min startup delay)
     ("social_autopilot",     task_social_media_autopilot, 28800, 2460), # 8h — Produkt-Post FB+IG+TW+Pinterest (41min startup delay)
