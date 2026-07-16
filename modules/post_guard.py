@@ -31,7 +31,7 @@ from typing import Tuple, List, Optional
 
 log = logging.getLogger("PostGuard")
 
-_CACHE_FILE = Path(os.getenv("DATA_DIR", "/tmp")) / "post_guard_cache.json"
+_CACHE_FILE = Path(os.getenv("DATA_DIR", str(Path(__file__).parent.parent / "data"))) / "post_guard_cache.json"
 _CACHE: dict = {}  # hash → timestamp
 _DEDUP_HOURS = 24
 
