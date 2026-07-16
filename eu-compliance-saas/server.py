@@ -57,24 +57,28 @@ _lead_cache_ts = 0
 # ---------------------------------------------------------------------------
 # Stripe Checkout
 # ---------------------------------------------------------------------------
+# High-Ticket Live Payment Links (Wave 3 — Stripe Live)
 PLANS = {
     "starter": {
         "name": "AI-Act Starter",
-        "price_eur": 49,
+        "price_eur": 497,
+        "payment_link": "https://buy.stripe.com/14A4gBanE7XY1gc40u4F42Ef",
         "features": ["AI-Act Art. 50 Scanner", "Disclosure-Banner-Generator", "1 Shop", "E-Mail-Report"],
-        "stripe_price_data": {"currency": "eur", "unit_amount": 4900, "recurring": {"interval": "month"}, "product_data": {"name": "EU Compliance Starter — AI-Act Scanner"}},
+        "stripe_price_data": {"currency": "eur", "unit_amount": 49700, "recurring": {"interval": "month"}, "product_data": {"name": "EU Compliance Starter — AI-Act Scanner"}},
     },
     "pro": {
         "name": "Compliance Pro",
-        "price_eur": 149,
+        "price_eur": 997,
+        "payment_link": "https://buy.stripe.com/7sY5kFeDUa665ws7cG4F42Eg",
         "features": ["Alles in Starter", "HS-Code Klassifizierung (500 Produkte/mo)", "EU VAT OSS Assistent", "5 Shops", "Prioritäts-Support"],
-        "stripe_price_data": {"currency": "eur", "unit_amount": 14900, "recurring": {"interval": "month"}, "product_data": {"name": "EU Compliance Pro — AI-Act + HS-Code + VAT OSS"}},
+        "stripe_price_data": {"currency": "eur", "unit_amount": 99700, "recurring": {"interval": "month"}, "product_data": {"name": "EU Compliance Pro — AI-Act + HS-Code + VAT OSS"}},
     },
     "enterprise": {
         "name": "Revenue Engine",
-        "price_eur": 299,
+        "price_eur": 2497,
+        "payment_link": "https://buy.stripe.com/9B63cx67ofqq0c88gK4F42Eh",
         "features": ["Alles in Pro", "ZVG NRW Lead Radar (unbegrenzt)", "HS-Code Bulk (5000 Produkte/mo)", "Unbegrenzte Shops", "API-Zugang", "Telegram-Alerts"],
-        "stripe_price_data": {"currency": "eur", "unit_amount": 29900, "recurring": {"interval": "month"}, "product_data": {"name": "EU Compliance Enterprise — Full Revenue Engine"}},
+        "stripe_price_data": {"currency": "eur", "unit_amount": 249700, "recurring": {"interval": "month"}, "product_data": {"name": "EU Compliance Enterprise — Full Revenue Engine"}},
     },
 }
 
@@ -217,6 +221,13 @@ async def handle_checkout(req):
     email = body.get("email", "")
     if plan not in PLANS:
         return web.json_response({"error": "Invalid plan"}, status=400)
+    # Prefer live Payment Links (high-ticket Wave 3)
+    plink = PLANS[plan].get("payment_link")
+    if plink:
+        await telegram_notify(
+            f"🛒 <b>Checkout → Payment Link</b>\nPlan: {plan} (€{PLANS[plan]['price_eur']}/mo)\nEmail: {email or '—'}"
+        )
+        return web.json_response({"checkout_url": plink, "plan": plan, "mode": "payment_link"})
     if not email:
         return web.json_response({"error": "Email required"}, status=400)
     success_url = f"{BASE_URL}/success?plan={plan}&email={email}"
@@ -487,7 +498,7 @@ footer{{text-align:center;padding:40px 20px;color:#475569;font-size:14px;border-
     <div style="color:#94a3b8;font-size:16px;margin-bottom:8px">AI-Act Verstoß kostet bis zu</div>
     <div class="fine-amount">€15.000.000</div>
     <div style="color:#94a3b8;margin-top:8px">oder 3% des weltweiten Jahresumsatzes — Art. 99 Abs. 4 lit. g EU-KI-VO</div>
-    <div style="margin-top:24px;font-size:20px;color:#22c55e;font-weight:700">vs. €49/Monat mit unserem Starter-Plan</div>
+    <div style="margin-top:24px;font-size:20px;color:#22c55e;font-weight:700">vs. €497/Monat mit unserem Starter-Plan</div>
   </div>
 </div>
 
@@ -506,7 +517,7 @@ footer{{text-align:center;padding:40px 20px;color:#475569;font-size:14px;border-
   <div class="plans">
     <div class="plan">
       <div class="plan-name">🛡️ Starter</div>
-      <div><span class="plan-price">€49</span><span class="plan-period">/Monat</span></div>
+      <div><span class="plan-price">€497</span><span class="plan-period">/Monat</span></div>
       <ul class="plan-features">
         <li>AI-Act Art. 50 Scanner</li>
         <li>Disclosure-Banner-Generator</li>
@@ -514,12 +525,12 @@ footer{{text-align:center;padding:40px 20px;color:#475569;font-size:14px;border-
         <li>Monatlicher Compliance-Report</li>
         <li>E-Mail-Support</li>
       </ul>
-      <button class="checkout-btn" onclick="checkout('starter')">Jetzt starten — €49/mo</button>
+      <a class="checkout-btn" href="https://buy.stripe.com/14A4gBanE7XY1gc40u4F42Ef" style="display:block;text-align:center;text-decoration:none">Jetzt starten — €497/mo</a>
     </div>
     <div class="plan featured">
       <div class="plan-badge">BELIEBT</div>
       <div class="plan-name">⚡ Compliance Pro</div>
-      <div><span class="plan-price">€149</span><span class="plan-period">/Monat</span></div>
+      <div><span class="plan-price">€997</span><span class="plan-period">/Monat</span></div>
       <ul class="plan-features">
         <li>Alles in Starter</li>
         <li>HS-Code Klassifizierung (500/mo)</li>
@@ -528,11 +539,11 @@ footer{{text-align:center;padding:40px 20px;color:#475569;font-size:14px;border-
         <li>Quartals-Voranmeldung Prefill</li>
         <li>Prioritäts-Support</li>
       </ul>
-      <button class="checkout-btn" onclick="checkout('pro')">Pro starten — €149/mo</button>
+      <a class="checkout-btn" href="https://buy.stripe.com/7sY5kFeDUa665ws7cG4F42Eg" style="display:block;text-align:center;text-decoration:none">Pro starten — €997/mo</a>
     </div>
     <div class="plan">
       <div class="plan-name">🚀 Revenue Engine</div>
-      <div><span class="plan-price">€299</span><span class="plan-period">/Monat</span></div>
+      <div><span class="plan-price">€2.497</span><span class="plan-period">/Monat</span></div>
       <ul class="plan-features">
         <li>Alles in Pro</li>
         <li>ZVG NRW Lead Radar (∞)</li>
@@ -542,7 +553,7 @@ footer{{text-align:center;padding:40px 20px;color:#475569;font-size:14px;border-
         <li>Telegram-Echtzeit-Alerts</li>
         <li>Dedicated Support</li>
       </ul>
-      <button class="checkout-btn" onclick="checkout('enterprise')">Enterprise — €299/mo</button>
+      <a class="checkout-btn" href="https://buy.stripe.com/9B63cx67ofqq0c88gK4F42Eh" style="display:block;text-align:center;text-decoration:none">Enterprise — €2.497/mo</a>
     </div>
   </div>
 </div>
