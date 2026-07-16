@@ -34,8 +34,14 @@ _CATEGORY_RULES = [
     ("anfrage",     ["anfrage", "interest", "ich hätte", "ich würde", "would like", "information", "interested", "kontakt"]),
     ("antwort",     ["re:", "aw:", "antwort", "reply", "danke", "thank", "vielen dank", "verstanden"]),
     ("bounce",      ["mailer-daemon", "delivery failed", "undeliverable", "failed to deliver", "bounced", "non-delivery"]),
+    ("pinterest",   ["pinterest.com", "pinterest api", "domain claim", "domain verify", "p:domain_verify"]),
+    ("api_alert",   ["openai.com", "resend.com", "anthropic.com", "api key", "access denied", "unauthorized", "api access"]),
     ("spam",        ["unsubscribe", "casino", "crypto", "bitcoin", "invest now", "million dollar", "click here"]),
 ]
+
+# Pinterest-Email-Patterns
+_PINTEREST_VERIFY_RE = re.compile(r'content="([A-Za-z0-9_-]{10,})"', re.IGNORECASE)
+_PINTEREST_CODE_RE   = re.compile(r'verification.*?(?:code|token)[:\s]+([A-Za-z0-9_-]{8,})', re.IGNORECASE)
 
 
 def _db() -> sqlite3.Connection:
@@ -88,6 +94,26 @@ def _imap_accounts() -> list:
     return accounts
 
 
+def _extract_body(msg: email_lib.message.Message) -> str:
+    """Extrahiert plain-text body (max 2000 Zeichen)."""
+    body = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/plain":
+                try:
+                    body += part.get_payload(decode=True).decode("utf-8", errors="replace")
+                except Exception:
+                    pass
+            if len(body) > 2000:
+                break
+    else:
+        try:
+            body = msg.get_payload(decode=True).decode("utf-8", errors="replace")
+        except Exception:
+            pass
+    return body[:2000]
+
+
 def _scan_inbox(account: dict, conn: sqlite3.Connection) -> List[Dict]:
     new_emails = []
     try:
@@ -104,7 +130,8 @@ def _scan_inbox(account: dict, conn: sqlite3.Connection) -> List[Dict]:
             if already:
                 continue
 
-            _, msg_data = imap.fetch(uid_bytes, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT DATE)])")
+            # Für Pinterest/API-Emails: vollständige Email + Body holen
+            _, msg_data = imap.fetch(uid_bytes, "(RFC822)")
             if not msg_data or not msg_data[0]:
                 continue
 
@@ -113,6 +140,7 @@ def _scan_inbox(account: dict, conn: sqlite3.Connection) -> List[Dict]:
             sender  = _decode_str(msg.get("From", ""))
             subject = _decode_str(msg.get("Subject", "(kein Betreff)"))
             cat     = _categorize(subject, sender)
+            body    = _extract_body(msg)
 
             conn.execute(
                 "INSERT OR IGNORE INTO inbox_log (uid, account, sender, subject, category, seen_at) "
@@ -126,6 +154,7 @@ def _scan_inbox(account: dict, conn: sqlite3.Connection) -> List[Dict]:
                 "sender":   sender,
                 "subject":  subject,
                 "category": cat,
+                "body":     body,
             })
 
         imap.logout()
@@ -136,15 +165,94 @@ def _scan_inbox(account: dict, conn: sqlite3.Connection) -> List[Dict]:
     return new_emails
 
 
+async def _tg_send(text: str) -> None:
+    token   = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not token or not chat_id:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text[:4096], "parse_mode": "HTML",
+                      "disable_web_page_preview": True},
+                timeout=aiohttp.ClientTimeout(total=10),
+            )
+    except Exception as e:
+        log.warning("Telegram send Fehler: %s", e)
+
+
+def _build_pinterest_alert(email_data: dict) -> str:
+    """Baut spezielle Pinterest-Alert-Nachricht mit Verification-Code-Extraktion."""
+    subject = email_data["subject"]
+    body    = email_data.get("body", "")
+    sender  = email_data["sender"]
+
+    lines = [f"📌 <b>Pinterest Email</b> [{email_data['account']}]",
+             f"<b>Von:</b> {sender[:80]}",
+             f"<b>Betreff:</b> {subject[:100]}"]
+
+    # Verification-Code suchen
+    code = None
+    m = _PINTEREST_VERIFY_RE.search(body)
+    if m:
+        code = m.group(1)
+    elif "domain" in subject.lower() or "verify" in subject.lower():
+        m2 = _PINTEREST_CODE_RE.search(body)
+        if m2:
+            code = m2.group(1)
+
+    if code:
+        lines.append(f"\n🔑 <b>Domain-Verify-Code:</b> <code>{code}</code>")
+        lines.append("→ Ausführen:")
+        lines.append(f'<code>curl -X POST https://supermegabot-production.up.railway.app/api/pinterest/verify-domain -H "Content-Type: application/json" -d \'{{"code":"{code}"}}\' </code>')
+
+    # API approved/rejected
+    body_lower = body.lower()
+    if any(w in body_lower for w in ["approved", "approval granted", "access granted"]):
+        lines.append("\n✅ <b>Pinterest API APPROVED!</b>")
+        lines.append("→ Neuen Token: developers.pinterest.com → rodibot → Generate Access Token")
+        lines.append("→ Dann: railway variables set PINTEREST_ACCESS_TOKEN=&lt;token&gt;")
+    elif any(w in body_lower for w in ["rejected", "denied", "declined", "not approved", "disapproved"]):
+        lines.append("\n❌ <b>Pinterest API ABGELEHNT</b>")
+        lines.append("→ Appeal: api-support@pinterest.com")
+
+    # Body-Excerpt
+    if body:
+        excerpt = body[:300].replace("<", "&lt;").replace(">", "&gt;")
+        lines.append(f"\n<i>{excerpt}...</i>")
+
+    return "\n".join(lines)
+
+
 async def _tg_alert(emails: List[Dict], session: aiohttp.ClientSession):
     token   = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
         return
 
-    # Gruppiere nach Kategorie
-    by_cat: Dict[str, List] = {}
+    # Pinterest-Emails einzeln und detailliert melden
     for e in emails:
+        if e["category"] == "pinterest":
+            msg = _build_pinterest_alert(e)
+            try:
+                await session.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML",
+                          "disable_web_page_preview": True},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                )
+            except Exception as exc:
+                log.warning("Pinterest alert send: %s", exc)
+            await asyncio.sleep(0.3)
+
+    # Restliche Emails gruppieren
+    other = [e for e in emails if e["category"] not in ("pinterest", "spam")]
+    if not other:
+        return
+
+    by_cat: Dict[str, List] = {}
+    for e in other:
         by_cat.setdefault(e["category"], []).append(e)
 
     emoji_map = {
@@ -152,27 +260,27 @@ async def _tg_alert(emails: List[Dict], session: aiohttp.ClientSession):
         "anfrage":    "📩",
         "antwort":    "↩️",
         "bounce":     "❌",
-        "spam":       "🗑",
+        "api_alert":  "🔑",
         "sonstige":   "📧",
     }
 
-    lines = ["📬 **Neue Emails** (5-min-Scan)\n"]
+    lines = ["📬 <b>Neue Emails</b>\n"]
     for cat, items in by_cat.items():
         emoji = emoji_map.get(cat, "📧")
-        lines.append(f"{emoji} **{cat.upper()}** ({len(items)})")
+        lines.append(f"{emoji} <b>{cat.upper()}</b> ({len(items)})")
         for e in items[:3]:
             sender_short = e["sender"][:40].split("<")[0].strip()
-            subject_short = e["subject"][:60]
+            subject_short = e["subject"][:60].replace("<", "&lt;").replace(">", "&gt;")
             lines.append(f"  • [{e['account']}] {sender_short}")
-            lines.append(f"    _{subject_short}_")
+            lines.append(f"    <i>{subject_short}</i>")
         if len(items) > 3:
-            lines.append(f"  _...und {len(items)-3} weitere_")
+            lines.append(f"  <i>...und {len(items)-3} weitere</i>")
 
     text = "\n".join(lines)
     try:
         await session.post(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+            json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
             timeout=aiohttp.ClientTimeout(total=10),
         )
     except Exception as e:
@@ -249,3 +357,106 @@ async def get_inbox_summary(limit: int = 50) -> Dict:
             for r in rows
         ]
     }
+
+
+# ── API-Key Health Check ──────────────────────────────────────────────────────
+
+async def run_api_key_health_check() -> str:
+    """Prüft kritische API-Keys auf Gültigkeit. Schickt Telegram-Alert bei kaputten Keys."""
+    checks = [
+        {
+            "name": "OpenAI",
+            "key":  os.getenv("OPENAI_API_KEY", ""),
+            "url":  "https://api.openai.com/v1/models",
+            "method": "GET",
+            "auth": "Bearer",
+            "renew": "https://platform.openai.com/api-keys",
+        },
+        {
+            "name": "Resend",
+            "key":  os.getenv("RESEND_API_KEY", ""),
+            "url":  "https://api.resend.com/domains",
+            "method": "GET",
+            "auth": "Bearer",
+            "renew": "https://resend.com/api-keys",
+        },
+        {
+            "name": "Resend-2",
+            "key":  os.getenv("RESEND_API_KEY_2", ""),
+            "url":  "https://api.resend.com/domains",
+            "method": "GET",
+            "auth": "Bearer",
+            "renew": "https://resend.com/api-keys",
+        },
+        {
+            "name": "Anthropic",
+            "key":  os.getenv("ANTHROPIC_API_KEY", ""),
+            "url":  "https://api.anthropic.com/v1/messages",
+            "method": "POST",
+            "auth": "x-api-key",
+            "renew": "https://console.anthropic.com/",
+        },
+        {
+            "name": "OpenRouter",
+            "key":  os.getenv("OPENROUTER_API_KEY", ""),
+            "url":  "https://openrouter.ai/api/v1/models",
+            "method": "GET",
+            "auth": "Bearer",
+            "renew": "https://openrouter.ai/settings/keys",
+        },
+    ]
+
+    broken = []
+    ok_list = []
+
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as session:
+        for check in checks:
+            if not check["key"]:
+                broken.append(check)
+                continue
+            try:
+                if check["method"] == "POST":
+                    # Anthropic: minimal test-call
+                    resp = await session.post(
+                        check["url"],
+                        headers={"x-api-key": check["key"],
+                                 "anthropic-version": "2023-06-01",
+                                 "content-type": "application/json"},
+                        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1,
+                              "messages": [{"role": "user", "content": "hi"}]},
+                    )
+                else:
+                    resp = await session.get(
+                        check["url"],
+                        headers={"Authorization": f"{check['auth']} {check['key']}"},
+                    )
+                # 200, 400 (bad request but auth OK), 429 (rate limited = auth OK)
+                if resp.status in (200, 400, 429):
+                    ok_list.append(check["name"])
+                else:
+                    broken.append(check)
+            except Exception:
+                broken.append(check)
+
+    if broken:
+        lines = ["🔑 <b>API-Key Alert — Renewal nötig!</b>"]
+        for item in broken:
+            name = item["name"]
+            renew = item.get("renew", "?")
+            lines.append(f"❌ <b>{name}</b>: Key ungültig oder fehlt")
+            lines.append(f"   → Erneuern: <code>{renew}</code>")
+        await _tg_send("\n".join(lines))
+
+    return f"API Health: {len(ok_list)} OK {ok_list}, {len(broken)} kaputt ({[b['name'] for b in broken]})"
+
+
+# ── Scheduler-Alias ──────────────────────────────────────────────────────────
+
+async def run_email_monitor() -> str:
+    """Alias für Scheduler — ruft run_inbox_monitor() auf."""
+    result = await run_inbox_monitor()
+    return (
+        f"Email Monitor: {result.get('accounts', 0)} Konten, "
+        f"{result.get('new_total', 0)} neu, "
+        f"{result.get('alerted', 0)} Alerts"
+    )
