@@ -1,5 +1,43 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 (Wave 6 — Full Monetization Blast)**
+**Stand: 2026-07-16 (Wave 7 — System Audit + API Key Fix)**
+
+## 🔴 OFFENE BLOCKER — NUR RUDOLF KANN DAS FIXEN
+
+| # | Problem | Link | Railway Var |
+|---|---------|------|-------------|
+| 1 | **Anthropic API Key revoked** | console.anthropic.com → API Keys → Create | `ANTHROPIC_API_KEY` |
+| 2 | **OpenAI API Key revoked** | platform.openai.com → API Keys | `OPENAI_API_KEY` |
+| 3 | **aiitecbuuss@gmail.com App-PW** | accounts.google.com → Sicherheit → App-Passwörter | `GMAIL_APP_PASSWORD_5` |
+| 4 | **Resend 403** | resend.com → API Keys → neu | `RESEND_API_KEY` |
+| 5 | **Meta App Live-Modus** | developers.facebook.com | — |
+
+## ✅ LIVE-AUDIT 2026-07-16 (verifiziert)
+
+| System | Status | Detail |
+|--------|--------|--------|
+| Railway Health | ✅ OK | Uptime 6h+ |
+| Shopify API | ✅ OK | Shop: "I Want That! I Need It!", 10.752 Produkte |
+| Stripe | ✅ OK | Account: bullpowersrtkennels@gmail.com, 75+ Links |
+| SendGrid | ✅ OK | |
+| Gmail SMTP | ✅ 4/5 OK | aiitecbuuss App-PW abgelaufen (1 Konto tot) |
+| Telegram Bot | ✅ OK | |
+| Instagram | ✅ 26 Posts heute | @aaiitecc |
+| LinkedIn | ✅ 6 Posts heute | |
+| Anthropic API | ❌ Key revoked | → console.anthropic.com neu erstellen |
+| OpenAI API | ❌ Key revoked | → platform.openai.com neu erstellen |
+| Resend | ❌ 403 | → resend.com neu generieren |
+| Facebook | ⚠️ Rate Limit | Reset 17.07 ~06:00 |
+| Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
+| Pinterest | ⚠️ Token 401 | → developers.pinterest.com |
+
+## ✅ RAILWAY ENV VARS SYNCED (2026-07-16)
+- SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_ACCESS_TOKEN — aus .env nach Railway ✅
+- STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET ✅
+- KLAVIYO_API_KEY ✅
+- SENDGRID_API_KEY ✅
+- TWITTER_API_KEY + alle Twitter-Vars ✅
+- PINTEREST_ACCESS_TOKEN ✅
+- ANTHROPIC_API_KEY, OPENAI_API_KEY — gesetzt aber **revoked** (neuen Key brauchen)
 
 ## Email-Konten Status (2026-07-16)
 | Konto | App-Password | SMTP | Status |
