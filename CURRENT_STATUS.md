@@ -5,12 +5,10 @@
 
 | # | Problem | Link | Railway Var |
 |---|---------|------|-------------|
-| 1 | **Anthropic API Key revoked** | console.anthropic.com → API Keys → Create | `ANTHROPIC_API_KEY` |
-| 2 | **OpenAI API Key revoked** | platform.openai.com → API Keys | `OPENAI_API_KEY` |
-| 3 | **aiitecbuuss@gmail.com App-PW** | accounts.google.com → Sicherheit → App-Passwörter | `GMAIL_APP_PASSWORD_5` |
-| 4 | **Resend 403** | resend.com → API Keys → neu | `RESEND_API_KEY` |
-| 5 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings → dann nochmal versuchen | — |
-| 6 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API Entwickler-Tools → neuen Appeal + neuen Access-Token generieren auf developers.pinterest.com → rodibot | `PINTEREST_ACCESS_TOKEN` |
+| 1 | **aiitecbuuss@gmail.com App-PW** | accounts.google.com → Sicherheit → App-Passwörter | `GMAIL_APP_PASSWORD_5` |
+| 2 | **Resend API Keys BEIDE ungültig** | resend.com → API Keys → neu generieren | `RESEND_API_KEY` + `RESEND_API_KEY_2` |
+| 3 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings | — |
+| 4 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API → Appeal Draft in Gmail bereit | `PINTEREST_ACCESS_TOKEN` |
 
 ## ✅ FIXES COMMITTED (2026-07-16)
 
@@ -32,9 +30,9 @@ Ursache: HttpGuard erstellt `ClientResponseError(None, ...)` → `str(e)` → `s
 | Telegram Bot | ✅ OK | |
 | Instagram | ✅ 26 Posts heute | @aaiitecc |
 | LinkedIn | ✅ 6 Posts heute | |
-| Anthropic API | ❌ Key revoked | → console.anthropic.com neu erstellen |
-| OpenAI API | ❌ Key revoked | → platform.openai.com neu erstellen |
-| Resend | ❌ 403 | → resend.com neu generieren |
+| Anthropic API | ✅ OK | claude-haiku-4-5-20251001 antwortet |
+| OpenAI API | ✅ OK | 123 Modelle verfügbar |
+| Resend | ❌ BEIDE Keys ungültig | → resend.com → API Keys neu generieren |
 | Facebook | ⚠️ Rate Limit | Reset 17.07 ~06:00 |
 | Twitter | ⚠️ OAuth 401 | Token abgelaufen → developer.twitter.com |
 | Pinterest | ❌ API ABGELEHNT | Email 07.07 bestätigt — Appeal + neuer Token nötig |
