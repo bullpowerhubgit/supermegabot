@@ -2662,6 +2662,19 @@ async def task_multiplatform_autopost() -> str:
         return f"MultiPost Fehler: {e}"
 
 
+async def task_daily_system_check() -> str:
+    """Täglich 07:00: Vollprüfung aller Kanäle + Telegram-Bericht an Rudolf."""
+    try:
+        from modules.daily_system_check import run_daily_check
+        result = await run_daily_check()
+        score = result.get("score", 0)
+        total = result.get("total", 0)
+        manual = result.get("manual_actions", 0)
+        return f"Daily Check: {score}/{total} OK, {manual} manuelle Aktionen nötig"
+    except Exception as e:
+        return f"Daily Check Fehler: {e}"
+
+
 async def task_daily_trend_upload() -> str:
     """Täglich: meistgesuchte Trend-Produkte via eBay Browse API → Shopify importieren."""
     import asyncio, subprocess, sys
@@ -5582,12 +5595,23 @@ async def task_ds24_affiliate_blast() -> str:
 
 
 async def task_revenue_engine() -> str:
-    """Revenue Engine — 2h Geld-Zyklus."""
+    """Revenue Engine Morgen — DS24 Affiliate + Shopify Flash + AIITEC Promo."""
     try:
-        from modules.revenue_engine import run_revenue_cycle_str
-        return await run_revenue_cycle_str()
+        from modules.revenue_engine import run_morning_cycle
+        r = await run_morning_cycle()
+        return f"Revenue Morgen: {r['actions']} Aktionen, ~€{r.get('potential', 0):.0f} Potenzial"
     except Exception as e:
         return f"Revenue Engine Fehler: {e}"
+
+
+async def task_revenue_engine_evening() -> str:
+    """Revenue Engine Abend — Stripe Promo + B2B Emails + Tagesbericht."""
+    try:
+        from modules.revenue_engine import run_evening_cycle
+        r = await run_evening_cycle()
+        return f"Revenue Abend: {r['actions']} Aktionen, ~€{r.get('potential', 0):.0f} Potenzial"
+    except Exception as e:
+        return f"Revenue Engine Abend Fehler: {e}"
 
 
 async def task_umsatzmaschine_daily() -> str:
@@ -7887,7 +7911,8 @@ TASKS = [
     ("affiliate_blast",        task_affiliate_blast,         7200,   75),  # 2h — DS24 Affiliate auf alle Kanäle  # 30min — Live Revenue: Ads+Email+Shopify+IG
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
-    ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
+    ("revenue_engine",         task_revenue_engine,         43200,  69),   # 12h Morgen — DS24+Flash+AIITEC
+    ("revenue_engine_evening", task_revenue_engine_evening, 43200, 32400), # 12h Abend  — Stripe+B2B+Bericht (9h delay≈18:00)
     ("umsatzmaschine_daily",   task_umsatzmaschine_daily,   7200,   71),  # 2h — Vollautonom (Backup zum Boot-Loop)
     ("priority_cluster",       task_priority_cluster,       43200,  580),  # 12h — SYS-18 Kanzlei+SYS-23 Shop+SYS-37 Mandate
     ("compliance_outreach",    task_compliance_outreach_all, 86400, 640),  # 24h — 11 Compliance-Tools: je 15 Emails/Tag
@@ -7898,6 +7923,7 @@ TASKS = [
     ("viral_promo",         task_viral_promo_poster,       21600, 2100), # 6h — Multi-Channel Promo (35min startup delay)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 2400), # 6h — FB+IG+TG+LI+Reddit+Discord (40min startup delay)
     ("social_autopilot",     task_social_media_autopilot, 28800, 2460), # 8h — Produkt-Post FB+IG+TW+Pinterest (41min startup delay)
+    ("daily_system_check",   task_daily_system_check,  86400,  60),  # täglich 07:00 — Vollprüfung + Telegram-Bericht
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
