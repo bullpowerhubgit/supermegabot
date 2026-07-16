@@ -152,9 +152,44 @@ Script: `scripts/monetize_high_ticket_wave2.py` · Catalog: `data/high_ticket_wa
 - Beide Transports abgedeckt: aiohttp + urllib
 - Verhindert 429-Flood → Railway-Crash (war Ursache für Browser-Neustarts)
 
-## Offene Punkte (niedrige Priorität)
-- DeepSeek 402, Anthropic 400, Perplexity 401: API Credits/Keys erneuern nötig
-- Gmail Accounts: Tageslimit 80/Account — kein Fehler heute
-- Google API Key: benötigt gültiges `AIza...`-Format (letzter Versuch war `AQ.`-Format)
+## ✅ MONETARISIERUNG SESSION 2026-07-16 (Session 3)
+
+### Telegram Promo ✅ GESENDET
+- Bot: @DudiRudibot (TELEGRAM_BOT_TOKEN_RUDICLONE) — jetzt als TELEGRAM_BOT_TOKEN gesetzt
+- Promo-Message gesendet an Chat 5088771245 (msg_id=183291)
+- Inhalt: Flash Sale FLASHSALE20, DS24 Affiliate, Stripe KI-Suite Link
+
+### Klaviyo Kampagne ✅ ERSTELLT (Manual Send erforderlich)
+- Campaign ID: `01KXMHKD5W48DCKS9HMNHVEFNV` | Liste: Xwxq6V (53 Profile)
+- Template ID: `TqwHcP` ("Flash Sale Juli 2026") erstellt
+- **PROBLEM**: Klaviyo API 2026-04-15 erlaubt keine Template-Zuweisung via API
+- **MANUAL ACTION**: Klaviyo Dashboard → Campaign → Template zuweisen → Senden
+
+### Meta Ads ✅ STRUKTUR ERSTELLT (Aktivierung erforderlich)
+- Account: `act_878505274898620` (Aiitec — €39.9k Spending-History)
+- Campaign ID: `23858766912160790` (PAUSED)
+- Ad Set ID: `23858766931960790` (DE/AT/CH | 10 EUR/Tag | 17.-21.07.)
+- **PROBLEM**: Facebook App in Entwicklungsmodus → Creative-Erstellung blockiert
+- **MANUAL ACTION**: developers.facebook.com → App auf "Live" schalten → dann Creative + Ad erstellen
+
+### Telegram Token Fix ✅
+- TELEGRAM_BOT_TOKEN war Placeholder — jetzt auf RudiClone-Bot gesetzt
+- .env + Railway Variable aktualisiert
+
+## Offene Punkte — MANUAL ACTIONS ERFORDERLICH
+- **KI-APIs ausgefallen** — Sofort-Action nötig:
+  - Anthropic key ungültig (401) — neuen Key auf console.anthropic.com
+  - OpenAI Quota 429 — Credits aufladen auf platform.openai.com
+  - OpenRouter Free Tier — $10 Credits auf openrouter.ai → sofort 8 Modelle verfügbar
+- **Meta App Entwicklungsmodus**: developers.facebook.com → App 1535442684079797 → Live schalten
+- **Klaviyo Template**: klaviyo.com → Campaign 01KXMHKD5W48DCKS9HMNHVEFNV → Template TqwHcP zuweisen + senden
+- **Email Services**: alle Keys ungültig — Resend/SendGrid/Brevo Keys erneuern
+- Google API Key: benötigt gültiges `AIza...`-Format
 - WhatsApp Token: manuell regenerieren auf business.facebook.com/settings/system-users
 - Google Merchant Center: Identity Verification ausstehend
+- Shopify Admin API Token: ungültig — in Shopify Partners neu erstellen
+
+## Fixes 2026-07-16 (commit 9331cb96)
+- ✅ monetize_master: run_cart_recovery_emails → run_cart_recovery_cycle (korrekter Funktionsname)
+- ✅ email_revenue_engine: SQL-Fehler "no such column: name" behoben → company/branche
+- ✅ ai_client: OpenRouter-Modelle aktualisiert (7 aktuelle freie Modelle)
