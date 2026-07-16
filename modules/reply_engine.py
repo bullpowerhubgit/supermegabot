@@ -169,7 +169,7 @@ def _is_safe_to_reply(from_email: str) -> tuple[bool, str]:
 
     if addr in _OWN_EMAILS:
         return False, f"eigener Account ({addr})"
-    if domain in _BLOCK_DOMAINS:
+    if domain in _BLOCK_DOMAINS or any(domain.endswith("." + bd) for bd in _BLOCK_DOMAINS):
         return False, f"blockierte Domain ({domain})"
     if any(local.startswith(p) for p in _BLOCK_PREFIXES):
         return False, f"blockiertes Prefix ({local})"
