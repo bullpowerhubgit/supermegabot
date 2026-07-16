@@ -5,14 +5,14 @@
 
 | # | Problem | Link | Railway Var |
 |---|---------|------|-------------|
-| 1 | **Resend API Keys BEIDE ungültig** | resend.com → API Keys → neu generieren | `RESEND_API_KEY` + `RESEND_API_KEY_2` |
-| 2 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings | — |
-| 3 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API → Appeal Draft in Gmail bereit | `PINTEREST_ACCESS_TOKEN` |
+| 1 | **Meta App Live-Modus** | developers.facebook.com → App 1535442684079797 → Advanced → Allow API access to App Settings | — |
+| 2 | **Pinterest API ABGELEHNT** | pinterest.com/help/contact → Kategorie: Pinterest-API → Appeal Draft in Gmail bereit | `PINTEREST_ACCESS_TOKEN` |
 
 ## ✅ HEUTE GELÖST (2026-07-16)
 | Fix | Detail |
 |-----|--------|
 | **aiitecbuuss@gmail.com App-PW** | hvzgpgyufricmenj — IMAP+SMTP Login ✅ — alle 5 Gmail-Konten aktiv — Railway ✅ |
+| **Resend API Key** | re_XRHYX... → Test OK (id: 5aba12f6) — .env + Railway ✅ |
 | **Perplexity API** | Key in .env gültig — sonar antwortet ✅ — Railway ✅ |
 | **OpenAI API** | 123 Modelle — Key war nie revoked ✅ |
 | **Anthropic API** | claude-haiku antwortet ✅ — Credits vorhanden |
