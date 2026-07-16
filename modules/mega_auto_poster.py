@@ -381,6 +381,8 @@ async def _post_klaviyo_campaign(content: dict) -> bool:
 
 
 async def _post_mailchimp_campaign(content: dict) -> bool:
+    if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
+        return False
     if not MC_KEY or not MC_LIST:
         return False
     try:

@@ -39,7 +39,7 @@ TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 PEXELS_KEY = os.getenv("PEXELS_API_KEY", "")
 
-GRAPH      = "https://graph.facebook.com/v19.0"
+GRAPH      = "https://graph.facebook.com/v21.0"
 SHOP_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}"
 DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "")
 

@@ -287,6 +287,12 @@ def validate_post(content: str, platform: str = "default",
                 "INSERT INTO blocked (platform, content_preview, reason) VALUES (?,?,?)",
                 (platform_key, text[:200], " | ".join(errors))
             )
+        # NEVER-TWICE: denselben Fehler nie wieder zulassen
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text, platform_key, errors, source_module="post_guardian")
+        except Exception as e:
+            log.debug("remember_block skipped: %s", e)
         log.warning("Post BLOCKIERT [%s]: %s", platform, " | ".join(errors))
     else:
         log.debug("Post OK [%s]: %s...", platform, text[:60])

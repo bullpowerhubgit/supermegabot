@@ -339,6 +339,30 @@ async def safe_post(
         "errors": [], "blocked": False, "source": source_module,
     }
 
+    def _remember(reasons: list) -> None:
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text, platform, reasons, source_module=source_module)
+        except Exception as e:
+            log.debug("remember_block: %s", e)
+
+    # Schicht 0: NEVER-TWICE — gleicher Fehler/Content nie wieder
+    try:
+        from modules.post_never_twice import check_never_twice
+        nt_ok, nt_errs = check_never_twice(text, platform)
+        if not nt_ok:
+            result["errors"] = nt_errs
+            result["blocked"] = True
+            _log_blocked(platform, " | ".join(nt_errs), text)
+            _remember(nt_errs)
+            log.warning("NeverTwice BLOCK [%s] %s: %s", platform, source_module, nt_errs)
+            return result
+    except Exception as e:
+        result["errors"] = [f"NeverTwice fail-closed: {e}"]
+        result["blocked"] = True
+        log.error("NeverTwice error — BLOCK: %s", e)
+        return result
+
     # Schicht 1a: PostGuardian (Off-Topic, Nische, Placeholder, KI-Text)
     try:
         from modules.post_guardian import validate_post as _guardian_check
@@ -347,6 +371,7 @@ async def safe_post(
             result["errors"] = guardian_errors
             result["blocked"] = True
             _log_blocked(platform, " | ".join(guardian_errors), text)
+            _remember(guardian_errors)
             await _alert(
                 f"🚫 <b>PostGuardian BLOCKIERT</b> [{platform}] von {source_module}\n" +
                 "\n".join(f"• {e}" for e in guardian_errors[:5]) +
@@ -363,6 +388,7 @@ async def safe_post(
         result["errors"] = content_errors
         result["blocked"] = True
         _log_blocked(platform, " | ".join(content_errors), text)
+        _remember(content_errors)
         await _alert(
             f"🚫 <b>Post BLOCKIERT</b> [{platform}] von {source_module}\n"
             f"Fehler ({len(content_errors)}):\n" +
@@ -377,6 +403,11 @@ async def safe_post(
         result["errors"] = ["Duplikat: gleicher Content bereits in letzten 7 Tagen gepostet"]
         result["blocked"] = True
         _log_blocked(platform, "Duplikat", text)
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text, platform, result["errors"], source_module=source_module)
+        except Exception:
+            pass
         log.info("Post übersprungen [%s] — Duplikat", platform)
         return result
 
@@ -386,6 +417,11 @@ async def safe_post(
         result["errors"] = [cred_err]
         result["blocked"] = True
         _log_blocked(platform, cred_err, text)
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text, platform, [cred_err], source_module=source_module, kind="fail")
+        except Exception:
+            pass
         await _alert(f"⚠️ <b>Post blockiert</b> [{platform}]: {cred_err}")
         log.error("Credential fehlt [%s]: %s", platform, cred_err)
         return result
@@ -410,12 +446,22 @@ async def safe_post(
         _log_post(platform, "sent", text, [])
         result["ok"] = True
         result["post_id"] = api_result.get("post_id")
+        try:
+            from modules.post_never_twice import remember_sent
+            remember_sent(text, platform, source_module=source_module)
+        except Exception:
+            pass
         log.info("✅ Post gesendet [%s] von %s: %s", platform, source_module, result["post_id"])
     else:
         err = api_result.get("error", "Unbekannter API-Fehler")
         result["errors"] = [err]
         _log_post(platform, "failed", text, [err])
         _log_blocked(platform, err, text)
+        try:
+            from modules.post_never_twice import remember_block
+            remember_block(text, platform, [err], source_module=source_module, kind="fail")
+        except Exception:
+            pass
         await _alert(
             f"❌ <b>Post FEHLGESCHLAGEN</b> [{platform}] von {source_module}\n"
             f"Fehler: {err}\nPreview: {text[:100]!r}"

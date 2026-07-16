@@ -349,12 +349,23 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
         allowed, reason = await _guard_check(url, content_type, kwargs)
         if not allowed:
             log.warning("HttpGuard BLOCK [%s]: %s → %s", content_type, url[:80], reason)
+            text = _extract_text(url, content_type, kwargs)
+            # NEVER-TWICE: speichern — gleicher Fehler nie wieder
+            try:
+                from modules.post_never_twice import remember_block
+                remember_block(
+                    text,
+                    _url_to_platform(url),
+                    [str(reason)],
+                    source_module="http_guard",
+                )
+            except Exception:
+                pass
             # Telegram-Alert über blockierten Post
             try:
                 tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
                 tg_chat  = os.getenv("TELEGRAM_CHAT_ID")
                 if tg_token and tg_chat:
-                    text = _extract_text(url, content_type, kwargs)
                     msg = (
                         f"🚫 <b>HttpGuard blockiert</b>\n"
                         f"Typ: {content_type}\n"
