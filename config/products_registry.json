@@ -1,0 +1,92 @@
+{
+  "products": [
+    {
+      "id": "shopify-describer",
+      "name": "ShopifyDescriber AI",
+      "tagline": "SEO-Produkttexte in 10 Sekunden — automatisch für deinen ganzen Shop",
+      "problem": "Shopify-Händler verbringen Stunden mit Produktbeschreibungen. KI macht es in Sekunden.",
+      "type": "saas_subscription",
+      "niche": "Shopify-Händler, Dropshipper, E-Commerce",
+      "tiers": [
+        {"name": "Starter", "price": 29, "period": "mo", "limit": "100 Beschreibungen/Mo"},
+        {"name": "Pro", "price": 79, "period": "mo", "limit": "1.000 Beschreibungen/Mo"},
+        {"name": "Agency", "price": 199, "period": "mo", "limit": "Unbegrenzt + API-Zugang"}
+      ],
+      "netlify_site": "shopify-describer-ai",
+      "directory": "shopify-describer",
+      "stripe_key": "ShopifyDescriber"
+    },
+    {
+      "id": "margin-radar",
+      "name": "MarginRadar",
+      "tagline": "Sofort-Marge auf jedem Produkt — direkt im Browser sehen",
+      "problem": "Dropshipper verschwenden Zeit mit manueller Margenrechnung auf Amazon/eBay/AliExpress.",
+      "type": "chrome_extension",
+      "niche": "Dropshipper, Online-Händler, Reseller",
+      "tiers": [
+        {"name": "Free", "price": 0, "period": "", "limit": "10 Checks/Tag"},
+        {"name": "Pro", "price": 9, "period": "mo", "limit": "Unbegrenzt + Bulk-Export"},
+        {"name": "Lifetime", "price": 47, "period": "einmalig", "limit": "Alle Features für immer"}
+      ],
+      "netlify_site": "margin-radar-ext",
+      "directory": "margin-radar",
+      "stripe_key": "MarginRadar"
+    },
+    {
+      "id": "ai-desc-api",
+      "name": "AIDescAPI",
+      "tagline": "REST API für KI-Produkttexte — Pay-per-use, sofort nutzbar",
+      "problem": "Entwickler brauchen eine zuverlässige, günstige API für KI-Content — ohne OpenAI-Overhead.",
+      "type": "api_service",
+      "niche": "Entwickler, Agenturen, SaaS-Builder",
+      "tiers": [
+        {"name": "Pay-as-you-go", "price": 0.05, "period": "pro Call", "limit": "Unbegrenzt, nur Nutzung"},
+        {"name": "Starter Pack", "price": 19, "period": "mo", "limit": "500 Calls inklusive"},
+        {"name": "Scale", "price": 49, "period": "mo", "limit": "Unbegrenzt + Priority Queue"}
+      ],
+      "netlify_site": "ai-desc-api-docs",
+      "directory": "ai-desc-api",
+      "stripe_key": "AIDescAPI"
+    },
+    {
+      "id": "trend-hunter",
+      "name": "TrendHunter AI",
+      "tagline": "Erkenne Produkt-Trends bevor alle anderen — täglich KI-analysiert",
+      "problem": "Unternehmer verpassen Produkt-Trends. Wenn es auf Amazon boomt, ist es zu spät.",
+      "type": "ai_wrapper",
+      "niche": "E-Commerce, Dropshipper, Content Creator, Trader",
+      "tiers": [
+        {"name": "Basic", "price": 19, "period": "mo", "limit": "3 Nischen, täglicher Report"},
+        {"name": "Pro", "price": 49, "period": "mo", "limit": "10 Nischen + Telegram-Alerts"},
+        {"name": "Agency", "price": 149, "period": "mo", "limit": "Unbegrenzt + White-Label"}
+      ],
+      "netlify_site": "trendhunter-ai-app",
+      "directory": "trend-hunter",
+      "stripe_key": "TrendHunter"
+    },
+    {
+      "id": "autoscript-pro",
+      "name": "AutoScript Pro",
+      "tagline": "YouTube & TikTok Scripts in 30 Sekunden — KI schreibt, du filmst",
+      "problem": "Content Creator verbringen Tage mit Recherche und Scriptwriting statt Filmen.",
+      "type": "automation_tool",
+      "niche": "YouTuber, TikToker, Podcaster, Online-Coaches",
+      "tiers": [
+        {"name": "Creator", "price": 39, "period": "mo", "limit": "50 Scripts/Mo + Hooks"},
+        {"name": "Pro", "price": 99, "period": "mo", "limit": "Unbegrenzt + SEO-Analyse"},
+        {"name": "Studio", "price": 249, "period": "mo", "limit": "Team + Voiceover-Ready + API"}
+      ],
+      "netlify_site": "autoscript-pro-app",
+      "directory": "autoscript-pro",
+      "stripe_key": "AutoScript"
+    }
+  ],
+  "feedback_loop": {
+    "enabled": true,
+    "interval_hours": 6,
+    "metrics": ["page_views", "cta_clicks", "scroll_depth", "conversions", "bounce_rate"],
+    "auto_ab_test": true,
+    "telegram_alerts": true,
+    "min_sessions_for_analysis": 10
+  }
+}
