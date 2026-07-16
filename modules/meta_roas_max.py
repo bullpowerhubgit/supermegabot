@@ -39,7 +39,7 @@ def _creds() -> dict:
         "account":    os.getenv("META_AD_ACCOUNT_ID", "act_878505274898620"),
         "pixel_id":   os.getenv("FACEBOOK_PIXEL_ID", "4215456142051261"),
         "page_id":    os.getenv("META_PAGE_ID", os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")),
-        "shop_url":   f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}",
+        "shop_url":   f"https://{os.getenv('SHOPIFY_PUBLIC_DOMAIN', 'ineedit.com.co')}",
         "budget_eur": float(os.getenv("META_DAILY_BUDGET_EUR", "30")),
     }
 
@@ -425,7 +425,7 @@ async def create_gan_charger_campaign() -> dict:
     if not token:
         return {"ok": False, "error": "META_ADS_TOKEN nicht gesetzt"}
 
-    shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
+    shop_domain = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
     product_url = f"https://{shop_domain}/products/{PRODUCT_URL_HANDLE}"
     page_id     = creds["page_id"]
 
