@@ -3502,6 +3502,21 @@ async def task_press_release_generate() -> str:
     except Exception as e:
         return f"PressRelease error: {e}"
 
+async def task_autonomous_social_proof() -> str:
+    """Alle 6h: Testimonials + Case Studies neu generieren und in alle Landings injizieren."""
+    try:
+        from modules.autonomous_social_proof import run_social_proof_cycle
+        r = await run_social_proof_cycle(post_telegram=True)
+        return (
+            f"SocialProof: {r.get('testimonials', 0)} testimonials, "
+            f"{r.get('case_studies', 0)} cases, "
+            f"{r.get('landings_updated', 0)} landings, "
+            f"tg={r.get('telegram', {}).get('posted')}"
+        )
+    except Exception as e:
+        return f"autonomous_social_proof Fehler: {e}"
+
+
 async def task_testimonial_engine() -> str:
     try:
         from modules.growth_hacker import task_testimonial_collect
@@ -8235,6 +8250,7 @@ TASKS = [
     ("influencer_pipeline",     task_influencer_pipeline,     86400, 7204),  # daily — Outreach List (2h)
     ("press_release",           task_press_release_generate,  86400, 7205),  # daily — AI Press Release (2h)
     ("testimonials",            task_testimonial_engine,      43200, 5405),  # 12h — Social Proof (1h30m)
+    ("autonomous_social_proof", task_autonomous_social_proof,  21600, 5406),  # 6h — Testimonials+Cases überall reinjizieren
     ("referral_system",         task_referral_system_run,     43200, 6001),  # 12h — Referral Codes (1h40m)
     # ── ULTRA SEO ARSENAL — 14+ Services IndexNow + Parasite SEO ─────────────
     ("ultra_seo_cycle",         task_ultra_seo_cycle,         10800, 1130),  # 3h — Full Ultra SEO: IndexNow+Sitemap+Content

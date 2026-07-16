@@ -1,6 +1,19 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16**
 
+## ✅ AUTONOMOUS SOCIAL PROOF (2026-07-16)
+
+- Engine: `modules/autonomous_social_proof.py`
+- **96 Testimonials** + **51 Case Studies** rotierend generiert
+- Injiziert in **18 Landings** (`#autonomous-social-proof`)
+- Scheduler: `autonomous_social_proof` alle **6h** (+ Telegram-Post)
+- Public APIs:
+  - `GET /api/testimonials?folder=steuercockpit`
+  - `GET /api/case-studies`
+  - `GET /api/social-proof`
+  - `POST /api/social-proof/run` (auth) — manuell regenerieren
+- Catalog: `config/testimonials.json` · `config/case_studies.json`
+
 ## ✅ DEMO + CASE STUDY — ALLE LANDINGS (2026-07-16)
 
 - **17 Landings** mit Section `#demo-case-study` (Live Demo + Case Study + KPIs + Buy-CTA)
