@@ -151,6 +151,14 @@ async def post_to_facebook(text: str, page_token: str) -> dict:
 
 async def post_to_instagram(caption: str, image_url: str, page_token: str) -> dict:
     """Postet auf Instagram @aaiitecc via Graph API (braucht Bild-URL)."""
+    try:
+        from modules.post_guardian import validate_post
+        ok, errs = validate_post(caption, "instagram")
+        if not ok:
+            log.warning("InstaPipeline BLOCK: %s | %s", errs, caption[:80])
+            return {"ok": False, "blocked": True, "errors": errs}
+    except Exception:
+        pass
     if not page_token:
         return {"ok": False, "error": "kein Token"}
     if not image_url:
