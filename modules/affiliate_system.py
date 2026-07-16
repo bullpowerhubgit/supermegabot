@@ -245,8 +245,19 @@ async def send_affiliate_invite(email: str, name: str = "Partner") -> dict:
         return {"ok": False, "error": "smtp_not_configured", "code": code, "link": link}
 
     html  = _build_invite_html(name, email, link)
+    subject_line = "Du bist eingeladen: 20% Provision als ineedit Partner 🎉"
+
+    try:
+        from modules.email_guard import validate_email
+        ok_g, errs = validate_email(subject=subject_line, body=html, to_email=email, skip_dedup=True)
+        if not ok_g:
+            log.warning("EmailGuard BLOCKED affiliate invite to=%s reason=%s", email, "; ".join(errs))
+            return {"ok": False, "error": "guard_blocked", "code": code, "link": link}
+    except ImportError:
+        pass
+
     msg   = MIMEMultipart("alternative")
-    msg["Subject"] = f"Du bist eingeladen: 20% Provision als ineedit Partner 🎉"
+    msg["Subject"] = subject_line
     msg["From"]    = SMTP_USER
     msg["To"]      = email
     msg.attach(MIMEText(html, "html"))

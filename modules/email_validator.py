@@ -84,6 +84,7 @@ _L1_BLOCKED_RE = [re.compile(p, re.IGNORECASE | re.DOTALL) for p in [
     r"Traceback \(most recent",
     r"<class '.*Error",
     r"None None None",
+    r"Hallo\s+None", r"für None\b", r"— None\b", r"\bNoneType\b",
     r"\bN/A\s+N/A\b",
     # Falsche Signatur-Platzhalter
     r"\[Vorname\]", r"\[Name\]", r"\[Firmenname\]",

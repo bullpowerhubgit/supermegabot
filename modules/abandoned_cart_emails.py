@@ -232,6 +232,15 @@ def _send_email_sync(
         logger.warning("abandoned_cart_emails: SMTP not configured — skipping send to %s", to_addr)
         return False
 
+    try:
+        from modules.email_guard import validate_email
+        ok, errors = validate_email(subject=subject, body=html_body, to_email=to_addr, skip_dedup=True)
+        if not ok:
+            logger.warning("abandoned_cart_emails: EmailGuard BLOCKED to=%s reason=%s", to_addr, "; ".join(errors))
+            return False
+    except ImportError:
+        pass
+
     msg = MIMEMultipart("alternative")
     msg["Subject"] = subject
     msg["From"] = f"{from_name} <{user}>"
@@ -269,8 +278,8 @@ def _parse_checkout(checkout_data: dict) -> Optional[dict]:
         return None
 
     customer = checkout_data.get("customer") or {}
-    first = customer.get("first_name") or checkout_data.get("billing_address", {}).get("first_name", "")
-    last = customer.get("last_name") or checkout_data.get("billing_address", {}).get("last_name", "")
+    first = (customer.get("first_name") or checkout_data.get("billing_address", {}).get("first_name") or "").strip()
+    last = (customer.get("last_name") or checkout_data.get("billing_address", {}).get("last_name") or "").strip()
     customer_name = f"{first} {last}".strip() or email.split("@")[0]
 
     try:

@@ -213,7 +213,7 @@ async def request_reviews_automation() -> dict:
         email = o.get("email", "")
         if not email:
             continue
-        name = (o.get("customer") or {}).get("first_name", "Kunde")
+        name = (o.get("customer") or {}).get("first_name") or email.split("@")[0]
         product = (o.get("line_items") or [{}])[0].get("title", "Ihr Produkt")
         try:
             from modules.email_client import send_email
@@ -305,7 +305,7 @@ async def recover_abandoned_checkouts() -> dict:
         email = c.get("email", "")
         if not email:
             continue
-        name = (c.get("billing_address") or {}).get("first_name", "Kunde")
+        name = (c.get("billing_address") or {}).get("first_name") or email.split("@")[0]
         total = c.get("total_price", "0")
         items = ", ".join(li.get("title", "") for li in (c.get("line_items") or [])[:2])
         try:

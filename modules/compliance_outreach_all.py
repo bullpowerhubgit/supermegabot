@@ -452,6 +452,14 @@ def _db() -> sqlite3.Connection:
 def _send_email(smtp_user: str, smtp_pass: str, smtp_host: str, smtp_port: int,
                 to: str, subject: str, body: str) -> bool:
     try:
+        from modules.email_guard import validate_email
+        ok_g, errs = validate_email(subject=subject, body=body, to_email=to, skip_dedup=True)
+        if not ok_g:
+            log.warning("EmailGuard BLOCKED to=%s reason=%s", to, "; ".join(errs))
+            return False
+    except ImportError:
+        pass
+    try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"]    = smtp_user
