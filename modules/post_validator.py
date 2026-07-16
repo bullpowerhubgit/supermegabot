@@ -151,7 +151,7 @@ _L3_NICHE = [
     "3d-druck", "3d printer", "laser cutter", "cnc",
     "raspberry pi", "arduino", "microcontroller",
     # Digitale Business-Begriffe (nur spezifische)
-    "shopify", "e-commerce", "ecommerce",
+    "shopify", "e-commerce", "ecommerce", "e commerce",
     "saas", "software", "automation", "automatisierung",
     "ai", "ki", "künstliche intelligenz", "artificial intelligence",
     "machine learning", "chatgpt", "claude", "openai",
@@ -160,6 +160,10 @@ _L3_NICHE = [
     "gumroad", "stripe", "paypal",
     "seo", "conversion", "cpc", "cpm",
     "ineedit", "aiitec",
+    # B2B / LinkedIn Thought-Leadership (EU AI Act, Sales-Automation)
+    "b2b", "compliance", "eu ai act", "ki-verordnung", "ai act",
+    "lead", "outreach", "sdr", "sales", "crm",
+    "chatbot", "ki-agent", "ki agent", "rezeptionistin",
     # Spezifische Produkttypen die in Nische passen
     "gadget", "tech", "technologie", "elektronik",
     "steckdose", "thermostat", "heizung", "klimaanlage",
@@ -248,12 +252,25 @@ Antwort NUR mit der Zahl (1-10). Nichts anderes.
 Post:
 {text}"""
 
+def _keyword_fallback_score(text: str) -> int:
+    """Wenn KI down: Score aus Nischen-Keywords (nicht 0 → block-positive Block)."""
+    if not text or len(text.strip()) < 30:
+        return 3
+    hits = sum(1 for rx in _L3_RE if rx.search(text))
+    if hits >= 3:
+        return 8
+    if hits >= 1:
+        return 7  # = MIN_AI_SCORE → PASS
+    return 4  # unter MIN → BLOCK (kein Nischen-Bezug)
+
+
 async def _ai_score(text: str) -> int:
-    """KI-Score 1-10 via Groq. Bei Fehler: 0 (Block)."""
+    """KI-Score 1-10 via Groq. Bei Fehler: Keyword-Fallback (NIE 0 blind blocken)."""
     key = _GROQ_KEY()
     if not key:
-        # Kein Groq → versuche Anthropic
-        return await _ai_score_anthropic(text)
+        # Kein Groq → versuche Anthropic, dann Keyword
+        sc = await _ai_score_anthropic(text)
+        return sc if sc > 0 else _keyword_fallback_score(text)
 
     payload = {
         "model": "llama-3.1-8b-instant",
@@ -277,17 +294,23 @@ async def _ai_score(text: str) -> int:
                     # Nur erste Zahl extrahieren
                     m = re.search(r"\d+", raw)
                     score = int(m.group()) if m else 0
+                    if score <= 0:
+                        return _keyword_fallback_score(text)
                     return min(10, max(0, score))
                 elif r.status == 429:
                     # Rate limit → Anthropic fallback
-                    return await _ai_score_anthropic(text)
+                    sc = await _ai_score_anthropic(text)
+                    return sc if sc > 0 else _keyword_fallback_score(text)
+                else:
+                    log.warning("PostValidator: Groq HTTP %s — keyword fallback", r.status)
+                    return _keyword_fallback_score(text)
     except asyncio.TimeoutError:
-        log.warning("PostValidator: Groq Timeout — Block")
-        return 0
+        log.warning("PostValidator: Groq Timeout — keyword fallback")
+        return _keyword_fallback_score(text)
     except Exception as e:
-        log.warning("PostValidator: Groq Fehler %s — Block", e)
-        return 0
-    return 0
+        log.warning("PostValidator: Groq Fehler %s — keyword fallback", e)
+        return _keyword_fallback_score(text)
+    return _keyword_fallback_score(text)
 
 
 async def _ai_score_anthropic(text: str) -> int:

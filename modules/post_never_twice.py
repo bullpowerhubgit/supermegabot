@@ -36,11 +36,14 @@ _SEED_RULES: list[tuple[str, str, str]] = [
     ("placeholder", r"(?i)\[PLACEHOLDER\]|\[TODO\]|\[PRODUKT\]|\[LINK\]|TODO:|FIXME:", "Placeholder text"),
     ("ai_disclosure", r"(?i)als\s+ki[- ]sprachmodell|as\s+an\s+ai\s+model|ich\s+bin\s+(eine\s+)?ki\b", "AI disclosure"),
     ("offtopic_hn", r"(?i)show\s*hn:?|ask\s*hn:?|hacker\.?news", "Hacker News off-topic"),
-    ("offtopic_news", r"(?i)\b(polizei|vancouver\s+pd|wahlen?|krieg|ukraine)\b", "News/politics off-topic"),
-    ("fake_product", r"(?i)blender|3d\s*modellierung|quick escape button", "Fake product / HN scrape"),
+    # KEIN bare \bwar\b — deutsches Präteritum "war" (z.B. "war früher")
+    ("offtopic_news", r"(?i)\b(polizei|vancouver\s+pd|wahlen?\b|krieg|ukraine\s+krieg|warfare|warzone|world\s+war)\b", "News/politics off-topic"),
+    ("fake_product", r"(?i)\bblender\b|3d\s*modellierung|quick escape button", "Fake product / HN scrape"),
     ("traceback", r"(?i)Traceback\s*\(most recent|File\s+\".*\",\s+line\s+\d+", "Python traceback in post"),
     ("localhost", r"localhost|127\.0\.0\.1|yourstore|example\.com", "Dev/placeholder domain"),
     ("old_ds24", r"checkout-ds24\.com/product/668035", "Deprecated DS24 product id"),
+    # API-URL als "Content" = Extraktion kaputt — immer blocken, nie posten
+    ("api_url_as_content", r"(?i)^https?://api\.(linkedin|twitter|facebook|x)\.com/\S*$", "API-URL als Post-Inhalt (Extraktion fehlgeschlagen)"),
 ]
 
 # Map free-text reasons → rule ids for auto-promotion
@@ -110,11 +113,35 @@ def init_db() -> None:
         )
         now = time.time()
         for rid, pat, desc in _SEED_RULES:
+            # UPSERT: Seed-Patterns immer aktualisieren (Bugfixes wie \bwar\b → warfare)
             c.execute(
-                """INSERT OR IGNORE INTO permanent_rules(rule_id,pattern,description,hits,created_at,source)
-                   VALUES(?,?,?,0,?,?)""",
+                """INSERT INTO permanent_rules(rule_id,pattern,description,hits,created_at,source)
+                   VALUES(?,?,?,0,?,?)
+                   ON CONFLICT(rule_id) DO UPDATE SET
+                     pattern=excluded.pattern,
+                     description=excluded.description,
+                     source='seed'""",
                 (rid, pat, desc, now, "seed"),
             )
+        # Toxische Blacklist-Einträge: reine API-URLs (Extraktions-Bug) entfernen
+        try:
+            c.execute(
+                "DELETE FROM content_blacklist WHERE reason LIKE '%api.linkedin.com%' "
+                "OR reason LIKE '%ugcPosts%' OR reason LIKE '%text_extraktion%'"
+            )
+        except Exception:
+            pass
+        try:
+            for bad_url in (
+                "https://api.linkedin.com/v2/ugcPosts",
+                "https://api.linkedin.com/v2/shares",
+                "https://api.linkedin.com/v2/posts",
+            ):
+                for plat in ("linkedin", "default", "unknown", ""):
+                    ch = _content_hash(bad_url, plat)
+                    c.execute("DELETE FROM content_blacklist WHERE content_hash=?", (ch,))
+        except Exception:
+            pass
 
 
 def _content_hash(text: str, platform: str = "") -> str:

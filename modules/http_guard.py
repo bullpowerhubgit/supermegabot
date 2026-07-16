@@ -129,11 +129,52 @@ def _classify_url(url: str, method: str) -> Optional[str]:
     return None
 
 
+def _parse_body_kwargs(kwargs: dict) -> dict:
+    """Normalisiert json=/data= zu einem dict (str/bytes JSON → parse)."""
+    import json as _json
+
+    def _to_dict(raw):
+        if raw is None:
+            return {}
+        if isinstance(raw, dict):
+            return raw
+        if isinstance(raw, (bytes, bytearray)):
+            try:
+                raw = raw.decode("utf-8", errors="ignore")
+            except Exception:
+                return {}
+        if isinstance(raw, str):
+            s = raw.strip()
+            if not s:
+                return {}
+            if s.startswith("{") or s.startswith("["):
+                try:
+                    parsed = _json.loads(s)
+                    return parsed if isinstance(parsed, dict) else {}
+                except Exception:
+                    return {}
+            # form-urlencoded: text=...&...
+            if "=" in s and "&" in s:
+                try:
+                    from urllib.parse import parse_qs
+                    qs = parse_qs(s, keep_blank_values=True)
+                    return {k: (v[0] if isinstance(v, list) and v else v) for k, v in qs.items()}
+                except Exception:
+                    return {}
+        return {}
+
+    body = _to_dict(kwargs.get("json"))
+    if not body:
+        body = _to_dict(kwargs.get("data"))
+    return body if isinstance(body, dict) else {}
+
+
 def _extract_text(url: str, content_type: str, kwargs: dict) -> str:
     """
     Extrahiert den Post-Text aus Request-Parametern.
     Unterstützt: Facebook/IG, Twitter, LinkedIn, TikTok, Pinterest,
                  SendGrid, Klaviyo, Mailchimp, Twilio, Shopify.
+    WICHTIG: json= als str/bytes wird geparst — sonst war Inhalt nur die API-URL.
     """
     import re as _re
 
@@ -149,12 +190,17 @@ def _extract_text(url: str, content_type: str, kwargs: dict) -> str:
         for v in vals:
             if isinstance(v, str) and len(v.strip()) > 10:
                 return _clean(v)
+            # nested dict with "text"
+            if isinstance(v, dict):
+                inner = v.get("text") or v.get("message") or v.get("commentary")
+                if isinstance(inner, str) and len(inner.strip()) > 10:
+                    return _clean(inner)
         return ""
 
-    body = kwargs.get("json") or {}
-    data = kwargs.get("data") or {}
+    body = _parse_body_kwargs(kwargs)
+    data = kwargs.get("data") if isinstance(kwargs.get("data"), dict) else {}
 
-    if isinstance(body, dict):
+    if isinstance(body, dict) and body:
         # ── Facebook / Instagram ──────────────────────────────────────────────
         t = _first_nonempty(body.get("message"), body.get("caption"), body.get("description"))
         if t: return t
@@ -163,21 +209,57 @@ def _extract_text(url: str, content_type: str, kwargs: dict) -> str:
         t = _first_nonempty(body.get("text"), body.get("status"))
         if t: return t
 
-        # ── LinkedIn ─────────────────────────────────────────────────────────
-        if "specificContent" in body:
-            sc = body["specificContent"]
+        # ── LinkedIn ugcPosts / shares / posts ───────────────────────────────
+        # specificContent.com.linkedin.ugc.ShareContent.shareCommentary.text
+        sc = body.get("specificContent") or {}
+        if isinstance(sc, dict):
+            for k, v in sc.items():
+                if isinstance(v, dict):
+                    commentary = v.get("shareCommentary") or v.get("commentary") or {}
+                    if isinstance(commentary, dict):
+                        t = _first_nonempty(commentary.get("text"))
+                        if t: return t
+                    t = _first_nonempty(v.get("text"), commentary if isinstance(commentary, str) else "")
+                    if t: return t
             share = sc.get("com.linkedin.ugc.ShareContent", {})
-            text_obj = share.get("shareCommentary", {})
-            t = _first_nonempty(text_obj.get("text"))
-            if t: return t
+            if isinstance(share, dict):
+                t = _first_nonempty(
+                    (share.get("shareCommentary") or {}).get("text")
+                    if isinstance(share.get("shareCommentary"), dict) else share.get("shareCommentary")
+                )
+                if t: return t
         if "commentary" in body:
             t = _first_nonempty(body.get("commentary"))
             if t: return t
-        # LinkedIn ugcPosts format
-        if "author" in body and "lifecycleState" in body:
-            media = body.get("specificContent", {}).get("com.linkedin.ugc.ShareContent", {})
-            t = _first_nonempty(media.get("shareCommentary", {}).get("text"))
-            if t: return t
+        # deep search for shareCommentary anywhere (defensive)
+        def _walk_for_text(obj, depth=0):
+            if depth > 6:
+                return ""
+            if isinstance(obj, dict):
+                for key in ("text", "message", "commentary", "shareCommentary", "description", "caption"):
+                    val = obj.get(key)
+                    if isinstance(val, str) and len(val.strip()) > 15:
+                        # skip pure URLs / urns
+                        if not val.strip().startswith("urn:") and "api.linkedin.com" not in val:
+                            return _clean(val)
+                    if isinstance(val, dict):
+                        found = _walk_for_text(val, depth + 1)
+                        if found:
+                            return found
+                for val in obj.values():
+                    found = _walk_for_text(val, depth + 1)
+                    if found:
+                        return found
+            elif isinstance(obj, list):
+                for item in obj[:20]:
+                    found = _walk_for_text(item, depth + 1)
+                    if found:
+                        return found
+            return ""
+        if "linkedin" in (url or "").lower() or "specificContent" in body or "author" in body:
+            deep = _walk_for_text(body)
+            if deep:
+                return deep
 
         # ── TikTok ───────────────────────────────────────────────────────────
         post_info = body.get("post_info", {})
@@ -365,10 +447,20 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
         allowed, reason = await _guard_check(url, content_type, kwargs)
         if not allowed:
             log.warning("HttpGuard BLOCK [%s]: %s → %s", content_type, url[:80], reason)
-            # NEVER-TWICE: speichern — gleicher Fehler nie wieder
+            # NEVER-TWICE: speichern — aber NICHT wenn Text nur die API-URL ist
+            # (sonst landet ugcPosts als "Content" in der Blacklist und blockt alles)
             try:
                 from modules.post_never_twice import remember_block
-                remember_block(_post_text, _post_platform, [str(reason)], source_module="http_guard")
+                _is_bare_api = (
+                    not _post_text
+                    or _post_text.strip() == url.strip()
+                    or _post_text.strip().startswith("https://api.")
+                    and len(_post_text.strip()) < 80
+                )
+                if not _is_bare_api:
+                    remember_block(
+                        _post_text, _post_platform, [str(reason)], source_module="http_guard"
+                    )
             except Exception:
                 pass
             # Telegram-Alert über blockierten Post

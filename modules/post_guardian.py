@@ -89,16 +89,19 @@ PRIVATE_DATA_PATTERNS = [
 
 # ── Themen-Relevanz: Off-Topic-Muster die NIEMALS gepostet werden dürfen ──────
 # Kein fremdes News-Topic als Post-Titel/Body (HN, Nachrichten, Politik, etc.)
+# WICHTIG: KEIN bare \bwar\b — matched deutsches "war" (Präteritum von "sein")
+# z.B. "war früher eine Beratung" → false positive auf LinkedIn!
 _OFFTOPIC_PATTERNS = re.compile(
-    r'\b(polizei|police|policing|pd\b|sheriff|feuerwehr|fbi|bka|bnd|'
-    r'wahlen?|wahl|election|parliament|bundestag|senat|congress|'
-    r'krieg|war|ukraine|russia|militär|military|nato|'
+    r'\b(polizei|police|policing|sheriff|feuerwehr|fbi|bka|bnd|'
+    r'wahlen?|election|parliament|bundestag|senat|congress|'
+    r'krieg|warfare|warzone|world\s+war|civil\s+war|war\s+on\s+|war\s+against|'
+    r'ukraine\s+krieg|russia\s+war|militär|military|nato\b|'
     r'impfung|impfstoff|vaccine|covid|corona|pandemie|pandemic|'
-    r'erdbeben|earthquake|hurricane|tornado|flut|flood|'
-    r'skandal|korruption|prozess|urteil|gericht|klage|anklage|'
+    r'erdbeben|earthquake|hurricane|tornado|'
+    r'skandal|korruption|'
     r'hacker\.?news|show\s*hn:?|ask\s*hn:?|hn\s+top|'
     r'quick escape button|wiped?\s+from\s+history|wipes?\s+(itself|history)|'
-    r'blender|3d\s*modellierung|vancouver|pd\s+website|'
+    r'\bblender\b|3d\s*modellierung|vancouver\s+pd|'
     r'reddit\.com/r/|github\.com/.*/issues)\b',
     re.IGNORECASE,
 )
@@ -228,8 +231,8 @@ def validate_post(content: str, platform: str = "default",
     if _BANNED_URLS.search(text):
         errors.append("Verbotene URL (myshopify/localhost/alte DS24) — nutze ineedit.com.co")
 
-    # 9c. Python None im Post
-    if re.search(r'(?i)\bNone\b|Hallo\s+None|—\s*None', text):
+    # 9c. Python None im Post (NIE bare "none" — false positive auf Englisch)
+    if re.search(r'(?i)Hallo\s+None|—\s*None\b|für\s+None\b|NoneType|:\s*None\b', text):
         errors.append("None-Placeholder im Post-Text")
 
     # 10. Nischen-Relevanz für Social-Posts

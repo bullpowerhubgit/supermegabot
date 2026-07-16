@@ -22,7 +22,8 @@ BASE_URL       = os.getenv("RAILWAY_STATIC_URL", "https://aiitec-saas-production
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 POSTED_LI  = DATA_DIR / "li_posted.json"
 
-# Tägliche Posts (rotierend) — EU AI Act + B2B Automation Thought Leadership
+# Tägliche Posts (rotierend) — EU AI Act + B2B Automation + Shopify Thought Leadership
+# Jeder Post enthält STARKES Nischen-Keyword (Shopify/KI/Automation/E-Commerce)
 LI_POSTS = [
     {
         "text": (
@@ -32,64 +33,64 @@ LI_POSTS = [
             "— Davon haben 91% KEIN Disclosure-Banner\n"
             "— Bußgeld: bis €15.000.000 oder 3% Jahresumsatz\n\n"
             "Das ist kein Zukunftsproblem. Das ist eine August-2026-Deadline.\n\n"
-            "Wir machen euren Shop in 24h konform.\n"
-            "Compliance Wächter: €1.500/Monat.\n\n"
+            "Wir machen euren E-Commerce Shop in 24h AI-Act-konform.\n"
+            "Compliance Wächter für Shopify: €1.500/Monat.\n\n"
             f"Link in Kommentaren 👇"
         ),
     },
     {
         "text": (
-            "Ich habe meinen Vertrieb durch eine KI ersetzt.\n\n"
+            "Ich habe meinen B2B-Vertrieb durch eine KI-Automation ersetzt.\n\n"
             "Vorher:\n"
             "— 2 SDRs · €6.000/Monat · 15 Leads/Woche\n"
             "— 80% davon unqualifiziert\n\n"
             "Heute:\n"
             "— 1 KI-Agent · €500/Monat · 10 qualifizierte Leads/Tag\n"
             "— Vollautomatisch, 24/7, kein Krankheitsausfall\n\n"
-            "B2B-Sales 2026 sieht anders aus als 2022.\n\n"
+            "Shopify-Händler und SaaS-Gründer 2026 skalieren anders als 2022.\n\n"
             "Wer noch mit Kaltanrufen arbeitet: das ist Ihre Wettbewerbslücke.\n\n"
-            f"Lead Agent Demo: {BASE_URL}"
+            f"Lead Agent Demo (AI + Automation): {BASE_URL}"
         ),
     },
     {
         "text": (
             "Ein DACH-E-Commerce-Unternehmer hat mir diese Woche eine wichtige Frage gestellt:\n\n"
             '"Rudolf, macht mein Tidio-Chat mich EU AI Act pflichtig?"\n\n'
-            "Antwort: Ja.\n\n"
+            "Antwort: Ja — für Shopify und jeden Online-Shop mit KI-Chat.\n\n"
             "Tidio, Gorgias, Intercom, Freshchat, Klarna AI, Rebuy — "
             "alle fallen unter Art. 50 der EU KI-Verordnung.\n\n"
             "Was braucht ihr:\n"
             "✅ Disclosure-Banner ('Dieser Chat wird von KI betrieben')\n"
             "✅ Dokumentation für Behörden\n"
             "✅ Täglicher Compliance-Scan\n\n"
-            "Frist: 2. August 2026.\n\n"
-            "Habt ihr euren Shop schon gecheckt?"
+            "Frist: 2. August 2026. AI Act + Shopify Compliance jetzt prüfen."
         ),
     },
     {
         "text": (
-            "Wettbewerber-Analyse war früher eine Beratungsrechnung.\n\n"
+            "Wettbewerber-Analyse im E-Commerce: früher eine teure Beratungsrechnung.\n\n"
             "€5.000–€15.000 für eine einmalige Studie.\n"
-            "Die nach 3 Monaten veraltet war.\n\n"
-            "Heute:\n"
-            "— Täglich automatischer Scan der Top-10-Wettbewerber\n"
+            "Die nach 3 Monaten veraltet ist.\n\n"
+            "Heute mit KI-Automation:\n"
+            "— Täglich automatischer Scan der Top-10 Shopify-Wettbewerber\n"
             "— Preisänderungen, neue Produkte, Kampagnen — alles in einer Telegram-Nachricht\n"
             "— KI-Handlungsempfehlungen direkt dazu\n\n"
             "Intelligence Suite: €2.000/Monat.\n"
             "Eine Agentur kostet das pro Woche.\n\n"
-            f"Demo: {BASE_URL}"
+            f"Demo (Tech + E-Commerce Intelligence): {BASE_URL}"
         ),
     },
     {
         "text": (
-            "Ich werde oft gefragt: 'Lohnt sich KI-Automation wirklich für KMUs?'\n\n"
-            "Zahlen aus unserem System (letzte 30 Tage):\n\n"
+            "Ich werde oft gefragt: 'Lohnt sich KI-Automation wirklich für KMUs im E-Commerce?'\n\n"
+            "Zahlen aus unserem Shopify/SaaS-System (letzte 30 Tage):\n\n"
             "📧 3.200 personalisierte Outreach-Emails gesendet\n"
             "📞 47 eingehende Anfragen via Sofia (KI-Rezeptionistin)\n"
             "🎯 12% Antwortrate auf kalte Emails (Branche: 2–3%)\n"
             "💶 €0 für menschliche SDRs\n\n"
-            "Der Unterschied: Personalisierung. Jede Email kennt das spezifische Problem des Empfängers.\n\n"
-            "KI ersetzt keine Menschen. Sie lässt Menschen wichtigere Arbeit machen."
+            "Der Unterschied: Personalisierung + Automation. "
+            "Jede Email kennt das spezifische Problem des Empfängers.\n\n"
+            "KI ersetzt keine Menschen. Sie lässt Menschen wichtigere Tech-Arbeit machen."
         ),
     },
 ]

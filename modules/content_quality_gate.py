@@ -55,6 +55,10 @@ _NICHE_KEYWORDS = [
     "energie", "licht", "automatisch", "sensor", "display",
     "tablet", "drohne", "outdoor", "camping", "powerstation",
     "balkonkraftwerk", "ineedit", "aiitec",
+    # E-Com / SaaS / B2B / LinkedIn Authority
+    "shopify", "e-commerce", "ecommerce", "automation", "automatisierung",
+    "saas", "ki", "ai", "software", "stripe", "digistore", "affiliate",
+    "b2b", "compliance", "outreach", "lead", "chatbot", "marketing",
     # Preis-Angaben sind ok (zeigen Produkt-Kontext)
     "€", "eur", "preis",
 ]
