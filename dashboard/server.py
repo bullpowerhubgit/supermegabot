@@ -11143,9 +11143,23 @@ async def _bg_revenue_weekly():
 
 async def handle_revenue_snapshot(request: web.Request) -> web.Response:
     try:
-        from modules.revenue_mega_tracker import get_current_revenue_snapshot
-        r = await get_current_revenue_snapshot()
-        return web.json_response(r)
+        from modules.stripe_payment_hook import get_payment_stats
+        from modules.digistore24_automation import get_recent_sales
+        stripe_stats, ds24_stats = await asyncio.gather(
+            get_payment_stats(),
+            get_recent_sales(days=1),
+            return_exceptions=True,
+        )
+        if isinstance(stripe_stats, Exception):
+            stripe_stats = {"error": str(stripe_stats)}
+        if isinstance(ds24_stats, Exception):
+            ds24_stats = {"error": str(ds24_stats)}
+        return web.json_response({
+            "ok":    True,
+            "stripe": stripe_stats,
+            "ds24":   ds24_stats,
+            "at":    datetime.now(timezone.utc).isoformat(),
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 

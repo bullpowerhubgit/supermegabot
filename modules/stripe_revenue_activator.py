@@ -112,32 +112,51 @@ def _auth_header() -> dict:
     return {"Authorization": f"Basic {token}"}
 
 
+_STRIPE_MAX_RETRIES = 3
+
+
 async def _get(session: aiohttp.ClientSession, path: str, params: dict = None) -> dict:
     # Dauerhaft: type aus /prices strippen, andere GET-Params sanitizen
     safe_params = sanitize_get_params(path, params)
-    async with session.get(
-        f"{STRIPE_API_BASE}{path}",
-        params=safe_params,
-        headers=_auth_header(),
-    ) as resp:
-        body = await resp.json()
-        if resp.status >= 400:
-            log.warning("Stripe GET %s → %d: %s", path, resp.status, body.get("error", {}).get("message"))
-        return body
+    for attempt in range(1, _STRIPE_MAX_RETRIES + 1):
+        async with session.get(
+            f"{STRIPE_API_BASE}{path}",
+            params=safe_params,
+            headers=_auth_header(),
+        ) as resp:
+            if resp.status == 429:
+                retry_after = int(resp.headers.get("Retry-After", "5"))
+                log.warning("Stripe 429 GET %s — warte %ds (Versuch %d/%d)", path, retry_after, attempt, _STRIPE_MAX_RETRIES)
+                if attempt < _STRIPE_MAX_RETRIES:
+                    await asyncio.sleep(retry_after)
+                    continue
+            body = await resp.json()
+            if resp.status >= 400 and resp.status != 429:
+                log.warning("Stripe GET %s → %d: %s", path, resp.status, body.get("error", {}).get("message"))
+            return body
+    return {"error": {"message": "Rate limit exceeded after retries"}}
 
 
 async def _post(session: aiohttp.ClientSession, path: str, data: dict) -> dict:
     # Dauerhaft: Redirect-URLs in payment_links/checkout immer URL-safe
     safe_data = sanitize_post_data(path, data)
-    async with session.post(
-        f"{STRIPE_API_BASE}{path}",
-        data=safe_data,
-        headers=_auth_header(),
-    ) as resp:
-        body = await resp.json()
-        if resp.status >= 400:
-            log.warning("Stripe POST %s → %d: %s", path, resp.status, body.get("error", {}).get("message"))
-        return body
+    for attempt in range(1, _STRIPE_MAX_RETRIES + 1):
+        async with session.post(
+            f"{STRIPE_API_BASE}{path}",
+            data=safe_data,
+            headers=_auth_header(),
+        ) as resp:
+            if resp.status == 429:
+                retry_after = int(resp.headers.get("Retry-After", "5"))
+                log.warning("Stripe 429 POST %s — warte %ds (Versuch %d/%d)", path, retry_after, attempt, _STRIPE_MAX_RETRIES)
+                if attempt < _STRIPE_MAX_RETRIES:
+                    await asyncio.sleep(retry_after)
+                    continue
+            body = await resp.json()
+            if resp.status >= 400 and resp.status != 429:
+                log.warning("Stripe POST %s → %d: %s", path, resp.status, body.get("error", {}).get("message"))
+            return body
+    return {"error": {"message": "Rate limit exceeded after retries"}}
 
 
 async def _paginate_all(session: aiohttp.ClientSession, path: str, params: dict = None) -> list:
