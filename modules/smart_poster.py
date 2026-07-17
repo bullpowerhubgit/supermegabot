@@ -64,6 +64,12 @@ _BANNED_PATTERNS = [
     r"forex.*signal",
     r"\bmlm\b",
     r"pyramid",
+    r"nicht im handel erh[aä]ltlich",
+    r"zur wunschliste hinzuf[uü]gen",
+    r"noch nicht genehmigt",
+    r"not approved",
+    r"currently unavailable",
+    r"not available for sale",
 ]
 
 # Sichere Content-Themen (werden an den Content-Generator übergeben)
@@ -165,10 +171,158 @@ def _posts_today(platform: str) -> int:
         return 0
 
 
-# ── Keyword-Filter ─────────────────────────────────────────────────────────────
+# ── Pre-Post Validator ────────────────────────────────────────────────────────
+#
+# Jeder Post durchläuft ALLE Checks bevor er gepostet wird.
+# Schlägt auch NUR EIN Check fehl → Post wird NICHT gesendet.
+# Das Ergebnis wird geloggt + im Telegram-Summary angezeigt.
+
+# Plattform-spezifische Zeichenlimits
+_PLATFORM_CHAR_LIMITS = {
+    "twitter":   280,
+    "instagram": 2200,
+    "facebook":  63206,
+    "linkedin":  3000,
+    "pinterest": 500,
+}
+
+# Minimal-Wörter damit ein Post als "sinnvoll" gilt
+_MIN_WORDS = 5
+
+# Max Hashtags pro Post (darüber → Spam-Signal)
+_MAX_HASHTAGS = 8
+
+# Unfilled template-Platzhalter — dürfen NICHT im Post auftauchen
+_PLACEHOLDER_PATTERN = re.compile(r"\{[a-z_]+\}")
+
+# Fehlermeldungs-Muster die ein AI manchmal reinschreibt
+_ERROR_PHRASES = [
+    "als ki-sprachmodell",
+    "as an ai",
+    "i cannot",
+    "ich kann nicht",
+    "error:",
+    "traceback",
+    "exception:",
+    "sorry, i",
+    "entschuldigung, ich",
+    "leider kann ich",
+    "das kann ich nicht",
+    "unfortunately",
+]
+
+
+class ValidationResult:
+    """Ergebnis eines einzelnen Validierungs-Checks."""
+    __slots__ = ("check", "passed", "reason")
+
+    def __init__(self, check: str, passed: bool, reason: str = ""):
+        self.check  = check
+        self.passed = passed
+        self.reason = reason
+
+    def __repr__(self) -> str:
+        status = "✅" if self.passed else "❌"
+        return f"{status} {self.check}" + (f": {self.reason}" if self.reason else "")
+
+
+def validate_post(text: str, platform: str) -> tuple[bool, list[ValidationResult]]:
+    """
+    Führt ALLE Qualitäts-Checks für einen Post durch.
+    Gibt (True, checks) zurück wenn alles OK, sonst (False, checks).
+    Nur wenn True → Post darf gesendet werden.
+    """
+    checks: list[ValidationResult] = []
+
+    # ── Check 1: Leer? ────────────────────────────────────────────────────────
+    stripped = text.strip()
+    checks.append(ValidationResult(
+        "nicht_leer",
+        bool(stripped),
+        "" if stripped else "Text ist leer",
+    ))
+
+    # ── Check 2: Mindestlänge (Wörter) ───────────────────────────────────────
+    words = [w for w in stripped.split() if not w.startswith("#") and not w.startswith("@")]
+    checks.append(ValidationResult(
+        "mindest_woerter",
+        len(words) >= _MIN_WORDS,
+        "" if len(words) >= _MIN_WORDS else f"Nur {len(words)} Wörter (min {_MIN_WORDS})",
+    ))
+
+    # ── Check 3: Zeichenlimit (plattformspezifisch) ───────────────────────────
+    char_limit = _PLATFORM_CHAR_LIMITS.get(platform, 500)
+    chars = len(stripped)
+    checks.append(ValidationResult(
+        "zeichenlimit",
+        chars <= char_limit,
+        "" if chars <= char_limit else f"{chars} Zeichen (max {char_limit} für {platform})",
+    ))
+
+    # ── Check 4: Keine ungefüllten Template-Platzhalter ──────────────────────
+    placeholders = _PLACEHOLDER_PATTERN.findall(stripped)
+    checks.append(ValidationResult(
+        "keine_platzhalter",
+        not placeholders,
+        "" if not placeholders else f"Unfilled: {', '.join(set(placeholders))}",
+    ))
+
+    # ── Check 5: Verbotene Keywords ───────────────────────────────────────────
+    lower = stripped.lower()
+    found_bad = next((p for p in _BANNED_PATTERNS if re.search(p, lower)), None)
+    checks.append(ValidationResult(
+        "keyword_filter",
+        found_bad is None,
+        "" if found_bad is None else f"Verbotenes Keyword: '{found_bad}'",
+    ))
+
+    # ── Check 6: Kein Fehlermeldungs-Text von AI ─────────────────────────────
+    found_err = next((p for p in _ERROR_PHRASES if p in lower), None)
+    checks.append(ValidationResult(
+        "kein_ai_fehler",
+        found_err is None,
+        "" if found_err is None else f"AI-Fehler-Phrase gefunden: '{found_err}'",
+    ))
+
+    # ── Check 7: Nicht übermäßig viele Hashtags ──────────────────────────────
+    hashtag_count = stripped.count("#")
+    checks.append(ValidationResult(
+        "hashtag_limit",
+        hashtag_count <= _MAX_HASHTAGS,
+        "" if hashtag_count <= _MAX_HASHTAGS else f"{hashtag_count} Hashtags (max {_MAX_HASHTAGS})",
+    ))
+
+    # ── Check 8: Kein ALL-CAPS Spam (>40% Großbuchstaben im Wortinhalt) ──────
+    letters = [c for c in stripped if c.isalpha()]
+    upper_pct = (sum(1 for c in letters if c.isupper()) / max(len(letters), 1)) * 100
+    checks.append(ValidationResult(
+        "kein_caps_spam",
+        upper_pct <= 40,
+        "" if upper_pct <= 40 else f"{upper_pct:.0f}% Großbuchstaben (max 40%)",
+    ))
+
+    # ── Check 9: Enthält Shop-Link oder Hashtag (kein leerer Promo-Text) ─────
+    has_cta = "ineedit.com.co" in stripped or "#" in stripped or "http" in stripped
+    checks.append(ValidationResult(
+        "hat_cta_oder_hashtag",
+        has_cta,
+        "" if has_cta else "Kein Link, kein Hashtag — Post hat keinen Wert",
+    ))
+
+    # ── Check 10: Keine doppelten Satzzeichen / Spammy Interpunktion ─────────
+    spam_punct = bool(re.search(r"[!?]{3,}|\.{4,}", stripped))
+    checks.append(ValidationResult(
+        "kein_interpunktions_spam",
+        not spam_punct,
+        "" if not spam_punct else "Zu viele !!! oder .... Zeichen",
+    ))
+
+    all_passed = all(c.passed for c in checks)
+    return all_passed, checks
+
 
 def _is_clean(text: str) -> tuple[bool, str]:
-    """Gibt (True, '') zurück wenn sauber, sonst (False, gefundenes_muster)."""
+    """Schneller Keyword-Check (Legacy-Kompatibilität). Nutzt intern validate_post."""
     lower = text.lower()
     for pattern in _BANNED_PATTERNS:
         if re.search(pattern, lower):
@@ -561,11 +715,18 @@ async def run_posting_cycle() -> dict:
                 result["errors"].append(f"{platform}: Content-Generierung fehlgeschlagen: {e}")
                 continue
 
-            # Keyword-Check (Sicherheitsnetz)
-            clean, reason = _is_clean(text)
-            if not clean:
-                result["skipped"].append(f"{platform}: Keyword-Filter '{reason}'")
+            # ── Pre-Post Validation — ALLE 10 Checks müssen bestehen ──────────
+            valid, checks = validate_post(text, platform)
+            failed = [c for c in checks if not c.passed]
+
+            if not valid:
+                reasons = " | ".join(c.reason for c in failed)
+                log.warning("SmartPoster [%s]: Validation fehlgeschlagen — %s", platform, reasons)
+                log.debug("SmartPoster [%s]: Post-Text war: %s", platform, text[:200])
+                result["skipped"].append(f"{platform}: Validation ({len(failed)} Checks) — {reasons}")
                 continue
+
+            log.info("SmartPoster [%s]: ✅ Alle %d Checks bestanden", platform, len(checks))
 
             # Duplikat-Check
             ch = _content_hash(text)
@@ -573,7 +734,7 @@ async def run_posting_cycle() -> dict:
                 result["skipped"].append(f"{platform}: Duplikat (letzte {_DEDUP_WINDOW_HOURS}h)")
                 continue
 
-            # Posten
+            # Posten — erst jetzt, nach erfolgreich bestandener Validation
             try:
                 ok, detail = await poster_fn(text, session)
             except Exception as e:
@@ -585,7 +746,7 @@ async def run_posting_cycle() -> dict:
                 result["posted"].append(f"{platform}: ✅ {detail}")
                 log.info("SmartPoster: %s → gepostet (%s)", platform, detail)
             else:
-                # Fehler = KEIN permanenter Ban — einfach beim nächsten Zyklus retry
+                # API-Fehler = KEIN permanenter Ban — retry beim nächsten Zyklus
                 result["errors"].append(f"{platform}: {detail}")
                 log.warning("SmartPoster: %s → %s", platform, detail)
 
@@ -594,16 +755,18 @@ async def run_posting_cycle() -> dict:
     skipped_count = len(result["skipped"])
     error_count   = len(result["errors"])
 
-    if posted_count > 0 or error_count > 0:
+    if posted_count > 0 or error_count > 0 or skipped_count > 0:
         lines = [f"📢 <b>SmartPoster — {topic_cfg['topic']}</b>"]
+        lines.append(f"🕐 {datetime.now().strftime('%H:%M')} | Checks: 10/Post")
         if result["posted"]:
-            lines.append(f"\n✅ Gepostet ({posted_count}):")
+            lines.append(f"\n✅ <b>Gepostet ({posted_count}):</b>")
             lines.extend(f"  • {p}" for p in result["posted"])
+        if result["skipped"]:
+            lines.append(f"\n⏭ <b>Übersprungen ({skipped_count}) — Grund:</b>")
+            lines.extend(f"  • {s}" for s in result["skipped"][:5])
         if result["errors"]:
-            lines.append(f"\n⚠️ Fehler ({error_count}) — retry nächster Zyklus:")
-            lines.extend(f"  • {e}" for e in result["errors"][:3])  # max 3 Fehler zeigen
-        if skipped_count:
-            lines.append(f"\n⏭ Übersprungen: {skipped_count}")
+            lines.append(f"\n⚠️ <b>API-Fehler ({error_count}) — retry in 2h:</b>")
+            lines.extend(f"  • {e}" for e in result["errors"][:3])
         await _tg("\n".join(lines))
 
     result["ok"] = error_count < len(_PLATFORMS)
