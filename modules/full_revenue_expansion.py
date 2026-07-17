@@ -235,6 +235,13 @@ async def _ai_copy(prompt: str, max_tokens: int = 300) -> str:
 def _send_smtp(to_email: str, subject: str, html_body: str) -> bool:
     """Send via gmail_accounts pool (Round-Robin) or fallback direct SMTP."""
     try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
+    try:
         from modules.gmail_accounts import send_email as ga_send
         ok, _ = ga_send(to_email, subject, "", html=html_body)
         return ok

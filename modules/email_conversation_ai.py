@@ -525,6 +525,13 @@ class EmailConversationAI:
         if not to_addr:
             log.error("send_reply: kein Empfänger")
             return False
+        try:
+            from modules.gmail_accounts import _is_valid_recipient
+            if not _is_valid_recipient(to_addr):
+                log.warning("BLOCKED (noreply/dead): %s", to_addr)
+                return False
+        except ImportError:
+            pass
 
         reply_subject = subject if subject.lower().startswith("re:") else f"Re: {subject}"
 

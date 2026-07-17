@@ -186,14 +186,21 @@ def _generate_partner_code(company_name: str) -> str:
 
 def _send_onboarding_email(to_email: str, partner_code: str) -> bool:
     try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
+    try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = f"Ihr Partner-Kit ist bereit — Code: {partner_code}"
         msg["From"]    = f"Rudolf Sarkany | AIITEC <{GMAIL_USER}>"
         msg["To"]      = to_email
         body = ONBOARDING_KIT.format(partner_code=partner_code)
         msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
-            s.login(GMAIL_USER, GMAIL_PASS)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.login(GMAIL_USER, GMAIL_PASS)
             s.sendmail(GMAIL_USER, to_email, msg.as_string())
         return True
     except Exception as e:

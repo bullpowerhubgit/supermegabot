@@ -461,6 +461,13 @@ def _build_stage3_email(first_name: str, items: List[Dict], total: str,
 
 def _send_smtp_sync(to_email: str, subject: str, html_body: str) -> bool:
     """Synchroner SMTP-Versand (wird im Executor ausgeführt)."""
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
     smtp_user = os.getenv("GMAIL_USER_5", os.getenv("GMAIL_USER", ""))
     smtp_pass = os.getenv("GMAIL_APP_PASSWORD_5", os.getenv("GMAIL_APP_PASSWORD", ""))
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")

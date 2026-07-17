@@ -472,6 +472,13 @@ async def _handle_webhook_route(request: web.Request) -> web.Response:
 # ---------------------------------------------------------------------------
 
 async def _send_report_email(email: str, company: str, report_html: str):
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(email):
+            log.warning("BLOCKED (noreply/dead): %s", email)
+            return
+    except ImportError:
+        pass
     msg = MIMEMultipart("mixed")
     msg["Subject"] = f"EU AI Act Compliance Report &#8212; {company}"
     msg["From"] = FROM_EMAIL

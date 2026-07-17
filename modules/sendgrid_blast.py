@@ -257,6 +257,13 @@ async def send_single(to_email: str, to_name: str, subject: str, html: str,
     """Send via Resend → Brevo REST → Brevo SMTP → SendGrid (fallback)."""
     if not to_email or "@" not in to_email:
         return {"ok": False, "error": "invalid to_email"}
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return {"ok": False, "error": "blocked_noreply_dead"}
+    except ImportError:
+        pass
 
     # Resend (primär — kein IP-Problem, sofort aktiv)
     if await _send_resend(to_email, to_name, subject, html, from_email):
