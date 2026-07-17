@@ -5140,10 +5140,39 @@ async def handle_shopify_orders_paid_webhook(req):
         except Exception:
             pass
 
+        # 6. Sofia Upsell-Anruf (wenn Telefonnummer vorhanden)
+        try:
+            billing = data.get("billing_address") or data.get("shipping_address") or {}
+            phone   = billing.get("phone") or customer.get("phone") or ""
+            if phone and float(total_price) > 0:
+                # Produkt aus erster Line-Item ermitteln
+                line_items = data.get("line_items", [])
+                product_title = line_items[0].get("title", "") if line_items else ""
+                asyncio.create_task(_sofia_upsell_call(phone, product_title, first_name or contact_name, order_name))
+        except Exception as _se:
+            log.debug("Sofia upsell call setup: %s", _se)
+
         return web.Response(status=200)
     except Exception as e:
         log.error("orders/paid webhook error: %s", e)
         return web.Response(status=200)
+
+
+async def _sofia_upsell_call(phone: str, product: str, name: str, order_name: str) -> None:
+    """Verzögerter Sofia-Anruf nach Kauf — Upsell / Bestätigung."""
+    await asyncio.sleep(120)  # 2 Min Pause damit Kunde die Bestellbestätigung gelesen hat
+    try:
+        from modules.sofia_voice_agent import queue_sofia_call
+        queue_sofia_call(
+            to_number  = phone,
+            product_id = product,
+            contact    = name,
+            context    = f"Kauf bestätigt: {order_name}",
+            source     = "shopify_order_paid",
+        )
+        log.info("Sofia Upsell queued: %s → %s", order_name, phone)
+    except Exception as e:
+        log.debug("_sofia_upsell_call: %s", e)
 
 
 async def _safe_task(name: str, coro):
@@ -5309,9 +5338,41 @@ async def handle_stripe_webhook(req):
 
         event = json.loads(payload)
         result = await handle_webhook_event(event)
+
+        # Sofia Upsell-Anruf nach Stripe-Zahlung
+        try:
+            event_type = event.get("type", "")
+            if event_type in ("payment_intent.succeeded", "checkout.session.completed"):
+                obj = event.get("data", {}).get("object", {})
+                phone    = obj.get("phone") or (obj.get("customer_details") or {}).get("phone") or ""
+                name     = (obj.get("customer_details") or {}).get("name") or ""
+                metadata = obj.get("metadata") or {}
+                product  = metadata.get("product_id") or metadata.get("product") or ""
+                amount   = (obj.get("amount_total") or obj.get("amount", 0)) / 100
+                if phone and amount > 0:
+                    asyncio.create_task(_sofia_stripe_call(phone, product, name, amount))
+        except Exception as _se:
+            log.debug("Sofia Stripe hook: %s", _se)
+
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+async def _sofia_stripe_call(phone: str, product: str, name: str, amount: float) -> None:
+    """Sofia-Anruf nach Stripe-Zahlung — Danke + Upsell."""
+    await asyncio.sleep(60)
+    try:
+        from modules.sofia_voice_agent import queue_sofia_call
+        queue_sofia_call(
+            to_number  = phone,
+            product_id = product,
+            contact    = name,
+            context    = f"Stripe-Zahlung €{amount:.2f} bestätigt",
+            source     = "stripe_payment",
+        )
+    except Exception as e:
+        log.debug("_sofia_stripe_call: %s", e)
 
 
 # ── Google Drive ──────────────────────────────────────────────────────────────
@@ -13028,6 +13089,116 @@ async def create_app():
     app.router.add_post("/api/voice/incoming", handle_voice_incoming)
     app.router.add_post("/api/voice/respond",  handle_voice_respond)
     app.router.add_post("/api/voice/status",   handle_voice_status)
+
+    # ── Sofia Outbound TwiML ───────────────────────────────────────────────
+    async def handle_voice_outbound_twiml(req: web.Request) -> web.Response:
+        """GET /api/voice/outbound-twiml — liefert TwiML für ausgehende Anrufe."""
+        product  = req.rel_url.query.get("product", "")
+        contact  = req.rel_url.query.get("contact", "")
+        call_sid = req.rel_url.query.get("call_sid", "")
+        from modules.sofia_voice_agent import _twiml_outbound_greeting
+        twiml = _twiml_outbound_greeting(contact, product, call_sid)
+        return web.Response(text=twiml, content_type="text/xml")
+
+    # ── Sofia Outbound Trigger ─────────────────────────────────────────────
+    async def handle_voice_outbound(req: web.Request) -> web.Response:
+        """POST /api/voice/outbound — startet ausgehenden Sofia-Anruf."""
+        try:
+            data       = await req.json()
+            to_number  = data.get("to_number") or data.get("to", "")
+            product_id = data.get("product_id") or data.get("product", "")
+            contact    = data.get("contact") or data.get("name", "")
+            context    = data.get("context", "")
+            source     = data.get("source", "api")
+            if not to_number:
+                return web.json_response({"ok": False, "error": "to_number required"}, status=400)
+            from modules.sofia_voice_agent import trigger_outbound_call
+            call_sid = await trigger_outbound_call(to_number, product_id, contact, context, source)
+            if call_sid:
+                return web.json_response({"ok": True, "call_sid": call_sid, "to": to_number})
+            return web.json_response({"ok": False, "error": "Twilio call failed"}, status=500)
+        except Exception as e:
+            log.error("handle_voice_outbound: %s", e)
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    # ── Sofia Queue ────────────────────────────────────────────────────────
+    async def handle_voice_queue_get(req: web.Request) -> web.Response:
+        """GET /api/voice/queue — zeigt Call-Queue."""
+        from modules.sofia_voice_agent import get_sofia_queue
+        status = req.rel_url.query.get("status", "pending")
+        return web.json_response({"ok": True, "queue": get_sofia_queue(status)})
+
+    async def handle_voice_queue_add(req: web.Request) -> web.Response:
+        """POST /api/voice/queue — fügt zur Queue hinzu."""
+        try:
+            data = await req.json()
+            from modules.sofia_voice_agent import queue_sofia_call
+            qid = queue_sofia_call(
+                to_number  = data.get("to_number", ""),
+                product_id = data.get("product_id", ""),
+                contact    = data.get("contact", ""),
+                context    = data.get("context", ""),
+                source     = data.get("source", "api"),
+            )
+            return web.json_response({"ok": True, "queue_id": qid})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    # ── Sofia Stats ────────────────────────────────────────────────────────
+    async def handle_voice_stats(req: web.Request) -> web.Response:
+        """GET /api/voice/stats — Sofia-Statistiken."""
+        from modules.sofia_voice_agent import get_sofia_stats
+        return web.json_response({"ok": True, "stats": get_sofia_stats()})
+
+    # ── Sofia Kampagne starten ─────────────────────────────────────────────
+    async def handle_voice_campaign(req: web.Request) -> web.Response:
+        """POST /api/voice/campaign — startet Outbound-Kampagne (Queue abarbeiten)."""
+        try:
+            data  = await req.json() if req.content_length else {}
+            limit = int(data.get("limit", 20))
+            from modules.sofia_voice_agent import run_outbound_campaign
+            result = await run_outbound_campaign(limit=limit)
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    # ── Sofia SMS Inbound ──────────────────────────────────────────────────
+    async def handle_voice_sms(req: web.Request) -> web.Response:
+        """POST /api/voice/sms — eingehende SMS → Sofia antwortet."""
+        try:
+            data        = await req.post()
+            from_number = data.get("From", "")
+            body        = data.get("Body", "").strip()
+            from modules.sofia_voice_agent import handle_sms_inbound
+            reply = await handle_sms_inbound(from_number, body)
+            twiml = f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{reply}</Message></Response>'
+            return web.Response(text=twiml, content_type="text/xml")
+        except Exception as e:
+            log.error("handle_voice_sms: %s", e)
+            return web.Response(text='<?xml version="1.0"?><Response/>', content_type="text/xml")
+
+    # ── Sofia AMD (Anrufbeantworter-Erkennung) ─────────────────────────────
+    async def handle_voice_amd(req: web.Request) -> web.Response:
+        """POST /api/voice/amd — Twilio AMD Callback (Anrufbeantworter erkannt → hangup)."""
+        try:
+            data          = await req.post()
+            call_sid      = data.get("CallSid", "")
+            answered_by   = data.get("AnsweredBy", "")
+            if answered_by in ("machine_start", "machine_end_beep", "machine_end_silence"):
+                # Anrufbeantworter → kurze Nachricht hinterlassen
+                log.info("Sofia AMD: Anrufbeantworter erkannt für %s", call_sid)
+        except Exception as e:
+            log.debug("Sofia AMD: %s", e)
+        return web.Response(text="OK")
+
+    app.router.add_get( "/api/voice/outbound-twiml", handle_voice_outbound_twiml)
+    app.router.add_post("/api/voice/outbound",        handle_voice_outbound)
+    app.router.add_get( "/api/voice/queue",           handle_voice_queue_get)
+    app.router.add_post("/api/voice/queue",           handle_voice_queue_add)
+    app.router.add_get( "/api/voice/stats",           handle_voice_stats)
+    app.router.add_post("/api/voice/campaign",        handle_voice_campaign)
+    app.router.add_post("/api/voice/sms",             handle_voice_sms)
+    app.router.add_post("/api/voice/amd",             handle_voice_amd)
     log.info("Sofia Voice Agent registriert (/api/voice/*)")
 
     # Email Conversation AI — beantwortet alle Inbox-Emails automatisch
