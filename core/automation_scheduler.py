@@ -1309,18 +1309,7 @@ async def task_cro_run() -> str:
 
 async def task_mega_auto_post() -> str:
     """Mega Auto Poster — postet auf ALLE Kanäle gleichzeitig (alle 30 Min)."""
-    try:
-        from modules.mega_auto_poster import run_full_auto_post
-        result = await run_full_auto_post()
-        summary = result.get("_run_summary", {})
-        channels_ok = summary.get("total_channels_hit", 0)
-        ds24_ok  = result.get("ds24", {}).get("_summary", {}).get("channels_ok", 0)
-        skip     = result.get("ds24", {}).get("skipped", False)
-        if skip:
-            return "MegaAutoPost: Duplicate skip (bereits heute gepostet)"
-        return f"MegaAutoPost: {channels_ok} Kanal-Hits | DS24: {ds24_ok}/9 ✅"
-    except Exception as e:
-        return f"MegaAutoPost Fehler: {e}"
+    return "MegaAutoPost: legacy scheduler disabled — canonical social_autoposter prevents duplicate/faulty blast runs"
 
 
 async def task_twitter_auto_post() -> str:
@@ -2764,29 +2753,12 @@ async def task_intent_bridge_report() -> str:
 
 async def task_social_scheduler() -> str:
     """Social Scheduler: Twitter → Telegram Fallback (alle 6h)."""
-    try:
-        from modules.social_scheduler import post_daily_content
-        result = await post_daily_content()
-        return f"SocialScheduler: {result}"
-    except Exception as e:
-        return f"SocialScheduler Fehler: {e}"
+    return "SocialScheduler: legacy scheduler disabled — canonical social_autoposter owns social publishing"
 
 
 async def task_multiplatform_autopost() -> str:
     """Multi-Platform Autopost: FB + Instagram + Telegram + LinkedIn + Reddit + Discord + Pinterest (alle 6h)."""
-    import asyncio, subprocess, sys
-    try:
-        script = os.path.join(os.path.dirname(__file__), "..", "scripts", "autopost_full.py")
-        proc = await asyncio.create_subprocess_exec(
-            sys.executable, script,
-            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
-            env={**os.environ}
-        )
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=120)
-        output = stdout.decode("utf-8", errors="replace")[-500:]
-        return f"MultiPost: {output.strip()}"
-    except Exception as e:
-        return f"MultiPost Fehler: {e}"
+    return "MultiPlatform AutoPost: legacy scheduler disabled — canonical social_autoposter owns social publishing"
 
 
 async def task_system_guardian() -> dict:
@@ -6623,12 +6595,7 @@ async def task_content_hub() -> str:
 
 async def task_mega_auto_poster() -> str:
     """Mega Auto-Poster: DS24 + Shopify Produkte auf alle Kanäle gleichzeitig (alle 6h)."""
-    try:
-        from modules.mega_auto_poster import run_full_auto_post
-        r = await run_full_auto_post()
-        return f"Mega Post: {r}"
-    except Exception as e:
-        return f"Mega Auto-Poster Fehler: {e}"
+    return "Mega Auto-Poster: legacy scheduler disabled — canonical social_autoposter owns social publishing"
 
 
 # ── FREELANCE ─────────────────────────────────────────────────────────────────

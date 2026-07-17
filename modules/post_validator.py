@@ -130,7 +130,17 @@ _L2_SPAM = [
     "pyramid scheme", "pyramid scam",
     "get rich quick", "overnight millionaire",
     "make money fast", "easy money online",
+    "online geld verdienen", "geld verdienen vollautomatisch",
+    "passives einkommen online", "automatisches einkommen",
+    "earn while you sleep",
 ]
+_QUIET_NOTIFY_REASONS = (
+    "duplikat_innerhalb_",
+    "bereits_blockiert",
+    "rate_limit",
+    "429",
+    "daily_cap",
+)
 
 # ── Layer 3: Nischen-Keywords (mindestens 1 STARKES muss vorhanden sein) ───────
 # WICHTIG: Nur echte Tech/Smart/Digital-Keywords. Keine generischen Wörter.
@@ -348,6 +358,8 @@ async def _ai_score_anthropic(text: str) -> int:
 # ── Telegram Alert ───────────────────────────────────────────────────────────
 async def _notify_telegram(text: str, platform: str, layer: int, reason: str, score: int = 0):
     """Sendet Telegram-Benachrichtigung über blockierten Post."""
+    if any(marker in (reason or "").lower() for marker in _QUIET_NOTIFY_REASONS):
+        return
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
     chat  = os.getenv("TELEGRAM_CHAT_ID", "")
     if not token or not chat:

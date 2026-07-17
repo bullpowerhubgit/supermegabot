@@ -63,11 +63,12 @@ TWEET_TEMPLATES = [
 
 HASHTAG_SETS = [
     "#ShopifyAutomation #KI #Ecommerce #OnlineMarketing",
-    "#Dropshipping #Shopify #PassivesEinkommen #KITools",
+    "#Dropshipping #Shopify #KITools #Automation",
     "#EcommerceGrowth #Shopify #Marketing #Automation",
-    "#OnlineShop #Digitalisierung #KI #AutomatischesEinkommen",
+    "#OnlineShop #Digitalisierung #KI #WorkflowAutomation",
     "#ShopifyTipps #Conversion #EmailMarketing #Deutschland",
 ]
+TWITTER_TELEGRAM_NOTIFICATIONS = os.getenv("TWITTER_TELEGRAM_NOTIFICATIONS", "").lower() in ("1", "true", "yes")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -187,7 +188,7 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
             tweet_id = str(tweet.id)
             log.info("twikit tweet gesendet: %s", tweet_id)
             # Telegram Notification
-            if TELEGRAM_TOKEN and TELEGRAM_CHAT:
+            if TWITTER_TELEGRAM_NOTIFICATIONS and TELEGRAM_TOKEN and TELEGRAM_CHAT:
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as sess:
                     await sess.post(
                         f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
@@ -326,10 +327,10 @@ async def generate_shopify_product_tweet() -> Optional[str]:
 TOPICS = [
     "shopify automation 2026",
     "dropshipping KI-Tools",
-    "passives einkommen online",
+    "shopify workflow automation",
     "email marketing automation",
     "conversion rate optimierung shopify",
-    "digistore24 affiliate automatisch",
+    "digistore24 funnel automation",
     "social media autopilot",
     "shopify produkte automatisch finden",
 ]
@@ -386,12 +387,13 @@ async def post_daily_tweets(count: int = 3) -> dict:
     log.info("Twitter daily: %d posted, %d failed", len(posted), len(failed))
 
     # Telegram-Notification
-    await _telegram(
-        f"🐦 Twitter Auto-Post abgeschlossen!\n"
-        f"✅ {len(posted)} Tweets gepostet\n"
-        f"❌ {len(failed)} Fehler\n"
-        f"Account: @AIITEC (2019056604868456448)"
-    )
+    if TWITTER_TELEGRAM_NOTIFICATIONS:
+        await _telegram(
+            f"🐦 Twitter Auto-Post abgeschlossen!\n"
+            f"✅ {len(posted)} Tweets gepostet\n"
+            f"❌ {len(failed)} Fehler\n"
+            f"Account: @AIITEC (2019056604868456448)"
+        )
     return summary
 
 
