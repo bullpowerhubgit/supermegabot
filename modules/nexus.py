@@ -400,7 +400,7 @@ async def action_trend_product(keyword: str) -> dict:
         prompt = f"""Erstelle ein Shopify-Produkt für diesen Trend: "{keyword}"
 Produkt soll profitabel sein (Preis €19-99), auf DE-Markt ausgerichtet.
 NUR JSON zurückgeben:
-{{"title":"...", "body_html":"<p>Produktbeschreibung 100 Wörter</p>", "vendor":"BullPowerHub",
+{{"title":"...", "body_html":"<p>Produktbeschreibung 100 Wörter</p>", "vendor":"iNeedit",
   "product_type":"Digital", "price":"29.99", "tags":"trending,automatisch,{keyword[:20]}"}}"""
 
         raw = await ai_complete(prompt, max_tokens=600)
