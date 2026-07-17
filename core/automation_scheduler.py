@@ -6509,6 +6509,16 @@ async def task_sendgrid_daily() -> str:
         return f"SendGrid Fehler: {e}"
 
 
+async def task_shopify_descriptions() -> str:
+    """Shopify: befüllt leere Produkt-Beschreibungen (täglich)."""
+    try:
+        from modules.shopify_description_filler import fill_empty_descriptions
+        r = await fill_empty_descriptions(limit=30)
+        return f"Beschreibungen: {r.get('updated', 0)} aktualisiert | {r.get('skipped', 0)} übersprungen"
+    except Exception as e:
+        return f"Beschreibungen Fehler: {e}"
+
+
 async def task_seo_traffic_blitz() -> str:
     """SEO Traffic Blitz: Sitemap + Keywords + Backlinks + Schema + Internal Links (alle 8h)."""
     try:
@@ -8489,6 +8499,8 @@ TASKS = [
     ("meta_ads",                 task_meta_ads_cycle,           14400,  300),  # 4h — Facebook/Instagram Kampagnen
     # ── SendGrid Revenue Email ────────────────────────────────────────────────
     ("sendgrid_daily",           task_sendgrid_daily,           86400,  120),  # täglich — Revenue-Email via SendGrid
+    # ── Shopify Description Filler ────────────────────────────────────────────
+    ("shopify_descriptions",     task_shopify_descriptions,     86400,  105),  # täglich — leere Produkt-Beschreibungen befüllen
     # ── TikTok Shop Sync ──────────────────────────────────────────────────────
     ("tiktok_cycle",           task_tiktok_cycle,           14400, 900),   # 4h — TikTok Shop + Videos
     ("tiktok_video_scripts",   task_tiktok_video_scripts,   21600, 920),   # 6h — KI Video-Scripts + Telegram-Alert
