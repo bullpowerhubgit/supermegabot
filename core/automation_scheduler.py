@@ -1421,8 +1421,8 @@ async def task_shopify_blog_auto() -> str:
     _dest = os.getenv("DS24_AFFILIATE_LINK", "")
     blog_gid = f"gid://shopify/Blog/{os.getenv('SHOPIFY_BLOG_ID', '127011258755')}"
     templates = [
-        ("KI-Passiveinkommen 2026: So baust du es auf",
-         f"<h2>KI-Passiveinkommen 2026</h2><p>Mit KI-Tools baust du heute ein vollautomatisches Business auf.</p><ul><li><strong>Shopify Auto-Import:</strong> Trending-Produkte täglich importiert</li><li><strong>Affiliate:</strong> Provisionen automatisch ausgezahlt</li><li><strong>Content:</strong> BRUTUS bespielt 6+ Kanäle täglich</li></ul><p><a href='{_dest}'>Jetzt bei ineedit.com.co shoppen →</a></p>"),
+        ("KI-gestuetzte Shop-Automation 2026: So setzt du sie sinnvoll ein",
+         f"<h2>Shop-Automation 2026 mit KI</h2><p>Mit strukturierten Workflows lassen sich Shop, Content und Follow-up entlasten.</p><ul><li><strong>Shopify Auto-Import:</strong> Trends sauber pruefen statt blind uebernehmen</li><li><strong>Affiliate:</strong> Angebote klar segmentieren und nachvollziehbar auswerten</li><li><strong>Content:</strong> Guardrails halten Texte und Kanaele konsistent</li></ul><p><a href='{_dest}'>Jetzt bei ineedit.com.co entdecken →</a></p>"),
         ("5 Shopify-Automatisierungen 2026 die Umsatz verdoppeln",
          f"<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='{_dest}'>Zu ineedit.com.co →</a></p>"),
         ("Dropshipping mit KI 2026: Der komplette Guide",
@@ -1938,39 +1938,20 @@ async def task_lead_nurture() -> str:
 
 
 async def task_pinterest_auto_post() -> str:
-    """Auto-create Pinterest pins from Shopify products."""
+    """Auto-create Pinterest pins from Shopify products.
+    Delegiert an pinterest_autonomy.auto_pin_products() — hat Board-Auto-Creation eingebaut.
+    """
     try:
-        from modules.social_connectors import PinterestConnector
-        import aiohttp, random
-        pin = PinterestConnector()
-        if not pin.is_configured():
-            return "Pinterest nicht konfiguriert"
-        boards = await pin.get_boards()
-        if not boards.get("ok") or not boards.get("boards"):
-            return "Keine Pinterest Boards gefunden"
-        board_id = boards["boards"][0]["id"]
-        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-        public_domain = os.getenv("SHOPIFY_PUBLIC_DOMAIN", "ineedit.com.co")
-        if not token or not domain:
-            return "Shopify nicht konfiguriert"
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            async with s.get(
-                f"https://{domain}/admin/api/2026-04/products.json?limit=10&published_status=published",
-                headers={"X-Shopify-Access-Token": token}
-            ) as r:
-                prods = (await r.json()).get("products", [])
-        prods_with_img = [p for p in prods if p.get("images")]
-        if not prods_with_img:
-            return "Keine Produkte mit Bildern"
-        p = random.choice(prods_with_img)
-        img = p["images"][0]["src"]
-        title = p.get("title", "Produkt")
-        url = f"https://{public_domain}/products/{p.get('handle','')}"
-        result = await pin.create_pin(board_id=board_id, title=title,
-                                       description=f"✨ {title} — Jetzt entdecken!", media_url=img, link=url)
-        ok = result.get("ok", False)
-        return f"Pinterest Pin: {'✅' if ok else '❌'} — {title[:40]}"
+        from modules.pinterest_autonomy import auto_pin_products
+        result = await auto_pin_products(limit=5)
+        if not result.get("ok"):
+            return f"Pinterest Fehler: {result}"
+        pinned = result.get("pinned", 0)
+        processed = result.get("products_processed", 0)
+        mode = result.get("mode", "?")
+        if mode == "api" and pinned == 0 and processed > 0:
+            return f"Pinterest: Boards werden erstellt, {processed} Produkte verarbeitet — nächster Cycle pinnt"
+        return f"Pinterest Pin: {'✅' if pinned > 0 else '⚠️'} {pinned}/{processed} Pins gesetzt (mode={mode})"
     except Exception as e:
         return f"Pinterest Fehler: {e}"
 
@@ -3899,24 +3880,24 @@ async def task_klaviyo_daily_campaign() -> str:
         from modules.super_revenue_blitz import send_klaviyo_campaign
         link = os.getenv("DS24_AFFILIATE_LINK", "")
         subjects = [
-            "🔥 Vollautomatisch Geld verdienen — so geht's",
-            "💡 KI macht Geld während du schläfst",
-            "🚀 Passives Einkommen 2026 — der komplette Blueprint",
-            "💰 Digistore24 + KI = automatische Einnahmen",
-            "🤖 AI Income Machine — jetzt starten",
+            "🔥 KI-gestuetzte Funnel-Prozesse — so geht's",
+            "💡 Mehr Struktur fuer Shop und CRM",
+            "🚀 Automations-Blueprint 2026 fuer digitale Angebote",
+            "💰 Digistore24 + KI mit klarem Funnel-Fokus",
+            "🤖 AI Workflow Kit — jetzt entdecken",
         ]
         subject = random.choice(subjects)
         html = (
             f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
             f"<h2>{subject}</h2>"
             f"<p>Hey,</p>"
-            f"<p>während du das hier liest, verdient das System automatisch Geld für dich. "
-            f"KI-Tools, Shopify, Digistore24 — vollständig automatisiert.</p>"
+            f"<p>dieses Setup verbindet KI-Tools, Shopify und Digistore24 in einem klaren Prozess. "
+            f"Der Fokus liegt auf sauberer Conversion und nachvollziehbaren Automationen.</p>"
             f"<p><b>Was du bekommst:</b></p>"
             f"<ul><li>✅ KI generiert Content 24/7</li>"
-            f"<li>✅ Automatische Postings auf 10+ Kanälen</li>"
-            f"<li>✅ Shopify + DS24 vollautomatisch</li>"
-            f"<li>✅ Passives Einkommen ohne tägliche Arbeit</li></ul>"
+            f"<li>✅ Automations-Bausteine fuer Content und Follow-up</li>"
+            f"<li>✅ Shopify + DS24 mit messbaren Funnel-Schritten</li>"
+            f"<li>✅ Struktur statt Hype im Tagesgeschaeft</li></ul>"
             f"<p style='text-align:center;margin:30px 0'>"
             f"<a href='{link}' style='background:#7c3aed;color:#fff;padding:14px 28px;"
             f"text-decoration:none;border-radius:8px;font-weight:bold'>🚀 Jetzt starten</a></p>"
@@ -3936,9 +3917,9 @@ async def task_mailing_promo_blitz() -> str:
         from modules.super_revenue_blitz import send_klaviyo_campaign, send_mailchimp_campaign, _tg_send, _linkedin_post
         link = os.getenv("DS24_AFFILIATE_LINK", "")
         subjects = [
-            "💰 Heute: Vollautomatisches Online-Business starten",
-            "🤖 KI verdient für dich — ohne tägliche Arbeit",
-            "🚀 AI Income Machine — limitiertes Angebot",
+            "💰 Heute: strukturierte Automation fuer digitale Angebote",
+            "🤖 KI-Workflows fuer Shop und Follow-up",
+            "🚀 AI Workflow Kit — limitiertes Angebot",
         ]
         subject = random.choice(subjects)
         _body = (

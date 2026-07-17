@@ -450,6 +450,17 @@ def _is_valid_social_post(text: str) -> bool:
     return True
 
 
+def _is_safe_keyword(keyword: str) -> bool:
+    import re
+    text = (keyword or "").strip().lower()
+    if not text:
+        return False
+    for pattern in _BAD_POST_PATTERNS:
+        if re.search(pattern, text):
+            return False
+    return True
+
+
 def _deploy_enabled() -> bool:
     return os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() in ("1", "true", "yes")
 
@@ -665,7 +676,7 @@ async def deploy_to_youtube(keyword: str, content: dict) -> bool:
         token = None
 
     if not token:
-        log.info("BRUTUS: YouTube post skipped — OAuth nicht aktiv. Bitte /api/youtube/auth aufrufen.")
+        log.warning("YouTube: kein Token, überspringe — OAuth aktivieren via /api/youtube/auth")
         return False
 
     post_text = f"Neu: {keyword}\n\n{yt_desc[:900]}"
@@ -1055,6 +1066,12 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
         log.info("Phase 1: No trends found — using safe automation seed keywords")
     else:
         raw_trends = _safe_seeds[:2] + raw_trends
+
+    filtered_trends = [trend for trend in raw_trends if _is_safe_keyword(trend.get("keyword", ""))]
+    if not filtered_trends:
+        filtered_trends = _safe_seeds[:3]
+        log.info("Phase 1: All raw trends were unsafe — using safe automation seeds")
+    raw_trends = filtered_trends
 
     log.info("Phase 1 done: %d raw trends found", len(raw_trends))
 

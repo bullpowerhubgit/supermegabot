@@ -167,9 +167,22 @@ async def get_youtube_status() -> dict:
 
 
 async def run_youtube_cycle() -> dict:
-    """Scheduler-Einstiegspunkt."""
+    """Scheduler-Einstiegspunkt.
+    Prüft erst ob YOUTUBE_REFRESH_TOKEN gesetzt ist bevor Upload-Funktionen aufgerufen werden.
+    Search & Content-Generierung laufen auch ohne Token (nur YOUTUBE_API_KEY nötig).
+    """
+    has_token = bool(os.getenv("YOUTUBE_REFRESH_TOKEN") or os.getenv("GOOGLE_REFRESH_TOKEN"))
+    if not has_token:
+        log.warning("YouTube: kein YOUTUBE_REFRESH_TOKEN — Upload-Funktionen übersprungen")
+
     niche = random.choice(VIDEO_NICHES)
     trending = await find_trending_videos(niche, max_results=5)
     ideas = await blast_video_ideas(count=2)
-    return {"ok": True, "niche": niche, "trending_found": len(trending),
-            "ideas_sent": ideas.get("ideas_sent", 0)}
+    return {
+        "ok": True,
+        "niche": niche,
+        "trending_found": len(trending),
+        "ideas_sent": ideas.get("ideas_sent", 0),
+        "upload_ready": has_token,
+        **({"reason": "no_token"} if not has_token else {}),
+    }
