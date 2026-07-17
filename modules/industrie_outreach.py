@@ -231,6 +231,13 @@ _smtp_idx = 0
 
 def _send_email(to_email: str, subject: str, body: str) -> bool:
     global _smtp_idx
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
     # Try SendGrid first (best deliverability for B2B)
     sg_key = os.getenv("SENDGRID_API_KEY","")
     if sg_key:
