@@ -1047,6 +1047,93 @@ async def handle_optimize_now(request: Any) -> Any:
         )
 
 
+# ── Smart Collection Helpers ───────────────────────────────────────────────────
+
+async def _get_or_create_smart_collection(
+    title: str,
+    rules: list[dict],
+    disjunctive: bool = True,
+) -> dict:
+    """
+    Prüft ob eine Smart Collection mit dem gegebenen Titel existiert.
+    Falls nicht: erstellt sie mit den angegebenen Rules.
+    Returns {"ok": bool, "created": bool, "id": collection_id, "title": title}
+    """
+    if not _credentials_ok():
+        return {"ok": False, "error": "Shopify-Zugangsdaten fehlen"}
+
+    async with aiohttp.ClientSession() as s:
+        # 1. Existierende Collections suchen
+        existing = await _shopify_get(s, "/smart_collections.json", title=title, limit=5)
+        collections = existing.get("smart_collections", [])
+
+        for col in collections:
+            if col.get("title", "").lower() == title.lower():
+                log.info("Smart Collection '%s' existiert bereits (id=%s)", title, col["id"])
+                return {"ok": True, "created": False, "id": col["id"], "title": col["title"]}
+
+        # 2. Collection erstellen
+        payload = {
+            "smart_collection": {
+                "title": title,
+                "rules": rules,
+                "disjunctive": disjunctive,
+                "published": True,
+            }
+        }
+        result = await _shopify_post(s, "/smart_collections.json", payload)
+        col = result.get("smart_collection", {})
+        if col.get("id"):
+            log.info("Smart Collection '%s' erstellt (id=%s)", title, col["id"])
+            return {"ok": True, "created": True, "id": col["id"], "title": col["title"]}
+
+        errors = result.get("errors") or result.get("_status")
+        log.error("Smart Collection '%s' konnte nicht erstellt werden: %s", title, errors)
+        return {"ok": False, "error": str(errors)[:300]}
+
+
+async def ensure_solar_collection() -> dict:
+    """
+    Stellt sicher, dass die Collection "Solar & Energie" existiert.
+    Rules (disjunctive OR):
+      - product_type CONTAINS "solar"
+      - title CONTAINS "solar"
+      - title CONTAINS "powerstation"
+    Returns {"ok": bool, "created": bool, "id": collection_id}
+    """
+    rules = [
+        {"column": "type",  "relation": "contains", "condition": "solar"},
+        {"column": "title", "relation": "contains", "condition": "solar"},
+        {"column": "title", "relation": "contains", "condition": "powerstation"},
+    ]
+    return await _get_or_create_smart_collection(
+        title="Solar & Energie",
+        rules=rules,
+        disjunctive=True,
+    )
+
+
+async def ensure_ai_gadgets_collection() -> dict:
+    """
+    Stellt sicher, dass die Collection "AI & Smart Gadgets" existiert.
+    Rules (disjunctive OR):
+      - title CONTAINS "smart"
+      - title CONTAINS "AI"
+      - title CONTAINS "wifi"
+    Returns {"ok": bool, "created": bool, "id": collection_id}
+    """
+    rules = [
+        {"column": "title", "relation": "contains", "condition": "smart"},
+        {"column": "title", "relation": "contains", "condition": "AI"},
+        {"column": "title", "relation": "contains", "condition": "wifi"},
+    ]
+    return await _get_or_create_smart_collection(
+        title="AI & Smart Gadgets",
+        rules=rules,
+        disjunctive=True,
+    )
+
+
 async def get_status() -> dict:
     """Modul-Status für Dashboard-Health-Check."""
     state = _load_state()

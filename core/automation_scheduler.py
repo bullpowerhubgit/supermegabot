@@ -8361,6 +8361,45 @@ async def task_gumroad_funnel() -> str:
         return f"Gumroad Funnel Fehler: {e}"
 
 
+async def task_price_check() -> str:
+    """
+    Preisanalyse: Distribution + Unterpreisige Produkte + Vorschlaege.
+    KEINE automatischen Preisaenderungen — nur Report + Telegram-Alert.
+    """
+    try:
+        from modules.shopify_price_optimizer import run_price_check
+        result = await run_price_check()
+        if not result.get("ok"):
+            return f"PriceCheck Fehler: {result.get('error', 'unbekannt')}"
+
+        dist  = result.get("distribution", {})
+        total = dist.get("total", 0)
+        avg   = dist.get("avg", 0)
+        under = result.get("underpriced_count", 0)
+        sugg  = result.get("suggestions_count", 0)
+
+        summary = (
+            f"PriceCheck: {total} Produkte | "
+            f"Ø €{avg} | "
+            f"Unterpreisig: {under} | "
+            f"Vorschlaege: {sugg}"
+        )
+        log.info(summary)
+
+        # Telegram-Alert wenn viele unterpreisige Produkte
+        if under > 50:
+            await _tg(
+                f"<b>Preis-Report</b>\n"
+                f"{total} aktive Produkte · Ø €{avg}\n"
+                f"Unterpreisig (<€10): {under}\n"
+                f"Preisvorschlaege: {sugg}"
+            )
+
+        return summary
+    except Exception as e:
+        return f"PriceCheck Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -8849,6 +8888,7 @@ TASKS = [
     ("mega_self_healing",         task_mega_self_healing,              3600,   10),  # 1h — API Health + Revenue Alert
     ("stripe_revenue",            task_stripe_revenue_check,          21600,   50),  # 6h — Stripe Links + Revenue
     ("shopify_boost",             task_shopify_conversion_boost,      43200,   80),  # 12h — Conversion Optimizer
+    ("price_check",               task_price_check,                   86400,  115),  # 24h — Preisanalyse + Vorschlaege (kein Auto-Update)
     # ── AUTONOMER VOLLPILOT — 24/7 selbstständig ──────────────────────────────
     ("autonomous_pilot",          task_autonomous_pilot,               300,   20),  # 5min — Masterpilot: alle KPIs prüfen + autonom handeln
     ("linkedin_dm",               task_linkedin_dm,                  21600,  600),  # 6h   — LinkedIn DMs: 50 Verbindungen/Tag
