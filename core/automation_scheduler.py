@@ -589,6 +589,15 @@ async def task_stripe_payment_poll() -> str:
         return f"Stripe Poll Fehler: {e}"
 
 
+async def task_revenue_agent_sync() -> str:
+    try:
+        from modules.revenue_agent_bridge import task_revenue_agent_sync as _run
+        r = await _run()
+        return f"Revenue Bridge: {r.get('processed',0)} Kommandos, {r.get('errors',0)} Fehler"
+    except Exception as e:
+        return f"Revenue Bridge Fehler: {e}"
+
+
 async def task_system_health() -> str:
     """Check system resources, alert on critical thresholds."""
     try:
@@ -8297,8 +8306,9 @@ TASKS = [
     ("claude_agent",         task_claude_agent_check,   3600,  120),  # 1h — Claude KI-Agent: Health-Check + Selbstanalyse + Telegram
     ("claude_collab",        task_claude_agent_collab,  7200,  125),  # 2h — Multi-Agent Collab (Claude+Rudi+DMs)
     ("autonomous_loop",     task_autonomous_loop,    10800,  130),  # 3h — full autonomous loop
-    ("autonomous_master",   task_autonomous_master,  10800,  135),  # 3h — Master: Stripe+Lemon+Analytics+Resend+Commit
-    ("stripe_payment_poll", task_stripe_payment_poll, 3600,  132),  # 1h — Stripe Zahlungen → Resend Onboarding
+    ("autonomous_master",     task_autonomous_master,    10800,  135),  # 3h — Master: Stripe+Lemon+Analytics+Resend+Commit
+    ("stripe_payment_poll",   task_stripe_payment_poll,  3600,  132),  # 1h — Stripe Zahlungen → Resend Onboarding
+    ("revenue_agent_sync",    task_revenue_agent_sync,    300,   20),   # 5min — Revenue Agent Bridge: Inbox verarbeiten
     ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
     ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
