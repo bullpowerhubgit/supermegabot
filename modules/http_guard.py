@@ -405,7 +405,7 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
             return False, f"never_twice: {short_reason}"
     except Exception as e:
         err_text = str(e).lower()
-        if "locked" in err_text or "busy" in err_text:
+        if "locked" in err_text or "busy" in err_text or "unable to open database file" in err_text:
             log.warning("HttpGuard NeverTwice locked — fail-open")
         else:
             log.error("HttpGuard NeverTwice fail-closed: %s", e)

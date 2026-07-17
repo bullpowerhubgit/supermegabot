@@ -122,23 +122,21 @@ async def revenue_blast_now() -> dict:
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     link = DS24_LINK()
     offer_text = (
-        f"🔥 <b>SuperMegaBot — Vollautomatisches Online-Business</b>\n\n"
-        f"💰 Während du schläfst verdient das System für dich:\n"
-        f"• BRUTUS postet auf 10 Kanälen gleichzeitig\n"
-        f"• KI generiert täglich neuen SEO-Content\n"
-        f"• DS24 + Shopify vollautomatisch\n"
-        f"• Klaviyo + Mailchimp Funnels\n\n"
-        f"👉 <a href='{link}'>Jetzt starten — {datetime.now().strftime('%d.%m.%Y')}</a>"
+        f"🔥 <b>SuperMegaBot — strukturierte E-Commerce-Automation</b>\n\n"
+        f"✅ Workflows fuer Shop, Content und Follow-up\n"
+        f"✅ KI-gestuetzte Prozesse mit klaren Guardrails\n"
+        f"✅ DS24-, Shopify- und CRM-Automation mit Fokus auf Conversion\n\n"
+        f"👉 <a href='{link}'>Mehr erfahren — {datetime.now().strftime('%d.%m.%Y')}</a>"
     )
 
     tg_task     = _tg_send(offer_text)
     klaviyo_task = _klaviyo_event("revenue_blast", {"link": link, "ts": datetime.now().isoformat()})
     linkedin_text = (
-        f"🚀 Vollautomatisches Online-Business 2026\n\n"
-        f"BRUTUS postet gleichzeitig auf 10 Kanälen während du schläfst.\n"
-        f"KI-Content, Shopify-Automation, DS24-Funnel — alles vollautomatisch.\n\n"
+        f"🚀 E-Commerce-Automation 2026 mit klaren Prozessen\n\n"
+        f"KI-gestuetzte Content-, Funnel- und Shop-Workflows helfen Teams, sauberer zu arbeiten.\n"
+        f"Fokus: Conversion, Follow-up und dokumentierte Automationen statt Hype.\n\n"
         f"👉 {link}\n\n"
-        f"#PassivesEinkommen #Ecommerce #KI #OnlineBusiness #Shopify"
+        f"#Ecommerce #KI #Automation #Shopify #DigitalOperations"
     )
     linkedin_task = _linkedin_post(linkedin_text)
     indexnow_task = _indexnow()
@@ -167,7 +165,7 @@ async def aliexpress_import_trending(keywords: List[str] = None, max_products: i
         return {"imported": 0, "skipped": 0, "error": "shopify_not_configured"}
 
     if keywords is None:
-        keywords = ["trending ecommerce", "passive income tools", "dropshipping 2026"]
+        keywords = ["trending ecommerce", "shopify workflow tools", "operations automation 2026"]
 
     imported = 0
     skipped = 0
