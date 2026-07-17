@@ -9749,6 +9749,66 @@ async def handle_autonomous_loop_local_ai(req):
         return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
 
 
+async def handle_autonomous_master_run(req):
+    """POST /api/autonomous-master/run — Vollständiger 8-Phasen Master Cycle."""
+    quick = False
+    try:
+        body = await req.json()
+        quick = bool(body.get("quick", False))
+    except Exception:
+        pass
+    try:
+        from modules.autonomous_master import run_master_cycle
+        result = await run_master_cycle(quick=quick)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_autonomous_master_status(req):
+    """GET /api/autonomous-master/status — Letzter Master-Report."""
+    import json
+    from pathlib import Path
+    data_path = Path(__file__).resolve().parents[1] / "data" / "autonomous_master" / "latest.json"
+    if not data_path.exists():
+        return web.json_response({"ok": False, "error": "Noch kein Master-Report vorhanden"}, status=404)
+    try:
+        report = json.loads(data_path.read_text())
+        return web.json_response({"ok": True, "report": report})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_stripe_payment_poll(req):
+    """POST /api/stripe-payment/poll — Manuelle Stripe-Events-Abfrage (letzte 24h)."""
+    try:
+        from modules.stripe_payment_hook import task_stripe_payment_poll
+        result = await task_stripe_payment_poll()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_stripe_payment_stats(req):
+    """GET /api/stripe-payment/stats — Zahlungsstatistiken aus lokalem SQLite."""
+    try:
+        from modules.stripe_payment_hook import get_payment_stats
+        stats = await get_payment_stats()
+        return web.json_response({"ok": True, "stats": stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_loop_commits_prs(req):
+    """GET /api/loop-commits/prs — Autonome GitHub PRs auflisten."""
+    try:
+        from modules.loop_commit_engine import get_recent_prs
+        result = await get_recent_prs()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
 async def handle_system_info(req):
     """GET /api/system/info — System info and versions."""
     import platform
@@ -12578,6 +12638,11 @@ async def create_app():
     app.router.add_post("/api/autonomous-loop/run",       handle_autonomous_loop_run)
     app.router.add_get( "/api/autonomous-loop/status",    handle_autonomous_loop_status)
     app.router.add_post("/api/autonomous-loop/local-ai",  handle_autonomous_loop_local_ai)
+    app.router.add_post("/api/autonomous-master/run",     handle_autonomous_master_run)
+    app.router.add_get( "/api/autonomous-master/status",  handle_autonomous_master_status)
+    app.router.add_post("/api/stripe-payment/poll",       handle_stripe_payment_poll)
+    app.router.add_get( "/api/stripe-payment/stats",      handle_stripe_payment_stats)
+    app.router.add_get( "/api/loop-commits/prs",          handle_loop_commits_prs)
     app.router.add_get( "/api/system/info",              handle_system_info)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)

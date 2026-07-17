@@ -396,7 +396,6 @@ async def safe_post(
             result["errors"] = nt_errs
             result["blocked"] = True
             _log_blocked(platform, " | ".join(nt_errs), text)
-            _remember(nt_errs)
             log.warning("NeverTwice BLOCK [%s] %s: %s", platform, source_module, nt_errs)
             return result
     except Exception as e:
@@ -444,12 +443,7 @@ async def safe_post(
     if not skip_duplicate_check and _is_duplicate(text, platform):
         result["errors"] = ["Duplikat: gleicher Content bereits in letzten 7 Tagen gepostet"]
         result["blocked"] = True
-        _log_blocked(platform, "Duplikat", text)
-        try:
-            from modules.post_never_twice import remember_block
-            remember_block(text, platform, result["errors"], source_module=source_module)
-        except Exception:
-            pass
+        _log_blocked(platform, "duplikat_innerhalb_7d", text)
         log.info("Post übersprungen [%s] — Duplikat", platform)
         return result
 
@@ -467,11 +461,6 @@ async def safe_post(
         result["errors"] = [cred_err]
         result["blocked"] = True
         _log_blocked(platform, cred_err, text)
-        try:
-            from modules.post_never_twice import remember_block
-            remember_block(text, platform, [cred_err], source_module=source_module, kind="fail")
-        except Exception:
-            pass
         if _should_alert(platform, cred_err, text):
             await _alert(f"⚠️ <b>Post blockiert</b> [{platform}]: {cred_err}")
         log.error("Credential fehlt [%s]: %s", platform, cred_err)
