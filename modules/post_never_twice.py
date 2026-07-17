@@ -230,6 +230,7 @@ def _sanitize_reason(r: str) -> str:
 
 
 _TRANSIENT_REASONS = frozenset({
+    "duplikat",
     "duplikat_innerhalb_24h",
     "bereits_blockiert",
     "text_extraktion_fehlgeschlagen",
@@ -238,6 +239,8 @@ _TRANSIENT_REASONS = frozenset({
     "429",
     "401",
     "503",
+    "kein gültiger token",
+    "token fehlt",
 })
 
 

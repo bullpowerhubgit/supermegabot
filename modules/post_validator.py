@@ -141,6 +141,7 @@ _QUIET_NOTIFY_REASONS = (
     "429",
     "daily_cap",
 )
+_TRANSIENT_BLOCK_REASONS = _QUIET_NOTIFY_REASONS + ("token",)
 
 # ── Layer 3: Nischen-Keywords (mindestens 1 STARKES muss vorhanden sein) ───────
 # WICHTIG: Nur echte Tech/Smart/Digital-Keywords. Keine generischen Wörter.
@@ -435,6 +436,8 @@ async def validate_post(
         text_clean = text_clean[:MAX_TEXT_LEN]  # Kürzen, kein Block
 
     def _remember(reason: str) -> None:
+        if any(marker in reason.lower() for marker in _TRANSIENT_BLOCK_REASONS):
+            return
         try:
             from modules.post_never_twice import remember_block
             remember_block(text_clean, platform, [reason], source_module="post_validator")
