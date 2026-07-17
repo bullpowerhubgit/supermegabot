@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-17 v31 — HIGH-TICKET LAUNCH + GITHUB PAGES**
+**Stand: 2026-07-17 v33 — AUTOMATION FIXES + SCHEDULER REPAIR**
 
 ## ✅ System
 | Check | Status |
@@ -7,9 +7,24 @@
 | Production Health | ok — Railway live |
 | Stripe | **ineedit.com.co only** — acct_1Tg1U0 (bullpowersrtkennels) |
 | AIITEC Stripe | PERMANENT FORBIDDEN |
-| autonomous_loop.yml | push/PR-Trigger ENTFERNT — nur schedule+dispatch |
+| Scheduler | 169/400 Tasks aktiv — _log_run dict-Bug gefixt |
+| GitHub Pages vsl-pages | ✅ 11/11 VSL-Seiten live |
 | Netlify | FREE PLAN — keine neuen Deploys, Credits exhausted |
-| GitHub Pages vsl-pages | https://bullpowerhubgit.github.io/vsl-pages/ |
+
+## 🔧 Session v33 Fixes (2026-07-17)
+| Fix | Status |
+|-----|--------|
+| Scheduler `_log_run` dict→str Bug | ✅ gefixt + auf main gepusht |
+| GitHub Pages 11 VSL-Seiten | ✅ €97–€497 live deployed |
+| 9 kritische Tasks manuell getriggert | ✅ alle erfolgreich |
+| SHOPIFY_ACCESS_TOKEN lokal gefixt | ✅ lokal OK |
+| Social Rate-Limiting (TG/LI/FB) | ℹ️ erwartet — löst sich selbst |
+
+## ⚠️ Manuelle Railway-Aktion nötig (DRINGEND)
+**SHOPIFY_ACCESS_TOKEN in Railway Dashboard updaten:**
+- Problem: Railway nutzt alten, ungültigen Token → 401 bei Blog-Erstellung
+- Fix: In Railway → supermegabot → Variables → SHOPIFY_ACCESS_TOKEN = Wert von SHOPIFY_ADMIN_API_TOKEN
+- Lokal bereits gefixt (~/supermegabot/.env)
 
 ## Stripe (immer)
 - Domain: https://ineedit.com.co
@@ -70,12 +85,14 @@ Alle Preise neu: EUR 97/197/497 pro Monat — neue Payment Links live
 | Netlify | Credits exhausted bis 01.08 — FREE halten | blocked |
 
 ## Manuelle Aufgaben (nur Rudolf)
-1. Gumroad Stripe verbinden: gumroad.com/settings/payments
-2. MacOBD-Pro ZIP manuell hochladen: tecbuuss.gumroad.com/l/ggbos
-3. DS24 Produkt 704677 zur Freigabe einreichen
-4. GMC Identitaetsverifizierung: Personalausweis hochladen
-5. Anthropic Credits: console.anthropic.com
-6. ETSY_ACCESS_TOKEN in .env eintragen
+1. **DRINGEND** Railway Env: SHOPIFY_ACCESS_TOKEN = SHOPIFY_ADMIN_API_TOKEN (Wert)
+2. Gumroad Stripe verbinden: gumroad.com/settings/payments
+3. MacOBD-Pro ZIP manuell hochladen: tecbuuss.gumroad.com/l/ggbos (Gumroad-Limit reset = morgen)
+4. DS24 Produkt 704677 zur Freigabe einreichen
+5. GMC Identitaetsverifizierung: Personalausweis hochladen
+6. Anthropic Credits: console.anthropic.com
+7. ETSY_ACCESS_TOKEN in .env eintragen
+8. Gumroad Viral Window Scanner: Tier-Pricing prüfen (€29 → €97 im Gumroad Dashboard)
 
 ## Dauerhafte Regeln
 - Stripe: NUR bullpowersrtkennels@gmail.com = ineedit.com.co
@@ -86,8 +103,11 @@ Alle Preise neu: EUR 97/197/497 pro Monat — neue Payment Links live
 - NIEMALS Massen-Loeschen ohne Bestaetigung
 - Erlaubte Shop-Vendors: iNeedit, Printify, AliExpress Import, eBay Import, AIITEC
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 20:17 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 22:00 UTC
 - Health: ✅ OK
-- Umsatz heute: €0.00
-- Probleme:
-  - keine
+- Scheduler: 169 Tasks aktiv (war 0 wegen dict-Bug)
+- Gumroad: 9/10 High-Ticket live | MacOBD-Pro morgen
+- GitHub Pages: 11/11 VSL-Seiten live
+- Shopify Blog: 401 auf Railway → manueller Fix nötig (oben)
+- DS24 Key: ✅ korrekt (1581233-...)
+- Social: Rate-Limits (TG/LI/FB) — normal nach Burst-Start
