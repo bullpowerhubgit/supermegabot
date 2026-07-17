@@ -5140,15 +5140,16 @@ async def handle_shopify_orders_paid_webhook(req):
         except Exception:
             pass
 
-        # 6. Sofia Upsell-Anruf (wenn Telefonnummer vorhanden)
+        # 6. Sofia Upsell-Anruf + Bestätigungs-SMS (wenn Telefonnummer vorhanden)
         try:
             billing = data.get("billing_address") or data.get("shipping_address") or {}
             phone   = billing.get("phone") or customer.get("phone") or ""
+            line_items    = data.get("line_items", [])
+            product_title = line_items[0].get("title", "") if line_items else ""
             if phone and float(total_price) > 0:
-                # Produkt aus erster Line-Item ermitteln
-                line_items = data.get("line_items", [])
-                product_title = line_items[0].get("title", "") if line_items else ""
-                asyncio.create_task(_sofia_upsell_call(phone, product_title, first_name or contact_name, order_name))
+                asyncio.create_task(_sofia_upsell_call(phone, product_title, first_name or "", order_name))
+                # Sofort: Bestellbestätigungs-SMS
+                asyncio.create_task(_sofia_order_sms(phone, first_name or "", order_name, total_price, currency))
         except Exception as _se:
             log.debug("Sofia upsell call setup: %s", _se)
 
@@ -5156,6 +5157,20 @@ async def handle_shopify_orders_paid_webhook(req):
     except Exception as e:
         log.error("orders/paid webhook error: %s", e)
         return web.Response(status=200)
+
+
+async def _sofia_order_sms(phone: str, name: str, order_name: str, total: str, currency: str) -> None:
+    """Sofortige Bestellbestätigungs-SMS nach Shopify-Kauf."""
+    try:
+        name_part = f" {name.split()[0]}" if name else ""
+        msg = (
+            f"Hallo{name_part}! ✅ Ihre Bestellung {order_name} ({total} {currency}) ist eingegangen. "
+            f"Fragen? Einfach antworten — Sofia/AIITEC"
+        )
+        from modules.sofia_sms_agent import send_sms
+        await send_sms(phone, msg[:160], campaign="order_confirmation")
+    except Exception as e:
+        log.debug("_sofia_order_sms: %s", e)
 
 
 async def _sofia_upsell_call(phone: str, product: str, name: str, order_name: str) -> None:
@@ -7099,6 +7114,8 @@ async def auth_middleware(request, handler):
             # Sofia Phone (Max) — ebenfalls Twilio-Callbacks
             or path.startswith("/api/phone/incoming")
             or path.startswith("/api/phone/status")
+            # Sofia SMS — Twilio sendet keinen API-Key
+            or path.startswith("/api/sms/incoming")
         )
         if not exempt:
             api_key = request.headers.get("X-API-Key", "")
@@ -12985,68 +13002,86 @@ async def create_app():
     except Exception as e:
         log.warning("phone_ai_assistant unavailable (non-fatal): %s", e)
 
-    # ── SMS Incoming Handler — KI antwortet auf eingehende SMS ───────────────
+    # ── Sofia SMS — Eingehende SMS mit Gesprächsgedächtnis + Verkaufsfluss ───
     async def handle_sms_incoming(req: web.Request) -> web.Response:
-        """Twilio SMS Webhook — empfängt eingehende SMS und antwortet via KI."""
+        """POST /api/sms/incoming — Twilio SMS Webhook → Sofia antwortet."""
         try:
-            data = await req.post()
-            from_num = data.get("From", "")
-            body     = data.get("Body", "").strip()
-            log.info("SMS eingehend von %s: %s", from_num, body[:80])
-
-            # KI-Antwort generieren (kurz, für SMS geeignet)
-            reply_text = "Danke für Ihre Nachricht! Ich bin Rudolf Sarkanys KI-Assistent. Wie kann ich helfen? Demo: bullpower-hub.vercel.app | Termin: cal.com/aiitec"
-            try:
-                import aiohttp as _ahttp
-                anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-                if anthropic_key:
-                    prompt = (
-                        f"Du bist ein freundlicher KI-Assistent von AiiteC/BullPower. "
-                        f"Beantworte diese SMS kurz auf Deutsch (max 160 Zeichen): '{body}'\n"
-                        f"Produkte: Shopify-Automation Starter €49/Mo, Pro €99/Mo. Demo: bullpower-hub.vercel.app"
-                    )
-                    async with _ahttp.ClientSession() as s:
-                        r = await s.post(
-                            "https://api.anthropic.com/v1/messages",
-                            headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                            json={"model": "claude-haiku-4-5-20251001", "max_tokens": 80,
-                                  "messages": [{"role": "user", "content": prompt}]},
-                            timeout=_ahttp.ClientTimeout(total=10)
-                        )
-                        if r.status == 200:
-                            rd = await r.json()
-                            reply_text = rd["content"][0]["text"].strip()[:160]
-            except Exception as ai_err:
-                log.warning("SMS KI-Antwort Fehler: %s", ai_err)
-
-            # TwiML Antwort zurück an Twilio
-            twiml = f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{reply_text}</Message></Response>'
-
-            # Telegram-Benachrichtigung
-            try:
-                tg_tok = os.getenv("TELEGRAM_BOT_TOKEN", "")
-                tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
-                if tg_tok and tg_chat:
-                    import aiohttp as _ah2
-                    async with _ah2.ClientSession() as s:
-                        await s.post(
-                            f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                            json={"chat_id": tg_chat, "text":
-                                  f"📱 <b>SMS eingehend</b>\nVon: {from_num}\n💬 {body[:100]}\n\n🤖 Antwort: {reply_text[:100]}",
-                                  "parse_mode": "HTML"},
-                            timeout=_ah2.ClientTimeout(total=5)
-                        )
-            except Exception:
-                pass
-
+            data        = await req.post()
+            from_num    = data.get("From", "")
+            body        = data.get("Body", "").strip()
+            log.info("Sofia SMS eingehend von %s: %s", from_num, body[:80])
+            from modules.sofia_sms_agent import handle_sms_inbound as sofia_sms
+            twiml = await sofia_sms(from_num, body)
             return web.Response(text=twiml, content_type="application/xml")
         except Exception as e:
             log.error("handle_sms_incoming: %s", e)
-            twiml = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
-            return web.Response(text=twiml, content_type="application/xml")
+            return web.Response(
+                text='<?xml version="1.0"?><Response><Message>Danke für Ihre Nachricht! Wir melden uns. Sofia / AIITEC</Message></Response>',
+                content_type="application/xml"
+            )
 
-    app.router.add_post("/api/sms/incoming", handle_sms_incoming)
-    log.info("SMS Incoming Handler registriert (/api/sms/incoming)")
+    # ── Sofia SMS API ──────────────────────────────────────────────────────
+    async def handle_sms_send(req: web.Request) -> web.Response:
+        """POST /api/sms/send — einzelne SMS senden."""
+        try:
+            data    = await req.json()
+            to      = data.get("to") or data.get("to_number", "")
+            message = data.get("message") or data.get("text", "")
+            campaign= data.get("campaign", "api")
+            if not to or not message:
+                return web.json_response({"ok": False, "error": "to + message required"}, status=400)
+            from modules.sofia_sms_agent import send_sms
+            sid = await send_sms(to, message, campaign)
+            return web.json_response({"ok": bool(sid), "sid": sid, "to": to})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_sms_welcome(req: web.Request) -> web.Response:
+        """POST /api/sms/welcome — Willkommens-SMS."""
+        try:
+            data    = await req.json()
+            to      = data.get("to", "")
+            name    = data.get("name", "")
+            product = data.get("product", "")
+            from modules.sofia_sms_agent import send_welcome_sms
+            sid = await send_welcome_sms(to, name, product)
+            return web.json_response({"ok": bool(sid), "sid": sid})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_sms_stats(req: web.Request) -> web.Response:
+        """GET /api/sms/stats — SMS-Statistiken."""
+        from modules.sofia_sms_agent import get_sms_stats
+        return web.json_response({"ok": True, "stats": get_sms_stats()})
+
+    async def handle_sms_campaign_blast(req: web.Request) -> web.Response:
+        """POST /api/sms/blast — SMS an Nummerliste senden."""
+        try:
+            data    = await req.json()
+            numbers = data.get("numbers", [])
+            message = data.get("message", "")
+            campaign= data.get("campaign", "blast")
+            if not numbers or not message:
+                return web.json_response({"ok": False, "error": "numbers[] + message required"}, status=400)
+            from modules.sofia_sms_agent import send_weekly_deals_blast
+            result  = await send_weekly_deals_blast(numbers, message)
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_sms_outbox_run(req: web.Request) -> web.Response:
+        """POST /api/sms/outbox/run — Outbox abarbeiten."""
+        from modules.sofia_sms_agent import run_sms_outbox
+        result = await run_sms_outbox()
+        return web.json_response({"ok": True, **result})
+
+    app.router.add_post("/api/sms/incoming",   handle_sms_incoming)
+    app.router.add_post("/api/sms/send",        handle_sms_send)
+    app.router.add_post("/api/sms/welcome",     handle_sms_welcome)
+    app.router.add_get( "/api/sms/stats",       handle_sms_stats)
+    app.router.add_post("/api/sms/blast",       handle_sms_campaign_blast)
+    app.router.add_post("/api/sms/outbox/run",  handle_sms_outbox_run)
+    log.info("Sofia SMS Agent registriert (/api/sms/*)")
 
     # ── Sofia Voice Agent ─────────────────────────────────────────────────────
 

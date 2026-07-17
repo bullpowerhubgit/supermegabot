@@ -495,6 +495,14 @@ class CommandRouter:
             "api liste": self._cmd_api,
             "api test": self._cmd_api,
             "api hilfe": self._cmd_api,
+            # ── Sofia SMS ────────────────────────────────────────────────────
+            "/sofia_sms":          self._cmd_sofia_sms,
+            "/sofia_sms_stats":    self._cmd_sofia_sms_stats,
+            "/sofia_stats_gesamt": self._cmd_sofia_sms_stats,
+            "/sofia_welcome":      self._cmd_sofia_welcome_sms,
+            "/sofia_blast":        self._cmd_sofia_blast,
+            "sofia sms":           self._cmd_sofia_sms,
+            "sofia blast":         self._cmd_sofia_blast,
             # ── Sofia Voice Agent ────────────────────────────────────────────
             "/sofia_anrufen":  self._cmd_sofia_call,
             "/sofia_call":     self._cmd_sofia_call,
@@ -1278,6 +1286,97 @@ class CommandRouter:
             return f"✅ Sofia Queue +1\n→ {phone} [{product or 'allg.'}]\nQueue-ID: {qid}"
         except Exception as e:
             return f"❌ sofia_queue Fehler: {e}"
+
+    # ── Sofia SMS Commands ──────────────────────────────────────────────────────
+
+    async def _cmd_sofia_sms(self, text: str, session_id: str) -> str:
+        """SMS senden: /sofia_sms +4369912345 Ihre Nachricht hier"""
+        try:
+            parts   = text.strip().split()
+            phone   = next((p for p in parts if p.startswith("+")), "")
+            if not phone:
+                return "❌ Bitte Nummer angeben: /sofia_sms +4369912345 Ihre Nachricht"
+            msg_parts = [p for p in parts if p != phone and not p.startswith("/")]
+            message = " ".join(msg_parts)
+            if not message:
+                return "❌ Bitte Nachricht angeben: /sofia_sms +4369912345 Ihre Nachricht"
+            from modules.sofia_sms_agent import send_sms
+            sid = await send_sms(phone, message, campaign="telegram")
+            if sid:
+                return f"✅ SMS gesendet!\n→ {phone}\n💬 {message[:80]}\nSID: {sid}"
+            return "❌ SMS fehlgeschlagen — Twilio-Fehler"
+        except Exception as e:
+            return f"❌ sofia_sms Fehler: {e}"
+
+    async def _cmd_sofia_sms_stats(self, text: str, session_id: str) -> str:
+        """SMS + Voice Gesamtstatistiken."""
+        try:
+            from modules.sofia_sms_agent import get_sms_stats
+            from modules.sofia_voice_agent import get_sofia_stats
+            sms  = get_sms_stats()
+            call = get_sofia_stats()
+            lines = [
+                "📊 <b>Sofia Gesamtstatistiken</b>",
+                "",
+                "📞 <b>Anrufe:</b>",
+                f"  Gesamt: {call.get('total_calls',0)}",
+                f"  Kaufsignale: {call.get('buy_signals',0)} ({call.get('conversion_rate',0)}%)",
+                f"  Ø Dauer: {call.get('avg_duration_sec',0)}s",
+                f"  Queue: {call.get('queue_pending',0)} pending",
+                "",
+                "📱 <b>SMS:</b>",
+                f"  Gesendet: {sms.get('total_sent',0)}",
+                f"  Eingehend: {sms.get('total_inbound',0)} Gespräche",
+                f"  Kaufsignale: {sms.get('buy_signals',0)}",
+                f"  Opt-Outs: {sms.get('opt_outs',0)}",
+                f"  Aktiv (24h): {sms.get('active_convos_24h',0)}",
+                f"  Outbox pending: {sms.get('outbox_pending',0)}",
+            ]
+            return "\n".join(lines)
+        except Exception as e:
+            return f"❌ sofia_sms_stats Fehler: {e}"
+
+    async def _cmd_sofia_welcome_sms(self, text: str, session_id: str) -> str:
+        """Willkommens-SMS: /sofia_welcome +4369912345 Name Produkt"""
+        try:
+            parts   = text.strip().split()
+            phone   = next((p for p in parts if p.startswith("+")), "")
+            if not phone:
+                return "❌ Bitte Nummer: /sofia_welcome +4369912345 [Name] [Produkt]"
+            rest    = [p for p in parts if p != phone and not p.startswith("/")]
+            name    = rest[0] if rest else ""
+            product = " ".join(rest[1:]) if len(rest) > 1 else ""
+            from modules.sofia_sms_agent import send_welcome_sms
+            sid = await send_welcome_sms(phone, name, product)
+            return f"✅ Welcome SMS → {phone}" if sid else "❌ Fehlgeschlagen"
+        except Exception as e:
+            return f"❌ Fehler: {e}"
+
+    async def _cmd_sofia_blast(self, text: str, session_id: str) -> str:
+        """Weekly Deals Blast an alle SMS-Kontakte."""
+        try:
+            import sqlite3
+            from modules.sofia_sms_agent import send_weekly_deals_blast, _DB
+            conn = sqlite3.connect(str(_DB), timeout=5)
+            rows = conn.execute(
+                "SELECT phone FROM sms_conversations WHERE opt_out=0 LIMIT 200"
+            ).fetchall()
+            conn.close()
+            numbers = [r[0] for r in rows if r[0].startswith("+")]
+            if not numbers:
+                return "⚠️ Keine SMS-Kontakte in DB — erst Inbound-SMS abwarten"
+            # Custom message aus Text
+            parts = text.strip().split()
+            custom = " ".join(p for p in parts if not p.startswith("/") and p != "blast")
+            result = await send_weekly_deals_blast(numbers, custom or "")
+            return (
+                f"📢 <b>SMS Blast gestartet!</b>\n"
+                f"✅ Gesendet: {result.get('sent',0)}\n"
+                f"❌ Fehler: {result.get('failed',0)}\n"
+                f"📋 Gesamt: {len(numbers)}"
+            )
+        except Exception as e:
+            return f"❌ sofia_blast Fehler: {e}"
 
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle (v2):
