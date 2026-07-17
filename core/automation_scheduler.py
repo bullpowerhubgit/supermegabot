@@ -380,8 +380,18 @@ async def task_traffic_seo_run() -> str:
         return f"Traffic/SEO Fehler: {e}"
 
 
+async def task_smart_poster_run() -> str:
+    """SmartPoster — Neues sauberes Posting-System (ersetzt BRUTUS + social_autoposter)."""
+    try:
+        from modules.smart_poster import task_smart_poster_run as _run
+        return await _run()
+    except Exception as e:
+        return f"SmartPoster Fehler: {e}"
+
+
 async def task_brutus_run() -> str:
-    """BRUTUS — Brutal Traffic Engine: Scan→Predict→Swarm→Deploy alle Kanäle."""
+    """BRUTUS — DEAKTIVIERT 2026-07-18 → ersetzt durch SmartPoster."""
+    return "BRUTUS: deaktiviert — SmartPoster übernimmt alle Social-Posts"
     try:
         if os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() not in ("1", "true", "yes"):
             return "BRUTUS: deploy disabled by default — set BRUTUS_DEPLOY_ENABLED=true for explicit opt-in"
@@ -1423,12 +1433,12 @@ async def task_shopify_blog_auto() -> str:
     templates = [
         ("KI-gestuetzte Shop-Automation 2026: So setzt du sie sinnvoll ein",
          f"<h2>Shop-Automation 2026 mit KI</h2><p>Mit strukturierten Workflows lassen sich Shop, Content und Follow-up entlasten.</p><ul><li><strong>Shopify Auto-Import:</strong> Trends sauber pruefen statt blind uebernehmen</li><li><strong>Affiliate:</strong> Angebote klar segmentieren und nachvollziehbar auswerten</li><li><strong>Content:</strong> Guardrails halten Texte und Kanaele konsistent</li></ul><p><a href='{_dest}'>Jetzt bei ineedit.com.co entdecken →</a></p>"),
-        ("5 Shopify-Automatisierungen 2026 die Umsatz verdoppeln",
-         f"<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='{_dest}'>Zu ineedit.com.co →</a></p>"),
+        ("5 Shopify-Automatisierungen 2026 fuer stabilere Ablaeufe",
+         f"<h2>5 Automationen fuer stabilere Shop-Ablaufe</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen fuer jedes Produkt</li><li>Email-Sequenzen fuer neue Kaeufer</li><li>Saubere Preis- und Bestandsroutine</li><li>Traffic- und Content-Guardrails ueber mehrere Kanaele</li></ol><p><a href='{_dest}'>Zu ineedit.com.co →</a></p>"),
         ("Dropshipping mit KI 2026: Der komplette Guide",
-         f"<h2>KI-Dropshipping 2026</h2><p>Trends automatisch erkennen, Produkte importieren, Marketing auf Autopilot.</p><ul><li>AliExpress + Amazon Trending täglich</li><li>Shopify Auto-Import + Beschreibung</li><li>10+ Kanäle vollautomatisch bespielt</li></ul><p><a href='{_dest}'>Bestseller bei ineedit.com.co →</a></p>"),
+         f"<h2>KI-Dropshipping 2026</h2><p>Trends systematisch pruefen, Produkte importieren und Marketing sauber orchestrieren.</p><ul><li>AliExpress + Amazon Trending taeglich</li><li>Shopify Auto-Import + Beschreibung</li><li>Mehrere Kanaele mit Guardrails koordinieren</li></ul><p><a href='{_dest}'>Bestseller bei ineedit.com.co →</a></p>"),
         ("Smart Home Gadgets 2026: Die besten Deals",
-         f"<h2>Smart Home 2026</h2><p>Die beliebtesten Smart Home Gadgets für dein Zuhause — Bestpreise garantiert.</p><ul><li>Smart Beleuchtung</li><li>Sprachassistenten & Hubs</li><li>Sicherheitskameras</li><li>Automatische Steckdosen</li></ul><p><a href='{_dest}'>Alle Smart Home Deals →</a></p>"),
+         f"<h2>Smart Home 2026</h2><p>Eine kuratierte Auswahl beliebter Smart-Home-Gadgets fuer dein Zuhause.</p><ul><li>Smart Beleuchtung</li><li>Sprachassistenten & Hubs</li><li>Sicherheitskameras</li><li>Automatische Steckdosen</li></ul><p><a href='{_dest}'>Alle Smart Home Deals →</a></p>"),
         ("Top 10 Fitness Gadgets für zuhause 2026",
          f"<h2>Fitness Gadgets 2026</h2><p>Diese 10 Gadgets transformieren dein Home-Workout und bringen echte Ergebnisse.</p><ul><li>Resistance Bands Set</li><li>Smart Waagen</li><li>Massage-Pistolen</li><li>LED Sprungseile</li></ul><p><a href='{_dest}'>Alle Fitness-Deals bei ineedit.com.co →</a></p>"),
     ]
@@ -1564,7 +1574,7 @@ async def task_klaviyo_auto_campaign() -> str:
 
         today = datetime.now().strftime("%d.%m.%Y")
         prompt = f"""Schreibe eine Marketing-Email auf Deutsch für heute ({today}).
-Produkt: AI Income Machine (€37) auf Digistore24.
+Produkt: AI Workflow Blueprint auf Digistore24.
 Ton: motivierend, persönlich, mit klarem CTA.
 Format JSON: {{"subject": "...", "preview": "...", "html_body": "<html>...</html>"}}
 Nur JSON, kein anderer Text."""
@@ -1579,7 +1589,7 @@ Nur JSON, kein anderer Text."""
         from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
         from_label = os.getenv("KLAVIYO_FROM_NAME", "BullPower Hub")
         subject = email_data.get("subject", f"🚀 KI Business Blueprint — {today}")
-        preview = email_data.get("preview", "Dein vollautomatisches Einkommenssystem wartet")
+        preview = email_data.get("preview", "Dein naechster strukturierter Automationsschritt wartet")
         headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-10-15", "Content-Type": "application/json"}
         async with aiohttp.ClientSession() as s:
             async with s.post("https://a.klaviyo.com/api/campaigns/",
@@ -1652,10 +1662,10 @@ async def task_mailchimp_auto_campaign() -> str:
         # Generate subject with Claude if available
         subject = f"💡 Dein täglicher AI-Business-Tipp — {today}"
         html_content = f"""<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>
-<h1 style='color:#7c3aed'>🚀 AI Income Machine</h1>
+<h1 style='color:#7c3aed'>🚀 AI Workflow Blueprint</h1>
 <p>Hallo,</p>
-<p>Wusstest du, dass über <strong>87% der erfolgreichen Online-Unternehmer</strong> KI-Tools nutzen, um ihren Umsatz zu automatisieren?</p>
-<p>Mit der <strong>AI Income Machine</strong> bekommst du den kompletten Blueprint für:</p>
+<p>Viele Teams nutzen heute KI-Tools, um Shop-, Content- und Follow-up-Prozesse strukturierter aufzusetzen.</p>
+<p>Mit dem <strong>AI Workflow Blueprint</strong> bekommst du einen klaren Leitfaden fuer:</p>
 <ul>
 <li>✅ Klare Automations-Bausteine fuer Shop und Funnel</li>
 <li>✅ KI-gestützte Produktauswahl und Marketing</li>
@@ -2002,7 +2012,7 @@ async def task_instagram_auto_post() -> str:
                 ig_text = await ai_complete(
                     f"Schreibe einen Instagram-Caption auf Deutsch für ein KI-Business Produkt. "
                     f"Kurz, viral, 5 Hashtags. Link: {_ds24}", max_tokens=200)
-                await fire("📸 Instagram Content", ig_text or "💡 KI = automatisch Geld verdienen!\n👉 " + _ds24,
+                await fire("📸 Instagram Content", ig_text or "💡 KI-Workflows fuer strukturierte Shop-Prozesse.\n👉 " + _ds24,
                            channels=["telegram"])
             except Exception:
                 pass
@@ -2063,7 +2073,7 @@ async def task_linkedin_auto_post() -> str:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
         _ds24 = os.getenv("DS24_AFFILIATE_LINK", "")
         li_prompt = (f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
-                     f"Max 1200 Zeichen. Erwähne am Ende: {_ds24} (AI Income Machine €37). Nur Text, kein JSON.")
+                     f"Max 1200 Zeichen. Erwähne am Ende einen neutralen CTA zu {_ds24}. Nur Text, kein JSON.")
         try:
             text = await _ai(li_prompt, max_tokens=400)
         except Exception:
@@ -2099,16 +2109,16 @@ async def task_youtube_auto_post() -> str:
         from modules.brutus_traffic_engine import deploy_to_youtube
         import random
         topics = [
-            "💡 AI Income Machine — Automatisch Geld verdienen mit KI | Jetzt für €37 starten!",
-            "🚀 Shopify Automatisierung 2026 — So läuft dein Business von selbst",
-            "🤖 KI-Tools die wirklich Geld verdienen — Live Demo",
-            "📈 Passives Einkommen mit KI — Der komplette Blueprint",
+            "💡 AI Workflow Kit — strukturierte Automationen fuer digitale Angebote",
+            "🚀 Shopify Automatisierung 2026 — Prozesse sauber aufsetzen",
+            "🤖 KI-Tools fuer Shop und Funnel — Live Demo",
+            "📈 Klare Automations-Blueprints fuer digitale Produkte",
         ]
         title = random.choice(topics)
         desc = (
             f"{title}\n\n"
             f"👉 {os.getenv('DS24_AFFILIATE_LINK', '')}\n\n"
-            "#KI #PassivesEinkommen #OnlineBusiness"
+            "#KI #Automation #DigitalBusiness"
         )
         result = await deploy_to_youtube(title, {"youtube_desc": desc})
         return f"YouTube: {'✅ gepostet' if result else '⚠️ OAuth fehlt / übersprungen'}"
@@ -3542,7 +3552,7 @@ async def task_oos_sniper_scan() -> str:
 
 
 async def task_affiliate_blast() -> str:
-    """DS24 Affiliate-Links sofort auf alle Kanäle pushen"""
+    """DS24-Angebote kontrolliert ueber aktive Kanaele syndizieren"""
     try:
         from modules.ds24_income_blaster import run_affiliate_blast_now
         r = await run_affiliate_blast_now()
@@ -3851,7 +3861,7 @@ async def task_brutus_ds24() -> str:
             or os.getenv("DS24_AFFILIATE_LINK", "")
         )
         r = await brutus_blast_for_tool("Digistore24", link,
-            ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
+            ["Digistore24 Funnel Operations", "digitale Produkt-Workflows", "Checkout Follow-up Automation"])
         return f"BRUTUS DS24: {r.get('channels_hit', r.get('posts_sent', 0))} Kanäle, {r.get('content_pieces',0)} Posts"
     except Exception as e:
         return f"BRUTUS DS24 error: {e}"
@@ -3935,7 +3945,7 @@ async def task_mailing_promo_blitz() -> str:
             send_klaviyo_campaign(subject, html_klaviyo, f"PromoBlitz {datetime.now().strftime('%m-%d')}"),
             send_mailchimp_campaign(subject, html_mc),
             _tg_send(f"📧 <b>{subject}</b>\n\n{link}"),
-            _linkedin_post(f"{subject}\n\n{link}\n\n#PassivesEinkommen #AIITEC #OnlineBusiness"),
+            _linkedin_post(f"{subject}\n\n{link}\n\n#Automation #AIITEC #DigitalBusiness"),
             return_exceptions=True,
         )
         return f"MailingBlitz: kl={bool(kl) if not isinstance(kl,Exception) else False} mc={bool(mc) if not isinstance(mc,Exception) else False} tg={bool(tg) if not isinstance(tg,Exception) else False}"
@@ -8600,7 +8610,7 @@ TASKS = [
     ("syndication",            task_free_syndication_network,28800, 2500),  # 8h  — Kostenloses Content-Syndication
     # ── SOCIAL & CONTENT ──────────────────────────────────────────────────────
     ("discord",                task_discord_automation,     21600, 2540),  # 6h  — Discord Promo-Posts
-    ("twitter_auto",           task_twitter_auto_poster,    14400, 2580),  # 4h  — Tweets zu Trending-Produkten
+    # ("twitter_auto",           task_twitter_auto_poster,    14400, 2580),  # duplicate legacy schedule — keep canonical twitter_auto_post below
     ("instagram_pipeline",     task_instagram_pipeline,     21600, 2620),  # 6h  — Shopify→IG Posts+Stories
     ("youtube_autonomy",       task_youtube_autonomy,       43200, 2660),  # 12h — YouTube Videos+Shorts auto
     ("tiktok_trends",          task_tiktok_trends_scraper,  21600, 2700),  # 6h  — TikTok viral Produkte+Content
@@ -8690,11 +8700,12 @@ TASKS = [
     # ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # DEAKTIVIERT — Konto gesperrt 2026-07-15
     ("shopify_sync",            task_shopify_sync,            1800,   120),  # 30min
     ("social_status",           task_social_status,           3600,   150),  # 1h
-    ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
+    # social_autoposter DEAKTIVIERT 2026-07-18 → ersetzt durch smart_poster
+    # brutus_run DEAKTIVIERT 2026-07-18 → generierte verbotene Keywords, ersetzt durch smart_poster
+    ("smart_poster",            task_smart_poster_run,         7200,   300),  # 2h — Neues sauberes Posting-System
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
     ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
     ("traffic_seo_run",         task_traffic_seo_run,          3600,  210),  # 1h — AI SEO+Traffic (war 6h)
-    ("brutus_run",              task_brutus_run,              21600, 3600),  # 6h — BRUTUS alle Kanäle (1h startup delay)
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
     ("api_keys_health",         task_api_keys_health,         21600,  61),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
