@@ -112,6 +112,13 @@ _BANNED_URLS = re.compile(
     r'localhost|127\.0\.0\.1|yourstore|example\.com',
     re.IGNORECASE,
 )
+_INCOME_CLAIM_PATTERNS = [
+    r'online\s+geld\s+verdienen',
+    r'geld\s+verdienen\s+vollautomatisch',
+    r'passives?\s+einkommen(\s+online)?',
+    r'automatisch(es)?\s+einkommen',
+    r'earn\s+while\s+you\s+sleep',
+]
 
 # Für Social-Plattformen: mindestens 1 Nischen-Keyword erforderlich
 _NICHE_SOCIAL_PLATFORMS = {"linkedin", "facebook", "instagram", "twitter", "x", "tiktok", "pinterest"}
@@ -242,6 +249,12 @@ def validate_post(content: str, platform: str = "default",
     # 9c. Python None im Post (NIE bare "none" — false positive auf Englisch)
     if re.search(r'(?i)Hallo\s+None|—\s*None\b|für\s+None\b|NoneType|:\s*None\b', text):
         errors.append("None-Placeholder im Post-Text")
+
+    # 9d. Einkommensversprechen / Spammy monetization claims
+    for pat in _INCOME_CLAIM_PATTERNS:
+        if re.search(pat, text, re.IGNORECASE):
+            errors.append("Einkommensversprechen / Spam-Claim im Post")
+            break
 
     # 10. Nischen-Relevanz für Social-Posts
     if platform_key in _NICHE_SOCIAL_PLATFORMS:

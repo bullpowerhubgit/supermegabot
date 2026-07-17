@@ -595,34 +595,39 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
         log.info("Skipping duplicate content: %s", h)
         return {"skipped": True, "reason": "duplicate"}
 
-    # Re-read FB tokens at runtime so updated Railway vars take effect without restart
-    fb_token_iwin   = os.getenv("FACEBOOK_PAGE_TOKEN_IWIN",   FB_TOKEN_IWIN)
-    fb_token_aiitec = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", FB_TOKEN_AIITEC)
+    tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
+    social_message = content.get("body", "").strip()
+    if tags and tags not in social_message:
+        social_message = f"{social_message}\n\n{tags}".strip()
 
-    results = await asyncio.gather(
-        _post_telegram(content),
-        _post_facebook_page(FB_PAGE_AIITEC, fb_token_aiitec, content),
-        _post_instagram(content),
-        _post_tiktok(content),
-        _post_pinterest(content),
+    from modules.social_autoposter import post_to_all as post_social
+    social_result = await post_social(
+        message=social_message,
+        image_url=content.get("image_url", IG_PIXEL),
+        link=content.get("url", ""),
+        platforms=["facebook", "instagram", "linkedin", "telegram"],
+        topic=(product or {}).get("title", content.get("title", "")),
+    )
+
+    extra_results = await asyncio.gather(
         _post_shopify_blog(content),
         _post_klaviyo_campaign(content),
         # Mailchimp PERMANENT DEAKTIVIERT — alle 3 Konten gesperrt 2026-07-12
         asyncio.sleep(0),
         _post_sendgrid(content),
-        _post_twitter(content),
-        _post_linkedin(content),
         return_exceptions=True,
     )
 
-    channel_names = [
-        "telegram", "facebook_aiitec", "instagram",
-        "tiktok", "pinterest",
-        "shopify_blog", "klaviyo", "mailchimp_disabled", "sendgrid", "twitter", "linkedin",
-    ]
     out = {}
     success_count = 0
-    for name, res in zip(channel_names, results):
+    for name in ("telegram", "facebook", "instagram", "linkedin"):
+        detail = (social_result.get("results") or {}).get(name, {"ok": False, "skipped": True})
+        out[name] = detail
+        if detail.get("ok"):
+            success_count += 1
+
+    extra_names = ["shopify_blog", "klaviyo", "mailchimp_disabled", "sendgrid"]
+    for name, res in zip(extra_names, extra_results):
         if isinstance(res, Exception):
             out[name] = {"ok": False, "error": str(res)}
         else:
@@ -630,9 +635,14 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
             if res:
                 success_count += 1
 
+    out["twitter"] = {"ok": False, "skipped": True, "reason": "handled_by_twitter_autoposter"}
+    out["tiktok"] = {"ok": False, "skipped": True, "reason": "legacy_path_disabled"}
+    out["pinterest"] = {"ok": False, "skipped": True, "reason": "legacy_path_disabled"}
+
     _save_hash(h)
-    log.info("AutoPost: %d/%d channels succeeded", success_count, len(channel_names))
-    out["_summary"] = {"channels_ok": success_count, "channels_total": len(channel_names), "hash": h}
+    channels_total = len(out)
+    log.info("AutoPost: %d/%d channels succeeded", success_count, channels_total)
+    out["_summary"] = {"channels_ok": success_count, "channels_total": channels_total, "hash": h}
     return out
 
 

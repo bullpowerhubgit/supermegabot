@@ -90,6 +90,30 @@ def _is_duplicate(content: str, platform: str, days: int = 7) -> bool:
     return row is not None
 
 
+def _sent_today(platform: str) -> int:
+    _init_db()
+    with sqlite3.connect(str(_DB)) as c:
+        return c.execute(
+            "SELECT COUNT(*) FROM posts WHERE platform=? AND status='sent' AND ts > date('now')",
+            (platform,),
+        ).fetchone()[0]
+
+
+def _should_alert(platform: str, reason: str, content: str, minutes: int = 60) -> bool:
+    normalized_reason = (reason or "").strip().lower()
+    if any(marker in normalized_reason for marker in _QUIET_BLOCK_MARKERS):
+        return False
+    preview = content[:100].replace("\n", " ")
+    _init_db()
+    with sqlite3.connect(str(_DB)) as c:
+        row = c.execute(
+            "SELECT 1 FROM blocked WHERE platform=? AND reason=? AND preview=? "
+            "AND ts > datetime('now', ?) LIMIT 1",
+            (platform, reason, preview, f"-{minutes} minutes"),
+        ).fetchone()
+    return row is None
+
+
 # ── Schicht 1+2: Inhalts- und Duplikat-Prüfung ───────────────────────────────
 _PLACEHOLDER = re.compile(
     r'\[PLATZHALTER\]|\[PLACEHOLDER\]|\[TODO\]|\[INSERT\]|\[NAME\]|\[LINK\]|\[URL\]|\[PRODUKT\]'
@@ -127,6 +151,23 @@ _PLATFORM_LIMITS = {
     "telegram":  (1,  4096,  50),
     "default":   (10, 5000,  30),
 }
+_PLATFORM_DAILY_CAPS = {
+    "facebook": 8,
+    "instagram": 8,
+    "linkedin": 4,
+    "telegram": 24,
+    "twitter": 12,
+    "x": 12,
+}
+_QUIET_BLOCK_MARKERS = (
+    "duplikat",
+    "duplicate",
+    "daily_cap",
+    "tageslimit",
+    "rate limit",
+    "rate_limited",
+    "429",
+)
 
 def _validate_content(text: str, platform: str) -> list[str]:
     errors = []
@@ -371,11 +412,12 @@ async def safe_post(
             result["blocked"] = True
             _log_blocked(platform, " | ".join(guardian_errors), text)
             _remember(guardian_errors)
-            await _alert(
-                f"🚫 <b>PostGuardian BLOCKIERT</b> [{platform}] von {source_module}\n" +
-                "\n".join(f"• {e}" for e in guardian_errors[:5]) +
-                f"\n\nPreview: {text[:150]!r}"
-            )
+            if _should_alert(platform, " | ".join(guardian_errors), text):
+                await _alert(
+                    f"🚫 <b>PostGuardian BLOCKIERT</b> [{platform}] von {source_module}\n" +
+                    "\n".join(f"• {e}" for e in guardian_errors[:5]) +
+                    f"\n\nPreview: {text[:150]!r}"
+                )
             log.warning("PostGuardian blockiert [%s] von %s: %s", platform, source_module, guardian_errors)
             return result
     except Exception as _ge:
@@ -388,12 +430,13 @@ async def safe_post(
         result["blocked"] = True
         _log_blocked(platform, " | ".join(content_errors), text)
         _remember(content_errors)
-        await _alert(
-            f"🚫 <b>Post BLOCKIERT</b> [{platform}] von {source_module}\n"
-            f"Fehler ({len(content_errors)}):\n" +
-            "\n".join(f"• {e}" for e in content_errors[:5]) +
-            f"\n\nPreview: {text[:150]!r}"
-        )
+        if _should_alert(platform, " | ".join(content_errors), text):
+            await _alert(
+                f"🚫 <b>Post BLOCKIERT</b> [{platform}] von {source_module}\n"
+                f"Fehler ({len(content_errors)}):\n" +
+                "\n".join(f"• {e}" for e in content_errors[:5]) +
+                f"\n\nPreview: {text[:150]!r}"
+            )
         log.warning("Post blockiert [%s] von %s: %s", platform, source_module, content_errors)
         return result
 
@@ -410,6 +453,14 @@ async def safe_post(
         log.info("Post übersprungen [%s] — Duplikat", platform)
         return result
 
+    daily_cap = _PLATFORM_DAILY_CAPS.get(platform.lower())
+    if daily_cap and _sent_today(platform) >= daily_cap:
+        result["errors"] = [f"daily_cap_reached: {platform} {daily_cap}/Tag"]
+        result["blocked"] = True
+        _log_blocked(platform, "daily_cap_reached", text)
+        log.warning("Post übersprungen [%s] von %s — Tageslimit %d erreicht", platform, source_module, daily_cap)
+        return result
+
     # Schicht 3: Credential-Check
     cred_ok, cred_err = _check_credential(platform)
     if not cred_ok:
@@ -421,7 +472,8 @@ async def safe_post(
             remember_block(text, platform, [cred_err], source_module=source_module, kind="fail")
         except Exception:
             pass
-        await _alert(f"⚠️ <b>Post blockiert</b> [{platform}]: {cred_err}")
+        if _should_alert(platform, cred_err, text):
+            await _alert(f"⚠️ <b>Post blockiert</b> [{platform}]: {cred_err}")
         log.error("Credential fehlt [%s]: %s", platform, cred_err)
         return result
 
@@ -458,10 +510,11 @@ async def safe_post(
         # KEIN remember_block bei API-Fehlern (falscher Token, Netzwerk, Rate-Limit)!
         # Nur Content-Violations werden dauerhaft geblockt — nicht technische API-Fehler.
         # Sonst: korrigierter Token → gleicher Content bleibt für immer gesperrt.
-        await _alert(
-            f"❌ <b>Post FEHLGESCHLAGEN</b> [{platform}] von {source_module}\n"
-            f"Fehler: {err}\nPreview: {text[:100]!r}"
-        )
+        if _should_alert(platform, err, text):
+            await _alert(
+                f"❌ <b>Post FEHLGESCHLAGEN</b> [{platform}] von {source_module}\n"
+                f"Fehler: {err}\nPreview: {text[:100]!r}"
+            )
         log.error("Post fehlgeschlagen [%s]: %s", platform, err)
 
     return result

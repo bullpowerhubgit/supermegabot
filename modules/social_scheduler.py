@@ -54,7 +54,7 @@ CONTENT_TEMPLATES = [
         "telegram_extra": "\n\n<b>Jetzt testen →</b> https://ineedit.com.co",
     },
     {
-        "text": "💰 +187% Umsatz in 90 Tagen — vollautomatisch.\n\nKI-Automatisierung macht's möglich:\n✅ Produkte finden\n✅ Emails senden\n✅ Social Media posten\n\nhttps://ineedit.com.co #AIITEC",
+        "text": "💼 Weniger manuelle Arbeit im E-Commerce:\n\nKI-Workflows helfen bei Produktdaten, E-Mails und Social-Media-Planung.\n\nMehr dazu: https://ineedit.com.co\n\n#AIITEC #Ecommerce #Automation",
         "telegram_extra": "",
     },
     {
@@ -66,7 +66,7 @@ CONTENT_TEMPLATES = [
         "telegram_extra": "",
     },
     {
-        "text": "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche: 2h → 2min\n→ Produktbeschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Umsatz: +187%\n\nhttps://ineedit.com.co #AI #KI",
+        "text": "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche schneller strukturieren\n→ Beschreibungen konsistent vorbereiten\n→ Social Media sauber planen\n\nhttps://ineedit.com.co #AI #KI #Ecommerce",
         "telegram_extra": "",
     },
     {
@@ -74,11 +74,11 @@ CONTENT_TEMPLATES = [
         "telegram_extra": "\n\n<i>Starte auch du heute.</i>",
     },
     {
-        "text": "📈 Zahlen die für sich sprechen:\n\n• 187% mehr Umsatz (Ø 90 Tage)\n• +47% Conversion Rate\n• 40h/Woche gespart\n• 9 Social-Kanäle gleichzeitig\n\nhttps://ineedit.com.co\n#ShopifyAutomation",
+        "text": "📈 Fokus für moderne Shops:\n\n• saubere Produktdaten\n• klare Angebote\n• wiederholbare Workflows\n• kanalübergreifende Automatisierung\n\nhttps://ineedit.com.co\n#ShopifyAutomation #Operations",
         "telegram_extra": "",
     },
     {
-        "text": "⏰ Während du manuell Produkte suchst, laufen automatisierte Stores auf Hochtouren.\n\nDer Unterschied: Ein Tool. Ab €49/Monat.\n\nhttps://ineedit.com.co\n#Shopify #Automation",
+        "text": "⏰ Wer Prozesse dokumentiert und automatisiert, kann Shop-Arbeit deutlich ruhiger skalieren.\n\nEin möglicher Startpunkt: https://ineedit.com.co\n\n#Shopify #Automation",
         "telegram_extra": "",
     },
     {
@@ -91,19 +91,19 @@ CONTENT_TEMPLATES = [
     },
     # Gumroad — LIVE, sofort kaufbar
     {
-        "text": "🚀 SuperMegaBot — Shopify auf KI-Autopilot\n\n✅ 10.500+ Produkte auto-importiert\n✅ Bestseller in Echtzeit\n✅ 9 Social-Kanäle automatisch\n✅ Revenue-Tracking vollautomatisch\n\n💶 €97 einmalig — kein Abo\n\n👉 https://www.checkout-ds24.com/product/669750\n\n#Shopify #KI #Automation",
+        "text": "🚀 SuperMegaBot — Prozesse für Shopify und Marketing strukturieren\n\n✅ Produktdaten vereinheitlichen\n✅ Inhalte vorbereiten\n✅ Workflows koordinieren\n\n👉 https://ineedit.com.co\n\n#Shopify #KI #Automation",
         "telegram_extra": "",
     },
     {
-        "text": "💰 40h/Woche Shopify → 0h manuell.\n\nSuperMegaBot übernimmt alles:\n→ Produktrecherche: 2h → 2min\n→ Beschreibungen: sofort\n→ Social Media: automatisch\n→ Emails: vollautomatisch\n\n€97 einmalig — läuft alleine.\n\n🔗 https://www.checkout-ds24.com/product/669750\n\n#ShopifyAutomation",
+        "text": "🧩 Wiederkehrende Shopify-Aufgaben lassen sich besser bündeln:\n\n→ Produktpflege\n→ Content-Vorlagen\n→ Kampagnen-Checks\n→ Team-Handovers\n\n🔗 https://ineedit.com.co\n\n#ShopifyAutomation #Operations",
         "telegram_extra": "",
     },
     {
-        "text": "⚡ SuperMegaBot — der einzige Shopify-Bot den du brauchst.\n\n🤖 KI-gesteuerte Produktauswahl\n📊 Live Revenue-Dashboard\n📱 Facebook + Instagram + TikTok automatisch\n📧 Email-Sequenzen vollautomatisch\n\nEinmalig €97 (kein Abo!)\n\n👉 Jetzt sichern: https://www.checkout-ds24.com/product/669750",
+        "text": "⚡ SuperMegaBot — ein zentraler Stack für Shopify-, Content- und Kampagnenprozesse.\n\n🤖 KI-unterstützte Vorbereitung\n📊 klare Statusflächen\n📱 koordinierte Kanäle\n\n👉 Mehr erfahren: https://ineedit.com.co",
         "telegram_extra": "",
     },
     {
-        "text": "🎯 Stell dir vor: Morgen früh wachst du auf und dein Shopify-Shop hat über Nacht Bestellungen bekommen — automatisch.\n\nDas ist SuperMegaBot.\n\n💶 Einmalig €97 — kein monatliches Abo.\n\n👉 https://www.checkout-ds24.com/product/669750\n\n#Shopify #AutomatischGeldVerdienen #KI2026",
+        "text": "🎯 Gute Shop-Automatisierung bedeutet nicht mehr Lärm, sondern sauberere Prozesse, bessere Übergaben und weniger Fehler.\n\n👉 https://ineedit.com.co\n\n#Shopify #Automation #KI2026",
         "telegram_extra": "",
     },
 ]
@@ -171,13 +171,12 @@ async def post_to_telegram(text: str, extra_html: str = "") -> dict:
         return {"ok": False, "error": "Telegram credentials fehlen"}
 
     try:
-        from modules.telegram_safe import tg_send_safe
+        from modules.post_gateway import safe_post
         full_text = f"📢 SuperMegaBot Update\n\n{text}{extra_html}"
-        ok = await tg_send_safe(full_text, chat_id=TELEGRAM_CHAT)
-        if ok:
-            log.info("telegram: gesendet via telegram_safe")
-            return {"ok": True, "platform": "telegram"}
-        return {"ok": False, "error": "send failed"}
+        result = await safe_post("telegram", full_text, chat_id=TELEGRAM_CHAT, source_module="social_scheduler")
+        if result.get("ok"):
+            log.info("telegram: gesendet via gateway")
+        return result
     except Exception as e:
         log.error("telegram exception: %s", e)
         return {"ok": False, "error": str(e)}
