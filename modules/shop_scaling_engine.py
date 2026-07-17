@@ -838,6 +838,25 @@ async def blast_all_queued_leads(max_per_run: int = 100) -> Dict:
                 email = row_dict.get(email_col, "").strip()
                 if not email or "@" not in email:
                     continue
+                # Kein no-reply / dead domain / eigene Adressen
+                _local, _dom = email.lower().split("@", 1)
+                _SKIP_LOC = {"noreply","no-reply","no_reply","no.reply","donotreply",
+                             "bounce","bounces","postmaster","mailer-daemon","auto",
+                             "automated","reply","newsletter","news","update","updates",
+                             "alert","alerts","support-noreply","abuse","spam",
+                             "contact-us","test","unsubscribe","info-noreply"}
+                _DEAD_DOM = {"wirecard.de","wirecard.com","credit-suisse.com",
+                             "skalum.com","bullpower.de","supermegabot.com"}
+                _OWN_DOM  = {"aiitecbuuss@gmail.com","bullpowersrtkennels@gmail.com",
+                             "dragonadnp@gmail.com","rudolf.sarkany.aiitec@gmail.com",
+                             "rudolfsarkany1984@gmail.com"}
+                if (_local in _SKIP_LOC or _dom in _DEAD_DOM or
+                        email.lower() in _OWN_DOM or
+                        any(email.lower().startswith(p) for p in
+                            ("noreply@","no-reply@","no_reply@","mailer-daemon@",
+                             "bounce@","notification@","newsletter@","news@"))):
+                    log.info("Übersprungen (no-reply/dead): %s", email)
+                    continue
 
                 name    = row_dict.get(name_col,    "") if name_col    else ""
                 company = row_dict.get(company_col, "") if company_col else ""
