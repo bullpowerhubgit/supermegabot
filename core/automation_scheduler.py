@@ -84,7 +84,7 @@ def _log_run(task_name: str, success: bool, result: str, duration_ms: int):
         conn = sqlite3.connect(_SCHED_DB)
         conn.execute(
             "INSERT INTO task_runs (task_name,ran_at,success,result,duration_ms) VALUES (?,?,?,?,?)",
-            (task_name, datetime.now().isoformat(), int(success), result[:500], duration_ms)
+            (task_name, datetime.now().isoformat(), int(success), str(result or "")[:500], duration_ms)
         )
         conn.commit()
         conn.close()
@@ -8876,7 +8876,7 @@ class AutomationScheduler:
                     asyncio.to_thread(_run_in_thread), timeout=300
                 )
                 ms = int((time.monotonic() - t0) * 1000)
-                _log_run(name, True, result or "", ms)
+                _log_run(name, True, str(result or ""), ms)
                 self._fail_counts[name] = 0  # reset on success
                 return result or "OK"
             except Exception as e:
