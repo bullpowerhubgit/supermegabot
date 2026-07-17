@@ -115,3 +115,10 @@
 - SEO: 23 Tasks getriggert, IndexNow pings gesendet
 - Social: 17/20 Tasks getriggert (FB OAuth abgelaufen + TikTok Timeouts)
 - PR #46: bereit, wartet auf Rudolfs Merge-Entscheidung
+
+## 🤖 Neue autonome Monetarisierung
+- Buyer-Pipeline laeuft als eigene Scheduler-Task und priorisiert heisse Leads automatisch
+- Scheduler-Audit zeigt nie gelaufene und nicht registrierte `task_*`-Funktionen
+- Telegram-Startup-Pings sind standardmaessig ruhig
+- Revenue-Blitz, Upsell-Analyse und B2B-Prospecting sind im Scheduler verdrahtet
+- Doppelte `content_velocity`-Registry entfernt; Scheduler zeigt jetzt auch `unique_task_count`
