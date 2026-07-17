@@ -1,0 +1,93 @@
+name: Autonomous Loop
+
+# Claude → tests → (deploy via main) → payments/analytics snapshot → next plan
+on:
+  schedule:
+    # Every 6 hours
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      quick:
+        description: "Quick mode (skip heavy Claude teams)"
+        required: false
+        default: "false"
+  push:
+    branches: [main]
+    paths:
+      - "modules/autonomous_loop.py"
+      - "modules/analytics_feedback.py"
+      - "modules/lemon_squeezy_autopilot.py"
+      - "modules/email_onboarding_autopilot.py"
+      - "modules/claude_agent_collab.py"
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          pip install -q aiohttp python-dotenv requests 2>/dev/null || true
+          if [ -f requirements.txt ]; then pip install -q -r requirements.txt; fi
+
+      - name: Syntax check (loop modules)
+        run: |
+          python3 -m py_compile \
+            modules/autonomous_loop.py \
+            modules/analytics_feedback.py \
+            modules/lemon_squeezy_autopilot.py \
+            modules/email_onboarding_autopilot.py \
+            modules/claude_agent_collab.py \
+            modules/agent_teams.py
+          echo "syntax OK"
+
+      - name: StripeGuard regression
+        run: |
+          python3 - <<'PY'
+          from modules.stripe_guards import self_check
+          r = self_check()
+          assert r["ok"], r
+          print("StripeGuard OK", len(r["checks"]))
+          PY
+
+      - name: Run autonomous loop (quick in CI)
+        env:
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          PLAUSIBLE_API_KEY: ${{ secrets.PLAUSIBLE_API_KEY }}
+          PLAUSIBLE_SITE_ID: ${{ secrets.PLAUSIBLE_SITE_ID }}
+          LEMON_SQUEEZY_API_KEY: ${{ secrets.LEMON_SQUEEZY_API_KEY }}
+          LEMON_SQUEEZY_STORE_ID: ${{ secrets.LEMON_SQUEEZY_STORE_ID }}
+          LOOPS_API_KEY: ${{ secrets.LOOPS_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          QUICK="${{ github.event.inputs.quick }}"
+          if [ "$QUICK" = "false" ] && [ "${{ github.event_name }}" = "schedule" ]; then
+            python3 -m modules.autonomous_loop --no-notify || true
+          else
+            python3 -m modules.autonomous_loop --quick --no-notify || true
+          fi
+          ls -la data/autonomous_loop/ || true
+          test -f data/autonomous_loop/latest.json && head -c 800 data/autonomous_loop/latest.json || true
+
+      - name: Upload loop report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: autonomous-loop-${{ github.run_number }}
+          path: data/autonomous_loop/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Production health
+        run: |
+          curl -fsS https://supermegabot-production.up.railway.app/health | head -c 400 || echo "health unreachable"

@@ -95,5 +95,18 @@ jobs:
               assert os.environ.get(k) == t, (k, os.environ.get(k))
           print("MetaTokenResolver OK:", len(AIITEC_TOKEN_ALIASES), "aliases forced to AiiteC")
           PY
+      - name: Autonomous loop modules compile
+        run: |
+          python3 -m py_compile \
+            modules/autonomous_loop.py \
+            modules/analytics_feedback.py \
+            modules/lemon_squeezy_autopilot.py \
+            modules/email_onboarding_autopilot.py \
+            modules/claude_agent_collab.py
+          echo "Autonomous loop modules OK"
+
       - name: Deploy note
-        run: echo "✅ Syntax OK — Railway GitHub App deployt automatisch auf push zu main"
+        run: |
+          echo "✅ Syntax OK — Railway GitHub App auto-deploys on push to main"
+          echo "✅ Vercel projects auto-deploy when connected repos push"
+          echo "⚡ Autonomous loop: python3 -m modules.autonomous_loop"

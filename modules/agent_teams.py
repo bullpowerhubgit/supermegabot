@@ -103,6 +103,16 @@ TEAM_REGISTRY: Dict[str, Dict] = {
         "agents": ["health_agent", "self_healer"],
         "use_claude": False,
     },
+    "claude_collab": {
+        "description": "Multi-agent Claude collab (health, marketing, growth, outreach)",
+        "agents": ["claude_health", "marketing", "growth", "rudiclone", "outreach"],
+        "use_claude": True,
+    },
+    "autonomous_loop": {
+        "description": "Full loop: tests → Claude → Stripe/Lemon → email → analytics → next plan",
+        "agents": ["code_health", "payments", "analytics", "onboarding", "planner"],
+        "use_claude": True,
+    },
 }
 
 
@@ -114,6 +124,44 @@ async def run_team(team: str, task: str, notify: bool = True) -> Dict[str, Any]:
 
     log.info(f"Agent team '{team}' starting: {task[:100]}")
     started = datetime.utcnow().isoformat()
+
+    # Specialized teams with dedicated runners
+    if team == "claude_collab":
+        try:
+            from modules.claude_agent_collab import run_collab_cycle
+            special = await run_collab_cycle(focus=task, notify=notify)
+            return {
+                "ok": bool(special.get("ok")),
+                "team": team,
+                "task": task,
+                "started_at": started,
+                "completed_at": datetime.utcnow().isoformat(),
+                "agents": team_info["agents"],
+                "result": special,
+            }
+        except Exception as e:
+            return {"ok": False, "team": team, "error": str(e)[:200]}
+
+    if team == "autonomous_loop":
+        try:
+            from modules.autonomous_loop import run_autonomous_loop
+            special = await run_autonomous_loop(quick=False, notify=notify)
+            return {
+                "ok": bool(special.get("ok")),
+                "team": team,
+                "task": task,
+                "started_at": started,
+                "completed_at": datetime.utcnow().isoformat(),
+                "agents": team_info["agents"],
+                "result": {
+                    "mrr": (special.get("payments") or {}).get("mrr"),
+                    "top_task": (special.get("analytics") or {}).get("top_task"),
+                    "report_path": special.get("report_path"),
+                    "phases": special.get("phases"),
+                },
+            }
+        except Exception as e:
+            return {"ok": False, "team": team, "error": str(e)[:200]}
 
     if team_info["use_claude"]:
         prompt = (
