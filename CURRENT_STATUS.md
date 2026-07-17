@@ -1,87 +1,50 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-17 v29 — GitHub Pages live + Gumroad 9 Produkte aktiv**
+**Stand: 2026-07-17 18:34 UTC — ALL-GREEN PASS**
 
-## ✅ HEUTE ERLEDIGT (2026-07-17 v29)
+## ✅ System
+| Check | Status |
+|-------|--------|
+| Production Health | ok |
+| Stripe | **ineedit.com.co only** `acct_1Tg1U0…` · sk_live_51Tg1U… |
+| AIITEC Stripe | permanent FORBIDDEN |
+| Telegram | @DudiRudibot + @RudiCludiBot PASS |
+| YouTube + SA | PASS |
+| Gemini | PASS (list models) |
+| X OAuth1 | @rudibot84 PASS (tweets need credits) |
+| Resend | PASS |
+| Case Studies + Sales Call | 56 landings · #case-studies · #sales-call-process |
+| Claude Collab | `modules/claude_agent_collab.py` + team `claude_collab` |
+| Post Never-Twice | active |
+| CTAs | Trial Stripe €49 + Strategy Call t.me/DudiRudibot |
 
-### GitHub Pages — Netlify-Ersatz (kostenlos, permanent)
-- **11/11 Landing Pages deployed** auf https://bullpowerhubgit.github.io/vsl-pages/
-- Script: `~/github_pages_deploy.py` (für künftige Updates)
-- Netlify BEIDE Konten: Credits erschöpft → GitHub Pages als permanenter Ersatz
-- Übersicht: https://bullpowerhubgit.github.io/vsl-pages/
+## Stripe (immer)
+- Domain: https://ineedit.com.co
+- Account: acct_1Tg1U0RJECiV6vSm
+- Email: bullpowersrtkennels@gmail.com
+- Thank-you: https://ineedit.com.co/pages/danke
+- Code: `enforce_ineedit_only()` at dashboard startup
+- Docs: `config/STRIPE_INEEDIT_ONLY.md`
 
-| Seite | URL | Preis |
-|-------|-----|-------|
-| SuperMegaBot ELITE | …/supermegabot-elite/ | €497 |
-| Shopify KI Suite PRO | …/shopify-ki-suite/ | €149/mo |
-| CreatorStudio PRO | …/creatorstudio-pro/ | €197/mo |
-| Digistore24 AUTOPILOT | …/digistore24-autopilot/ | €197/mo |
-| Cognitive Symphony | …/cognitive-symphony/ | €297/mo |
-| Shopify Automaton PRO | …/shopify-automaton-pro/ | €129/mo |
-| SteuercockPit PRO | …/steuercockpit/ | €49/mo |
-| iComeAuto ELITE | …/icomeauto/ | €197/mo |
-| BullPower HUB ELITE | …/bullpower-hub/ | €297/mo |
-| Lead Machine PRO | …/lead-machine/ | €97 |
-| BPI Analytics PRO | …/bpi-analytics/ | €197/mo |
+## Sales
+- Process: Qualifizieren → Discovery → Case → Demo → Close
+- Module: `modules/sales_call_process.py`
+- Inject: `python3 scripts/inject_sales_case_everywhere.py`
 
-### Gumroad
-- **9 Produkte aktiviert** (€97–€497): SuperMegaBot ELITE, AI Income Machine, Print-on-Demand, KI-Mastery, KI-Marketing, Social Media, PowerTools, KI-Starter, POD Quickstart
-- **9/10 Preise** auf High-Ticket umgestellt — Viral Window Scanner: Tier-Produkt (manuell via gumroad.com)
-- **MacOBD Pro + Geldmaschine Bundle**: 10/Tag Limit — **MORGEN**: `! python3 ~/gumroad_upload.py`
-- Alle URLs: https://tecbuuss.gumroad.com
-
-### Code-Fixes (dauerhaft)
-- **KI-Agent Hub** komplett: SalesAgent, SupportAgent, ResearchAgent, GrowthAgent
-- **Mailchimp**: streetwear_email_engine.py → permanent blockiert
-- **Event-Loop**: industrie_outreach.py → asyncio.sleep() statt time.sleep()
-- **Zombie-Prozesse**: 6 von 7 lokale server.py-PIDs bereinigt
-- **start_local.sh**: Single-Instance-Manager erstellt
-- **Terminal-Log**: logs/terminal_20260717_191605.log (vollständig)
-
-### Scripts ausgeführt
-```
-✅ git push origin main         → 96f0d7ef deployed
-⚠️ stripe_highticket_upgrade.py  → 0 Produkte (Stripe Live-Mode noch inaktiv)
-❌ netlify_highticket_deploy.py  → Credits erschöpft (→ github_pages_deploy.py stattdessen)
-✅ gumroad_highticket_upgrade.py → 9/10 Produkte auf €97–€497
-✅ gumroad_upload.py             → 9 bestehende aktiviert (Limit: neue morgen)
-✅ github_pages_deploy.py        → 11/11 Seiten live auf GitHub Pages
-```
-
-## ⏳ MORGEN AUSFÜHREN
+## Commands
 ```bash
-! python3 ~/gumroad_upload.py          # MacOBD Pro + Geldmaschine Bundle (Limit reset)
-! python3 ~/stripe_highticket_upgrade.py  # Nach Stripe Live-Mode Aktivierung
-! python3 ~/github_pages_deploy.py     # Bei Änderungen an Landing Pages
+python3 scripts/api_precheck.py --from-env
+python3 -c "from modules.stripe_key_resolver import self_check; print(self_check())"
+python3 -m modules.claude_agent_collab
+curl -s https://supermegabot-production.up.railway.app/health
 ```
 
-## ⏳ MANUELLE AUFGABEN (nur Rudolf)
-1. **Stripe Live-Mode** → stripe.com → bullpowersrtkennels aktivieren (Pflicht!)
-2. **Gumroad Stripe verbinden** → gumroad.com/settings/payments
-3. **Netlify Credits** → netlify.com/billing (bullpowerhubgit + aiitecbuuss) — oder weiter GitHub Pages nutzen
-4. **DS24 Produkt 704677** → Zur Freigabe einreichen
-5. **GMC Identitätsverifizierung** → Personalausweis hochladen
-6. **Anthropic Credits** → console.anthropic.com aufladen
-7. **ETSY_ACCESS_TOKEN** in .env → `etsy_bulk_upload_ai_bilder.py` starten
+## Open (external / billing)
+| Item | Note |
+|------|------|
+| X tweets | 402 credits depleted |
+| Pinterest | trial denied — no API |
+| Anthropic | credits low — AI fallback chain |
+| Stripe MRR | €0 until first paid checkout |
 
-## 🟢 SYSTEM STATUS
-- Railway: https://supermegabot-production.up.railway.app ✅ ONLINE
-- GitHub main: aktuell (96f0d7ef + weitere)
-- GitHub Pages: https://bullpowerhubgit.github.io/vsl-pages/ ✅ LIVE
-- Gumroad: 9+ Produkte aktiv
-- Sofia Voice: +1 (762) 568-5298 ✅
-- KI-Agenten: SalesAgent/SupportAgent/ResearchAgent/GrowthAgent ✅
-- Stripe: ⚠️ Live-Mode NICHT aktiviert (wichtigste offene Aufgabe!)
-
-## SCRIPTS BEREIT
-- `~/github_pages_deploy.py` → Landing Pages aktualisieren
-- `~/gumroad_upload.py` → MacOBD Pro + Bundle (morgen)
-- `~/stripe_highticket_upgrade.py` → nach Stripe Live-Mode
-- `~/gumroad_highticket_upgrade.py` → Gumroad Preise
-- `~/etsy_bulk_upload_ai_bilder.py` → Etsy (ETSY_ACCESS_TOKEN nötig)
-
-## DAUERHAFTE REGELN
-- Stripe: NUR bullpowersrtkennels@gmail.com (sk_live_51Tg1U) = ineedit.com.co
-- DS24: NUR Key 1581233-... (aiitec)
-- FB/IG: NUR AiiteC (Page 1016738738178786 / @aaiitecc)
-- Email: NUR Klaviyo — Mailchimp PERMANENT GESPERRT
-- NIEMALS: Fake-Produkte, Demo-Daten, Massen-Löschen ohne JA
+## Monetization reality
+Today: **€0 MRR**. Focus: Trial + Call + Case Studies everywhere, one product SuperMegaBot €49.

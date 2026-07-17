@@ -146,7 +146,7 @@ async def phase_claude_iterate(analytics_tasks: list[dict] | None = None) -> dic
 
     # Direct AI fallback for next-patch suggestion
     try:
-        from modules.ai_client import call_ai
+        from modules.ai_client import ai_complete
         prompt = (
             "You are SuperMegaBot autonomous engineer. Given analytics/revenue task, "
             "output JSON with keys: summary, code_changes (list of files+intent), "
@@ -154,7 +154,7 @@ async def phase_claude_iterate(analytics_tasks: list[dict] | None = None) -> dic
             f"Task: {task}\n"
             f"Analytics tasks: {json.dumps(analytics_tasks or [])[:1500]}"
         )
-        text = await call_ai(prompt, max_tokens=800)
+        text = await ai_complete(prompt, max_tokens=800)
         results["ai_plan"] = text[:4000]
         results["ok"] = True
     except Exception as e:
