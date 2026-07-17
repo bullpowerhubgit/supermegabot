@@ -399,7 +399,7 @@ COMPANIES_SEED = [
     {"name": "voestalpine AG",                 "domain": "voestalpine.com",     "email": "info@voestalpine.com",       "branche": "Maschinenbau", "umsatz": "L", "land": "AT"},
     {"name": "Andritz AG",                     "domain": "andritz.com",         "email": "info@andritz.com",           "branche": "Maschinenbau", "umsatz": "L", "land": "AT"},
     {"name": "UBS Group AG",                   "domain": "ubs.com",             "email": "info@ubs.com",               "branche": "Bank",         "umsatz": "L", "land": "CH"},
-    {"name": "Credit Suisse Group AG",         "domain": "credit-suisse.com",   "email": "info@credit-suisse.com",     "branche": "Bank",         "umsatz": "L", "land": "CH"},
+    # Credit Suisse: 2023 von UBS übernommen — kein aktives Email mehr
     {"name": "Zurich Insurance Group",         "domain": "zurich.com",          "email": "info@zurich.com",            "branche": "Versicherung", "umsatz": "L", "land": "CH"},
     {"name": "Swiss Re Group",                 "domain": "swissre.com",         "email": "info@swissre.com",           "branche": "Versicherung", "umsatz": "L", "land": "CH"},
     {"name": "Novartis AG",                    "domain": "novartis.com",        "email": "info@novartis.com",          "branche": "Pharma",       "umsatz": "L", "land": "CH"},
@@ -685,6 +685,25 @@ async def seed_companies() -> int:
     log.info("Seed-Unternehmen: %d geladen", inserted)
     return inserted
 
+_LOCAL_SENT_FILE = Path(__file__).parent.parent / "data" / "outreach_local_sent.json"
+
+def _local_sent_load() -> set:
+    try:
+        if _LOCAL_SENT_FILE.exists():
+            return set(json.loads(_LOCAL_SENT_FILE.read_text()))
+    except Exception:
+        pass
+    return set()
+
+def _local_sent_add(email: str) -> None:
+    try:
+        _LOCAL_SENT_FILE.parent.mkdir(parents=True, exist_ok=True)
+        sent = _local_sent_load()
+        sent.add(email.lower())
+        _LOCAL_SENT_FILE.write_text(json.dumps(list(sent)))
+    except Exception:
+        pass
+
 async def _get_queue(limit: int = EMAILS_PER_DAY) -> List[dict]:
     # Primär: Supabase-Queue
     fetch = min(limit * 4, 600)
@@ -695,7 +714,11 @@ async def _get_queue(limit: int = EMAILS_PER_DAY) -> List[dict]:
         return data[:limit]
     # Fallback: EXTENDED_COMPANIES_DB direkt (wenn Supabase offline)
     log.warning("[QUEUE] Supabase offline — nutze EXTENDED_COMPANIES_DB als Fallback")
-    pool = list(EXTENDED_COMPANIES_DB)
+    already_sent = _local_sent_load()
+    pool = [c for c in EXTENDED_COMPANIES_DB if c["email"].lower() not in already_sent]
+    if not pool:
+        log.info("[QUEUE] Fallback: alle Firmen bereits kontaktiert — Queue leer")
+        return []
     random.shuffle(pool)
     return [
         {"id": i, "email": c["email"], "name": c["name"], "company": c["name"],
@@ -925,7 +948,7 @@ SMB_COMPANIES_DB = [
     {"name": "Klarna GmbH",                 "domain": "klarna.de",            "email": "info@klarna.de",                "branche": "IT/Software",     "land": "DE"},
     {"name": "Unzer GmbH",                  "domain": "unzer.com",            "email": "info@unzer.com",                "branche": "IT/Software",     "land": "DE"},
     {"name": "Payoneer GmbH",               "domain": "payoneer.com",         "email": "support@payoneer.com",          "branche": "IT/Software",     "land": "DE"},
-    {"name": "Wirecard Settlements",        "domain": "wirecard.com",         "email": "info@wirecard.de",              "branche": "IT/Software",     "land": "DE"},
+    # Wirecard: bankrott seit 2020 — Domain inaktiv
     # ── Logistik / Fulfillment SMB ────────────────────────────────────────────
     {"name": "Byrd Technologies GmbH",      "domain": "getbyrd.com",          "email": "hello@getbyrd.com",             "branche": "Logistik",        "land": "DE"},
     {"name": "Hive Technologies GmbH",      "domain": "hive.app",             "email": "info@hive.app",                 "branche": "Logistik",        "land": "DE"},
@@ -1200,18 +1223,36 @@ _OWN_EMAILS = {
 _SKIP_PREFIXES = (
     "noreply@", "no-reply@", "no_reply@", "donotreply@", "do-not-reply@",
     "mailer-daemon@", "postmaster@", "bounce@", "bounces@", "notification@",
-    "notifications@", "info-noreply@", "auto@", "automated@",
+    "notifications@", "info-noreply@", "auto@", "automated@", "reply@",
+    "no.reply@", "do.not.reply@", "support-noreply@", "newsletter@",
+    "news@", "update@", "updates@", "alert@", "alerts@",
 )
+
+_SKIP_LOCAL = frozenset({
+    "noreply", "no-reply", "no_reply", "no.reply", "donotreply", "do-not-reply",
+    "bounce", "bounces", "postmaster", "mailer-daemon", "auto", "automated",
+    "reply", "newsletter", "news", "update", "updates", "alert", "alerts",
+    "support-noreply", "test", "abuse", "spam", "contact-us",
+})
+
+_DEAD_DOMAINS = frozenset({
+    "wirecard.de", "wirecard.com",         # bankrott 2020
+    "credit-suisse.com",                   # von UBS übernommen 2023
+    "skalum.com",                          # Domain existiert nicht
+    "bullpower.de",                        # eigene Test-Domain
+    "supermegabot.com",                    # eigene Domain
+})
 
 def _is_valid_recipient(addr: str) -> bool:
     a = addr.lower().strip()
     if not a or "@" not in a:
         return False
-    local = a.split("@")[0]
+    local, domain = a.split("@", 1)
+    if domain in _DEAD_DOMAINS:
+        return False
     if any(a.startswith(p) for p in _SKIP_PREFIXES):
         return False
-    if local in ("noreply", "no-reply", "no_reply", "donotreply", "bounce",
-                 "bounces", "postmaster", "mailer-daemon", "auto", "automated"):
+    if local in _SKIP_LOCAL:
         return False
     return True
 
@@ -1235,11 +1276,13 @@ def _send_email(to: str, subject: str, body: str) -> bool:
 
     # 1. SendGrid primary — beste Zustellrate bei Enterprise-Servern
     if _send_via_sendgrid(to, subject, body):
+        _local_sent_add(to)
         return True
 
     # 2. Gmail-Pool als Fallback
     log.debug("  ↪  SendGrid n.v. — Gmail-Pool Versuch")
     if _send_via_gmail_pool(to, subject, body):
+        _local_sent_add(to)
         return True
 
     log.error("  ✗  Alle Sender fehlgeschlagen → %s", to)

@@ -527,3 +527,292 @@ async def _send_telegram_alert(
         log.info("Sofia Telegram alert ✅ buy=%s", buy_signal)
     except Exception as e:
         log.warning("Sofia Telegram: %s", e)
+
+
+# ── Call Queue (SQLite) ────────────────────────────────────────────────────────
+
+_QUEUE_DB = Path(__file__).parent.parent / "data" / "sofia_queue.db"
+
+def _queue_db() -> sqlite3.Connection:
+    _QUEUE_DB.parent.mkdir(exist_ok=True)
+    conn = sqlite3.connect(str(_QUEUE_DB), check_same_thread=False, timeout=5)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS call_queue (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            to_number   TEXT NOT NULL,
+            product_id  TEXT DEFAULT '',
+            contact     TEXT DEFAULT '',
+            context     TEXT DEFAULT '',
+            source      TEXT DEFAULT 'manual',
+            status      TEXT DEFAULT 'pending',
+            call_sid    TEXT DEFAULT '',
+            created_at  REAL NOT NULL,
+            updated_at  REAL NOT NULL
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS call_log (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            call_sid    TEXT,
+            to_number   TEXT,
+            from_number TEXT,
+            direction   TEXT,
+            product     TEXT,
+            buy_signal  INTEGER DEFAULT 0,
+            duration    INTEGER DEFAULT 0,
+            sms_sent    INTEGER DEFAULT 0,
+            created_at  REAL NOT NULL
+        )
+    """)
+    conn.commit()
+    return conn
+
+
+def queue_sofia_call(
+    to_number: str,
+    product_id: str = "",
+    contact: str = "",
+    context: str = "",
+    source: str = "manual",
+) -> int:
+    """Fügt einen ausgehenden Anruf zur Queue hinzu. Gibt Queue-ID zurück."""
+    conn = _queue_db()
+    cur = conn.execute(
+        "INSERT INTO call_queue (to_number,product_id,contact,context,source,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+        (to_number, product_id, contact, context, source, time.time(), time.time()),
+    )
+    conn.commit()
+    qid = cur.lastrowid
+    conn.close()
+    log.info("Sofia Queue +1: %s → %s [%s] id=%s", source, to_number, product_id, qid)
+    return qid
+
+
+def get_sofia_queue(status: str = "pending", limit: int = 50) -> list:
+    """Gibt Call-Queue zurück."""
+    try:
+        conn = _queue_db()
+        rows = conn.execute(
+            "SELECT id,to_number,product_id,contact,context,source,status,call_sid,created_at FROM call_queue WHERE status=? ORDER BY created_at ASC LIMIT ?",
+            (status, limit),
+        ).fetchall()
+        conn.close()
+        return [
+            {"id": r[0], "to_number": r[1], "product_id": r[2], "contact": r[3],
+             "context": r[4], "source": r[5], "status": r[6], "call_sid": r[7],
+             "created_at": r[8]}
+            for r in rows
+        ]
+    except Exception as e:
+        log.warning("Sofia queue read: %s", e)
+        return []
+
+
+def get_sofia_stats() -> dict:
+    """Statistiken aus call_log."""
+    try:
+        conn = _queue_db()
+        total    = conn.execute("SELECT COUNT(*) FROM call_log").fetchone()[0]
+        buys     = conn.execute("SELECT COUNT(*) FROM call_log WHERE buy_signal=1").fetchone()[0]
+        sms_sent = conn.execute("SELECT COUNT(*) FROM call_log WHERE sms_sent=1").fetchone()[0]
+        avg_dur  = conn.execute("SELECT AVG(duration) FROM call_log WHERE duration>0").fetchone()[0] or 0
+        pending  = conn.execute("SELECT COUNT(*) FROM call_queue WHERE status='pending'").fetchone()[0]
+        conn.close()
+        return {
+            "total_calls": total,
+            "buy_signals": buys,
+            "conversion_rate": round(buys / total * 100, 1) if total else 0,
+            "sms_sent": sms_sent,
+            "avg_duration_sec": round(avg_dur),
+            "queue_pending": pending,
+            "phone": TWILIO_PHONE,
+        }
+    except Exception as e:
+        log.warning("Sofia stats: %s", e)
+        return {"error": str(e)}
+
+
+def _log_call(call_sid: str, to_number: str, from_number: str, direction: str,
+               product: str, buy_signal: bool, duration: int, sms_sent: bool) -> None:
+    try:
+        conn = _queue_db()
+        conn.execute(
+            "INSERT INTO call_log (call_sid,to_number,from_number,direction,product,buy_signal,duration,sms_sent,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+            (call_sid, to_number, from_number, direction, product, int(buy_signal), duration, int(sms_sent), time.time()),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log.debug("Sofia call_log: %s", e)
+
+
+# ── Outbound Calls ─────────────────────────────────────────────────────────────
+
+def _twiml_outbound_greeting(contact: str, product_id: str, call_sid: str) -> str:
+    """TwiML für ausgehenden Anruf — Sofia begrüßt den Kontakt proaktiv."""
+    name_part = f", {contact}" if contact else ""
+    if product_id:
+        greeting = (
+            f"Guten Tag{name_part}! Hier ist Sofia, die persönliche Assistentin von Rudolf Sarkany bei AIITEC. "
+            f"Ich rufe Sie an, weil wir ein spannendes Angebot im Bereich {product_id} für Sie haben. "
+            f"Haben Sie kurz zwei Minuten?"
+        )
+    else:
+        greeting = (
+            f"Guten Tag{name_part}! Hier ist Sofia, die persönliche Assistentin von Rudolf Sarkany bei AIITEC. "
+            f"Ich melde mich kurz — wir haben etwas Interessantes für Sie. Haben Sie einen Moment?"
+        )
+    action_url = f"{BASE_URL}/api/voice/respond?call_sid={call_sid}"
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather input="speech" language="de-DE" timeout="6" action="{action_url}" method="POST">
+    <Say voice="Polly.Vicki" language="de-DE">{greeting}</Say>
+  </Gather>
+  <Say voice="Polly.Vicki" language="de-DE">Kein Problem, ich versuche es später nochmal. Auf Wiederhören!</Say>
+  <Hangup/>
+</Response>"""
+
+
+async def trigger_outbound_call(
+    to_number: str,
+    product_id: str = "",
+    contact_name: str = "",
+    context: str = "",
+    source: str = "manual",
+) -> Optional[str]:
+    """Initiiert ausgehenden Anruf via Twilio. Gibt Call-SID zurück oder None bei Fehler."""
+    if not TWILIO_SID or not TWILIO_TOKEN or not TWILIO_PHONE:
+        log.warning("Sofia Outbound: Twilio nicht konfiguriert")
+        return None
+
+    # Gespräch mit Kontext vorinitialisieren
+    import uuid
+    temp_sid = f"out_{uuid.uuid4().hex[:12]}"
+    _conversations[temp_sid] = {
+        "history": [],
+        "buy_signal": False,
+        "product": product_id or None,
+        "direction": "outbound",
+        "contact": contact_name,
+        "context": context,
+    }
+
+    twiml_url = f"{BASE_URL}/api/voice/outbound-twiml?product={product_id}&contact={contact_name}&call_sid={temp_sid}"
+
+    try:
+        import base64
+        auth = base64.b64encode(f"{TWILIO_SID}:{TWILIO_TOKEN}".encode()).decode()
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{TWILIO_SID}/Calls.json",
+                data={
+                    "To":         to_number,
+                    "From":       TWILIO_PHONE,
+                    "Url":        twiml_url,
+                    "StatusCallback": f"{BASE_URL}/api/voice/status",
+                    "StatusCallbackMethod": "POST",
+                    "MachineDetection": "Enable",
+                    "AsyncAmd":   "true",
+                    "AsyncAmdStatusCallback": f"{BASE_URL}/api/voice/amd",
+                    "Timeout":    "30",
+                },
+                headers={"Authorization": f"Basic {auth}"},
+            ) as r:
+                data = await r.json()
+                if r.status in (200, 201):
+                    call_sid = data.get("sid", temp_sid)
+                    # Gespräch unter echter SID speichern
+                    if call_sid != temp_sid:
+                        _conversations[call_sid] = _conversations.pop(temp_sid)
+                    log.info("Sofia Outbound ✅ → %s SID=%s", to_number, call_sid)
+                    # Telegram Alert
+                    asyncio.create_task(_send_telegram_alert_outbound(to_number, product_id, contact_name, source))
+                    return call_sid
+                else:
+                    log.warning("Sofia Outbound Twilio %s: %s", r.status, data.get("message", ""))
+                    _conversations.pop(temp_sid, None)
+                    return None
+    except Exception as e:
+        log.error("Sofia Outbound Error: %s", e)
+        _conversations.pop(temp_sid, None)
+        return None
+
+
+async def run_outbound_campaign(limit: int = 20) -> dict:
+    """Verarbeitet pending Queue-Einträge — ruft max. `limit` Nummern an."""
+    pending = get_sofia_queue(status="pending", limit=limit)
+    if not pending:
+        log.info("Sofia Kampagne: Queue leer")
+        return {"called": 0, "skipped": 0}
+
+    called = 0
+    skipped = 0
+    conn = _queue_db()
+
+    for entry in pending:
+        qid     = entry["id"]
+        number  = entry["to_number"]
+        product = entry["product_id"]
+        contact = entry["contact"]
+        context = entry["context"]
+        source  = entry["source"]
+
+        # Kurze Pause zwischen Anrufen (Twilio Rate-Limit)
+        if called > 0:
+            await asyncio.sleep(3)
+
+        call_sid = await trigger_outbound_call(number, product, contact, context, source)
+        if call_sid:
+            conn.execute(
+                "UPDATE call_queue SET status='called',call_sid=?,updated_at=? WHERE id=?",
+                (call_sid, time.time(), qid),
+            )
+            called += 1
+        else:
+            conn.execute(
+                "UPDATE call_queue SET status='failed',updated_at=? WHERE id=?",
+                (time.time(), qid),
+            )
+            skipped += 1
+        conn.commit()
+
+    conn.close()
+    log.info("Sofia Kampagne: %d angerufen, %d übersprungen", called, skipped)
+    return {"called": called, "skipped": skipped, "total": len(pending)}
+
+
+async def handle_sms_inbound(from_number: str, body: str) -> str:
+    """Verarbeitet eingehende SMS — Sofia antwortet intelligent."""
+    try:
+        from modules.ai_client import ai_complete
+        sms_system = (
+            "Du bist Sofia von AIITEC. Antworte auf diese SMS kurz und freundlich auf Deutsch (max 160 Zeichen). "
+            "Wenn der Kunde kaufen möchte, schreibe den Bestelllink. "
+            "Shop: ineedit.com.co | Tel: " + TWILIO_PHONE
+        )
+        reply = await ai_complete(body, system=sms_system, model_hint="fast", max_tokens=80)
+        return (reply or "Danke! Unsere Assistentin meldet sich kurz. Tel: " + TWILIO_PHONE)[:160]
+    except Exception as e:
+        log.warning("Sofia SMS reply: %s", e)
+        return f"Danke für Ihre Nachricht! Wir melden uns. Tel: {TWILIO_PHONE}"
+
+
+async def _send_telegram_alert_outbound(
+    to_number: str, product: str, contact: str, source: str
+) -> None:
+    if not TELEGRAM_BOT or not TELEGRAM_CHAT:
+        return
+    text = (
+        f"📞 Sofia Outbound-Anruf gestartet\n"
+        f"→ {to_number} ({contact})\n"
+        f"Produkt: {product or 'allgemein'}\n"
+        f"Quelle: {source}"
+    )
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+            await s.post(
+                f"https://api.telegram.org/bot{TELEGRAM_BOT}/sendMessage",
+                json={"chat_id": TELEGRAM_CHAT, "text": text},
+            )
+    except Exception as e:
+        log.debug("Sofia outbound Telegram: %s", e)
