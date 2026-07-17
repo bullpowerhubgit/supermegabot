@@ -23,6 +23,12 @@ SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 
 PINTEREST_BASE = "https://api.pinterest.com/v5"
 
+DEFAULT_BOARDS = [
+    {"name": "Smart Home Gadgets & Tech", "description": "Smartes Wohnen mit Top-Technologie"},
+    {"name": "Solar & Energie",           "description": "Solaranlagen, Powerstation, Off-Grid"},
+    {"name": "Küche & Home Automation",   "description": "Smarte Küchengeräte und Home-Automation"},
+]
+
 PIN_NICHES = [
     "home decor ideas", "fitness motivation", "smart gadgets 2026",
     "kitchen must-haves", "budget fashion finds", "desk setup goals",
@@ -37,6 +43,62 @@ PIN_TEMPLATES = [
     "⭐ Why you NEED {title} in your life",
     "🔥 {title} — Under €{price}!",
 ]
+
+
+async def _get_or_create_boards() -> list:
+    """Holt existierende Pinterest-Boards. Falls keine vorhanden, erstellt 3 Standard-Boards automatisch."""
+    if not PINTEREST_TOKEN:
+        return []
+    headers = {
+        "Authorization": f"Bearer {PINTEREST_TOKEN}",
+        "Content-Type": "application/json",
+    }
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"{PINTEREST_BASE}/boards",
+                headers=headers,
+                params={"page_size": 100},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                data = await r.json(content_type=None)
+                existing = data.get("items", [])
+
+        if existing:
+            return [(b.get("name", ""), b["id"]) for b in existing if b.get("id")]
+
+        # 0 Boards → 3 Standard-Boards erstellen
+        log.info("Pinterest: 0 boards found — creating 3 default boards")
+        created: list = []
+        async with aiohttp.ClientSession() as s:
+            for board_def in DEFAULT_BOARDS:
+                try:
+                    async with s.post(
+                        f"{PINTEREST_BASE}/boards",
+                        headers=headers,
+                        json={
+                            "name": board_def["name"],
+                            "description": board_def["description"],
+                            "privacy": "PUBLIC",
+                        },
+                        timeout=aiohttp.ClientTimeout(total=15),
+                    ) as r:
+                        if r.status in (200, 201):
+                            bd = await r.json(content_type=None)
+                            bid = bd.get("id")
+                            if bid:
+                                created.append((board_def["name"], bid))
+                                log.info("Board created: %s → %s", board_def["name"], bid)
+                        else:
+                            body = await r.text()
+                            log.warning("Board create failed: %s %s", r.status, body[:120])
+                except Exception as e:
+                    log.warning("Board create error (%s): %s", board_def["name"], e)
+                await asyncio.sleep(0.5)
+        return created
+    except Exception as e:
+        log.warning("_get_or_create_boards error: %s", e)
+        return []
 
 
 async def _ai(prompt: str, max_tokens: int = 300) -> str:
@@ -64,14 +126,15 @@ async def _get_shopify_products(limit: int = 20) -> list:
         return []
 
 
-async def create_pin(title: str, desc: str, image_url: str, link: str) -> dict:
-    """Erstellt einen Pinterest Pin via API v5."""
+async def create_pin(title: str, desc: str, image_url: str, link: str, board_id: str = "") -> dict:
+    """Erstellt einen Pinterest Pin via API v5. board_id überschreibt PINTEREST_BOARD_ID."""
     if not PINTEREST_TOKEN:
         return {"ok": False, "error": "no PINTEREST_ACCESS_TOKEN",
                 "note": "Set PINTEREST_ACCESS_TOKEN in Railway"}
+    effective_board = board_id or PINTEREST_BOARD
     try:
         payload = {
-            "board_id": PINTEREST_BOARD,
+            "board_id": effective_board,
             "title": title[:100],
             "description": desc[:500],
             "link": link,
@@ -98,12 +161,20 @@ async def create_pin(title: str, desc: str, image_url: str, link: str) -> dict:
 
 
 async def auto_pin_products(limit: int = 5) -> dict:
-    """Alle Shopify-Produkte → Pinterest Pins (mit Token) oder Promo (ohne)."""
+    """Alle Shopify-Produkte → Pinterest Pins (mit Token) oder Promo (ohne).
+    Erstellt automatisch 3 Standard-Boards wenn keine Boards existieren."""
     products = await _get_shopify_products(limit)
     pinned = 0
     pin_content = []
 
-    for product in products[:limit]:
+    # Boards holen (oder auto-erstellen wenn keine vorhanden)
+    boards: list = []
+    if PINTEREST_TOKEN:
+        boards = await _get_or_create_boards()
+        if not boards:
+            log.warning("Pinterest: no boards available after get_or_create — falling back to promo")
+
+    for idx, product in enumerate(products[:limit]):
         try:
             title = product.get("title", "")[:60]
             image = (product.get("images") or [{}])[0].get("src", "")
@@ -114,8 +185,10 @@ async def auto_pin_products(limit: int = 5) -> dict:
             # KI: Pin-Beschreibung
             desc = await generate_pin_description(title, price)
 
-            if PINTEREST_TOKEN and PINTEREST_BOARD:
-                result = await create_pin(title, desc, image, link)
+            if PINTEREST_TOKEN and boards:
+                # Board im Round-Robin-Verfahren wählen
+                _, board_id = boards[idx % len(boards)]
+                result = await create_pin(title, desc, image, link, board_id=board_id)
                 if result.get("ok"):
                     pinned += 1
             else:

@@ -9809,6 +9809,49 @@ async def handle_loop_commits_prs(req):
         return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
 
 
+async def handle_revenue_agent_command(req):
+    """POST /api/revenue-agent/command — Revenue Agent sendet Kommando."""
+    try:
+        body    = await req.json()
+        command = str(body.get("command", "")).strip()
+        params  = body.get("params", {})
+        if not command:
+            return web.json_response({"ok": False, "error": "command fehlt"}, status=400)
+        from modules.revenue_agent_bridge import post_command_from_api
+        result = await post_command_from_api(command, params)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_revenue_agent_status(req):
+    """GET /api/revenue-agent/status — Status beider Agents."""
+    try:
+        from modules.revenue_agent_bridge import get_bridge_status
+        return web.json_response(await get_bridge_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_revenue_agent_inbox(req):
+    """GET /api/revenue-agent/inbox — Offene Kommandos in der Inbox."""
+    try:
+        from modules.revenue_agent_bridge import get_pending_commands
+        return web.json_response({"ok": True, "pending": get_pending_commands()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
+async def handle_revenue_agent_result(req):
+    """GET /api/revenue-agent/results — Letzte Ergebnisse aus Outbox."""
+    try:
+        from modules.revenue_agent_bridge import get_results
+        limit = int(req.rel_url.query.get("limit", 10))
+        return web.json_response({"ok": True, "results": get_results(limit)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
 async def handle_system_info(req):
     """GET /api/system/info — System info and versions."""
     import platform
@@ -12650,7 +12693,11 @@ async def create_app():
     app.router.add_get( "/api/autonomous-master/status",  handle_autonomous_master_status)
     app.router.add_post("/api/stripe-payment/poll",       handle_stripe_payment_poll)
     app.router.add_get( "/api/stripe-payment/stats",      handle_stripe_payment_stats)
-    app.router.add_get( "/api/loop-commits/prs",          handle_loop_commits_prs)
+    app.router.add_get( "/api/loop-commits/prs",              handle_loop_commits_prs)
+    app.router.add_post("/api/revenue-agent/command",         handle_revenue_agent_command)
+    app.router.add_get( "/api/revenue-agent/status",          handle_revenue_agent_status)
+    app.router.add_get( "/api/revenue-agent/inbox",           handle_revenue_agent_inbox)
+    app.router.add_get( "/api/revenue-agent/results",         handle_revenue_agent_result)
     app.router.add_get( "/api/system/info",              handle_system_info)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)
@@ -14755,9 +14802,13 @@ async def create_app():
 
     # Send Telegram Master Dashboard startup notification
     try:
-        from modules.telegram_master_dashboard import send_startup_notification
-        asyncio.create_task(send_startup_notification())
-        log.info("Telegram Master Dashboard startup notification queued")
+        startup_enabled = os.getenv("TELEGRAM_STARTUP_NOTIFICATIONS", "false").lower() in ("1", "true", "yes", "on")
+        if startup_enabled and os.getenv("TELEGRAM_BOT_TOKEN", "") and os.getenv("TELEGRAM_CHAT_ID", ""):
+            from modules.telegram_master_dashboard import send_startup_notification
+            asyncio.create_task(send_startup_notification())
+            log.info("Telegram Master Dashboard startup notification queued")
+        else:
+            log.info("Telegram Master Dashboard startup notification skipped")
     except Exception as _e:
         log.warning(f"Telegram Master Dashboard startup failed: {_e}")
 
