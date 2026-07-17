@@ -6041,8 +6041,8 @@ async def task_revenue_mega_tracker() -> str:
 async def task_conversion_engine() -> str:
     """Conversion Engine: CRO + A/B-Tests + Heatmap-Analyse automatisch (alle 6h)."""
     try:
-        from modules.conversion_engine import daily_revenue_optimization
-        r = await daily_revenue_optimization()
+        from modules.conversion_engine import run_daily_optimization
+        r = await run_daily_optimization()
         return f"Conversion: {r}"
     except Exception as e:
         return f"Conversion Engine Fehler: {e}"

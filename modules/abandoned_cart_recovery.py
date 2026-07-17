@@ -604,7 +604,7 @@ async def _fetch_shopify_checkouts(session: aiohttp.ClientSession) -> List[Dict]
                 return carts
     except Exception as exc:
         log.error("Shopify fetch Fehler: %s", exc)
-        return []
+    return []  # implicit None guard — non-200 status or all paths exhausted
 
 
 # ── Cart-zu-Items konvertieren ────────────────────────────────────────────────
