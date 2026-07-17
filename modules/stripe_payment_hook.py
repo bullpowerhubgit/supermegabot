@@ -43,6 +43,37 @@ _BASE    = Path(__file__).resolve().parents[1]
 _DB_PATH = _BASE / "data" / "stripe_payments.db"
 
 
+# ── Retry config ─────────────────────────────────────────────────────────────
+
+_MAX_RETRIES = 3
+
+
+async def _stripe_get_with_retry(
+    session: aiohttp.ClientSession,
+    url: str,
+    headers: dict,
+    timeout: aiohttp.ClientTimeout | None = None,
+) -> tuple[int, dict]:
+    """GET Stripe API with auto-retry on 429 (reads Retry-After header), max 3 attempts."""
+    kw: dict = {"headers": headers}
+    if timeout:
+        kw["timeout"] = timeout
+    for attempt in range(1, _MAX_RETRIES + 1):
+        async with session.get(url, **kw) as resp:
+            if resp.status == 429:
+                retry_after = int(resp.headers.get("Retry-After", "5"))
+                log.warning(
+                    "Stripe 429 GET %s — warte %ds (Versuch %d/%d)",
+                    url, retry_after, attempt, _MAX_RETRIES,
+                )
+                if attempt < _MAX_RETRIES:
+                    await asyncio.sleep(retry_after)
+                    continue
+            body = await resp.json()
+            return resp.status, body
+    return 429, {"error": {"message": "Rate limit exceeded after retries"}}
+
+
 # ── Credentials ──────────────────────────────────────────────────────────────
 
 def _stripe_key() -> str:
@@ -75,9 +106,15 @@ def _db() -> sqlite3.Connection:
             amount_eur   REAL,
             event_type   TEXT,
             onboarded    INTEGER DEFAULT 0,
+            upsell_at    INTEGER DEFAULT 0,
             received_at  INTEGER DEFAULT (strftime('%s','now'))
         )
     """)
+    # Migrate existing tables that lack upsell_at
+    try:
+        conn.execute("ALTER TABLE payments ADD COLUMN upsell_at INTEGER DEFAULT 0")
+    except Exception:
+        pass  # column already exists
     conn.commit()
     return conn
 
@@ -172,20 +209,25 @@ async def _process_event(event: dict) -> dict[str, Any]:
         name       = (obj.get("customer_details") or {}).get("name", "")
         amount_eur = (obj.get("amount_total") or 0) / 100.0
 
+    elif event_type == "payment_intent.succeeded":
+        email      = obj.get("receipt_email") or obj.get("customer_email") or ""
+        name       = ""
+        amount_eur = (obj.get("amount_received") or obj.get("amount") or 0) / 100.0
+
     elif event_type in ("customer.subscription.created", "customer.subscription.updated"):
         cid = obj.get("customer", "")
         if cid:
             try:
                 key = _stripe_key()
                 async with aiohttp.ClientSession() as s:
-                    async with s.get(
+                    status_code, cdata = await _stripe_get_with_retry(
+                        s,
                         f"https://api.stripe.com/v1/customers/{cid}",
                         headers={"Authorization": f"Bearer {key}"},
                         timeout=aiohttp.ClientTimeout(total=10),
-                    ) as r:
-                        cdata  = await r.json()
-                        email  = cdata.get("email", "")
-                        name   = cdata.get("name", "")
+                    )
+                    email = cdata.get("email", "")
+                    name  = cdata.get("name", "")
             except Exception as e:
                 log.warning("Kunde nicht abrufbar: %s", e)
         items      = (obj.get("items") or {}).get("data") or []
@@ -210,6 +252,30 @@ async def _process_event(event: dict) -> dict[str, Any]:
 
     _record_payment(event_id, email, name, amount_eur, event_type)
 
+    # ── Zusatz-Aktionen je Event-Typ ─────────────────────────────────────────
+    if event_type == "checkout.session.completed":
+        # Bestellung in Supabase import_results eintragen
+        _write_supabase_import(event_id, email, amount_eur)
+        # Upsell-Email nach 2 Tagen planen
+        upsell_ts = int(time.time()) + 2 * 86400
+        with _db() as c:
+            c.execute("UPDATE payments SET upsell_at=? WHERE id=?", (upsell_ts, event_id))
+
+    elif event_type == "payment_intent.succeeded":
+        # Revenue-Counter aktualisieren (nur Telegram reicht als Signal)
+        log.info("payment_intent.succeeded — €%.2f von %s", amount_eur, email)
+
+    elif event_type == "customer.subscription.created":
+        # Subscriber in Klaviyo enrollen
+        if email:
+            try:
+                from modules.klaviyo_flows import enroll_welcome_sequence
+                first_name = name.split()[0] if name else ""
+                kl_result  = await enroll_welcome_sequence(email=email, first_name=first_name)
+                log.info("Klaviyo enroll: %s → %s", email, kl_result.get("status", "ok"))
+            except Exception as e:
+                log.warning("Klaviyo enroll fehlgeschlagen: %s", e)
+
     # Onboarding + Telegram parallel
     onboarded, _ = await asyncio.gather(
         _trigger_onboarding(email, name, amount_eur, event_id),
@@ -225,6 +291,57 @@ async def _process_event(event: dict) -> dict[str, Any]:
         "amount_eur": amount_eur,
         "onboarding_started": bool(onboarded),
     }
+
+
+def _write_supabase_import(event_id: str, email: str, amount_eur: float) -> None:
+    """Synchron-Wrapper: schreibt checkout-Event in Supabase import_results."""
+    import os, threading
+
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    supabase_key = os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not supabase_url or not supabase_key:
+        return
+
+    payload = {
+        "source":     "stripe_checkout",
+        "event_id":   event_id,
+        "email":      email,
+        "amount_eur": amount_eur,
+        "status":     "completed",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    headers = {
+        "apikey":        supabase_key,
+        "Authorization": f"Bearer {supabase_key}",
+        "Content-Type":  "application/json",
+        "Prefer":        "return=minimal",
+    }
+
+    async def _post():
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{supabase_url}/rest/v1/import_results",
+                    json=payload,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    if r.status >= 300:
+                        log.warning("Supabase import_results → %d", r.status)
+                    else:
+                        log.info("Supabase import_results geschrieben: %s", event_id)
+        except Exception as e:
+            log.warning("Supabase import_results Fehler: %s", e)
+
+    def _run():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(_post())
+        finally:
+            loop.close()
+
+    threading.Thread(target=_run, name="supabase-import", daemon=True).start()
 
 
 # ── Öffentliche API ───────────────────────────────────────────────────────────

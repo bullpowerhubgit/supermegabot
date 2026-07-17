@@ -8344,6 +8344,42 @@ async def task_multi_service_bridge() -> str:
         return f"MultiServiceBridge Fehler: {e}"
 
 
+async def task_ds24_funnel() -> str:
+    """DS24 Funnel Tracker: Tages-Umsatz + Affiliate-Report + Telegram."""
+    try:
+        from modules.ds24_funnel_tracker import run_ds24_daily_report
+        result = await run_ds24_daily_report()
+        today   = result.get("today", {})
+        monthly = result.get("last_30_days", {})
+        tg      = " (TG gesendet)" if result.get("telegram_sent") else ""
+        return (
+            f"DS24 Funnel: heute={today.get('sales', 0)} Verkäufe "
+            f"{today.get('revenue_eur', 0.0)} EUR | "
+            f"30d={monthly.get('sales', 0)} Verkäufe "
+            f"{monthly.get('revenue_eur', 0.0)} EUR{tg}"
+        )
+    except Exception as e:
+        return f"DS24 Funnel Fehler: {e}"
+
+
+async def task_gumroad_funnel() -> str:
+    """Gumroad Funnel: Tages-Report + Upsell-Links."""
+    try:
+        from modules.gumroad_funnel import run_gumroad_report
+        result = await run_gumroad_report()
+        today  = result.get("today", {})
+        links  = result.get("funnel", {})
+        mode   = links.get("mode", "?")
+        return (
+            f"Gumroad Funnel: {today.get('sales', 0)} Verkäufe "
+            f"{today.get('revenue_eur', 0.0)} EUR | "
+            f"Links: entry={links.get('entry_url', '-')[:40]} "
+            f"mode={mode}"
+        )
+    except Exception as e:
+        return f"Gumroad Funnel Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -8887,6 +8923,9 @@ TASKS = [
     ("ki_growth",   task_ki_growth_agent,   7200,  1400),  # 2h — Conversion + Preis-Optimierung
     # ── Multi-Service Bridge ──────────────────────────────────────────────────
     ("multi_service_bridge", task_multi_service_bridge, 1800, 45),  # 30min — alle 4 Services pingen + Revenue + Alert
+    # ── DS24 + Gumroad Funnel-Automation ─────────────────────────────────────
+    ("ds24_funnel",    task_ds24_funnel,    21600, 110),   # 6h  — DS24 Funnel: Verkäufe + Affiliate-Report
+    ("gumroad_funnel", task_gumroad_funnel, 43200, 120),   # 12h — Gumroad Funnel: Sales + Upsell-Links
 ]
 
 
