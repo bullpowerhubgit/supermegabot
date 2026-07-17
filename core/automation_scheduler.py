@@ -8326,6 +8326,24 @@ async def task_ki_growth_agent() -> str:
         return f"KI-Growth Fehler: {e}"
 
 
+async def task_multi_service_bridge() -> str:
+    """Multi-Service Bridge: alle 4 Railway-Services pingen + Revenue-Snapshot + Telegram-Alert bei Down."""
+    try:
+        from modules.multi_service_bridge import run_bridge_cycle
+        result = await run_bridge_cycle()
+        up   = result.get("services_up", 0)
+        down = result.get("services_down", 0)
+        rev  = result.get("total_revenue", 0.0)
+        down_list = result.get("down_services", [])
+        detail = f" [{', '.join(down_list)}]" if down_list else ""
+        return (
+            f"MultiServiceBridge: up={up} down={down}{detail} "
+            f"revenue=€{rev:.2f}"
+        )
+    except Exception as e:
+        return f"MultiServiceBridge Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -8867,6 +8885,8 @@ TASKS = [
     ("ki_support",  task_ki_support_agent,   900,  1200),  # 15min — Support-Tickets bearbeiten
     ("ki_research", task_ki_research_agent, 21600, 1300),  # 6h — Marktanalyse + Trends
     ("ki_growth",   task_ki_growth_agent,   7200,  1400),  # 2h — Conversion + Preis-Optimierung
+    # ── Multi-Service Bridge ──────────────────────────────────────────────────
+    ("multi_service_bridge", task_multi_service_bridge, 1800, 45),  # 30min — alle 4 Services pingen + Revenue + Alert
 ]
 
 
