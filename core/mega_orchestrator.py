@@ -495,6 +495,17 @@ class CommandRouter:
             "api liste": self._cmd_api,
             "api test": self._cmd_api,
             "api hilfe": self._cmd_api,
+            # ── Sofia Voice Agent ────────────────────────────────────────────
+            "/sofia_anrufen":  self._cmd_sofia_call,
+            "/sofia_call":     self._cmd_sofia_call,
+            "/sofia_stats":    self._cmd_sofia_stats,
+            "/sofia_status":   self._cmd_sofia_stats,
+            "/sofia_kampagne": self._cmd_sofia_campaign,
+            "/sofia_campaign": self._cmd_sofia_campaign,
+            "/sofia_queue":    self._cmd_sofia_queue,
+            "sofia anrufen":   self._cmd_sofia_call,
+            "sofia stats":     self._cmd_sofia_stats,
+            "sofia kampagne":  self._cmd_sofia_campaign,
             # ── MEGA HUB ────────────────────────────────────────────────────
             "/hub": self._cmd_hub,
             "/hub_status": self._cmd_hub,
@@ -1176,6 +1187,97 @@ class CommandRouter:
                     )
         except Exception as e:
             return f"❌ /mrr Fehler: {e}"
+
+    # ── Sofia Voice Commands ────────────────────────────────────────────────────
+
+    async def _cmd_sofia_call(self, text: str, session_id: str) -> str:
+        """Startet ausgehenden Sofia-Anruf: /sofia_anrufen +4912345678 [Produkt] [Name]"""
+        try:
+            parts   = text.strip().split()
+            # text kann z.B. "/sofia_anrufen +43699123 SuperMegaBot Max Mustermann" sein
+            # oder "sofia anrufen +43..."
+            phone   = next((p for p in parts if p.startswith("+") or p.lstrip("/sofia_anrufen").startswith("+")), "")
+            if not phone:
+                # Letzter Versuch: erstes Wort nach dem Command
+                cmd_words = text.lower().split()
+                for i, w in enumerate(cmd_words):
+                    if w in ("anrufen", "call", "/sofia_anrufen", "sofia") and i + 1 < len(cmd_words):
+                        phone = cmd_words[i + 1]
+                        break
+            if not phone:
+                return "❌ Bitte Nummer angeben: /sofia_anrufen +4369912345678 [Produkt] [Name]"
+            # Produkt + Name aus restlichen Wörtern
+            remaining = [p for p in parts if p != phone and not p.lower().startswith("sofia") and not p.startswith("/")]
+            product   = remaining[0] if remaining else ""
+            contact   = " ".join(remaining[1:]) if len(remaining) > 1 else ""
+            from modules.sofia_voice_agent import trigger_outbound_call
+            call_sid = await trigger_outbound_call(phone, product, contact, source="telegram")
+            if call_sid:
+                return f"📞 Sofia ruft an!\n→ {phone}\nProdukt: {product or 'allgemein'}\nSID: {call_sid}"
+            return "❌ Anruf fehlgeschlagen — Twilio-Fehler, Log prüfen"
+        except Exception as e:
+            return f"❌ sofia_anrufen Fehler: {e}"
+
+    async def _cmd_sofia_stats(self, text: str, session_id: str) -> str:
+        """Sofia Statistiken: Anrufe, Conversion, Queue."""
+        try:
+            from modules.sofia_voice_agent import get_sofia_stats, get_sofia_queue
+            s = get_sofia_stats()
+            q = get_sofia_queue("pending", 10)
+            conv = s.get("conversion_rate", 0)
+            icon = "🔥" if conv > 20 else "📊"
+            lines = [
+                f"{icon} <b>Sofia Voice Statistiken</b>",
+                f"📞 Gesamt-Anrufe: {s.get('total_calls',0)}",
+                f"💰 Kaufsignale: {s.get('buy_signals',0)} ({conv}%)",
+                f"📱 SMS gesendet: {s.get('sms_sent',0)}",
+                f"⏱ Ø Gesprächsdauer: {s.get('avg_duration_sec',0)}s",
+                f"📋 Queue (pending): {s.get('queue_pending',0)}",
+                f"☎️ Nummer: {s.get('phone','?')}",
+            ]
+            if q:
+                lines.append("\n<b>Nächste in Queue:</b>")
+                for entry in q[:5]:
+                    lines.append(f"  → {entry['to_number']} [{entry['product_id'] or 'allg.'}] ({entry['source']})")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"❌ sofia_stats Fehler: {e}"
+
+    async def _cmd_sofia_campaign(self, text: str, session_id: str) -> str:
+        """Startet Sofia Outbound-Kampagne (verarbeitet Queue)."""
+        try:
+            parts = text.strip().split()
+            limit = 20
+            for p in parts:
+                if p.isdigit():
+                    limit = int(p)
+                    break
+            from modules.sofia_voice_agent import run_outbound_campaign
+            result = await run_outbound_campaign(limit=limit)
+            return (
+                f"🚀 <b>Sofia Kampagne gestartet!</b>\n"
+                f"✅ Angerufen: {result.get('called',0)}\n"
+                f"⚠️ Fehler: {result.get('skipped',0)}\n"
+                f"📋 Gesamt in Queue: {result.get('total',0)}"
+            )
+        except Exception as e:
+            return f"❌ sofia_kampagne Fehler: {e}"
+
+    async def _cmd_sofia_queue(self, text: str, session_id: str) -> str:
+        """Fügt Nummer zur Sofia-Queue hinzu: /sofia_queue +4369912345 Produkt Name"""
+        try:
+            parts   = text.strip().split()
+            phone   = next((p for p in parts if p.startswith("+")), "")
+            if not phone:
+                return "❌ Bitte Nummer angeben: /sofia_queue +4369912345 [Produkt] [Name]"
+            remaining = [p for p in parts if p != phone and not p.startswith("/")]
+            product   = remaining[0] if remaining else ""
+            contact   = " ".join(remaining[1:]) if len(remaining) > 1 else ""
+            from modules.sofia_voice_agent import queue_sofia_call
+            qid = queue_sofia_call(phone, product, contact, source="telegram")
+            return f"✅ Sofia Queue +1\n→ {phone} [{product or 'allg.'}]\nQueue-ID: {qid}"
+        except Exception as e:
+            return f"❌ sofia_queue Fehler: {e}"
 
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle (v2):
