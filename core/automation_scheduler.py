@@ -15,6 +15,7 @@ except Exception as _e:
     import logging; logging.getLogger(__name__).warning(f"DS24Guardian import failed: {_e}")
 
 import asyncio
+import inspect
 import json
 import logging
 import os
@@ -177,14 +178,88 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
         pass
     # Template-Fallback wenn ai_complete leer ist
     templates = [
-        "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://ineedit.com.co",
-        "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://ineedit.com.co",
-        "🤖 Vollautomatisches E-Commerce Business: Produkte importieren, Texte schreiben, Traffic generieren — alles automatisch! https://ineedit.com.co",
-        "📈 Shopify Automation macht deinen Shop 24/7 profitabel. AI Income Machine auf DS24: https://ineedit.com.co",
-        "🎯 Digitale Produkte verkaufen leicht gemacht: DS24 Affiliate + BRUTUS Traffic = passive Einnahmen! https://ineedit.com.co",
+        "Shopify- und DS24-Automation fuer schnellere Prozesse, sauberere Daten und bessere Conversion: https://ineedit.com.co",
+        "KI-gestuetzte E-Commerce-Workflows fuer Shop, Content und Follow-up: https://ineedit.com.co",
+        "Automatisierte Produkt-, Content- und Vertriebsprozesse fuer moderne Online-Shops: https://ineedit.com.co",
+        "Mehr Effizienz in Shopify, CRM und Kampagnen durch saubere Automation: https://ineedit.com.co",
+        "Digitale Verkaufsprozesse mit KI, klaren Workflows und messbarer Optimierung: https://ineedit.com.co",
     ]
     import random as _rnd
     return _rnd.choice(templates)
+
+
+def get_scheduler_audit(limit: int = 50) -> Dict:
+    stats = get_task_stats()
+    implemented_functions = {
+        name
+        for name, obj in globals().items()
+        if name.startswith("task_") and inspect.iscoroutinefunction(obj)
+    }
+    registered_task_names = [name for name, _, _, _ in TASKS]
+    registered_functions = {
+        getattr(fn, "__name__", "")
+        for _, fn, _, _ in TASKS
+    }
+    duplicate_registered_names = sorted(
+        {name for name in registered_task_names if registered_task_names.count(name) > 1}
+    )
+    never_run_registered = [
+        name for name in registered_task_names
+        if not stats.get(name, {}).get("total")
+    ]
+    unregistered_implemented = sorted(implemented_functions - registered_functions)
+    return {
+        "registered_task_count": len(TASKS),
+        "registered_unique_names": len(set(registered_task_names)),
+        "implemented_task_function_count": len(implemented_functions),
+        "registered_function_count": len(registered_functions),
+        "duplicate_registered_names": duplicate_registered_names[:limit],
+        "never_run_registered": never_run_registered[:limit],
+        "never_run_count": len(never_run_registered),
+        "unregistered_implemented": unregistered_implemented[:limit],
+        "unregistered_implemented_count": len(unregistered_implemented),
+    }
+
+
+async def task_scheduler_audit() -> str:
+    audit = get_scheduler_audit(limit=12)
+    if audit["never_run_count"] or audit["unregistered_implemented_count"]:
+        try:
+            from modules.notify_hub import notify_async
+            await notify_async(
+                "Scheduler Audit",
+                (
+                    f"never_run={audit['never_run_count']} | "
+                    f"unregistered={audit['unregistered_implemented_count']}\n"
+                    f"never_run_sample={', '.join(audit['never_run_registered'][:5]) or '-'}\n"
+                    f"unregistered_sample={', '.join(audit['unregistered_implemented'][:5]) or '-'}"
+                ),
+                "warn",
+            )
+        except Exception:
+            pass
+    return (
+        f"SchedulerAudit: registered={audit['registered_task_count']} "
+        f"implemented={audit['implemented_task_function_count']} "
+        f"never_run={audit['never_run_count']} "
+        f"unregistered={audit['unregistered_implemented_count']}"
+    )
+
+
+async def task_buyer_pipeline() -> str:
+    try:
+        from modules.buyer_intent_router import run_buyer_priority_cycle
+        result = await run_buyer_priority_cycle(limit=5)
+        if result.get("skipped"):
+            return f"BuyerPipeline skipped: {result.get('reason', 'unknown')}"
+        top = result.get("top_leads") or []
+        return (
+            f"BuyerPipeline: followups={result.get('followups_sent', 0)} "
+            f"processed={result.get('processed', 0)} "
+            f"hot_leads={len(top)}"
+        )
+    except Exception as e:
+        return f"BuyerPipeline Fehler: {e}"
 
 
 # ── Individual task implementations ─────────────────────────────────────────
@@ -3740,11 +3815,10 @@ async def task_tiktok_sync() -> str:
 
 async def task_upsell_sequence_run() -> str:
     try:
-        from modules.conversion_engine import generate_upsell_sequence
-        sample = {"product": "AI Income Machine", "price": 37, "customer_email": ""}
-        r = await generate_upsell_sequence(sample)
-        count = len(r) if isinstance(r, list) else r.get("enrolled", 0)
-        return f"Upsell Sequence: {count} steps generated"
+        from modules.conversion_engine import analyze_funnel
+        r = await analyze_funnel()
+        bottleneck = r.get("bottleneck", "unknown") if isinstance(r, dict) else str(r)[:80]
+        return f"Upsell/Funnel Analyse: bottleneck={bottleneck}"
     except Exception as e:
         return f"Upsell Sequence error: {e}"
 
@@ -7399,10 +7473,10 @@ async def task_eu_compliance_zvg() -> str:
 async def task_bpi_sys01_ki_leasing_report() -> str:
     """BPI SYS-01: KI-Leasing Tagesbericht (tägl. 08:30)."""
     try:
-        from modules.ki_leasing_engine import KILeasingEngine
-        e = KILeasingEngine()
-        await e.send_daily_reports()
-        return "BPI SYS-01: KI-Leasing Reports gesendet ✅"
+        from modules.ki_leasing_engine import send_daily_reports
+        result = await send_daily_reports()
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        return f"BPI SYS-01: KI-Leasing Reports gesendet ✅ ({sent} Kunden)"
     except Exception as ex:
         return f"BPI SYS-01 Fehler: {ex}"
 
@@ -8229,9 +8303,11 @@ TASKS = [
     ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
     ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
+    ("scheduler_audit",      task_scheduler_audit,      14400,  100),  # 4h — registry coverage + never-run visibility
     ("email_inbox_monitor",  task_email_inbox_monitor,   300,   85),  # 5 min  — Gmail Eingang: Bestellungen/Anfragen → Telegram
     ("mail_error_guard",     task_mail_error_guard,      300,   90),  # 5 min  — Gmail Fehler-Muster + Auto-Fix + Bounce
     ("abandoned_cart_recovery", task_abandoned_cart_recovery, 900, 120),   # 15min — Abandoned Cart E-Mail Recovery (Maximum)
+    ("buyer_pipeline",       task_buyer_pipeline,        1800,  140),  # 30min — hot leads priorisieren + Follow-up
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
@@ -8907,6 +8983,7 @@ class AutomationScheduler:
         return {
             "running": self._running,
             "task_count": len(TASKS),
+            "audit": get_scheduler_audit(),
             "tasks": [
                 {
                     "name": name,
