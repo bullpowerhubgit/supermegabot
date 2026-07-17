@@ -3835,6 +3835,8 @@ async def task_upsell_sequence_run() -> str:
 # ── BRUTUS für jedes Tool ────────────────────────────────────────────────────
 
 async def task_brutus_printify() -> str:
+    if os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() not in ("1", "true", "yes"):
+        return "BRUTUS Printify: deploy disabled"
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
         r = await brutus_blast_for_tool("Printify", "https://www.printify.com",
@@ -3845,6 +3847,8 @@ async def task_brutus_printify() -> str:
 
 
 async def task_brutus_dropshipping() -> str:
+    if os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() not in ("1", "true", "yes"):
+        return "BRUTUS Dropshipping: deploy disabled"
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
         link = os.getenv("DS24_AFFILIATE_LINK", "")
@@ -3856,6 +3860,8 @@ async def task_brutus_dropshipping() -> str:
 
 
 async def task_brutus_ds24() -> str:
+    if os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() not in ("1", "true", "yes"):
+        return "BRUTUS DS24: deploy disabled"
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
         link = (
@@ -3871,6 +3877,8 @@ async def task_brutus_ds24() -> str:
 
 
 async def task_brutus_shopify() -> str:
+    if os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() not in ("1", "true", "yes"):
+        return "BRUTUS Shopify: deploy disabled"
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
@@ -8379,7 +8387,6 @@ TASKS = [
     ("full_seo_blast",       task_full_seo_blast,       10800, 165),  # 3h — FullSEO: Sitemap + Keywords + Channels
     ("traffic_mega_cycle",   task_traffic_mega_cycle,   10800, 170),  # 3h — TrafficMegaV2: 6 Kanäle parallel
     ("traffic_maximizer",    task_traffic_maximizer,     7200, 175),  # 2h — TrafficMaximizer: multi-platform blast
-    ("content_velocity",     task_content_velocity,      7200, 185),  # 2h — Content Velocity Engine
     ("brutus_shopify",       task_brutus_shopify,       14400, 190),  # 4h — BRUTUS Shopify: 10+ Kanäle Marketing
     ("brutus_ds24",          task_brutus_ds24,          14400, 192),  # 4h — BRUTUS DS24: Affiliate auf alle Kanäle
     # ── Marketplace Auto-Poster ───────────────────────────────────────────────
@@ -8436,6 +8443,9 @@ TASKS = [
     # ── Email & API Monitoring ────────────────────────────────────────────────
     ("email_monitor",            task_email_monitor,              120,    5),  # alle 2min — Gmail IMAP: Pinterest/API Alerts
     ("api_key_health",           task_api_key_health,           43200,   15),  # alle 12h — API-Key Validierung + Alert
+    ("revenue_blitz",            task_revenue_blitz,            21600,   35),  # 6h  — Revenue push ueber aktive Kanaele
+    ("upsell_sequence_run",      task_upsell_sequence_run,      43200,   70),  # 12h — Funnel-Analyse fuer Upsells
+    ("b2b_prospecting",          task_b2b_prospecting,          21600,   95),  # 6h  — B2B-Leads + Outreach
     ("upsell_cycle",             task_upsell_cycle,             43200,   60),  # 12h  — Post-Purchase Upsell Emails
     ("klaviyo_flows",            task_klaviyo_flows,            86400,   80),  # täglich — Welcome-Drip + Re-Engagement
     # ── Pinterest Traffic ─────────────────────────────────────────────────────
@@ -8954,7 +8964,9 @@ class AutomationScheduler:
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
         "buyer_traffic_engine", "email_blast", "ads_monitor", "ads_optimize",
         "stripe_monitor", "digistore_sync", "digistore_autonomy",
-        "umsatzmaschine_daily", "mega_command_center",
+        "umsatzmaschine_daily", "mega_command_center", "buyer_pipeline",
+        "revenue_agent_sync", "revenue_blitz", "upsell_sequence_run",
+        "upsell_cycle", "klaviyo_flows", "b2b_prospecting",
         "shopify_blog_auto", "social_autoposter", "money_machine_run",
     })
 
@@ -9016,6 +9028,7 @@ class AutomationScheduler:
         return {
             "running": self._running,
             "task_count": len(TASKS),
+            "unique_task_count": len({name for name, _, _, _ in TASKS}),
             "audit": get_scheduler_audit(),
             "tasks": [
                 {

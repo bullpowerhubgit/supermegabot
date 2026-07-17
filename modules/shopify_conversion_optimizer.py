@@ -621,6 +621,91 @@ async def setup_automatic_discounts() -> dict:
     }
 
 
+
+# ── 4b. create_discount_code — leichte Hilfsfunktion (GraphQL) ───────────────
+
+async def create_discount_code(code: str, percent: float, min_subtotal: float = 0.0,
+                                once_per_customer: bool = False,
+                                title: str | None = None) -> dict:
+    """
+    Erstellt einen einzelnen prozentualen Rabattcode via GraphQL Admin API.
+    Gibt {"ok": True, "code": code, "id": gid} zurueck
+    oder {"ok": False, "error": ...} bei Fehler.
+    """
+    if not _credentials_ok():
+        return {"ok": False, "error": "Shopify-Zugangsdaten fehlen"}
+
+    from datetime import datetime as _dt, timedelta as _td, timezone as _tz
+    from modules import shopify_client as _sc
+
+    starts_at  = _dt.now(_tz.utc).replace(microsecond=0).isoformat()
+    expires_at = (_dt.now(_tz.utc) + _td(days=365)).replace(microsecond=0).isoformat()
+    rule_title = title or f"{code} — {percent:.0f}% Rabatt"
+
+    mutation = """
+    mutation createDiscount($basicCodeDiscount: DiscountCodeBasicInput!) {
+      discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
+        codeDiscountNode {
+          id
+          codeDiscount {
+            ... on DiscountCodeBasic {
+              title
+              codes(first: 1) { nodes { code } }
+            }
+          }
+        }
+        userErrors { field code message }
+      }
+    }
+    """
+
+    variables: dict = {
+        "basicCodeDiscount": {
+            "title": rule_title,
+            "code": code,
+            "startsAt": starts_at,
+            "endsAt": expires_at,
+            "customerGets": {
+                "value": {"percentage": percent / 100},
+                "items": {"all": True},
+            },
+            "customerSelection": {"all": True},
+            "appliesOncePerCustomer": once_per_customer,
+        }
+    }
+
+    if min_subtotal > 0:
+        variables["basicCodeDiscount"]["minimumRequirement"] = {
+            "subtotal": {"greaterThanOrEqualToSubtotal": f"{min_subtotal:.2f}"}
+        }
+
+    r = await _sc.graphql(mutation, variables)
+    data = r.get("data", {}).get("discountCodeBasicCreate", {})
+    user_errors = data.get("userErrors", [])
+
+    if user_errors:
+        for err in user_errors:
+            if err.get("code") in ("DISCOUNT_CODE_DUPLICATE", "TAKEN"):
+                log.info("Rabattcode existiert bereits: %s", code)
+                return {"ok": True, "code": code, "already_existing": True,
+                        "note": err.get("message", "already exists")}
+        err_msgs = "; ".join(f"{e.get('field')}: {e.get('message')}" for e in user_errors)
+        log.error("Discount GraphQL userErrors: %s", err_msgs)
+        return {"ok": False, "error": err_msgs}
+
+    node = data.get("codeDiscountNode")
+    if node and node.get("id"):
+        gid = node["id"]
+        log.info("Rabattcode erstellt: %s (GID: %s)", code, gid)
+        return {"ok": True, "code": code, "id": gid, "percent": percent,
+                "expires_at": expires_at}
+
+    if "errors" in r:
+        return {"ok": False, "error": str(r["errors"])[:300]}
+
+    return {"ok": False, "error": f"Unbekannte Antwort: {str(r)[:300]}"}
+
+
 # ── 5. add_urgency_metafields ─────────────────────────────────────────────────
 
 async def add_urgency_metafields(max_products: int = 50) -> dict:
