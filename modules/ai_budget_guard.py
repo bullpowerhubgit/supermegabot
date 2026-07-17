@@ -67,9 +67,11 @@ REVENUE_MODULES = frozenset({
     # Email & Reply-Klassifikation → Revenue
     "reply_monitor",
     "agent_teams",
+    "claude_agent",
     "claude_agent_collab",
     "autonomous_loop",
     "analytics_feedback",
+    "telegram_dm_sheet",
     # Traffic & Conversion
     "traffic_maximizer",
     "full_revenue_expansion",

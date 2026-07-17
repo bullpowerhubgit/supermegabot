@@ -1,0 +1,76 @@
+# Currency: EUR
+# Billing period: monthly recurring
+# Tax behavior: exclusive (adjust to your region/accounting setup)
+# Trial: 7 days (handled in app or Stripe subscription settings)
+
+products:
+  - product_key: SMB_STARTER
+    product_name: "SuperMegaBot Starter"
+    description: "For solo Shopify operators starting automation"
+    prices:
+      - price_key: SMB_STARTER_MONTHLY_EUR
+        unit_amount: 4900
+        currency: eur
+        interval: month
+        interval_count: 1
+        lookup_key: smb_starter_monthly_eur
+
+  - product_key: SMB_GROWTH
+    product_name: "SuperMegaBot Growth"
+    description: "For growing stores with advanced automation"
+    prices:
+      - price_key: SMB_GROWTH_MONTHLY_EUR
+        unit_amount: 9900
+        currency: eur
+        interval: month
+        interval_count: 1
+        lookup_key: smb_growth_monthly_eur
+
+  - product_key: SMB_SCALE
+    product_name: "SuperMegaBot Scale"
+    description: "For teams/agencies with multi-store operations"
+    prices:
+      - price_key: SMB_SCALE_MONTHLY_EUR
+        unit_amount: 29900
+        currency: eur
+        interval: month
+        interval_count: 1
+        lookup_key: smb_scale_monthly_eur
+
+addons:
+  - product_key: SMB_ADDON_EXTRA_STORE
+    product_name: "SuperMegaBot Add-on: Extra Store"
+    prices:
+      - price_key: SMB_ADDON_EXTRA_STORE_MONTHLY_EUR
+        unit_amount: 1900
+        currency: eur
+        interval: month
+        lookup_key: smb_addon_extra_store_monthly_eur
+
+  - product_key: SMB_ADDON_AI_1000
+    product_name: "SuperMegaBot Add-on: 1000 AI Actions"
+    prices:
+      - price_key: SMB_ADDON_AI_1000_MONTHLY_EUR
+        unit_amount: 2900
+        currency: eur
+        interval: month
+        lookup_key: smb_addon_ai_1000_monthly_eur
+
+one_time:
+  - product_key: SMB_SETUP_DFY
+    product_name: "SuperMegaBot Done-for-You Setup"
+    prices:
+      - price_key: SMB_SETUP_DFY_ONETIME_EUR
+        unit_amount: 29900
+        currency: eur
+        type: one_time
+        lookup_key: smb_setup_dfy_onetime_eur
+
+  - product_key: SMB_ONBOARDING_PREMIUM
+    product_name: "SuperMegaBot Premium Onboarding (90min)"
+    prices:
+      - price_key: SMB_ONBOARDING_PREMIUM_ONETIME_EUR
+        unit_amount: 14900
+        currency: eur
+        type: one_time
+        lookup_key: smb_onboarding_premium_onetime_eur

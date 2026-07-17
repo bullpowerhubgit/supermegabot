@@ -1,60 +1,71 @@
-# Pinterest API Resubmit — AIITEC / rodibot (App 1582363)
+# Pinterest API — App 1582363 (AIITEC / rodibot)
 
-**Status:** Trial Access REJECTED (Nana, tickets 16593704 / 16593708)  
-**Grund:** Company **AIITEC** + App **Rudibot/rodibot** passten nicht zur Website
-`https://bullpower-hub-portal.netlify.app/` (BullPower-Branding).
+## Screenshot-Status (Developer Portal)
 
-## ✅ Fix (2026-07-16) — AIITEC-only Portal LIVE
+| Feld | Wert |
+|------|------|
+| App-ID | **1582363** |
+| Geheimer Schlüssel | **Nicht verfügbar: trial-Zugriff verweigert** |
+| Token-Umgebung | „Produktion begrenzt“ (read-only scopes) |
+| Token-Scopes | `pins:read`, `boards:read`, `user_accounts:read`, `ads:read`, `catalogs:read` |
+| Token-Laufzeit | 24h (Portal-Hinweis) |
+| Write-Scopes | **fehlen** (kein pins:write / boards:write bis Trial approve) |
+
+**API-Pre-Check der letzten `pina_…` Tokens:**
+
+| Error | Bedeutung |
+|-------|-----------|
+| 401 code 2 Authentication failed | Token tot/ungültig |
+| 401 code 3 *consumer type is not supported* | Trial denied → App darf Production-API nicht nutzen |
+
+→ **Kein Token installieren**, bis Trial freigeschaltet ist (Pre-check Gate).
+
+## ✅ Compliance-Portal (LIVE, clean)
 
 | Item | URL / Value |
 |------|-------------|
 | **Company** | AIITEC |
 | **App name** | rodibot |
-| **App ID** | 1582363 |
-| **Website** | https://aiitec-pinterest-portal.netlify.app/ |
-| **Privacy** | https://aiitec-pinterest-portal.netlify.app/privacy.html |
-| **Datenschutz** | https://aiitec-pinterest-portal.netlify.app/datenschutz |
-| **Data deletion** | https://aiitec-pinterest-portal.netlify.app/data-deletion.html |
+| **Website** | https://aiitec-pinterest-portal.vercel.app/ |
+| **Privacy** | https://aiitec-pinterest-portal.vercel.app/privacy.html |
+| **Datenschutz** | https://aiitec-pinterest-portal.vercel.app/datenschutz |
+| **Data deletion** | https://aiitec-pinterest-portal.vercel.app/data-deletion.html |
 | **Kontakt** | aiitecbuuss@gmail.com |
-| **Vercel mirror** | https://aiitec-pinterest-portal.vercel.app/ (same pages) |
+| Netlify (stale/BP-leak, deploy forbidden) | https://aiitec-pinterest-portal.netlify.app/ — **nicht für Resubmit nutzen** |
 
-Kein BullPower / Rudibot-Mismatch mehr auf den Compliance-Seiten.
+2026-07-16: BullPower-Marketing-Injection von der Startseite entfernt (hätte Nana wieder abgelehnt).
 
-## ⚠️ Was NUR im Pinterest Developer Portal geht (Browser — Rudolf)
+## ⚠️ NUR im Browser (Rudolf) — Resubmit Checklist
 
-1. https://developers.pinterest.com → App **1582363**
-2. Company name: **AIITEC** (lassen / exakt so)
-3. App name: **rodibot** (nicht “Rudibot”, nicht BullPower Pins)
-4. Website: **https://aiitec-pinterest-portal.netlify.app/**
-5. Privacy policy: **https://aiitec-pinterest-portal.netlify.app/privacy.html**
-6. Data deletion: **https://aiitec-pinterest-portal.netlify.app/data-deletion.html**
-7. **Re-submit Trial Access**
-8. Nach Approve: neuen Access Token + Refresh Token + App Secret erzeugen:
-   - `PINTEREST_ACCESS_TOKEN`
-   - `PINTEREST_REFRESH_TOKEN`
-   - `PINTEREST_APP_SECRET`
+1. https://developers.pinterest.com → **Meine Apps** → App **1582363**
+2. App-Einstellungen prüfen/setzen:
+   - Company: **AIITEC**
+   - App name: **rodibot** (nicht Rudibot, nicht BullPower)
+   - Website: `https://aiitec-pinterest-portal.vercel.app/`
+   - Privacy: `https://aiitec-pinterest-portal.vercel.app/privacy.html`
+   - Data deletion: `https://aiitec-pinterest-portal.vercel.app/data-deletion.html`
+3. Redirect URI (falls gefragt): `https://aiitec-pinterest-portal.vercel.app/` oder `http://localhost`
+4. **Trial Access erneut einreichen** (vorher abgelehnt — Tickets 16593704 / 16593708)
+5. Nach Approve:
+   - App Secret kopieren → `PINTEREST_APP_SECRET`
+   - Neues Token (ideal mit write scopes) → hier pasten
+   - Optional Refresh Token → `PINTEREST_REFRESH_TOKEN`
+6. Agent macht: `api_precheck` → nur bei PASS in `.env` + Railway
 
-## Token-Status jetzt
+### Optional: Sandbox testen (ohne Trial)
 
-| Check | Result |
-|-------|--------|
-| `pina_…` in `.env` | **401 Authentication failed** |
-| Refresh | unmöglich ohne `PINTEREST_APP_SECRET` + `PINTEREST_REFRESH_TOKEN` |
-| Railway | wartet auf neuen Token nach Trial-Approve |
+Im Portal unter „Umgebung“ **Sandbox** wählen → Token generieren → pasten.  
+Sandbox-Tokens laufen oft trotz denied Trial; Production „begrenzt“ mit code 3 nicht.
 
-## Env (lokal gesetzt)
+## Was SuperMegaBot schon hat
 
-```
-PINTEREST_COMPANY_NAME=AIITEC
-PINTEREST_APP_NAME=rodibot
-PINTEREST_APP_ID=1582363
-PINTEREST_WEBSITE_URL=https://aiitec-pinterest-portal.netlify.app/
-PINTEREST_PRIVACY_URL=https://aiitec-pinterest-portal.netlify.app/privacy.html
-PINTEREST_DATA_DELETION_URL=https://aiitec-pinterest-portal.netlify.app/data-deletion.html
-```
+- Portal + Privacy live
+- `PINTEREST_APP_ID=1582363`
+- `PINTEREST_COMPANY_NAME=AIITEC`
+- `PINTEREST_APP_NAME=rodibot`
+- Pre-check Script: `python3 scripts/api_precheck.py`
+- Dead tokens werden **nicht** mehr geschrieben
 
-## Alternativ-Pfad (nicht empfohlen, falls Nana auf BullPower beharrt)
+## Blocker
 
-Company+App auf BullPower Hub / BullPower Pins umbenennen und
-`https://bullpower-hub-portal.netlify.app/` nutzen — dann müsste Portal-App umbenannt werden.
-**Aktueller Default: AIITEC-Pfad** (passt zu Company im Ticket).
+**Pinterest Trial muss approved werden.** Solange der Screenshot „trial-Zugriff verweigert“ zeigt, bleiben Secret + Production-API blockiert.

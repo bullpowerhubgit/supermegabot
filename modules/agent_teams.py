@@ -17,6 +17,7 @@ Each team can be triggered via:
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 from datetime import datetime
@@ -48,10 +49,10 @@ async def _send_telegram(text: str) -> None:
 
 
 async def _call_claude(prompt: str, max_tokens: int = 1024) -> str:
-    """Call Claude via ai_client (Budget Guard + Haiku, nicht Sonnet direkt)."""
+    """Call Claude via ai_client (Budget Guard + multi-provider fallback)."""
     try:
-        from modules.ai_client import call_ai
-        return await call_ai(prompt, max_tokens=max_tokens)
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
     except Exception as e:
         log.error("agent_teams _call_claude via ai_client failed: %s", e)
         return f"[Claude error: {e}]"
@@ -104,13 +105,18 @@ TEAM_REGISTRY: Dict[str, Dict] = {
         "use_claude": False,
     },
     "claude_collab": {
-        "description": "Multi-agent Claude collab (health, marketing, growth, outreach)",
-        "agents": ["claude_health", "marketing", "growth", "rudiclone", "outreach"],
+        "description": "SuperMegaBot × Claude multi-agent collab (health + marketing + growth + DMs)",
+        "agents": ["claude_agent", "team_marketing", "team_growth", "rudiclone", "outreach_pack"],
         "use_claude": True,
     },
     "autonomous_loop": {
         "description": "Full loop: tests → Claude → Stripe/Lemon → email → analytics → next plan",
         "agents": ["code_health", "payments", "analytics", "onboarding", "planner"],
+        "use_claude": True,
+    },
+    "outreach": {
+        "description": "Telegram DM outreach using iCloud DM sheet + AI polish",
+        "agents": ["dm_sheet", "claude_polish"],
         "use_claude": True,
     },
 }
@@ -125,22 +131,24 @@ async def run_team(team: str, task: str, notify: bool = True) -> Dict[str, Any]:
     log.info(f"Agent team '{team}' starting: {task[:100]}")
     started = datetime.utcnow().isoformat()
 
-    # Specialized teams with dedicated runners
+    # Dedicated collab paths (Claude agents + SuperMegaBot assets together)
     if team == "claude_collab":
         try:
             from modules.claude_agent_collab import run_collab_cycle
-            special = await run_collab_cycle(focus=task, notify=notify)
+            collab = await run_collab_cycle(notify=notify)
             return {
-                "ok": bool(special.get("ok")),
+                "ok": bool(collab.get("ok")),
                 "team": team,
                 "task": task,
                 "started_at": started,
                 "completed_at": datetime.utcnow().isoformat(),
                 "agents": team_info["agents"],
-                "result": special,
+                "result": collab.get("synthesis") or json.dumps(collab.get("agent_ok", {}), default=str),
+                "collab": collab,
             }
         except Exception as e:
-            return {"ok": False, "team": team, "error": str(e)[:200]}
+            log.error("claude_collab team failed: %s", e)
+            return {"ok": False, "team": team, "error": str(e)}
 
     if team == "autonomous_loop":
         try:
@@ -162,6 +170,25 @@ async def run_team(team: str, task: str, notify: bool = True) -> Dict[str, Any]:
             }
         except Exception as e:
             return {"ok": False, "team": team, "error": str(e)[:200]}
+
+    if team == "outreach":
+        try:
+            from modules.claude_agent_collab import run_outreach_pack
+            pack = await run_outreach_pack(lang="de", n=5, notify=notify)
+            result_text = pack.get("polished") or "\n".join(pack.get("base") or [])
+            return {
+                "ok": bool(pack.get("ok")),
+                "team": team,
+                "task": task,
+                "started_at": started,
+                "completed_at": datetime.utcnow().isoformat(),
+                "agents": team_info["agents"],
+                "result": result_text,
+                "pack": pack,
+            }
+        except Exception as e:
+            log.error("outreach team failed: %s", e)
+            return {"ok": False, "team": team, "error": str(e)}
 
     if team_info["use_claude"]:
         prompt = (
