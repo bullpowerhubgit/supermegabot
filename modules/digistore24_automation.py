@@ -188,6 +188,42 @@ async def get_sales_stats():
     return totals
 
 
+async def get_recent_sales(days: int = 1) -> dict:
+    """Return sales totals for the last `days` days. Compatible with /api/revenue/snapshot."""
+    orders = await get_orders(page=1, per_page=200)
+    now = datetime.now()
+    cutoff = now - timedelta(days=days)
+    total_eur = 0.0
+    order_count = 0
+    for order in orders:
+        raw_date = (
+            order.get("transaction_pay_date")
+            or order.get("created_at")
+            or order.get("transaction_created_at")
+            or ""
+        )
+        try:
+            order_dt = datetime.strptime(raw_date[:10], "%Y-%m-%d") if raw_date else None
+        except ValueError:
+            order_dt = None
+        if order_dt and order_dt >= cutoff:
+            for field in ("amount", "transaction_amount", "earned_amount", "total", "price"):
+                try:
+                    amount = float(order.get(field, 0) or 0)
+                    if amount:
+                        total_eur += amount
+                        break
+                except (ValueError, TypeError):
+                    pass
+            order_count += 1
+    return {
+        "ok": True,
+        "period_days": days,
+        "orders": order_count,
+        "total_eur": round(total_eur, 2),
+    }
+
+
 async def ping():
     """Test the DS24 API key. Returns True if connected, False otherwise."""
     if not DS24_KEY:
