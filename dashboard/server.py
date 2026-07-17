@@ -7089,6 +7089,16 @@ async def auth_middleware(request, handler):
             or path.startswith("/api/digistore24/")
             or path.startswith("/api/webhooks/")
             or path.startswith("/api/shopify/order-webhook")
+            # Sofia Voice — Twilio sendet keinen API-Key
+            or path.startswith("/api/voice/incoming")
+            or path.startswith("/api/voice/respond")
+            or path.startswith("/api/voice/status")
+            or path.startswith("/api/voice/outbound-twiml")
+            or path.startswith("/api/voice/sms")
+            or path.startswith("/api/voice/amd")
+            # Sofia Phone (Max) — ebenfalls Twilio-Callbacks
+            or path.startswith("/api/phone/incoming")
+            or path.startswith("/api/phone/status")
         )
         if not exempt:
             api_key = request.headers.get("X-API-Key", "")
