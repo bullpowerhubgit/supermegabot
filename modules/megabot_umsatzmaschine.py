@@ -1174,11 +1174,15 @@ async def _run_autonomous_cycle_inner() -> Dict[str, Any]:
     d = _n(deliveries, "d")
     k = _n(ki_reports, "k")
     try:
-        from modules.notify_hub import async_send_telegram
-        await async_send_telegram(
-            f"🤖 Umsatzmaschine AUTO\n"
-            f"Deliveries: {d.get('delivered', 0)} | KI-Leasing: {k.get('sent', 0)} Reports\n"
-            f"Retries recovered: {_n(retries, 'r').get('recovered', 0)}"
+        from modules.notify_hub import notify_async
+        await notify_async(
+            "Umsatzmaschine AUTO",
+            (
+                f"Deliveries: {d.get('delivered', 0)} | "
+                f"KI-Leasing: {k.get('sent', 0)} Reports\n"
+                f"Retries recovered: {_n(retries, 'r').get('recovered', 0)}"
+            ),
+            "info",
         )
     except Exception:
         pass

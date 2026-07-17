@@ -413,7 +413,10 @@ async def validate_post(
                 pass
             return False, 0, f"never_twice: {nt_errs[0] if nt_errs else 'blocked'}"
     except Exception as e:
-        return False, 0, f"never_twice_error_blocked: {e}"
+        if "locked" in str(e).lower():
+            log.warning("PostValidator NeverTwice locked — fail-open")
+        else:
+            return False, 0, f"never_twice_error_blocked: {e}"
 
     # ── Layer 0: Off-Topic Hard-Block (schnellste Prüfung, vor allem) ───────────
     if content_type == "social":

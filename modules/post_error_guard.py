@@ -127,14 +127,19 @@ def guard_post(
         from modules.post_never_twice import check_never_twice, remember_block
         nt_ok, nt_errs = check_never_twice(combined, platform)
         if not nt_ok:
-            remember_block(combined, platform, nt_errs, source_module=source_module or "post_error_guard")
+            try:
+                remember_block(combined, platform, nt_errs, source_module=source_module or "post_error_guard")
+            except Exception:
+                pass
             desc = "; ".join(nt_errs) if nt_errs else "NeverTwice block"
             _log_block(platform, "never_twice", desc, text, source_module)
             return False, f"NeverTwice: {desc}"
     except Exception as e:
-        # FAIL-CLOSED: NeverTwice-Fehler → Post blockieren
-        _log_block(platform, "never_twice_error", str(e), text, source_module)
-        return False, f"NeverTwice Fehler (fail-closed): {e}"
+        if "locked" in str(e).lower():
+            log.warning("PostErrorGuard NeverTwice locked — fail-open")
+        else:
+            _log_block(platform, "never_twice_error", str(e), text, source_module)
+            return False, f"NeverTwice Fehler (fail-closed): {e}"
 
     # 5. PostGuardian (sync, inkl. Länge, Spam, Duplikat)
     try:

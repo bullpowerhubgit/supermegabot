@@ -191,26 +191,50 @@ async def _tg_send(text: str) -> None:
 
 
 async def _alert_provider_down(provider: str, backoff: int) -> None:
-    await _tg_send(
-        f"⚠️ API Hunt: {provider} AUSGEFALLEN\n"
-        f"Deaktiviert für {backoff//60} Minuten.\n"
-        f"Automatisch auf nächsten Provider gewechselt."
-    )
+    try:
+        from modules.notify_hub import notify_async
+        await notify_async(
+            f"API Hunt: {provider} AUSGEFALLEN",
+            f"Deaktiviert für {backoff//60} Minuten.\nAutomatisch auf nächsten Provider gewechselt.",
+            "warn",
+        )
+    except Exception:
+        await _tg_send(
+            f"⚠️ API Hunt: {provider} AUSGEFALLEN\n"
+            f"Deaktiviert für {backoff//60} Minuten.\n"
+            f"Automatisch auf nächsten Provider gewechselt."
+        )
 
 
 async def _alert_provider_switch(old: str, new: str) -> None:
-    await _tg_send(
-        f"🔄 API Hunt: Provider-Wechsel\n"
-        f"{old} → {new}\n"
-        f"Automatisch umgeschaltet."
-    )
+    try:
+        from modules.notify_hub import notify_async
+        await notify_async(
+            "API Hunt: Provider-Wechsel",
+            f"{old} → {new}\nAutomatisch umgeschaltet.",
+            "warn",
+        )
+    except Exception:
+        await _tg_send(
+            f"🔄 API Hunt: Provider-Wechsel\n"
+            f"{old} → {new}\n"
+            f"Automatisch umgeschaltet."
+        )
 
 
 async def _alert_all_failed() -> None:
-    await _tg_send(
-        "🚨 API Hunt KRITISCH: ALLE Provider ausgefallen!\n"
-        "Prüfe API-Keys und Guthaben. System läuft auf Template-Fallback."
-    )
+    try:
+        from modules.notify_hub import notify_async
+        await notify_async(
+            "API Hunt KRITISCH: ALLE Provider ausgefallen!",
+            "Prüfe API-Keys und Guthaben. System läuft auf Template-Fallback.",
+            "error",
+        )
+    except Exception:
+        await _tg_send(
+            "🚨 API Hunt KRITISCH: ALLE Provider ausgefallen!\n"
+            "Prüfe API-Keys und Guthaben. System läuft auf Template-Fallback."
+        )
 
 
 # ── Health Monitor (Background Task) ──────────────────────────────────────────
