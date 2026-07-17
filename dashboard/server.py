@@ -11632,8 +11632,8 @@ async def create_app():
 
     # Stripe BULLPOWER-ONLY — bullpowersrtkennels, nie AIITEC
     try:
-        from modules.stripe_key_resolver import enforce_bullpower_only, self_check as _stripe_sc
-        _bp = enforce_bullpower_only()
+        from modules.stripe_key_resolver import enforce_ineedit_only, self_check as _stripe_sc
+        _bp = enforce_ineedit_only()
         _sc = _stripe_sc()
         log.info(
             "Stripe BULLPOWER-ONLY: ok=%s account=%s source=%s purged=%s",

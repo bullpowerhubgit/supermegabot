@@ -288,8 +288,8 @@ KRITISCH: Automatisch aussehende Emails → IMMER NOT_INTERESTED. Im Zweifel NOT
 
     err_msg = "API nicht verfügbar"
     try:
-        from modules.ai_client import call_ai
-        text = await call_ai(prompt, max_tokens=300)
+        from modules.ai_client import ai_complete
+        text = await ai_complete(prompt, max_tokens=300)
         if text and not text.startswith("["):
             match = re.search(r'\{.*\}', text, re.DOTALL)
             if match:
