@@ -49,6 +49,7 @@ _TG_MIN_INTERVAL = 3.0   # max 1 Nachricht / 3s (Telegram-Limit: 30/s per group,
 _tg_last_sent: float = 0.0
 _tg_lock = asyncio.Lock()
 _tg_blocked_count: int = 0
+_alert_cache: dict[str, float] = {}
 
 
 async def _tg_rate_check() -> bool:
@@ -64,6 +65,28 @@ async def _tg_rate_check() -> bool:
         if _tg_blocked_count % 20 == 1:
             log.warning("TelegramGuard: %d Nachrichten rate-limitiert (1/%gs Limit)", _tg_blocked_count, _TG_MIN_INTERVAL)
         return False
+
+
+def _should_send_guard_alert(reason: str, url: str, text: str = "", window_seconds: int = 1800) -> bool:
+    lowered = (reason or "").lower()
+    noisy_markers = (
+        "duplikat",
+        "bereits_blockiert",
+        "rate limit",
+        "rate_limited",
+        "database is locked",
+        "never_twice_error_blocked",
+        "text_extraktion_fehlgeschlagen",
+    )
+    if any(marker in lowered for marker in noisy_markers):
+        return False
+    key = f"{url[:80]}|{reason[:120]}|{text[:80]}"
+    now = time.monotonic()
+    last = _alert_cache.get(key, 0.0)
+    if now - last < window_seconds:
+        return False
+    _alert_cache[key] = now
+    return True
 
 # ── Posting-Endpoints die abgefangen werden ───────────────────────────────────
 _SOCIAL_POST_PATTERNS = [
@@ -381,8 +404,11 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
                 pass
             return False, f"never_twice: {short_reason}"
     except Exception as e:
-        log.error("HttpGuard NeverTwice fail-closed: %s", e)
-        return False, f"never_twice_error_blocked: {e}"
+        if "locked" in str(e).lower():
+            log.warning("HttpGuard NeverTwice locked — fail-open")
+        else:
+            log.error("HttpGuard NeverTwice fail-closed: %s", e)
+            return False, f"never_twice_error_blocked: {e}"
 
     # Wenn Text nur URL ist (Extraktion fehlgeschlagen) → BLOCK (fail-closed)
     # Niemals Social-Posts ohne lesbaren Content durchlassen (LinkedIn-Bug war: nur API-URL)
@@ -507,7 +533,7 @@ async def _intercepted_request(self, method: str, str_or_url: Any, **kwargs: Any
             try:
                 tg_token = os.getenv("TELEGRAM_BOT_TOKEN")
                 tg_chat  = os.getenv("TELEGRAM_CHAT_ID")
-                if tg_token and tg_chat:
+                if tg_token and tg_chat and _should_send_guard_alert(str(reason), url, _post_text):
                     msg = (
                         f"🚫 <b>HttpGuard blockiert</b>\n"
                         f"Typ: {content_type}\n"

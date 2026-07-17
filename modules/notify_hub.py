@@ -23,7 +23,7 @@ log = logging.getLogger("NotifyHub")
 
 # ── Throttle: max 1 error/warn pro Key pro Stunde ────────────────────────────
 _throttle_cache: dict[str, float] = {}
-_THROTTLE_TYPES = {"error", "warn"}
+_THROTTLE_TYPES = {"error", "warn", "info"}
 _THROTTLE_TTL   = 3600  # 1 Stunde
 
 def _throttle_key(event_type: str, title: str) -> str:
