@@ -330,34 +330,34 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
 
 _BRUTUS_TEMPLATES = [
     {
-        "social_post": "🔥 {kw} — Der smarteste Weg zu passivem Einkommen 2026!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ Bereits hunderte zufriedene Kunden\n\n👉 Jetzt starten: {_DS24}\n\n#PassivesEinkommen #KI #OnlineGeldVerdienen #AIITEC #Digistore24",
-        "blog_post": "<h1>{kw} — Dein Weg zu passivem Einkommen 2026</h1><p>Mit modernster KI-Technologie generierst du vollautomatisch Einnahmen. Unser System läuft 24/7 für dich. <a href='{_DS24}'>Jetzt starten →</a></p>",
-        "email_subject_lines": "5 Wege zu passivem Einkommen mit {kw}\nWarum {kw} 2026 funktioniert\nDein vollautomatisches Einkommen mit KI\nSo verdienst du mit {kw} im Schlaf\nNeu: {kw} — Jetzt kostenlos testen",
-        "ad_copy": "HEADLINE: {kw} — Jetzt €497 sparen!\nBODY: Vollautomatisches Einkommen mit KI. 24/7 für dich. Bereits 500+ zufriedene Kunden.\nCTA: Jetzt starten →\nURL: {_DS24}",
+        "social_post": "🔥 {kw} — klare Workflows fuer Shopify, Content und Kampagnen.\n\n✅ strukturierte Prozesse\n✅ KI-unterstuetzte Vorbereitung\n✅ besserer Team-Flow\n\n👉 Mehr erfahren: https://ineedit.com.co\n\n#Automation #KI #Ecommerce #AIITEC",
+        "blog_post": "<h1>{kw} — Prozesse fuer digitale Teams strukturieren</h1><p>Mit klaren Workflows, guter Datenpflege und Automatisierung arbeitest du konsistenter. <a href='https://ineedit.com.co'>Mehr erfahren →</a></p>",
+        "email_subject_lines": "{kw}: klarere Workflows fuer dein Team\nWie {kw} repetitive Aufgaben reduziert\n{kw}: strukturierte Automation fuer Shops\nSo hilft {kw} bei Content und Operations\nNeu: {kw} fuer moderne E-Commerce-Teams",
+        "ad_copy": "HEADLINE: {kw} — strukturierte Automation fuer Teams\nBODY: Weniger manuelle Schleifen, mehr klare Prozesse fuer Shop, Content und CRM.\nCTA: Mehr erfahren →\nURL: https://ineedit.com.co",
     },
     {
-        "social_post": "💡 Kennst du das? Arbeitest du hart, aber das Geld reicht nicht?\n\n{kw} hat bei mir alles verändert:\n→ KI-gestützte Automatisierung für dein Business\n→ KI übernimmt alles\n→ Starte heute noch\n\n🔗 {_DS24}\n\n#Freiheit #PassivesEinkommen #KIBusiness",
-        "blog_post": "<h1>Wie {kw} dein Leben verändern kann</h1><p>Stell dir vor: Dein Einkommen läuft automatisch. KI arbeitet für dich. Du hast Zeit für das Wichtige. Das ist kein Traum — das ist <a href='{_DS24}'>{kw}</a>.</p>",
-        "email_subject_lines": "Achtung: {kw} verändert alles\n[Neu] Passives Einkommen mit {kw}\nLetzter Platz: {kw} Masterkurs\nKostenlose Demo: {kw}\nKI-Tools für dein Business: {kw} erklärt",
-        "ad_copy": "HEADLINE: {kw} — Passives Einkommen mit KI\nBODY: Vollautomatisch Geld verdienen. Kein Vorwissen nötig. Sofort starten.\nCTA: Kostenlos testen →\nURL: {_DS24}",
+        "social_post": "💡 {kw} hilft dabei, wiederkehrende Aufgaben sauberer zu organisieren:\n\n→ Content vorbereiten\n→ Kampagnen strukturieren\n→ Systeme koordinieren\n\n🔗 https://ineedit.com.co\n\n#Automation #KIBusiness #Operations",
+        "blog_post": "<h1>Wie {kw} operative Arbeit entlasten kann</h1><p>Wenn Teams wiederkehrende Aufgaben systematisch dokumentieren und automatisieren, sinkt Fehlerdruck und Kontextverlust. <a href='https://ineedit.com.co'>{kw}</a> zeigt moegliche Ansaetze.</p>",
+        "email_subject_lines": "{kw}: weniger Reibung im Tagesgeschaeft\nWie {kw} Teams entlasten kann\nKostenlose Einblicke zu {kw}\n{kw}: KI-Tools fuer strukturierte Prozesse\n{kw} einfach erklaert",
+        "ad_copy": "HEADLINE: {kw} — Prozessklarheit mit KI\nBODY: Strukturiere Content, Kampagnen und Shop-Abläufe ohne hektische Workarounds.\nCTA: Mehr erfahren →\nURL: https://ineedit.com.co",
     },
     {
-        "social_post": "📊 {kw} — was steckt dahinter?\n\n✅ KI-gestützte Tools\n✅ Schritt-für-Schritt Anleitung\n✅ Für Online-Business geeignet\n✅ 30 Tage Geld-zurück-Garantie\n\nJetzt entdecken:\n👉 {_DS24}\n\n#KIBusiness #DigitalMarketing #OnlineBusiness",
-        "blog_post": "<h1>{kw}: Meine Erfahrung nach 30 Tagen</h1><p>Ich war skeptisch. Aber nach einem Monat mit <a href='{_DS24}'>{kw}</a> bin ich überzeugt: Das System funktioniert. Vollautomatisch, KI-gestützt, und wirklich passiv.</p>",
-        "email_subject_lines": "{kw} — mein Erfahrungsbericht\n{kw}: ehrlicher Test\n{kw} Funktionen im Überblick\nWarum {kw} für Online-Business geeignet ist\n{kw} — jetzt entdecken",
-        "ad_copy": "HEADLINE: {kw} — KI-Tools für Online-Business\nBODY: Lerne KI-Automatisierung. Schritt-für-Schritt. 30 Tage Garantie.\nCTA: Jetzt entdecken →\nURL: {_DS24}",
+        "social_post": "📊 {kw} — was steckt dahinter?\n\n✅ KI-gestuetzte Tools\n✅ dokumentierte Workflows\n✅ sinnvoll fuer E-Commerce und B2B\n\nJetzt entdecken:\n👉 https://ineedit.com.co\n\n#KIBusiness #DigitalMarketing #OnlineBusiness",
+        "blog_post": "<h1>{kw}: ein strukturierter Blick auf Automatisierung</h1><p>Welche Prozesse sind wiederholbar, welche Daten muessen sauber vorliegen und wo lohnt KI-Unterstuetzung? Genau dort setzt <a href='https://ineedit.com.co'>{kw}</a> an.</p>",
+        "email_subject_lines": "{kw} im Ueberblick\n{kw}: ehrlicher Blick auf Automatisierung\nWelche Funktionen {kw} fuer Teams abdeckt\nWarum {kw} fuer E-Commerce interessant ist\n{kw} — jetzt entdecken",
+        "ad_copy": "HEADLINE: {kw} — KI-Tools fuer moderne Workflows\nBODY: Schritt fuer Schritt mehr Klarheit in Shop, Marketing und Operations.\nCTA: Jetzt entdecken →\nURL: https://ineedit.com.co",
     },
     {
-        "social_post": "🚀 BREAKING: {kw} jetzt verfügbar!\n\nWas du bekommst:\n✅ Vollautomatisches KI-System\n✅ Fertige Templates & Strategien\n✅ 24/7 Support\n✅ 30 Tage Geld-zurück-Garantie\n\nNur für kurze Zeit: Jetzt starten!\n🔗 {_DS24}",
-        "blog_post": "<h1>{kw} 2026 — Alles was du wissen musst</h1><p>Das KI Business Blueprint revolutioniert passive Einnahmen. Mit <a href='{_DS24}'>{kw}</a> startest du heute noch durch.</p>",
-        "email_subject_lines": "🚀 {kw} ist jetzt live!\nNeu: {kw} mit 30-Tage-Garantie\n{kw} — dein digitales Einkommen startet jetzt\nHast du {kw} schon gesehen?\n[Wichtig] {kw} Sonderangebot endet bald",
-        "ad_copy": "HEADLINE: {kw} — 30 Tage Geld-zurück!\nBODY: Risikolos starten. Vollautomatisch. KI macht alles für dich.\nCTA: Risikolos starten →\nURL: {_DS24}",
+        "social_post": "🚀 {kw} jetzt verfuegbar.\n\nWas du bekommst:\n✅ dokumentierte Prozesse\n✅ Vorlagen fuer Content und Kampagnen\n✅ klare Automations-Bausteine\n\n🔗 https://ineedit.com.co",
+        "blog_post": "<h1>{kw} 2026 — ein praxisnaher Ueberblick</h1><p>Zwischen Datenpflege, Kampagnensteuerung und Shop-Prozessen braucht es keine Lautstaerke, sondern Verlaesslichkeit. <a href='https://ineedit.com.co'>{kw}</a> setzt darauf.</p>",
+        "email_subject_lines": "{kw} ist jetzt live\nNeu: {kw} fuer strukturierte Teams\n{kw} fuer Shop und Marketing\nHast du {kw} schon gesehen?\n{kw}: jetzt mehr erfahren",
+        "ad_copy": "HEADLINE: {kw} — klare Abläufe statt Chaos\nBODY: Templates, Automations-Bausteine und bessere Uebergaben fuer digitale Teams.\nCTA: Jetzt ansehen →\nURL: https://ineedit.com.co",
     },
     {
-        "social_post": "💰 Online-Business mit KI aufbauen — wie geht das?\n\nMit {kw} lernst du:\n→ KI-Tools gezielt einsetzen\n→ Marketing automatisieren\n→ Effizienter arbeiten\n\n👉 Mehr Infos: {_DS24}\n\n#KIMarketing #DigitalBusiness #OnlineBusiness",
-        "blog_post": "<h1>Passives Einkommen mit {kw}: Der ultimative Guide</h1><p>Finanzielle Freiheit ist möglich. Mit <a href='{_DS24}'>{kw}</a> automatisierst du dein Einkommen — KI übernimmt alles.</p>",
-        "email_subject_lines": "Online-Business mit KI: {kw}\n{kw} — deine KI-Marketing-Tools\nDigitales Business mit {kw}\nKI für Einsteiger: {kw} erklärt\n{kw} — jetzt mehr erfahren",
-        "ad_copy": "HEADLINE: Passives Einkommen mit {kw} — KI macht alles!\nBODY: Vollautomatisch. 24/7. Sofort startklar. Keine Vorkenntnisse nötig.\nCTA: Gratis Demo ansehen →\nURL: {_DS24}",
+        "social_post": "💼 Online-Business mit KI strukturieren — wie geht das?\n\nMit {kw} lernst du:\n→ Tools gezielt einsetzen\n→ Marketing-Prozesse ordnen\n→ effizienter arbeiten\n\n👉 Mehr Infos: https://ineedit.com.co\n\n#KIMarketing #DigitalBusiness #OnlineBusiness",
+        "blog_post": "<h1>{kw}: Der Guide fuer strukturierte digitale Prozesse</h1><p>Statt ueberzogener Versprechen geht es um saubere Systeme, klare Zuständigkeiten und wiederholbare Abläufe. <a href='https://ineedit.com.co'>{kw}</a> ist darauf ausgerichtet.</p>",
+        "email_subject_lines": "Online-Business mit KI: {kw}\n{kw} — KI-Tools fuer geordnete Prozesse\nDigitales Business mit {kw}\nKI fuer Einsteiger: {kw} erklaert\n{kw} — jetzt mehr erfahren",
+        "ad_copy": "HEADLINE: {kw} — KI fuer klare Prozesse\nBODY: Mehr Struktur in Marketing, Content und Shop-Operations.\nCTA: Demo ansehen →\nURL: https://ineedit.com.co",
     },
 ]
 
@@ -427,6 +427,11 @@ _BAD_POST_PATTERNS = [
     r"identify \d+",
     r"24 hours",
     r"flash sale.*email newsletter",
+    r"online geld verdienen",
+    r"passives einkommen",
+    r"vollautomatisch.*einkommen",
+    r"automatisch geld verdienen",
+    r"earn while you sleep",
 ]
 
 
@@ -445,8 +450,14 @@ def _is_valid_social_post(text: str) -> bool:
     return True
 
 
+def _deploy_enabled() -> bool:
+    return os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() in ("1", "true", "yes")
+
+
 async def deploy_to_telegram(keyword: str, content: dict):
     """Telegram Channel — sofortige Reichweite (mit URL-Validierung)."""
+    if not _deploy_enabled():
+        return {"skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
         return
     try:
@@ -469,6 +480,8 @@ async def deploy_to_telegram(keyword: str, content: dict):
 
 async def deploy_to_shopify_blog(keyword: str, content: dict) -> bool:
     """Shopify Blog — SEO-Artikel direkt publizieren."""
+    if not _deploy_enabled():
+        return False
     if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
         return False
     blog_content = content.get("blog_post", "")
@@ -524,6 +537,8 @@ async def deploy_to_shopify_blog(keyword: str, content: dict) -> bool:
 
 async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
     """Facebook Page AiiteC — automatisch posten."""
+    if not _deploy_enabled():
+        return False
     if is_open("facebook"):
         return False
     try:
@@ -571,6 +586,8 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
 
 async def deploy_to_instagram(keyword: str, content: dict) -> bool:
     """Instagram @aaiitecc — auto-post via Facebook Graph API (text as image caption)."""
+    if not _deploy_enabled():
+        return False
     if is_open("instagram"):
         return False
     ig_user_id = os.getenv("INSTAGRAM_ID_AIITEC", "17841478315197796")
@@ -631,6 +648,8 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
 
 async def deploy_to_youtube(keyword: str, content: dict) -> bool:
     """YouTube community post via YouTube Data API v3 (requires OAuth with youtube.force-ssl scope)."""
+    if not _deploy_enabled():
+        return False
     channel_id = os.getenv("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
     if not channel_id:
         return False
@@ -676,6 +695,8 @@ async def deploy_to_youtube(keyword: str, content: dict) -> bool:
 
 async def deploy_to_klaviyo_campaign(keyword: str, content: dict):
     """Klaviyo — Email-Kampagne für viralen Trend."""
+    if not _deploy_enabled():
+        return {"skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
     list_id = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
     if not klaviyo_key:
@@ -808,6 +829,8 @@ def _save_state(keyword: str, content_pack: dict, utm_links: dict):
 
 async def post_to_reddit(keyword: str, content_pack: dict) -> dict:
     """Post to r/shopify, r/ecommerce, r/entrepreneur with value-first content."""
+    if not _deploy_enabled():
+        return {"skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     import aiohttp
     client_id     = os.getenv("REDDIT_CLIENT_ID", "")
     client_secret = os.getenv("REDDIT_CLIENT_SECRET", "")
@@ -854,6 +877,8 @@ async def post_to_reddit(keyword: str, content_pack: dict) -> dict:
 
 async def post_to_linkedin_brutus(keyword: str, content_pack: dict) -> dict:
     """Post AI content to LinkedIn via BRUTUS."""
+    if not _deploy_enabled():
+        return {"skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     if is_open("linkedin"):
         return {"skipped": True, "reason": "circuit_open:linkedin"}
     import aiohttp
@@ -897,6 +922,8 @@ async def post_to_linkedin_brutus(keyword: str, content_pack: dict) -> dict:
 
 async def post_to_pinterest(keyword: str, content_pack: dict, image_url: str = "") -> dict:
     """Post pins to Pinterest boards."""
+    if not _deploy_enabled():
+        return {"skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     import aiohttp
     token    = os.getenv("PINTEREST_ACCESS_TOKEN", "")
     board_id = os.getenv("PINTEREST_BOARD_ID", "")
@@ -983,6 +1010,9 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
         log.warning("BRUTUS: SOCIAL_POSTING_PAUSED=true — Posting deaktiviert")
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
+    if not _deploy_enabled():
+        log.warning("BRUTUS: BRUTUS_DEPLOY_ENABLED not set — run skipped")
+        return {"ok": False, "skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     log.info("=" * 60)
     log.info("BRUTUS START — Nische: %s", niche)
     log.info("=" * 60)
@@ -1012,19 +1042,19 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     if custom_keywords:
         raw_trends = [{"keyword": k, "source": "custom"} for k in custom_keywords] + raw_trends
 
-    # Always seed with DS24 product keywords so Brutus runs even with no trend data
-    _ds24_seeds = [
-        {"keyword": "passives einkommen ki automatisierung 2026", "source": "seed"},
-        {"keyword": "digistore24 ki business blueprint", "source": "seed"},
-        {"keyword": "online geld verdienen vollautomatisch", "source": "seed"},
-        {"keyword": "shopify dropshipping automatisiert ki", "source": "seed"},
-        {"keyword": "finanzielle freiheit digitales business", "source": "seed"},
+    # Safe seeds: fokussiert auf Operations/Automation, keine Einkommensversprechen.
+    _safe_seeds = [
+        {"keyword": "shopify automation workflows 2026", "source": "seed"},
+        {"keyword": "ecommerce operations automation", "source": "seed"},
+        {"keyword": "crm outreach automation b2b", "source": "seed"},
+        {"keyword": "content workflow automation teams", "source": "seed"},
+        {"keyword": "shopify conversion automation", "source": "seed"},
     ]
     if not raw_trends:
-        raw_trends = _ds24_seeds
-        log.info("Phase 1: No trends found — using DS24 seed keywords")
+        raw_trends = _safe_seeds
+        log.info("Phase 1: No trends found — using safe automation seed keywords")
     else:
-        raw_trends = _ds24_seeds[:2] + raw_trends  # always include 2 DS24 seeds
+        raw_trends = _safe_seeds[:2] + raw_trends
 
     log.info("Phase 1 done: %d raw trends found", len(raw_trends))
 
@@ -1141,6 +1171,9 @@ async def run_brutus_swarm(keywords: list = None, max_keywords: int = 3,
     if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
         log.warning("BRUTUS swarm: SOCIAL_POSTING_PAUSED=true — Posting deaktiviert")
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
+    if not _deploy_enabled():
+        log.warning("BRUTUS swarm: BRUTUS_DEPLOY_ENABLED not set — run skipped")
+        return {"ok": False, "skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
     kw_niche = niche
     if keywords:
         kw_niche = " ".join(keywords[:2]) if len(keywords) >= 2 else keywords[0]

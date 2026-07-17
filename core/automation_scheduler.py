@@ -308,35 +308,37 @@ async def task_traffic_seo_run() -> str:
 async def task_brutus_run() -> str:
     """BRUTUS — Brutal Traffic Engine: Scan→Predict→Swarm→Deploy alle Kanäle."""
     try:
+        if os.getenv("BRUTUS_DEPLOY_ENABLED", "").lower() not in ("1", "true", "yes"):
+            return "BRUTUS: deploy disabled by default — set BRUTUS_DEPLOY_ENABLED=true for explicit opt-in"
         import random
         from modules.brutus_traffic_engine import brutus_run
         BRUTUS_NICHES = [
-            "AI income online business automatisierung",
-            "KI passives Einkommen Deutschland",
+            "Shopify operations automation",
+            "KI Workflows fuer E-Commerce Teams",
             "Shopify Automatisierung 2026",
-            "Digistore24 Affiliate Strategie",
-            "Online Geld verdienen Anfänger",
+            "Digistore24 Funnel Operations",
+            "Online Shop Prozessautomatisierung",
             "Dropshipping KI Tools",
             "Print on Demand Shopify",
-            "Amazon Affiliate Deutschland",
-            "eBay Dropshipping profitabel",
+            "Amazon Catalog Operations",
+            "eBay Listing Automation",
             "Email Marketing Klaviyo",
             "Fiverr KI Services",
             "TikTok E-Commerce viral",
             "Pinterest Traffic Shopify",
             "YouTube Monetarisierung 2026",
             "Instagram Shop Produkte",
-            "LinkedIn B2B Online Business",
+            "LinkedIn B2B Prozessautomatisierung",
             "SEO Ranking Shopify Blog",
             "Digitale Produkte Gumroad",
             "Printify Bestseller Designs",
-            "Passives Einkommen Blueprint",
+            "Content Operations Blueprint",
         ]
         niche = random.choice(BRUTUS_NICHES)
         keywords = [
-            "AI Income Machine", "Passives Einkommen Online", "Shopify Automatisierung",
-            "Online Geld verdienen 2026", "KI Business Blueprint", "Dropshipping KI",
-            "Digistore24 Affiliate", "Print on Demand", "Amazon Affiliate",
+            "Shopify Automatisierung", "E-Commerce Operations", "KI Business Blueprint",
+            "CRM Outreach Automation", "Content Workflow", "Dropshipping KI",
+            "Digistore24 Funnel", "Print on Demand", "Amazon Catalog",
         ]
         result = await brutus_run(niche=niche, custom_keywords=random.sample(keywords, 6))
         kw = result.get("keywords_processed", 0)
