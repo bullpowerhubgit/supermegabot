@@ -23,7 +23,7 @@ API (Dashboard):
   POST /api/revenue-agent/command  — Revenue Agent sendet Kommando
   GET  /api/revenue-agent/status   — Status beider Agents lesen
   GET  /api/revenue-agent/inbox    — Unbearbeitete Kommandos
-  POST /api/revenue-agent/result   — Ergebnis zurückschreiben
+  GET  /api/revenue-agent/results  — Letzte Ergebnisse lesen
 
 Scheduler: alle 5 Min 'revenue_agent_sync' — liest Inbox + führt aus
 """
@@ -46,6 +46,22 @@ _INBOX     = _SYNC_DIR / "inbox.json"
 _OUTBOX    = _SYNC_DIR / "outbox.json"
 _COORD     = _SYNC_DIR / "coordination.json"
 _SYNC_DIR.mkdir(parents=True, exist_ok=True)
+
+SUPPORTED_COMMANDS = frozenset({
+    "revenue_snapshot",
+    "trigger_telegram",
+    "create_discount",
+    "klaviyo_blast",
+    "smb_outreach",
+    "stripe_poll",
+    "post_social",
+    "buyer_priority",
+    "scheduler_audit",
+    "full_status",
+    "youtube_status",
+    "ds24_snapshot",
+    "klaviyo_stats",
+})
 
 
 def _now() -> str:
@@ -74,6 +90,8 @@ def get_coordination() -> dict:
 
 def write_command(command: str, params: dict | None = None, sender: str = "revenue_agent") -> str:
     """Revenue Agent schreibt ein Kommando in die Inbox."""
+    if command not in SUPPORTED_COMMANDS:
+        raise ValueError(f"Unbekanntes Revenue-Agent-Kommando: {command}")
     inbox   = _read_json(_INBOX, {"commands": []})
     cmd_id  = f"cmd_{int(time.time() * 1000)}"
     inbox["commands"].append({
@@ -117,6 +135,21 @@ def mark_done(cmd_id: str) -> None:
     _write_json(_INBOX, inbox)
 
 
+def mark_processing(cmd_id: str, worker: str = "supermegabot_main") -> bool:
+    inbox = _read_json(_INBOX, {"commands": []})
+    for c in inbox.get("commands", []):
+        if c.get("id") != cmd_id:
+            continue
+        if c.get("status") != "pending":
+            return False
+        c["status"] = "processing"
+        c["worker"] = worker
+        c["started_at"] = _now()
+        _write_json(_INBOX, inbox)
+        return True
+    return False
+
+
 def get_results(limit: int = 10) -> list[dict]:
     """Revenue Agent liest Ergebnisse aus Outbox."""
     outbox = _read_json(_OUTBOX, {"results": []})
@@ -152,8 +185,14 @@ async def execute_command(cmd: dict) -> dict[str, Any]:
             return await _cmd_scheduler_audit()
         elif command == "full_status":
             return await _cmd_full_status()
+        elif command == "youtube_status":
+            return await _cmd_youtube_status()
+        elif command == "ds24_snapshot":
+            return await _cmd_ds24_snapshot()
+        elif command == "klaviyo_stats":
+            return await _cmd_klaviyo_stats()
         else:
-            return {"ok": False, "error": f"Unbekanntes Kommando: {command}"}
+            return {"ok": False, "command": command, "error": f"Unbekanntes Kommando: {command}"}
     except Exception as e:
         log.error("Kommando %s fehlgeschlagen: %s", command, e)
         return {"ok": False, "command": command, "error": str(e)[:300]}
@@ -339,6 +378,53 @@ async def _cmd_buyer_priority(params: dict) -> dict:
         return {"ok": False, "command": "buyer_priority", "error": str(e)[:200]}
 
 
+async def _cmd_youtube_status() -> dict:
+    """Prüft ob YouTube OAuth-Credentials gesetzt sind."""
+    yt_id      = bool(os.getenv("YOUTUBE_CLIENT_ID"))
+    yt_secret  = bool(os.getenv("YOUTUBE_CLIENT_SECRET"))
+    yt_refresh = bool(os.getenv("YOUTUBE_REFRESH_TOKEN"))
+    return {
+        "ok": True,
+        "configured": yt_id and yt_secret and yt_refresh,
+        "client_id": yt_id,
+        "secret": yt_secret,
+        "refresh_token": yt_refresh,
+    }
+
+
+async def _cmd_ds24_snapshot() -> dict:
+    """DS24 Einnahmen der letzten 7 Tage."""
+    try:
+        from modules.digistore24_integration import get_recent_sales
+        return await get_recent_sales(days=7)
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:200]}
+
+
+async def _cmd_klaviyo_stats() -> dict:
+    """Klaviyo Subscriber-Anzahl abfragen."""
+    import aiohttp as _aiohttp
+    key = os.getenv("KLAVIYO_API_KEY", "")
+    if not key:
+        return {"ok": False, "error": "no key"}
+    try:
+        async with _aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://a.klaviyo.com/api/profiles/",
+                headers={
+                    "Authorization": f"Klaviyo-API-Key {key}",
+                    "revision": "2024-10-15",
+                },
+                params={"page[size]": 1},
+                timeout=_aiohttp.ClientTimeout(total=10),
+            ) as r:
+                data = await r.json()
+                count = data.get("meta", {}).get("total", "?")
+                return {"ok": True, "total_profiles": count}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:100]}
+
+
 async def _cmd_scheduler_audit() -> dict:
     """Liefert Registry-Abdeckung fuer autonome Reparatur-Loops."""
     try:
@@ -362,6 +448,8 @@ async def task_revenue_agent_sync() -> dict[str, Any]:
     errors    = 0
     for cmd in pending:
         cmd_id = cmd["id"]
+        if not mark_processing(cmd_id):
+            continue
         update_my_status(f"verarbeite: {cmd['command']}", last_action=cmd["command"])
         result = await execute_command(cmd)
         write_result(cmd_id, result)
@@ -380,10 +468,13 @@ async def task_revenue_agent_sync() -> dict[str, Any]:
 
 async def get_bridge_status() -> dict[str, Any]:
     """Gibt vollständigen Bridge-Status zurück (für GET /api/revenue-agent/status)."""
+    pending_commands = get_pending_commands()
     return {
         "ok":           True,
+        "supported_commands": sorted(SUPPORTED_COMMANDS),
         "coordination": get_coordination(),
-        "pending":      len(get_pending_commands()),
+        "pending":      len(pending_commands),
+        "pending_commands": pending_commands[:10],
         "recent_results": get_results(5),
         "at":           _now(),
     }
@@ -391,15 +482,20 @@ async def get_bridge_status() -> dict[str, Any]:
 
 async def post_command_from_api(command: str, params: dict) -> dict[str, Any]:
     """Kommando über API einreihen (für POST /api/revenue-agent/command)."""
-    cmd_id = write_command(command, params, sender="api")
+    try:
+        cmd_id = write_command(command, params, sender="api")
+    except ValueError as e:
+        return {"ok": False, "error": str(e)}
     # Sofort ausführen (nicht auf Scheduler warten)
     pending = get_pending_commands()
     for cmd in pending:
         if cmd["id"] == cmd_id:
+            if not mark_processing(cmd_id, worker="api_inline"):
+                return {"ok": False, "cmd_id": cmd_id, "error": "Kommando wird bereits verarbeitet"}
             result = await execute_command(cmd)
             write_result(cmd_id, result)
             mark_done(cmd_id)
-            return {"ok": True, "cmd_id": cmd_id, "result": result}
+            return {"ok": bool(result.get("ok")), "cmd_id": cmd_id, "result": result}
     return {"ok": False, "error": "Kommando nicht gefunden"}
 
 
