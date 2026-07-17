@@ -1,52 +1,77 @@
 name: Autonomous Loop
 
-# Claude → tests → (deploy via main) → payments/analytics snapshot → next plan
 on:
-  schedule:
-    # Every 6 hours
-    - cron: "0 */6 * * *"
+  push:
+  pull_request:
   workflow_dispatch:
     inputs:
       quick:
         description: "Quick mode (skip heavy Claude teams)"
         required: false
-        default: "false"
-  push:
-    branches: [main]
-    paths:
-      - "modules/autonomous_loop.py"
-      - "modules/analytics_feedback.py"
-      - "modules/lemon_squeezy_autopilot.py"
-      - "modules/email_onboarding_autopilot.py"
-      - "modules/claude_agent_collab.py"
+        default: "true"
+  schedule:
+    - cron: "17 */3 * * *"
 
 jobs:
-  loop:
+  discover-targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+      count: ${{ steps.discover.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - id: discover
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_REF=""
+          HEAD_REF="${GITHUB_SHA}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_REF="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            BASE_REF="${{ github.event.before }}"
+          fi
+          if [ -n "$BASE_REF" ]; then
+            MATRIX="$(python3 scripts/autonomous_project_matrix.py --changed-only --base-ref "$BASE_REF" --head-ref "$HEAD_REF")"
+          else
+            MATRIX="$(python3 scripts/autonomous_project_matrix.py)"
+          fi
+          COUNT="$(python3 - <<'PY' "$MATRIX"
+import json, sys
+print(len(json.loads(sys.argv[1]).get("include", [])))
+PY
+)"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+  repo-loop:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
       - name: Install deps
         run: |
           pip install -q aiohttp python-dotenv requests 2>/dev/null || true
           if [ -f requirements.txt ]; then pip install -q -r requirements.txt; fi
-
       - name: Syntax check (loop modules)
         run: |
           python3 -m py_compile \
             modules/autonomous_loop.py \
+            modules/autonomous_projects.py \
             modules/analytics_feedback.py \
             modules/lemon_squeezy_autopilot.py \
             modules/email_onboarding_autopilot.py \
             modules/claude_agent_collab.py \
-            modules/agent_teams.py
-          echo "syntax OK"
-
+            modules/agent_teams.py \
+            scripts/autonomous_project_matrix.py \
+            scripts/verify_autonomous_target.py \
+            scripts/deploy_autonomous_target.py
       - name: StripeGuard regression
         run: |
           python3 - <<'PY'
@@ -55,8 +80,7 @@ jobs:
           assert r["ok"], r
           print("StripeGuard OK", len(r["checks"]))
           PY
-
-      - name: Run autonomous loop (quick in CI)
+      - name: Run autonomous loop
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
@@ -69,16 +93,23 @@ jobs:
           LOOPS_API_KEY: ${{ secrets.LOOPS_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
-          QUICK="${{ github.event.inputs.quick }}"
-          if [ "$QUICK" = "false" ] && [ "${{ github.event_name }}" = "schedule" ]; then
+          QUICK="true"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            QUICK="false"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            QUICK="${{ github.event.inputs.quick }}"
+          fi
+          if [ "$QUICK" = "false" ]; then
             python3 -m modules.autonomous_loop --no-notify || true
           else
             python3 -m modules.autonomous_loop --quick --no-notify || true
           fi
-          ls -la data/autonomous_loop/ || true
-          test -f data/autonomous_loop/latest.json && head -c 800 data/autonomous_loop/latest.json || true
-
       - name: Upload loop report
         if: always()
         uses: actions/upload-artifact@v4
@@ -87,7 +118,30 @@ jobs:
           path: data/autonomous_loop/
           retention-days: 14
           if-no-files-found: ignore
-
       - name: Production health
         run: |
           curl -fsS https://supermegabot-production.up.railway.app/health | head -c 400 || echo "health unreachable"
+
+  verify-targets:
+    needs: discover-targets
+    if: ${{ needs.discover-targets.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover-targets.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        if: ${{ matrix.runtime == 'node' }}
+        with:
+          node-version: "20"
+      - name: Verify changed target
+        env:
+          AUTONOMOUS_ENABLE_NODE_BUILD: ${{ matrix.runtime == 'node' && '1' || '0' }}
+        run: |
+          python3 scripts/verify_autonomous_target.py \
+            --runtime '${{ matrix.runtime }}' \
+            --verify-paths-json '${{ toJson(matrix.verify_paths) }}'

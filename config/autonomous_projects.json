@@ -1,0 +1,76 @@
+{
+  "defaults": {
+    "railway_environment": "production"
+  },
+  "overrides": {
+    ".": {
+      "name": "supermegabot",
+      "watch_paths": [
+        "dashboard/**",
+        "core/**",
+        "modules/**",
+        "scripts/**",
+        "railway.toml",
+        "nixpacks.toml",
+        "Dockerfile",
+        "requirements.txt",
+        ".github/workflows/**"
+      ],
+      "verify_paths": [
+        "dashboard/server.py",
+        "core",
+        "modules",
+        "scripts/api_precheck.py"
+      ],
+      "railway": {
+        "project": "supermegabot",
+        "service": "supermegabot",
+        "environment": "production"
+      }
+    },
+    "aiitec": {
+      "name": "aiitec-saas",
+      "watch_paths": [
+        "aiitec/**",
+        "aiitec_server.py",
+        "modules/**"
+      ],
+      "verify_paths": [
+        "aiitec_server.py",
+        "aiitec",
+        "modules"
+      ],
+      "railway": {
+        "project": "aiitec-saas",
+        "service": "aiitec-saas",
+        "environment": "production"
+      }
+    },
+    "eu-compliance-saas": {
+      "name": "eu-compliance-saas",
+      "watch_paths": [
+        "eu-compliance-saas/**",
+        "modules/**"
+      ],
+      "verify_paths": [
+        "eu-compliance-saas",
+        "modules"
+      ],
+      "railway": {
+        "project": "eu-compliance-saas",
+        "service": "eu-compliance-saas",
+        "environment": "production"
+      }
+    },
+    "seo-turbo-tools": {
+      "watch_paths": [
+        "seo-turbo-tools/**",
+        "modules/**"
+      ],
+      "verify_paths": [
+        "seo-turbo-tools",
+        "modules"
+      ]
+    }
+  }
+}

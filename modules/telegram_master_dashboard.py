@@ -11,8 +11,8 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718')
-CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '5088771245')
+BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '').strip()
+CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '').strip()
 BASE_URL  = f'https://api.telegram.org/bot{BOT_TOKEN}'
 
 # Alle 19 Railway-Services
@@ -71,6 +71,9 @@ SEO_ENGINE_URL = os.getenv('SEO_TRAFFIC_ENGINE_URL', 'https://seo-traffic-engine
 # ── Telegram API helpers ──────────────────────────────────────────────────────
 
 async def tg_api(method: str, data: dict) -> dict:
+    if not BOT_TOKEN:
+        logger.warning("Telegram Master Dashboard deaktiviert: TELEGRAM_BOT_TOKEN fehlt")
+        return {"ok": False, "description": "TELEGRAM_BOT_TOKEN fehlt"}
     async with aiohttp.ClientSession() as s:
         async with s.post(f'{BASE_URL}/{method}', json=data,
                           timeout=aiohttp.ClientTimeout(total=10)) as r:
@@ -369,6 +372,9 @@ async def handle_update(update: dict):
 
 async def run_polling():
     """Long-polling loop — läuft parallel zum Scheduler."""
+    if not BOT_TOKEN:
+        logger.warning("Telegram Master Dashboard Polling uebersprungen: TELEGRAM_BOT_TOKEN fehlt")
+        return
     offset = 0
     logger.info('Telegram Master Dashboard: Polling gestartet')
     try:

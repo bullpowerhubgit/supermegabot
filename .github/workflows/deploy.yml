@@ -42,7 +42,7 @@ jobs:
       - name: Posting system audit
         run: |
           python3 scripts/audit_posting_system.py
-      - name: Stripe BULLPOWER-ONLY (never AIITEC account)
+      - name: Stripe INEEDIT-ONLY ineedit.com.co (never AIITEC)
         run: |
           python3 - <<'PY'
           import os
@@ -53,24 +53,32 @@ jobs:
               get_working_stripe_key,
               is_banned_key,
               is_bullpower_key,
+              is_ineedit_key,
               purge_forbidden_from_environ,
               assert_bullpower_only,
+              assert_ineedit_only,
               BULLPOWER_ACCOUNT_ID,
               BULLPOWER_EMAIL,
+              INEEDIT_ACCOUNT_ID,
+              INEEDIT_DOMAIN,
+              INEEDIT_EMAIL,
           )
+          assert INEEDIT_DOMAIN == "ineedit.com.co"
+          assert INEEDIT_ACCOUNT_ID == BULLPOWER_ACCOUNT_ID == "acct_1Tg1U0RJECiV6vSm"
           assert is_banned_key("sk_live_51SwsoNF_anything"), "AIITEC must be banned"
-          assert is_bullpower_key("sk_live_51Tg1U0R_anything"), "bullpower prefix required"
+          assert is_ineedit_key("sk_live_51Tg1U0R_anything"), "ineedit prefix required"
+          assert is_bullpower_key("sk_live_51Tg1U0R_anything"), "alias must match"
           purge_forbidden_from_environ()
           assert not os.getenv("STRIPE_SECRET_KEY_AIITEC"), "AIITEC must be purged from env"
           k = get_working_stripe_key()
           assert k.startswith("sk_live_51Tg1U"), k
-          assert_bullpower_only(k)
+          assert_ineedit_only(k)
           try:
               assert_bullpower_only("sk_live_51Swso_FAKE")
               raise SystemExit("should have rejected AIITEC")
           except RuntimeError:
               pass
-          print("Stripe BULLPOWER-ONLY OK:", BULLPOWER_EMAIL, BULLPOWER_ACCOUNT_ID)
+          print("Stripe INEEDIT-ONLY OK:", INEEDIT_DOMAIN, INEEDIT_EMAIL, INEEDIT_ACCOUNT_ID)
           PY
       - name: Meta token resolver (AiiteC aliases never IWIN)
         run: |

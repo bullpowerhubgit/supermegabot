@@ -2,7 +2,7 @@
 """
 NotifyHub — Zentrale Benachrichtigungs-Schicht für alle SuperMegaBot-Projekte.
 
-Primär: Telegram (Rudiclone-Bot, Chat 5088771245) — immer verfügbar.
+Primär: Telegram — wenn Bot-Token + Chat-ID gesetzt sind.
 Sekundär: Slack (xapp-1- Bot Token) — für Team-Workspace marketing-m9r3843.
 Tertiär:  Discord Webhook (wenn konfiguriert).
 
@@ -20,9 +20,18 @@ from typing import Optional
 
 log = logging.getLogger("NotifyHub")
 
+
+def _env(*keys: str) -> str:
+    for key in keys:
+        value = os.getenv(key, "").strip()
+        if value and value not in ("placeholder", "changeme", "your_token_here", "TODO"):
+            return value
+    return ""
+
+
 # ── Credentials aus .env ──────────────────────────────────────────────────────
-TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
-TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
+TG_TOKEN   = lambda: _env("TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_TOKEN_RUDICLONE")
+TG_CHAT    = lambda: _env("TELEGRAM_CHAT_ID")
 SLACK_BOT  = os.getenv("SLACK_BOT_TOKEN", "")
 SLACK_CHAN  = os.getenv("SLACK_DEFAULT_CHANNEL", "C0000000000")  # wird per API aufgelöst
 DISCORD_WH = os.getenv("DISCORD_WEBHOOK_URL", "")
@@ -54,10 +63,12 @@ def _http_post(url: str, data: dict, headers: dict | None = None) -> bool:
 
 
 def _tg_send(text: str) -> bool:
-    if not TG_TOKEN:
+    token = TG_TOKEN()
+    chat_id = TG_CHAT()
+    if not token or not chat_id:
         return False
-    url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-    return _http_post(url, {"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML"})
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    return _http_post(url, {"chat_id": chat_id, "text": text, "parse_mode": "HTML"})
 
 
 def send_telegram(text: str) -> bool:

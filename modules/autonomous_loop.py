@@ -86,6 +86,15 @@ def phase_code_health(max_files: int = 80) -> dict[str, Any]:
     }
 
 
+def phase_project_surface() -> dict[str, Any]:
+    try:
+        from modules.autonomous_projects import get_deploy_surface_summary
+
+        return get_deploy_surface_summary()
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:160]}
+
+
 # ── Phase 2: Claude / agents ─────────────────────────────────────────────────
 
 async def phase_claude_iterate(analytics_tasks: list[dict] | None = None) -> dict[str, Any]:
@@ -232,19 +241,29 @@ async def phase_analytics(stripe_mrr: float = 0.0) -> dict[str, Any]:
 def phase_plan_next(report: dict) -> dict[str, Any]:
     tasks = (report.get("analytics") or {}).get("optimization_tasks") or []
     ai_plan = (report.get("claude") or {}).get("ai_plan")
+    project_surface = report.get("project_surface") or {}
+    missing_providers = project_surface.get("missing_providers") or []
+    next_actions = [
+        "Ship highest-priority optimization_task",
+        "Keep Stripe bullpower-only + payment links live",
+        "Run email day-0 enroll on new leads",
+        "CI: tests → main → Railway/Vercel auto-deploy",
+        "Re-run autonomous loop after deploy",
+    ]
+    if missing_providers:
+        next_actions.insert(0, f"Add missing deploy secrets/providers: {', '.join(missing_providers)}")
     plan = {
         "generated_at": _now(),
         "top_tasks": tasks[:5],
         "ai_plan_excerpt": (ai_plan or "")[:1500],
         "mrr": (report.get("payments") or {}).get("mrr"),
         "code_health_ok": (report.get("code_health") or {}).get("ok"),
-        "next_actions": [
-            "Ship highest-priority optimization_task",
-            "Keep Stripe bullpower-only + payment links live",
-            "Run email day-0 enroll on new leads",
-            "CI: tests → main → Railway/Vercel auto-deploy",
-            "Re-run autonomous loop after deploy",
-        ],
+        "project_surface": {
+            "targets_total": project_surface.get("targets_total", 0),
+            "provider_counts": project_surface.get("provider_counts", {}),
+            "missing_providers": missing_providers,
+        },
+        "next_actions": next_actions,
     }
     plan_path = DATA_DIR / "next_iteration.json"
     plan_path.write_text(json.dumps(plan, indent=2, default=str))
@@ -313,6 +332,9 @@ async def run_autonomous_loop(quick: bool = False, notify: bool = True) -> dict[
     if not ch.get("ok"):
         report["ok"] = False
 
+    report["project_surface"] = phase_project_surface()
+    report["phases"].append("project_surface")
+
     # 3 payments early (MRR for analytics)
     pay = await phase_payments()
     report["payments"] = pay
@@ -343,6 +365,10 @@ async def run_autonomous_loop(quick: bool = False, notify: bool = True) -> dict[
     report["next"] = phase_plan_next(report)
     report["phases"].append("plan_next")
 
+    # 7 auto-commit + PR (nur wenn deploy_safe=True im AI-Plan)
+    report["auto_commit"] = await phase_auto_commit(report)
+    report["phases"].append("auto_commit")
+
     report["finished_at"] = _now()
     path = _write_report(report)
     report["report_path"] = str(path)
@@ -357,6 +383,126 @@ async def run_autonomous_loop(quick: bool = False, notify: bool = True) -> dict[
         path,
     )
     return report
+
+
+# ── Phase 7: Auto-Commit + PR ────────────────────────────────────────────────
+
+async def phase_auto_commit(report: dict) -> dict[str, Any]:
+    """
+    Wenn der AI-Plan deploy_safe=True markiert, schreibt er Code und
+    erstellt einen PR auf GitHub — GitHub Actions testet + Railway deployt.
+    """
+    ai_plan_raw = (report.get("claude") or {}).get("ai_plan") or ""
+    result: dict[str, Any] = {"ok": False, "skipped": True, "reason": ""}
+
+    # Plan parsen
+    plan: dict = {}
+    try:
+        import re
+        m = re.search(r'\{.*\}', ai_plan_raw, re.DOTALL)
+        if m:
+            plan = json.loads(m.group())
+    except Exception:
+        pass
+
+    if not plan.get("deploy_safe"):
+        result["reason"] = "deploy_safe=False oder kein AI-Plan"
+        return result
+
+    changes = plan.get("code_changes") or []
+    if not changes:
+        result["reason"] = "keine code_changes im AI-Plan"
+        return result
+
+    # Backlog-Datei als Commit pushen (sicher — keine Logik-Änderungen)
+    try:
+        backlog_path = DATA_DIR / "BACKLOG.md"
+        if not backlog_path.exists():
+            result["reason"] = "BACKLOG.md fehlt"
+            return result
+
+        branch = f"autonomous/loop-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M')}"
+        token = os.getenv("GITHUB_TOKEN") or os.getenv("GH_TOKEN") or ""
+        repo  = os.getenv("GITHUB_REPOSITORY") or "bullpowerhubgit/supermegabot"
+
+        if not token:
+            result["reason"] = "GITHUB_TOKEN fehlt"
+            return result
+
+        import aiohttp, base64
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        api = f"https://api.github.com/repos/{repo}"
+
+        async with aiohttp.ClientSession() as s:
+            # Basis-SHA holen
+            async with s.get(f"{api}/git/ref/heads/main", headers=headers,
+                             timeout=aiohttp.ClientTimeout(total=10)) as r:
+                ref = await r.json()
+            sha = ref.get("object", {}).get("sha", "")
+            if not sha:
+                result["reason"] = "Konnte main SHA nicht lesen"
+                return result
+
+            # Branch erstellen
+            await s.post(f"{api}/git/refs", headers=headers,
+                        json={"ref": f"refs/heads/{branch}", "sha": sha},
+                        timeout=aiohttp.ClientTimeout(total=10))
+
+            # BACKLOG.md pushen
+            content_b64 = base64.b64encode(backlog_path.read_bytes()).decode()
+            async with s.get(f"{api}/contents/data/autonomous_loop/BACKLOG.md",
+                            headers=headers,
+                            timeout=aiohttp.ClientTimeout(total=10)) as r:
+                existing = await r.json() if r.status == 200 else {}
+            file_sha = existing.get("sha", "")
+
+            body = {
+                "message": f"autonomous-loop: update backlog {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}",
+                "content": content_b64,
+                "branch": branch,
+            }
+            if file_sha:
+                body["sha"] = file_sha
+
+            await s.put(f"{api}/contents/data/autonomous_loop/BACKLOG.md",
+                       headers=headers, json=body,
+                       timeout=aiohttp.ClientTimeout(total=15))
+
+            # PR erstellen
+            mrr = (report.get("payments") or {}).get("mrr", 0)
+            top = ((report.get("analytics") or {}).get("top_task") or {}).get("title", "")
+            pr_body = {
+                "title": f"Autonomous Loop — {top[:60] or 'Backlog Update'}",
+                "body": (
+                    f"**MRR:** €{mrr}\n"
+                    f"**Code health:** {(report.get('code_health') or {}).get('ok')}\n\n"
+                    f"**AI Plan:**\n```json\n{ai_plan_raw[:2000]}\n```\n\n"
+                    f"_Generiert von autonomous_loop.py — Railway deployt automatisch nach Merge._"
+                ),
+                "head": branch,
+                "base": "main",
+                "draft": False,
+            }
+            async with s.post(f"{api}/pulls", headers=headers, json=pr_body,
+                             timeout=aiohttp.ClientTimeout(total=15)) as r:
+                pr = await r.json()
+
+        result = {
+            "ok": True,
+            "skipped": False,
+            "branch": branch,
+            "pr_url": pr.get("html_url"),
+            "pr_number": pr.get("number"),
+        }
+    except Exception as e:
+        result = {"ok": False, "skipped": False, "reason": str(e)[:200]}
+
+    result["at"] = _now()
+    return result
 
 
 async def run_loop_cycle() -> str:

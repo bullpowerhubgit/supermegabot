@@ -551,8 +551,8 @@ def _send_email(to: str, subject: str, body: str) -> bool:
         msg["To"]      = to
         msg["Reply-To"] = _GMAIL_USER()
         msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
-            s.login(_GMAIL_USER(), _GMAIL_PASS())
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.login(_GMAIL_USER(), _GMAIL_PASS())
             s.sendmail(_GMAIL_USER(), [to], msg.as_string())
         register_sent(to, subject, body)
         log.info("  ✉  → %s | %s", to, subject[:55])

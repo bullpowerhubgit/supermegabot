@@ -888,8 +888,8 @@ def _send_via_gmail(user: str, password: str, to_email: str,
         msg["To"]      = to_email
         msg["Reply-To"] = user
         msg.attach(MIMEText(body.replace("{email}", to_email), "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as s:
-            s.login(user, password)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.login(user, password)
             s.sendmail(user, [to_email], msg.as_string())
         return "ok"
     except smtplib.SMTPAuthenticationError:

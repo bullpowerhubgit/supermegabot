@@ -1186,8 +1186,8 @@ def _send_via_gmail_pool(to: str, subject: str, body: str) -> bool:
             msg["To"]      = to
             msg["Reply-To"] = "aiitecbuuss@gmail.com"
             msg.attach(MIMEText(body, "plain", "utf-8"))
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
-                s.login(user, pwd)
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+                s.ehlo(); s.starttls(); s.login(user, pwd)
                 s.sendmail(user, [to], msg.as_string())
             log.info("  ✉  Gesendet → %s [Gmail:%s]", to, user.split("@")[0])
             return True

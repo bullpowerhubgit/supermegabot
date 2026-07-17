@@ -587,8 +587,8 @@ def _send_gmail(user: str, password: str, to: str, subject: str, body: str) -> T
         html_body = "<html><body>" + body.replace("\n", "<br>").replace("✅", "✓") + "</body></html>"
         msg.attach(MIMEText(html_body, "html", "utf-8"))
 
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as srv:
-            srv.login(user, password)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as srv:
+            srv.ehlo(); srv.starttls(); srv.login(user, password)
             srv.sendmail(user, [to], msg.as_string())
         return True, "ok"
     except smtplib.SMTPRecipientsRefused:

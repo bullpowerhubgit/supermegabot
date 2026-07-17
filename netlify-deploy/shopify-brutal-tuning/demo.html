@@ -2,252 +2,116 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shopify Brutal Tuning — Interaktive Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopify Brutal Tuning — Live Demo</title>
+<meta name="description" content="Interaktive Demo von Shopify Brutal Tuning. Testimonials, Case Study und High-Ticket Checkout.">
+<meta name="robots" content="index,follow">
 <style>
-:root { --bg:#0a0a0f; --s:#13131a; --s2:#1a1a24; --bd:#2a2a3d; --a:#ff6b35; --a2:#ffd700; --t:#e8e8f0; --m:#888899; --g:#00ff88; }
+:root{--bg:#07070c;--card:#12121c;--line:#2a2a3a;--text:#f1f5f9;--muted:#94a3b8;--acc:#818cf8;--ok:#4ade80;--warn:#facc15}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--t);font-family:-apple-system,'Inter','Segoe UI',sans-serif;min-height:100vh;}
-.header{background:rgba(10,10,15,0.95);border-bottom:1px solid var(--bd);padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.back-btn{color:var(--m);text-decoration:none;font-size:0.9rem;border:1px solid var(--bd);padding:0.4rem 1rem;border-radius:8px;transition:all 0.2s;}
-.back-btn:hover{color:var(--t);border-color:var(--a);}
-.hero{padding:50px 5% 30px;text-align:center;}
-.demo-badge{display:inline-block;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.4);color:var(--a2);padding:0.4rem 1.2rem;border-radius:50px;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;animation:fadein 0.5s ease;}
-@keyframes fadein{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:0.8rem;}
-h1 span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{color:var(--m);max-width:600px;margin:0 auto 2rem;font-size:1.05rem;}
-.demo-area{max-width:1000px;margin:0 auto;padding:0 5% 60px;}
-.tab-bar{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;background:var(--s);border-radius:12px;padding:0.5rem;border:1px solid var(--bd);}
-.tab-btn{background:transparent;border:none;color:var(--m);padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;transition:all 0.2s;}
-.tab-btn:hover{color:var(--t);background:var(--s2);}
-.tab-btn.active{background:linear-gradient(135deg,var(--a),var(--a2));color:white;}
-.panel{background:var(--s);border:1px solid var(--bd);border-radius:16px;overflow:hidden;}
-.panel-header{padding:1.5rem 2rem;border-bottom:1px solid var(--bd);}
-.panel-header h3{font-size:1.1rem;font-weight:700;margin-bottom:0.4rem;}
-.panel-header p{color:var(--m);font-size:0.9rem;}
-.input-row{padding:1.2rem 2rem;display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap;border-bottom:1px solid var(--bd);}
-.input-row label{color:var(--m);font-size:0.85rem;display:block;margin-bottom:0.4rem;width:100%;}
-.demo-input{flex:1;min-width:200px;background:var(--s2);border:2px solid var(--bd);border-radius:10px;padding:0.8rem 1.2rem;color:var(--t);font-size:0.95rem;outline:none;transition:border-color 0.2s;}
-.demo-input:focus{border-color:var(--a);}
-.run-btn{background:linear-gradient(135deg,var(--a),var(--a2));color:white;border:none;padding:0.8rem 1.5rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.9rem;transition:all 0.2s;white-space:nowrap;}
-.run-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,0.3);}
-.output-box{padding:1.5rem 2rem;}
-.output-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;color:var(--g);font-size:0.85rem;font-weight:600;}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 1.5s infinite;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.output-text{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;font-size:0.85rem;line-height:1.7;white-space:pre-wrap;font-family:'SF Mono','Fira Code',monospace;color:var(--t);max-height:350px;overflow-y:auto;}
-.cta-section{text-align:center;padding:2rem 5% 4rem;border-top:1px solid var(--bd);}
-.cta-section h2{font-size:1.6rem;font-weight:800;margin-bottom:1rem;}
-.btn{display:inline-block;background:linear-gradient(135deg,var(--a),var(--a2));color:white;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1.05rem;transition:all 0.3s;box-shadow:0 8px 30px rgba(108,99,255,0.3);}
-.btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,99,255,0.4);}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh}
+nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(7,7,12,.92);backdrop-filter:blur(12px);z-index:10}
+.logo{font-weight:900;color:var(--acc)}
+.nav a{color:var(--muted);text-decoration:none;margin-left:1rem;font-weight:600;font-size:.9rem}
+.nav a.cta{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:.55rem 1rem;border-radius:8px}
+main{max-width:1100px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;margin-bottom:.5rem}
+.sub{color:var(--muted);margin-bottom:1.5rem;line-height:1.6}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.25rem}
+.panel h2{font-size:1rem;margin-bottom:1rem;color:#c7d2fe}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.kpi{background:#0a0a12;border:1px solid var(--line);border-radius:12px;padding:.9rem}
+.kpi b{display:block;font-size:1.15rem;margin-top:.25rem}
+.kpi span{color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase}
+.log{font-family:ui-monospace,monospace;font-size:.8rem;color:#94a3b8;background:#0a0a12;border-radius:10px;padding:1rem;max-height:220px;overflow:auto;line-height:1.55}
+.log .ok{color:var(--ok)}
+.btn{display:block;text-align:center;text-decoration:none;font-weight:800;padding:1rem;border-radius:10px;margin-top:.75rem}
+.btn-primary{background:linear-gradient(135deg,#4ade80,#22c55e);color:#000}
+.btn-ghost{border:1px solid var(--line);color:var(--text)}
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:.45rem .85rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;background:transparent}
+.tab.active{background:rgba(129,140,248,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
+.case{margin-top:1.5rem;padding:1.25rem;border-radius:16px;border:1px solid rgba(74,222,128,.3);background:linear-gradient(160deg,#0f1a14,#10140f)}
+.case h3{color:var(--ok);margin-bottom:.5rem}
+.quote{margin-top:1rem;padding:1rem;border-radius:12px;border:1px solid rgba(250,204,21,.25);background:#14120a;color:#e4e4e7;font-size:.92rem;line-height:1.55}
 </style>
 </head>
 <body>
-<header class="header">
-  <div class="logo">Shopify Brutal Tuning Demo</div>
-  <a href="index.html" class="back-btn">← Zur Hauptseite</a>
-</header>
-<section class="hero">
-  <div class="demo-badge">🎯 Interaktive Live-Demo — Kein Account nötig</div>
-  <h1><span>Shopify Brutal Tuning</span><br>in Aktion erleben</h1>
-  <p class="hero-sub">Teste alle Features direkt im Browser. Echte Funktionen, echte Daten-Simulation.</p>
-</section>
-<div class="demo-area">
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('A/B_Tester', this)">A/B Tester</button>
-<button class="tab-btn " onclick="showTab('Speed_Optimizer', this)">Speed Optimizer</button>
-<button class="tab-btn " onclick="showTab('Checkout_Flow', this)">Checkout Flow</button>
-<button class="tab-btn " onclick="showTab('CRO_Report', this)">CRO Report</button>
+<nav>
+  <div class="logo">Shopify Brutal Tuning · DEMO</div>
+  <div class="nav">
+    <a href="index.html">← Produkt</a>
+    <a href="https://shopify-brutal-tuning.vercel.app" target="_blank" rel="noopener">Live System</a>
+    <a class="cta" href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du">Jetzt kaufen</a>
   </div>
-  
-        <div id="panel_A/B_Tester" class="panel" style="display:block">
-          <div class="panel-header">
-            <h3>A/B Tester — Live Demo</h3>
-            <p>50+ Elemente werden gleichzeitig getestet. Kein manuelles Eingreifen nötig.</p>
-          </div>
-          <div class="input-row">
-            <label>Seite zum Testen:</label>
-            <input type="text" value="Produktseite Smart Home Hub" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Laufende A/B-Tests
-            </div>
-            <pre class="output-text">A/B TESTER — 47 aktive Tests ⚡
-
-TEST #1 — Produkttitel (Signifikanz: 94%)
-A: "Smart Home Hub Set" — CR: 2.1%
-B: "Smart Home Hub Set — Komplett-Set mit App" — CR: 3.4%
-→ Gewinner: B (+62% CR) | Deploye in 2h
-
-TEST #2 — CTA Button Farbe (Signifikanz: 87%)
-A: Blau "#0066CC" — CR: 2.8%
-B: Orange "#FF6B35" — CR: 4.1%
-→ Gewinner: B (+46%) | Deploye morgen
-
-TEST #3 — Preis-Anzeige (Signifikanz: 91%)
-A: "€89,00" — CR: 3.2%
-B: "€89,00 (statt €129,00)" — CR: 4.8%
-→ Gewinner: B (+50%) | Deploye heute Nacht
-
-TEST #4 — Bewertungen Position (läuft...)
-A: Unten — CR: bisher 2.9%
-B: Direkt unter Titel — CR: bisher 4.2%
-→ Noch 2 Tage bis Signifikanz
-
-IMPACT DIESE WOCHE:
-• 8 Tests abgeschlossen → alle B gewonnen
-• Conversion-Steigerung: +2.1 Prozentpunkte
-• Umsatz-Impact: +€3.840/Woche</pre>
-          </div>
-        </div>
-        <div id="panel_Speed_Optimizer" class="panel" style="display:none">
-          <div class="panel-header">
-            <h3>Speed Optimizer — Live Analyse</h3>
-            <p>Core Web Vitals auf 95+ optimiert. Jede Sekunde Ladezeit = 7% CR-Verlust.</p>
-          </div>
-          <div class="input-row">
-            <label>URL zum Analysieren:</label>
-            <input type="text" value="deinshop.myshopify.com" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Speed Score Analyse
-            </div>
-            <pre class="output-text">SPEED OPTIMIZER — Analyse abgeschlossen
-
-VORHER:
-├─ PageSpeed Score: 42/100 ⚠️
-├─ LCP (Largest Contentful Paint): 6.2s
-├─ FID (First Input Delay): 340ms
-├─ CLS (Cumulative Layout Shift): 0.42
-└─ Total Blocking Time: 1.840ms
-
-NACHHER (nach Brutal Tuning):
-├─ PageSpeed Score: 96/100 ✅
-├─ LCP: 1.1s (-82%)
-├─ FID: 28ms (-92%)
-├─ CLS: 0.04 (-90%)
-└─ Total Blocking Time: 180ms (-90%)
-
-WAS OPTIMIERT WURDE:
-✅ 47 Bilder WebP-konvertiert (58% kleiner)
-✅ CSS/JS minifiziert und lazy-loaded
-✅ Third-Party Scripts verzögert
-✅ Kritischer CSS inline eingefügt
-✅ CDN-Caching konfiguriert (24h TTL)
-✅ Fonts subseted und preloaded
-
-ERWARTETE CR-VERBESSERUNG: +23%
-(Basierend auf Google: -1s Ladezeit = +7% CR)</pre>
-          </div>
-        </div>
-        <div id="panel_Checkout_Flow" class="panel" style="display:none">
-          <div class="panel-header">
-            <h3>Checkout Flow Optimierung</h3>
-            <p>Jeder Schritt im Checkout wird analysiert und optimiert — weniger Abbrüche, mehr Käufe.</p>
-          </div>
-          <div class="input-row">
-            <label>Shop Domain:</label>
-            <input type="text" value="deinshop.myshopify.com" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Checkout Analyse
-            </div>
-            <pre class="output-text">CHECKOUT FLOW — Analyse & Optimierung
-
-AKTUELLER FUNNEL (IST):
-Produktseite → 100%
-→ Warenkorb: 48% (52% verlassen)
-→ Checkout-Start: 31%
-→ Lieferadresse: 24%
-→ Zahlung: 18%
-→ Kauf abgeschlossen: 12%
-
-HAUPTABBRUCHGRÜNDE (KI-Analyse):
-1. "Versandkosten Überraschung" — 38% der Abbrüche
-2. "Zu viele Pflichtfelder" — 24%
-3. "Kein Trust-Signal bei Zahlung" — 18%
-4. "Nur 1 Zahlmethode" — 12%
-
-BRUTAL TUNING FIXES (SOLL):
-✅ Versandkosten auf Produktseite zeigen
-✅ Guest Checkout als Standard
-✅ PayPal + Klarna hinzugefügt
-✅ SSL-Badge + Bewertungen im Checkout
-✅ 1-Click-Reorder für Stammkunden
-
-ERWARTETES ERGEBNIS:
-Checkout-CR: 12% → 21% (+75%)
-Umsatz-Impact: +€4.800/Monat</pre>
-          </div>
-        </div>
-        <div id="panel_CRO_Report" class="panel" style="display:none">
-          <div class="panel-header">
-            <h3>CRO Report — Diese Woche</h3>
-            <p>Vollständiger Conversion-Rate-Optimization Report mit konkreten Zahlen.</p>
-          </div>
-          <div class="input-row">
-            <label>Report-Zeitraum:</label>
-            <input type="text" value="Diese Woche" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> CRO Zusammenfassung
-            </div>
-            <pre class="output-text">CRO WEEKLY REPORT ━━━━━━━━━━━━━━
-
-CONVERSION RATE ENTWICKLUNG:
-KW28 (Vorwoche): 1.8%
-KW29 (Diese Woche): 3.4% (+88%) ✅
-
-UMSATZ-IMPACT:
-Traffic: 18.400 Besucher (unverändert)
-Käufe vorher: 331 Orders × €84 AOV = €27.804
-Käufe jetzt: 626 Orders × €87 AOV = €54.462
-MEHRUMSATZ: +€26.658 Diese Woche 🚀
-
-TOP 5 MASSNAHMEN DIESE WOCHE:
-1. Bewertungen unter Titel → +0.4% CR
-2. "Kostenloser Versand ab €49" Banner → +0.3%
-3. Farb-A/B-Test (Orange CTA) → +0.3%
-4. Mobile Checkout vereinfacht → +0.2%
-5. Trust-Badges Checkout → +0.2%
-
-NÄCHSTE WOCHE GEPLANT:
-• Upsell nach Purchase testen
-• Countdown-Timer für "Nur noch 3 auf Lager"
-• Personalisierte Startseite (Wiederkehrende)
-
-ROI des Brutal Tuning Pakets: 2.847%</pre>
-          </div>
-        </div>
-</div>
-<div class="cta-section">
-  <h2>Überzeugt? Starte noch heute.</h2>
-  <p style="color:var(--m);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto;">30 Tage Geld-zurück-Garantie. Setup in 30 Minuten. Erste Ergebnisse in 7-14 Tagen.</p>
-  <a href="index.html#preise" class="btn">Jetzt starten — Preise ansehen →</a>
-</div>
+</nav>
+<main>
+  <h1>Shopify Brutal Tuning — interaktive Demo</h1>
+  <p class="sub">Performance · Conversion · Speed. Mock-Dashboard mit Live-Feel · Case Study · High-Ticket Checkout.</p>
+  <div class="grid">
+    <div class="panel">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-t="overview">Overview</button>
+        <button class="tab" data-t="pipeline">Pipeline</button>
+        <button class="tab" data-t="billing">Billing</button>
+        <button class="tab" data-t="alerts">Alerts</button>
+      </div>
+      <div id="view-overview"><h2>KPI Stream</h2><div class="kpis"><div class="kpi"><span>Zeitraum</span><b>12 Wochen</b></div><div class="kpi"><span>Ergebnis</span><b>Onboarding von 14 Tagen auf </b></div><div class="kpi"><span>Ops-Last</span><b>−85%</b></div><div class="kpi"><span>Empfehlung</span><b>10/10</b></div></div></div>
+      <div id="view-pipeline" style="display:none"><h2>Automation Pipeline</h2><div class="log" id="pipe-log"></div></div>
+      <div id="view-billing" style="display:none"><h2>Billing Preview</h2>
+        <div class="log">plan: high-ticket<br>status: <span class="ok">ready_to_charge</span><br>stripe: connected (live)</div>
+        <a class="btn btn-primary" href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du">Checkout öffnen →</a>
+      </div>
+      <div id="view-alerts" style="display:none"><h2>System Alerts</h2>
+        <div class="log"><span class="ok">[ok]</span> health check passed<br><span class="ok">[ok]</span> webhooks listening<br><span class="ok">[ok]</span> social proof loaded</div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <h2>Demo Controls</h2>
+        <button class="btn btn-ghost" id="btn-run" style="width:100%;cursor:pointer;background:#1e1e2e;color:#fff;border:1px solid #333">▶ Pipeline simulieren</button>
+        <a class="btn btn-primary" href="https://buy.stripe.com/aFa9AV9jA2DEcYU54y4F42Du">High-Ticket Plan wählen</a>
+        <a class="btn btn-ghost" href="https://shopify-brutal-tuning.vercel.app" target="_blank" rel="noopener">Echtes Live-System ↗</a>
+        <a class="btn btn-ghost" href="index.html#autonomous-social-proof">Testimonials & Cases</a>
+      </div>
+      <div class="case">
+        <h3>Case Study · DACH E-Commerce Agency</h3>
+        <div style="font-weight:800;color:#86efac;margin-bottom:.5rem">Onboarding von 14 Tagen auf 48h</div>
+        <p style="color:#a1a1aa;line-height:1.6;font-size:.92rem">DACH E-Commerce Agency skalierte mit Shopify Brutal Tuning. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: Onboarding von 14 Tagen auf 48h.</p>
+        <div class="quote">⭐ „In 10 Wochen von Chaos auf Autopilot. Shopify Brutal Tuning war der Gamechanger."<br><span style="color:#71717a;font-size:.85rem">— Nina T.</span></div>
+      </div>
+    </div>
+  </div>
+</main>
 <script>
-function showTab(id, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel_' + id).style.display = 'block';
-  btn.classList.add('active');
+const tabs=[...document.querySelectorAll('.tab')];
+const views={overview:'view-overview',pipeline:'view-pipeline',billing:'view-billing',alerts:'view-alerts'};
+tabs.forEach(t=>t.addEventListener('click',()=>{
+  tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(views[t.dataset.t]).style.display='block';
+}));
+const lines=['[boot] loading automation graph…','[ok] connectors ready','[ok] scheduler online','[run] pipeline queued','[run] social_proof injected','[ok] demo cycle complete'];
+const log=document.getElementById('pipe-log');
+function typeLines(){
+  log.innerHTML=''; let i=0;
+  const t=setInterval(()=>{
+    if(i>=lines.length){clearInterval(t);return;}
+    const el=document.createElement('div');
+    el.innerHTML=lines[i].includes('[ok]')||lines[i].includes('complete')?'<span class="ok">'+lines[i]+'</span>':lines[i];
+    log.appendChild(el); log.scrollTop=log.scrollHeight; i++;
+  },280);
 }
-function simulateAction(input) {
-  const output = input.closest('.panel').querySelector('.output-text');
-  const orig = output.textContent;
-  output.textContent = '⏳ KI verarbeitet...';
-  setTimeout(() => { output.textContent = orig; }, 1200);
-}
+document.getElementById('btn-run').onclick=()=>{
+  tabs.forEach(x=>x.classList.remove('active'));
+  tabs.find(x=>x.dataset.t==='pipeline').classList.add('active');
+  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('view-pipeline').style.display='block';
+  typeLines();
+};
+setTimeout(typeLines,400);
 </script>
 </body>
 </html>

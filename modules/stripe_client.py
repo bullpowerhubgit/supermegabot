@@ -22,7 +22,7 @@ log = logging.getLogger("stripe_client")
 STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 
-# NUR bullpowersrtkennels — NIEMALS AIITEC (sk_live_51Swso…)
+# NUR ineedit.com.co (acct_1Tg1U0… / bullpowersrtkennels) — NIEMALS AIITEC (sk_live_51Swso…)
 _STRIPE_KEY_NAMES = (
     "STRIPE_SECRET_KEY",
     "STRIPE_SECRET_KEY_FULL",
@@ -31,7 +31,7 @@ _STRIPE_KEY_NAMES = (
 
 
 def _stripe_key_candidates() -> list[tuple[str, str]]:
-    """Only bullpowersrtkennels keys."""
+    """Only ineedit.com.co (sk_live_51Tg1U…) keys."""
     seen: set[str] = set()
     out: list[tuple[str, str]] = []
     try:

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+from __future__ import annotations
+
 """Digistore24 automation — orders, products, sales sync"""
 import os
 import json
@@ -52,6 +54,18 @@ def _url(action: str) -> str:
     return f"{DS24_BASE}/{action}/{DS24_FORMAT}/"
 
 
+async def _read_json_response(resp: aiohttp.ClientResponse, action: str) -> dict | None:
+    body = await resp.text()
+    if resp.status >= 400:
+        log.warning("DS24 %s http=%s body=%s", action, resp.status, body[:300])
+        return None
+    try:
+        return json.loads(body)
+    except json.JSONDecodeError:
+        log.error("DS24 %s invalid JSON http=%s body=%s", action, resp.status, body[:300])
+        return None
+
+
 def is_configured() -> bool:
     return bool(_resolve_key("default"))
 
@@ -79,11 +93,13 @@ async def get_orders(page=1, per_page=50):
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
-                data = await resp.json(content_type=None)
+                data = await _read_json_response(resp, "listTransactions")
+        if not data:
+            return []
         if data.get("result") == "success":
             raw = data.get("data", {})
             return raw.get("transaction_list", [])
-        log.warning("DS24 get_orders: result=%s msg=%s", data.get("result"), data.get("message",""))
+        log.warning("DS24 get_orders: result=%s msg=%s", data.get("result"), data.get("message", ""))
         return []
     except Exception as exc:
         log.error("DS24 get_orders error: %s", exc)
@@ -105,12 +121,14 @@ async def get_products():
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
-                data = await resp.json(content_type=None)
+                data = await _read_json_response(resp, "listProducts")
+        if not data:
+            return []
         if data.get("result") == "success":
             raw = data.get("data", {})
             products = raw.get("products", raw.get("product_list", []))
             return products
-        log.warning("DS24 get_products: result=%s", data.get("result"))
+        log.warning("DS24 get_products: result=%s msg=%s", data.get("result"), data.get("message", ""))
         return []
     except Exception as exc:
         log.error("DS24 get_products error: %s", exc)
@@ -181,7 +199,9 @@ async def ping():
         headers = {"X-DS-API-KEY": DS24_KEY}
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=20)) as resp:
-                data = await resp.json(content_type=None)
+                data = await _read_json_response(resp, "ping")
+        if not data:
+            return False
         return data.get("result") == "success"
     except Exception as exc:
         log.error("DS24 ping error: %s", exc)
