@@ -231,7 +231,7 @@ Antworte NUR mit diesem JSON (kein Markdown, kein Text darum):
   "compare_at_price": "{suggested_price * 1.4:.2f}",
   "tags": "tag1,tag2,tag3,tag4,tag5,trending,2026,bestseller",
   "product_type": "Kategoriename auf Deutsch",
-  "vendor": "BullPowerHub",
+  "vendor": "iNeedit",
   "image_query": "product photo english keywords for image search",
   "collection": "passende Kollektion auf Deutsch"
 }}"""
@@ -337,7 +337,7 @@ async def create_shopify_product(product_data: dict, image_url: str) -> Optional
     payload = {
         "title":        product_data.get("title", "")[:255],
         "body_html":    product_data.get("body_html", ""),
-        "vendor":       product_data.get("vendor", "BullPowerHub"),
+        "vendor":       product_data.get("vendor", "iNeedit"),
         "product_type": product_data.get("product_type", "Gadget"),
         "tags":         product_data.get("tags", "trending,2026"),
         "status":       "active",

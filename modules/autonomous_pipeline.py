@@ -122,7 +122,7 @@ async def create_shopify_product(idea: dict) -> Optional[str]:
     from modules.product_gatekeeper import validate_product
     ok, reason = validate_product(
         title=idea.get("name", ""),
-        vendor="BullPowerHub",
+        vendor="iNeedit",
         product_type=idea.get("category", ""),
         price=float(idea.get("price", 0)),
     )
