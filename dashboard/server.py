@@ -9649,6 +9649,49 @@ async def handle_autonomous_pipeline_status(req):
     return web.json_response({"ok": True, "pipeline_active": True, "scheduler_interval": "daily"})
 
 
+async def handle_autonomous_loop_run(req):
+    """POST /api/autonomous-loop/run — Claude→tests→payments→analytics cycle."""
+    quick = False
+    try:
+        body = await req.json()
+        quick = bool(body.get("quick"))
+    except Exception:
+        pass
+
+    async def _bg():
+        try:
+            from modules.autonomous_loop import run_autonomous_loop
+            await run_autonomous_loop(quick=quick, notify=True)
+        except Exception as exc:
+            log.warning("autonomous_loop bg error: %s", exc)
+
+    import asyncio as _aio
+    _aio.get_event_loop().create_task(_bg())
+    return web.json_response({"ok": True, "message": "Autonomous loop started", "quick": quick})
+
+
+async def handle_autonomous_loop_status(req):
+    """GET /api/autonomous-loop/status — latest loop report."""
+    from pathlib import Path
+    import json as _json
+    latest = Path(__file__).resolve().parents[1] / "data" / "autonomous_loop" / "latest.json"
+    if not latest.exists():
+        return web.json_response({"ok": True, "ran": False, "message": "no loop run yet"})
+    try:
+        data = _json.loads(latest.read_text())
+        return web.json_response({
+            "ok": True,
+            "ran": True,
+            "mrr": (data.get("payments") or {}).get("mrr"),
+            "top_task": (data.get("analytics") or {}).get("top_task"),
+            "phases": data.get("phases"),
+            "finished_at": data.get("finished_at"),
+            "code_health_ok": (data.get("code_health") or {}).get("ok"),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]})
+
+
 async def handle_system_info(req):
     """GET /api/system/info — System info and versions."""
     import platform
@@ -12475,6 +12518,8 @@ async def create_app():
     app.router.add_post("/api/product/bundle/run",        handle_bundle_cycle_run)
     app.router.add_post("/api/pipeline/run",              handle_autonomous_pipeline_run)
     app.router.add_get( "/api/pipeline/status",          handle_autonomous_pipeline_status)
+    app.router.add_post("/api/autonomous-loop/run",       handle_autonomous_loop_run)
+    app.router.add_get( "/api/autonomous-loop/status",   handle_autonomous_loop_status)
     app.router.add_get( "/api/system/info",              handle_system_info)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)

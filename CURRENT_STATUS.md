@@ -1,6 +1,35 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16 23:00 UTC (Wave 13 — High-Ticket Upgrade ALLE 16 Sites live)**
 
+
+## ✅ AUTONOMOUS LOOP EVERYWHERE (2026-07-17 16:37 UTC)
+
+**Loop:** Claude/Agents → Tests (CI) → Deploy (Railway/Vercel) → Stripe+Lemon payments → Resend/Loops onboarding → Plausible/PostHog → next plan
+
+| Component | Status |
+|-----------|--------|
+| `modules/autonomous_loop.py` | ✅ master cycle |
+| `modules/claude_agent_collab.py` | ✅ multi-agent |
+| `modules/lemon_squeezy_autopilot.py` | ✅ catalog (needs API keys) |
+| `modules/email_onboarding_autopilot.py` | ✅ D0/D1/D3/D7 Resend+Loops |
+| `modules/analytics_feedback.py` | ✅ Plausible/PostHog → tasks |
+| Scheduler | ✅ every 3h `autonomous_loop` + 2h collab |
+| API | ✅ `POST /api/autonomous-loop/run` · `GET …/status` |
+| CI | ✅ `.github/workflows/autonomous_loop.yml` + deploy.yml compile |
+| Docs | ✅ `config/AUTONOMOUS_LOOP.md` |
+
+```bash
+python3 -m modules.autonomous_loop
+```
+
+## ✅ GENERAL SCAN CLEANUP (2026-07-17 16:30 UTC)
+
+| Fix | Detail |
+|-----|--------|
+| Telegram Credentials | Hardcoded Bot-Token/Chat-ID Defaults aus `modules/notify_hub.py`, `modules/telegram_master_dashboard.py`, `modules/monetize_master.py`, `auto_runner.py` entfernt |
+| Safe Fallbacks | Telegram-Notifier skippen jetzt sauber mit Log-Warnung statt versteckte Fallback-Credentials zu benutzen |
+| DS24 Logging | `modules/digistore24_automation.py` loggt jetzt HTTP-Status + Body-Ausschnitt bei `listProducts`/`listTransactions`/`ping` statt leerem `DS24 get_products error:` |
+
 ## ✅ HIGH-TICKET V3 — ECHTE STRIPE-LINKS LIVE (Wave 15)
 
 **16/17 Netlify Konto 1 Sites mit neuen Stripe-Links (4F465/4F466 Serie) deployed:**

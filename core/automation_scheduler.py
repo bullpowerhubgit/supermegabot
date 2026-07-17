@@ -482,6 +482,16 @@ async def task_claude_agent_collab() -> str:
         return f"Claude Collab Fehler: {ex}"
 
 
+async def task_autonomous_loop() -> str:
+    """Full autonomous loop: code→Claude→Stripe/Lemon→email→analytics→plan."""
+    try:
+        from modules.autonomous_loop import run_loop_cycle
+        return await run_loop_cycle()
+    except Exception as ex:
+        return f"autonomous_loop error: {ex}"
+
+
+
 async def task_system_health() -> str:
     """Check system resources, alert on critical thresholds."""
     try:
@@ -8091,6 +8101,7 @@ TASKS = [
     # ── Monitoring & Self-Repair ──────────────────────────────────────────────
     ("claude_agent",         task_claude_agent_check,   3600,  120),  # 1h — Claude KI-Agent: Health-Check + Selbstanalyse + Telegram
     ("claude_collab",        task_claude_agent_collab,  7200,  125),  # 2h — Multi-Agent Collab (Claude+Rudi+DMs)
+    ("autonomous_loop",     task_autonomous_loop,    10800,  130),  # 3h — full autonomous loop
     ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
     ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
