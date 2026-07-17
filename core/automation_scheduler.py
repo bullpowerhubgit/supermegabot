@@ -2040,16 +2040,13 @@ async def task_youtube_auto_post() -> str:
             "📈 Passives Einkommen mit KI — Der komplette Blueprint",
         ]
         title = random.choice(topics)
-        result = await deploy_to_youtube(
-            title=title,
-            description=(
-                f"{title}\n\n"
-                f"👉 {os.getenv('DS24_AFFILIATE_LINK', '')}\n\n"
-                "#KI #PassivesEinkommen #OnlineBusiness"
-            ),
-            tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
+        desc = (
+            f"{title}\n\n"
+            f"👉 {os.getenv('DS24_AFFILIATE_LINK', '')}\n\n"
+            "#KI #PassivesEinkommen #OnlineBusiness"
         )
-        return f"YouTube: {result.get(chr(39)+'status'+chr(39), str(result)[:80])}"
+        result = await deploy_to_youtube(title, {"youtube_desc": desc})
+        return f"YouTube: {'✅ gepostet' if result else '⚠️ OAuth fehlt / übersprungen'}"
     except ImportError:
         return "YouTube: brutus_traffic_engine nicht verfügbar"
     except Exception as e:
