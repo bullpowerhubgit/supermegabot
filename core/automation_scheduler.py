@@ -1657,7 +1657,7 @@ async def task_mailchimp_auto_campaign() -> str:
 <p>Wusstest du, dass über <strong>87% der erfolgreichen Online-Unternehmer</strong> KI-Tools nutzen, um ihren Umsatz zu automatisieren?</p>
 <p>Mit der <strong>AI Income Machine</strong> bekommst du den kompletten Blueprint für:</p>
 <ul>
-<li>✅ Vollautomatische Einnahmen ohne tägliche Arbeit</li>
+<li>✅ Klare Automations-Bausteine fuer Shop und Funnel</li>
 <li>✅ KI-gestützte Produktauswahl und Marketing</li>
 <li>✅ Step-by-step Anleitung für Anfänger</li>
 </ul>
@@ -3035,7 +3035,7 @@ async def task_printify_seo() -> str:
 async def task_multi_platform_post() -> str:
     import random
     topics = [
-        "Passives Einkommen 2026 — So verdienst du im Schlaf",
+        "Strukturierte Automation 2026 — Prozesse sauber aufsetzen",
         "Shopify Automatisierung — Der komplette Guide",
         "KI Tools die 2026 wirklich Geld machen",
         "Dropshipping vs Print-on-Demand — Was ist besser?",
@@ -5689,10 +5689,10 @@ async def task_openclaw_blast() -> str:
     try:
         from modules.open_claw import claw_generate_content
         topics = [
-            "KI Automation System 2026 — Vollautomatisch Geld verdienen",
+            "KI Automation System 2026 — strukturierte digitale Prozesse",
             "Shopify Dropshipping mit AI — €0 Start",
             "Digistore24 Affiliate 417 Produkte — Sofortprovision",
-            "Passives Einkommen 2026 — KI macht alles für dich",
+            "Digitale Prozesse 2026 — KI unterstuetzt Shop und Content",
         ]
         import random
         topic = random.choice(topics)
@@ -8325,6 +8325,14 @@ async def task_ds24_funnel() -> str:
         today   = result.get("today", {})
         monthly = result.get("last_30_days", {})
         tg      = " (TG gesendet)" if result.get("telegram_sent") else ""
+
+        # Graceful no-key / wrong-account Rückmeldung
+        reason = today.get("reason", "")
+        if not today.get("ok", True) and reason in ("no_api_key", "wrong_account"):
+            if reason == "wrong_account":
+                return "DS24 Funnel: kein Key — falsches Konto (1682000-...) blockiert, nur 1581233-... (aiitec) erlaubt"
+            return "DS24 Funnel: kein Key — DS24_API_KEY nicht konfiguriert (1581233-... erwartet)"
+
         return (
             f"DS24 Funnel: heute={today.get('sales', 0)} Verkäufe "
             f"{today.get('revenue_eur', 0.0)} EUR | "
