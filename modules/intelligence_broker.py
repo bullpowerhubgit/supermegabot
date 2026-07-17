@@ -838,8 +838,8 @@ class IntelligenceBroker:
 
     @staticmethod
     def _smtp_send(user: str, pw: str, to: str, msg: MIMEMultipart) -> None:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-            smtp.login(user, pw)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as smtp:
+            smtp.ehlo(); smtp.starttls(); smtp.login(user, pw)
             smtp.sendmail(user, to, msg.as_string())
 
     # ── Watchlist ─────────────────────────────────────────────────────────────
@@ -1078,6 +1078,13 @@ class IntelligenceBroker:
         pw   = _gmail_pass()
         if not user or not pw:
             return False
+        try:
+            from modules.gmail_accounts import _is_valid_recipient
+            if not _is_valid_recipient(target.get("email", "")):
+                log.warning("BLOCKED (noreply/dead): %s", target.get("email"))
+                return False
+        except ImportError:
+            pass
 
         typ   = target.get("typ", "Finanzinstitut")
         tname = target.get("firma", "")

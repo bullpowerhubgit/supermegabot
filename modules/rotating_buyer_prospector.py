@@ -648,13 +648,20 @@ def _smtp_pool() -> list[dict]:
 
 def _send_email(smtp: dict, to_email: str, subject: str, html_body: str) -> bool:
     try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.debug("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
+    try:
         msg = email.mime.multipart.MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"]    = smtp["user"]
         msg["To"]      = to_email
         msg.attach(email.mime.text.MIMEText(html_body, "html", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as s:
-            s.login(smtp["user"], smtp["password"])
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.login(smtp["user"], smtp["password"])
             s.sendmail(smtp["user"], [to_email], msg.as_string())
         return True
     except Exception as e:

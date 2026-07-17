@@ -41,6 +41,49 @@ _GMAIL_AUTH_FAILED: set = set()  # BadCredentials — bis Restart/Refresh deakti
 _REMOVED_INDEXES: frozenset[int] = frozenset({4})  # looopwave@gmail.com
 _REMOVED_EMAILS: frozenset[str] = frozenset({"looopwave@gmail.com"})
 
+# ── Dauerhafter Empfänger-Schutz — gilt für ALLE Module ──────────────────────
+_RECIPIENT_SKIP_LOCAL: frozenset[str] = frozenset({
+    "noreply", "no-reply", "no_reply", "no.reply", "donotreply", "do-not-reply",
+    "bounce", "bounces", "postmaster", "mailer-daemon", "auto", "automated",
+    "reply", "newsletter", "news", "update", "updates", "alert", "alerts",
+    "support-noreply", "abuse", "spam", "contact-us", "test", "unsubscribe",
+    "info-noreply", "notification", "notifications", "do_not_reply",
+})
+_RECIPIENT_SKIP_PREFIXES: tuple = (
+    "noreply@", "no-reply@", "no_reply@", "no.reply@", "mailer-daemon@",
+    "bounce@", "bounces@", "postmaster@", "notification@", "newsletter@",
+    "news@", "update@", "updates@", "alert@", "alerts@", "abuse@",
+)
+_DEAD_DOMAINS: frozenset[str] = frozenset({
+    "wirecard.de", "wirecard.com",      # bankrott 2020
+    "credit-suisse.com",                # von UBS 2023 übernommen
+    "skalum.com",                       # Domain existiert nicht
+    "bullpower.de",                     # eigene Test-Domain
+    "supermegabot.com",                 # eigene Domain
+})
+_OWN_SEND_EMAILS: frozenset[str] = frozenset({
+    "aiitecbuuss@gmail.com", "bullpowersrtkennels@gmail.com",
+    "dragonadnp@gmail.com", "rudolf.sarkany.aiitec@gmail.com",
+    "rudolfsarkany1984@gmail.com", "nikolestimi@gmail.com",
+    "looopwave@gmail.com",
+})
+
+def _is_valid_recipient(to_email: str) -> bool:
+    """Zentrale Empfänger-Validierung — gilt für ALLE Outreach-Module."""
+    addr = (to_email or "").lower().strip()
+    if not addr or "@" not in addr:
+        return False
+    local, domain = addr.split("@", 1)
+    if domain in _DEAD_DOMAINS:
+        return False
+    if addr in _OWN_SEND_EMAILS:
+        return False
+    if local in _RECIPIENT_SKIP_LOCAL:
+        return False
+    if any(addr.startswith(p) for p in _RECIPIENT_SKIP_PREFIXES):
+        return False
+    return True
+
 # ── Globaler Tages-Counter (verhindert 550-Overruns) ─────────────────────────
 import sqlite3 as _sqlite3
 import time as _time
@@ -292,6 +335,9 @@ def send_email(
     account_index: Optional[int] = None,
 ) -> Tuple[bool, str]:
     """Versendet via einem Konto; bei Fehler alle anderen probieren."""
+    if not _is_valid_recipient(to_email):
+        log.warning("BLOCKED (noreply/dead/own): %s — nicht gesendet", to_email)
+        return False, ""
     pool: List[GmailAccount]
     if account_index:
         pool = [a for a in list_accounts() if a.index == account_index and a.configured]
@@ -371,6 +417,9 @@ def send_email_with_attachment(
     attachment_name: Optional[str] = None,
     account_index: Optional[int] = None,
 ) -> Tuple[bool, str]:
+    if not _is_valid_recipient(to_email):
+        log.warning("BLOCKED (noreply/dead/own): %s — Anhang nicht gesendet", to_email)
+        return False, ""
     pool: List[GmailAccount]
     if account_index:
         pool = [a for a in list_accounts() if a.index == account_index and a.configured]
