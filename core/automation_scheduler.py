@@ -492,6 +492,26 @@ async def task_autonomous_loop() -> str:
 
 
 
+async def task_autonomous_master() -> str:
+    try:
+        from modules.autonomous_master import run_master_cycle
+        r = await run_master_cycle(quick=False)
+        phases = r.get("phases", {})
+        ok_count = sum(1 for p in phases.values() if isinstance(p, dict) and p.get("ok"))
+        return f"Master Cycle: {ok_count}/{len(phases)} Phasen OK in {r.get('duration_s',0):.0f}s"
+    except Exception as e:
+        return f"autonomous_master Fehler: {e}"
+
+
+async def task_stripe_payment_poll() -> str:
+    try:
+        from modules.stripe_payment_hook import task_stripe_payment_poll as _run
+        r = await _run()
+        return f"Stripe Poll: {r.get('processed',0)} verarbeitet, {r.get('errors',0)} Fehler"
+    except Exception as e:
+        return f"Stripe Poll Fehler: {e}"
+
+
 async def task_system_health() -> str:
     """Check system resources, alert on critical thresholds."""
     try:
@@ -8237,6 +8257,8 @@ TASKS = [
     ("claude_agent",         task_claude_agent_check,   3600,  120),  # 1h — Claude KI-Agent: Health-Check + Selbstanalyse + Telegram
     ("claude_collab",        task_claude_agent_collab,  7200,  125),  # 2h — Multi-Agent Collab (Claude+Rudi+DMs)
     ("autonomous_loop",     task_autonomous_loop,    10800,  130),  # 3h — full autonomous loop
+    ("autonomous_master",   task_autonomous_master,  10800,  135),  # 3h — Master: Stripe+Lemon+Analytics+Resend+Commit
+    ("stripe_payment_poll", task_stripe_payment_poll, 3600,  132),  # 1h — Stripe Zahlungen → Resend Onboarding
     ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
     ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair

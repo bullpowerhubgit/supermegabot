@@ -5355,6 +5355,12 @@ async def handle_stripe_webhook(req):
         event = json.loads(payload)
         result = await handle_webhook_event(event)
 
+        # Resend Onboarding + Telegram-Notification bei neuer Zahlung
+        try:
+            asyncio.create_task(_stripe_onboarding_hook(event))
+        except Exception as _oh:
+            log.debug("Onboarding hook create_task: %s", _oh)
+
         # Sofia Upsell-Anruf nach Stripe-Zahlung
         try:
             event_type = event.get("type", "")
@@ -5373,6 +5379,16 @@ async def handle_stripe_webhook(req):
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+async def _stripe_onboarding_hook(event: dict) -> None:
+    """Stripe-Zahlung → Resend Onboarding-Sequenz starten."""
+    try:
+        from modules.stripe_payment_hook import handle_stripe_event
+        payload = json.dumps(event).encode()
+        await handle_stripe_event(payload, "")  # Sig bereits verifiziert
+    except Exception as e:
+        log.debug("_stripe_onboarding_hook: %s", e)
 
 
 async def _sofia_stripe_call(phone: str, product: str, name: str, amount: float) -> None:
