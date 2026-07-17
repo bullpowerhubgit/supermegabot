@@ -23,6 +23,9 @@ POST /api/autonomous-loop/run
 {"quick": false}
 
 GET /api/autonomous-loop/status
+
+POST /api/autonomous-loop/local-ai
+{"topic": "ineedit.com.co Conversion + Shopify Automation"}
 ```
 
 ## Agent teams
@@ -67,6 +70,7 @@ POST /api/agents/run
 | Loops | `LOOPS_API_KEY` | contact sync (optional) |
 | Plausible | `PLAUSIBLE_API_KEY`, `PLAUSIBLE_SITE_ID` | traffic metrics |
 | PostHog | `POSTHOG_API_KEY`, `POSTHOG_PROJECT_ID` | product analytics |
+| OpenClaw / Ollama | `OLLAMA_BASE`, `OLLAMA_CLAW_MODEL`, `OLLAMA_*` | local-first drafts, cheap automation, fallback-free iteration |
 | Claude / AI chain | `ANTHROPIC_*` + fallbacks | plan next iteration |
 
 ## Outputs

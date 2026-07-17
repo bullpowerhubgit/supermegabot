@@ -25,6 +25,7 @@
 | `modules/analytics_feedback.py` | ✅ Plausible/PostHog → tasks |
 | Scheduler | ✅ every 3h `autonomous_loop` + 2h collab |
 | API | ✅ `POST /api/autonomous-loop/run` · `GET …/status` |
+| Local AI | ✅ `modules/local_ai_autopilot.py` + `POST /api/autonomous-loop/local-ai` |
 | CI | ✅ `.github/workflows/autonomous_loop.yml` + changed-target verify |
 | Deploy Registry | ✅ `modules/autonomous_projects.py` + `config/autonomous_projects.json` |
 | Auto Deploy | ✅ `.github/workflows/autonomous_deploy.yml` for Railway/Vercel targets |

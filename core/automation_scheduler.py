@@ -7230,6 +7230,51 @@ async def task_smb_outreach_daily() -> str:
         return f"SMB Outreach Fehler: {e}"
 
 
+async def task_ollama_product_descriptions() -> str:
+    try:
+        from modules.ollama_automation import task_ollama_product_descriptions as _run
+        result = await _run()
+        return f"Ollama Produkttexte: {result.get('count', 0)} generiert"
+    except Exception as e:
+        return f"Ollama Produkttexte Fehler: {e}"
+
+
+async def task_ollama_social_posts() -> str:
+    try:
+        from modules.ollama_automation import task_ollama_social_posts as _run
+        result = await _run()
+        return f"Ollama Social Posts: {result.get('count', 0)} generiert"
+    except Exception as e:
+        return f"Ollama Social Posts Fehler: {e}"
+
+
+async def task_ollama_email_subjects() -> str:
+    try:
+        from modules.ollama_automation import task_ollama_email_subjects as _run
+        result = await _run()
+        return f"Ollama Email-Betreffe: {result.get('count', 0)} Szenarien"
+    except Exception as e:
+        return f"Ollama Email-Betreffe Fehler: {e}"
+
+
+async def task_ollama_seo_meta() -> str:
+    try:
+        from modules.ollama_automation import task_ollama_seo_meta as _run
+        result = await _run()
+        return f"Ollama SEO Meta: {result.get('count', 0)} Seiten"
+    except Exception as e:
+        return f"Ollama SEO Meta Fehler: {e}"
+
+
+async def task_ollama_daily_brief() -> str:
+    try:
+        from modules.ollama_automation import task_ollama_daily_brief as _run
+        result = await _run()
+        return f"Ollama Briefing: {'OK' if result.get('ok') else result.get('error','?')}"
+    except Exception as e:
+        return f"Ollama Briefing Fehler: {e}"
+
+
 async def task_mega_hub_autopilot() -> str:
     try:
         from modules.mega_hub import run_autopilot
@@ -8373,6 +8418,12 @@ TASKS = [
     ("gumroad_brutus",         task_gumroad_brutus_traffic,  43200, 3890),  # 12h — Gumroad Stats + Traffic Swarm
     ("outreach_batch",         task_outreach_engine_batch,   43200, 3910),  # 12h — B2B Outreach 10 Nachrichten
     ("smb_outreach_daily",     task_smb_outreach_daily,      86400, 3912),  # 24h — SaaS Akquise 5-Stufen Email-Sequenz
+    # ── OLLAMA LOKALE KI — KEIN API-CREDIT-VERBRAUCH ─────────────────────────
+    ("ollama_product_desc",    task_ollama_product_descriptions, 21600, 3913),  # 6h  — Shopify Produktbeschreibungen (lokal)
+    ("ollama_social",          task_ollama_social_posts,         14400, 3914),  # 4h  — Social Posts IG/FB/LinkedIn (lokal)
+    ("ollama_email_subjects",  task_ollama_email_subjects,       28800, 3916),  # 8h  — A/B Betreffzeilen (lokal)
+    ("ollama_seo_meta",        task_ollama_seo_meta,             43200, 3917),  # 12h — SEO Meta-Descriptions (lokal)
+    ("ollama_daily_brief",     task_ollama_daily_brief,          86400, 3918),  # 24h — Tages-Briefing → Telegram (lokal)
     # ── MASS OUTREACH 1000/TAG ────────────────────────────────────────────────
     ("mass_outreach_research", task_mass_outreach_research, 86400, 3915),  # 24h — Lead-Research: Gelbe Seiten+11880+HN+RSS
     ("mass_outreach_morning",  task_mass_outreach_batch,    28800, 3920),  # 8h  — 333 Emails Batch (09:00 + 17:00 + 01:00)
