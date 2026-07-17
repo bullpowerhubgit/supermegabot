@@ -14557,6 +14557,71 @@ async def create_app():
     app.router.add_get("/api/mega-status", handle_mega_command_status)
     log.info("Mega Status route registered (/api/mega-status)")
 
+    # ── KI-Agent Hub ────────────────────────────────────────────────────────
+
+    async def handle_ki_agents_stats(req):
+        try:
+            from modules.ki_agent_hub import get_all_stats
+            stats = get_all_stats()
+            return web.Response(text=json.dumps(stats, default=str), content_type="application/json")
+        except Exception as e:
+            return web.Response(text=json.dumps({"error": str(e)}), content_type="application/json", status=500)
+
+    async def handle_ki_sales_run(req):
+        try:
+            from modules.ki_agent_hub import run_sales_agent
+            result = await run_sales_agent()
+            return web.Response(text=json.dumps(result, default=str), content_type="application/json")
+        except Exception as e:
+            return web.Response(text=json.dumps({"error": str(e)}), content_type="application/json", status=500)
+
+    async def handle_ki_support_run(req):
+        try:
+            from modules.ki_agent_hub import run_support_agent
+            result = await run_support_agent()
+            return web.Response(text=json.dumps(result, default=str), content_type="application/json")
+        except Exception as e:
+            return web.Response(text=json.dumps({"error": str(e)}), content_type="application/json", status=500)
+
+    async def handle_ki_research_run(req):
+        try:
+            from modules.ki_agent_hub import run_research_agent
+            result = await run_research_agent()
+            return web.Response(text=json.dumps(result, default=str), content_type="application/json")
+        except Exception as e:
+            return web.Response(text=json.dumps({"error": str(e)}), content_type="application/json", status=500)
+
+    async def handle_ki_growth_run(req):
+        try:
+            from modules.ki_agent_hub import run_growth_agent
+            result = await run_growth_agent()
+            return web.Response(text=json.dumps(result, default=str), content_type="application/json")
+        except Exception as e:
+            return web.Response(text=json.dumps({"error": str(e)}), content_type="application/json", status=500)
+
+    async def handle_ki_lead_add(req):
+        try:
+            body = await req.json()
+            from modules.ki_agent_hub import add_sales_lead
+            lead_id = add_sales_lead(
+                phone=body.get("phone", ""),
+                email=body.get("email", ""),
+                name=body.get("name", ""),
+                product=body.get("product", ""),
+                source=body.get("source", "api"),
+            )
+            return web.Response(text=json.dumps({"ok": True, "id": lead_id}), content_type="application/json")
+        except Exception as e:
+            return web.Response(text=json.dumps({"error": str(e)}), content_type="application/json", status=500)
+
+    app.router.add_get( "/api/ki-agents/stats",       handle_ki_agents_stats)
+    app.router.add_post("/api/ki-agents/sales/run",    handle_ki_sales_run)
+    app.router.add_post("/api/ki-agents/support/run",  handle_ki_support_run)
+    app.router.add_post("/api/ki-agents/research/run", handle_ki_research_run)
+    app.router.add_post("/api/ki-agents/growth/run",   handle_ki_growth_run)
+    app.router.add_post("/api/ki-agents/leads/add",    handle_ki_lead_add)
+    log.info("KI-Agent Hub routes registered (6 routes)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
