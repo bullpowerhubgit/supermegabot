@@ -62,6 +62,9 @@
         "environment": "production"
       }
     },
+    "CascadeProjects": {
+      "enabled": false
+    },
     "seo-turbo-tools": {
       "watch_paths": [
         "seo-turbo-tools/**",
@@ -71,6 +74,125 @@
         "seo-turbo-tools",
         "modules"
       ]
+    },
+    "netlify-deploy/bullpower-ai": {
+      "name": "bullpower-ai",
+      "netlify": {
+        "site_id": "2f993068-69c5-4948-902c-6886a18fea02",
+        "site_name": "bullpower-ai-tools"
+      }
+    },
+    "netlify-deploy/bullpower-hub": {
+      "name": "bullpower-hub",
+      "netlify": {
+        "site_id": "b724d9cd-e19e-4d15-9747-059e8148368f",
+        "site_name": "bullpower-hub-portal"
+      }
+    },
+    "netlify-deploy/autoincome-ai": {
+      "name": "autoincome-ai",
+      "netlify": {
+        "site_id": "4d792fed-3c4c-4fd7-8737-46d027365e5e",
+        "site_name": "autoincome-ai"
+      }
+    },
+    "netlify-deploy/cognitive-symphony": {
+      "name": "cognitive-symphony",
+      "netlify": {
+        "site_id": "478872de-d571-4e81-b3fe-4d9b12dd697a",
+        "site_name": "cognitive-symphony-ds24"
+      }
+    },
+    "netlify-deploy/creatorai-ultra": {
+      "name": "creatorai-ultra",
+      "netlify": {
+        "site_id": "0d38840f-35ef-4ac3-8e39-a0edde921562",
+        "site_name": "creatorai-ultra"
+      }
+    },
+    "netlify-deploy/creatorstudio-pro": {
+      "name": "creatorstudio-pro",
+      "netlify": {
+        "site_id": "251bd945-2fc2-40b2-bff5-35d49a5a6c3f",
+        "site_name": "creatorstudio-pro"
+      }
+    },
+    "netlify-deploy/digistore24-suite": {
+      "name": "digistore24-suite",
+      "netlify": {
+        "site_id": "0d99546c-1813-4820-af6e-8c108968f17b",
+        "site_name": "digistore24-automation-suite"
+      }
+    },
+    "netlify-deploy/gumroad-discord": {
+      "name": "gumroad-discord",
+      "netlify": {
+        "site_id": "b5bcb0f0-cd2f-463e-9c7d-bd87afca4ad1",
+        "site_name": "gumroad-discord-bot"
+      }
+    },
+    "netlify-deploy/icomeauto": {
+      "name": "icomeauto",
+      "netlify": {
+        "site_id": "713b6e9f-4388-4c5a-a339-29ba8b5cfb2b",
+        "site_name": "bullpower-icomeauto"
+      }
+    },
+    "netlify-deploy/launcher": {
+      "name": "launcher",
+      "netlify": {
+        "site_id": "5ea6c29b-c012-47c0-96d1-e1fcd9e813fa",
+        "site_name": "bullpower-launcher"
+      }
+    },
+    "netlify-deploy/lead-capture": {
+      "name": "lead-capture",
+      "netlify": {
+        "site_id": "2c73aa5c-26b3-409f-b0d2-3e62ad441c12",
+        "site_name": "bullpower-lead"
+      }
+    },
+    "netlify-deploy/master-dashboard": {
+      "name": "master-dashboard",
+      "netlify": {
+        "site_id": "506016c9-0b9e-4463-aa61-6837e05f2f26",
+        "site_name": "master-dashboard-hub"
+      }
+    },
+    "netlify-deploy/shopify-acquisition-engine": {
+      "name": "shopify-acquisition-engine",
+      "netlify": {
+        "site_id": "cc660686-8075-4f3c-bc8e-07ac7d2eca05",
+        "site_name": "shopify-acquisition-engine"
+      }
+    },
+    "netlify-deploy/shopify-brutal-tuning": {
+      "name": "shopify-brutal-tuning",
+      "netlify": {
+        "site_id": "2dba2775-a068-4e4c-9d9f-2a37d48f5761",
+        "site_name": "shopify-brutal-tuning"
+      }
+    },
+    "netlify-deploy/shopify-suite": {
+      "name": "shopify-suite",
+      "netlify": {
+        "site_id": "1859ba2f-66de-4012-b912-52b46e847810",
+        "site_name": "shopify-automaton-suite"
+      }
+    },
+    "netlify-deploy/steuercockpit": {
+      "name": "steuercockpit",
+      "netlify": {
+        "site_id": "3a80f111-7a16-48c4-bb9c-ad4b7fbf907f",
+        "site_name": "bullpower-steuercockpit"
+      }
+    },
+    "netlify-deploy/telegram-bot": {
+      "name": "telegram-bot",
+      "netlify": {
+        "site_id": "5fdbef63-e63e-4f57-ab27-770328ac9461",
+        "site_name": "telegram-marketing-bot"
+      }
     }
   }
 }

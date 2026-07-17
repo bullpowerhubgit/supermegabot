@@ -26,7 +26,8 @@ log = logging.getLogger("MonetizationEngine")
 
 _TG_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
-_SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
+_PUBLIC_DOMAIN = (os.getenv("SHOPIFY_PUBLIC_DOMAIN") or "ineedit.com.co").strip().removeprefix("https://").removeprefix("http://").strip("/")
+_SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{_PUBLIC_DOMAIN}")
 _STRIPE_SK = os.getenv("STRIPE_SECRET_KEY", "")
 
 # ── BPI Service Katalog ────────────────────────────────────────────────────────
@@ -163,14 +164,14 @@ AMAZON_PRODUCTS = [
         "key":      "ai_income_machine",
         "name":     "AI Income Machine – 90-Day Blueprint",
         "emoji":    "🤖",
-        "category": "KI & Passives Einkommen",
-        "hook":     "In 90 Tagen mit KI zum passiven Einkommen — der konkrete Blueprint",
-        "target":   "Online-Unternehmer, Freelancer, alle die mit KI Geld verdienen wollen",
+        "category": "KI & E-Commerce Automation",
+        "hook":     "Ein 90-Tage-Plan fuer KI-gestuetzte Angebote, Content und skalierbare Prozesse",
+        "target":   "Online-Unternehmer, Freelancer und Teams mit Fokus auf Automation",
         "bullets": [
-            "Schritt-für-Schritt Blueprint: 90 Tage, Tag für Tag",
-            "KI-Tools die wirklich Geld bringen (keine Hype-Listen)",
-            "Passive Income Streams die im Schlaf laufen",
-            "Von Anfängern bis Profis — direkt umsetzbar",
+            "Schritt-fuer-Schritt Blueprint: 90 Tage, Tag fuer Tag",
+            "KI-Tools fuer Content, Angebote und operative Ablaeufe",
+            "Saubere Automations-Setups statt Hype-Versprechen",
+            "Direkt umsetzbar fuer kleine Teams und Solo-Operatoren",
         ],
         "link":     f"https://www.amazon.de/s?k=AI+Income+Machine+90-Day+Blueprint&tag={AMAZON_TAG}",
         "channels": ["telegram", "twitter", "linkedin", "tiktok", "discord"],
@@ -366,7 +367,7 @@ async def run_email_outreach(daily_limit: int = 100) -> dict:
 
 async def run_shopify_traffic_blast() -> dict:
     """Shopify Shop auf allen Kanälen promoten."""
-    niches = ["Smart Home Gadgets", "Solar & Energie", "Fitness Equipment", "Küchen-Gadgets"]
+    niches = ["Smart Home Gadgets", "Solar & Energie", "Shopify Automation", "Smarte Sicherheit"]
     niche  = random.choice(niches)
 
     msg = (

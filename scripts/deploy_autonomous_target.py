@@ -84,20 +84,73 @@ def deploy_vercel(path: str, project: str, production: bool) -> dict:
     return {"ok": ok, "provider": "vercel", "output": output, "production": production}
 
 
+def _netlify_headers() -> dict[str, str]:
+    return {"Authorization": f"Bearer {os.getenv('NETLIFY_AUTH_TOKEN', '')}", "Content-Type": "application/json"}
+
+
+def _resolve_netlify_site_id(site_name: str, account_id: str = "") -> str:
+    token = os.getenv("NETLIFY_AUTH_TOKEN") or ""
+    if not token or not site_name:
+        return ""
+    req = urllib.request.Request("https://api.netlify.com/api/v1/sites", headers=_netlify_headers())
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            data = json.loads(resp.read())
+        for site in data if isinstance(data, list) else []:
+            if account_id and str(site.get("account_id") or "") != str(account_id):
+                continue
+            if str(site.get("name") or "") == site_name:
+                return str(site.get("id") or "")
+    except Exception:
+        return ""
+    return ""
+
+
+def deploy_netlify(path: str, site_id: str, site_name: str, account_id: str, production: bool) -> dict:
+    token = os.getenv("NETLIFY_AUTH_TOKEN") or ""
+    if not token:
+        return {"ok": False, "skipped": True, "reason": "NETLIFY_AUTH_TOKEN missing"}
+    resolved_site_id = site_id or _resolve_netlify_site_id(site_name, account_id)
+    if not resolved_site_id:
+        return {
+            "ok": False,
+            "skipped": True,
+            "reason": f"Netlify site not found: {site_name or path}",
+        }
+    cwd = ROOT / path
+    cmd = ["netlify", "deploy", "--dir", str(cwd), "--site", resolved_site_id, "--message", f"Autonomous deploy {path}"]
+    if production:
+        cmd.insert(2, "--prod")
+    ok, output = _run(cmd, cwd)
+    return {
+        "ok": ok,
+        "provider": "netlify",
+        "output": output,
+        "production": production,
+        "site_id": resolved_site_id,
+        "site_name": site_name,
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Deploy one autonomous target to Railway or Vercel")
-    ap.add_argument("--provider", required=True, choices=["railway", "vercel"])
+    ap = argparse.ArgumentParser(description="Deploy one autonomous target to Railway, Vercel, or Netlify")
+    ap.add_argument("--provider", required=True, choices=["railway", "vercel", "netlify"])
     ap.add_argument("--path", required=True)
     ap.add_argument("--project", required=True)
     ap.add_argument("--service", default="")
     ap.add_argument("--environment", default="production")
+    ap.add_argument("--site-id", default="")
+    ap.add_argument("--site-name", default="")
+    ap.add_argument("--account-id", default="")
     ap.add_argument("--production", action="store_true")
     args = ap.parse_args(argv)
 
     if args.provider == "railway":
         result = deploy_railway(args.path, args.project, args.service or args.project, args.environment)
-    else:
+    elif args.provider == "vercel":
         result = deploy_vercel(args.path, args.project, args.production)
+    else:
+        result = deploy_netlify(args.path, args.site_id, args.site_name or args.project, args.account_id, args.production)
     print(json.dumps(result))
     return 0 if result.get("ok") or result.get("skipped") else 1
 

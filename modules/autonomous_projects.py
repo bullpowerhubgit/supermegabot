@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Autonomous Projects — discover and summarize deployable Railway/Vercel targets.
+Autonomous Projects — discover and summarize deployable Railway/Vercel/Netlify targets.
 
 This module gives the autonomous loop and GitHub Actions one consistent source of
 truth for cross-project deploy surfaces inside the monorepo.
@@ -53,6 +53,13 @@ def _read_toml(path: Path) -> dict[str, Any]:
         return {}
 
 
+def _read_json(path: Path) -> dict[str, Any]:
+    try:
+        return json.loads(path.read_text())
+    except Exception:
+        return {}
+
+
 def _guess_runtime(dir_path: Path) -> str:
     if (dir_path / "requirements.txt").exists():
         return "python"
@@ -86,6 +93,28 @@ def _verify_paths_for(rel_dir: str, override: dict[str, Any]) -> list[str]:
     if verify_paths:
         return [_norm(p) for p in verify_paths]
     return [rel_dir]
+
+
+def _is_canonical_netlify_dir(rel_dir: str) -> bool:
+    return rel_dir.startswith("netlify-deploy/")
+
+
+def _netlify_target(dir_path: Path, rel_dir: str, override: dict[str, Any]) -> dict[str, Any]:
+    netlify_cfg = override.get("netlify") or {}
+    state = _read_json(dir_path / ".netlify" / "state.json")
+    return {
+        "name": override.get("name") or dir_path.name,
+        "provider": "netlify",
+        "path": rel_dir,
+        "runtime": _guess_runtime(dir_path),
+        "watch_paths": _watch_paths_for(rel_dir, override),
+        "verify_paths": _verify_paths_for(rel_dir, override),
+        "netlify": {
+            "site_id": netlify_cfg.get("site_id") or state.get("siteId") or "",
+            "site_name": netlify_cfg.get("site_name") or dir_path.name,
+            "account_id": netlify_cfg.get("account_id") or "",
+        },
+    }
 
 
 def list_targets(provider: str = "all") -> list[dict[str, Any]]:
@@ -147,6 +176,18 @@ def list_targets(provider: str = "all") -> list[dict[str, Any]]:
             }
         )
 
+    for netlify_file in sorted(ROOT.rglob("netlify.toml")):
+        if _is_ignored(netlify_file):
+            continue
+        dir_path = netlify_file.parent
+        rel_dir = _norm(dir_path.relative_to(ROOT))
+        if not _is_canonical_netlify_dir(rel_dir):
+            continue
+        override = overrides.get(rel_dir, {})
+        if override.get("enabled") is False:
+            continue
+        targets.append(_netlify_target(dir_path, rel_dir, override))
+
     if provider != "all":
         targets = [target for target in targets if target.get("provider") == provider]
     return targets
@@ -191,7 +232,8 @@ def get_deploy_surface_summary() -> dict[str, Any]:
     targets = list_targets()
     railway_ready = bool(os.getenv("RAILWAY_TOKEN") or os.getenv("RAILWAY_API_TOKEN"))
     vercel_ready = bool(os.getenv("VERCEL_TOKEN") and (os.getenv("VERCEL_TEAM_ID") or os.getenv("VERCEL_ORG_ID")))
-    provider_counts = {"railway": 0, "vercel": 0}
+    netlify_ready = bool(os.getenv("NETLIFY_AUTH_TOKEN"))
+    provider_counts = {"railway": 0, "vercel": 0, "netlify": 0}
     for target in targets:
         provider_counts[target["provider"]] = provider_counts.get(target["provider"], 0) + 1
     missing: list[str] = []
@@ -199,12 +241,15 @@ def get_deploy_surface_summary() -> dict[str, Any]:
         missing.append("RAILWAY_TOKEN/RAILWAY_API_TOKEN")
     if provider_counts.get("vercel") and not vercel_ready:
         missing.append("VERCEL_TOKEN + VERCEL_TEAM_ID/VERCEL_ORG_ID")
+    if provider_counts.get("netlify") and not netlify_ready:
+        missing.append("NETLIFY_AUTH_TOKEN")
     return {
         "ok": True,
         "targets_total": len(targets),
         "provider_counts": provider_counts,
         "railway_ready": railway_ready,
         "vercel_ready": vercel_ready,
+        "netlify_ready": netlify_ready,
         "missing_providers": missing,
         "targets": targets,
     }

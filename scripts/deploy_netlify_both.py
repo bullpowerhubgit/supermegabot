@@ -16,8 +16,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DEPLOY_DIR = ROOT / "netlify-deploy"
 
 # ── Tokens ────────────────────────────────────────────────────────────────────
-TOKEN_BULLPOWER = "nfp_9gCJdREeYhGmSm7AB3Djnof8gZWHASJN4763"
-TOKEN_AIITEC    = "nfp_2QSvRhfRHogb8MQRCys6JzuULuQMF34v929d"
+TOKEN_BULLPOWER = os.getenv("NETLIFY_AUTH_TOKEN_BULLPOWER") or os.getenv("NETLIFY_AUTH_TOKEN", "")
+TOKEN_AIITEC    = os.getenv("NETLIFY_AUTH_TOKEN_AIITEC", "")
 
 # ── Account 1: bekannte Site-IDs (bullpowerhubgit) ───────────────────────────
 ACCOUNT1_SITES = {
@@ -237,6 +237,12 @@ def update_deployed_urls(account1_results, account2_results):
 
 
 def main():
+    if not TOKEN_BULLPOWER:
+        print("❌ NETLIFY_AUTH_TOKEN_BULLPOWER oder NETLIFY_AUTH_TOKEN fehlt")
+        return
+    if not TOKEN_AIITEC:
+        print("❌ NETLIFY_AUTH_TOKEN_AIITEC fehlt")
+        return
     print("🚀 NETLIFY HIGH-TICKET DEPLOY — Beide Accounts")
     print("=" * 60)
 

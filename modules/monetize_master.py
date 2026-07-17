@@ -17,12 +17,13 @@ import aiohttp
 
 log = logging.getLogger("MonetizeMaster")
 
-KLAVIYO_KEY  = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_cf5a87a914f94f3f6ad6b12de8b8876722")
+KLAVIYO_KEY  = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_LIST = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
-FROM_EMAIL   = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
-FROM_NAME    = os.getenv("FROM_NAME", "AiiteC Team")
-SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
-TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN_RUDICLONE", "")
+FROM_EMAIL   = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
+FROM_NAME    = os.getenv("FROM_NAME", "BullPower Hub")
+_PUBLIC_DOMAIN = (os.getenv("SHOPIFY_PUBLIC_DOMAIN") or "ineedit.com.co").strip().removeprefix("https://").removeprefix("http://").strip("/")
+SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", f"https://{_PUBLIC_DOMAIN}")
+TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT      = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # High-Ticket Produkte mit Payment-Links
@@ -40,9 +41,9 @@ HIGH_TICKET_PRODUCTS = [
 ]
 
 SOCIAL_CAPTION_TEMPLATES = [
-    "🚀 {name} — Jetzt {price} starten!\n\nAutomatisiere dein Business mit KI. Link in Bio!\n\n#KIBusiness #Automatisierung #OnlineBusiness",
-    "💰 Mit {name} verdienen während du schläfst!\n\nNur {price} · Sofort loslegen!\n\n#PassivesEinkommen #KI #DigitalBusiness",
-    "⚡ {name}: Die schnellste Methode dein Business zu skalieren!\n\nAb {price} · Jetzt starten!\n\n#Skalierung #KITools #BusinessWachstum",
+    "🚀 {name} — jetzt ab {price}.\n\nKI-gestützte Automation für Content, Vertrieb und operative Prozesse.\n\n#KIBusiness #Automatisierung #SaaS",
+    "⚡ {name} hilft Teams, manuelle Arbeit in wiederholbaren Workflows zu reduzieren.\n\nAb {price} · Mehr Infos im Link.\n\n#Automation #DigitalBusiness #KI",
+    "📈 {name}: strukturierte Prozesse für Shopify, Leads und Monetarisierung statt Tool-Chaos.\n\nJetzt ansehen.\n\n#Shopify #BusinessWachstum #AITools",
 ]
 
 
@@ -322,32 +323,28 @@ async def run_social_posts() -> dict:
     posted = []
     errors = []
     try:
-        from modules.mega_auto_poster import run_full_auto_post
-        result = await run_full_auto_post()
-        posted = result.get("posted", result.get("channels_posted", []))
+        from modules.social_autoposter import post_to_all
+        for prod in HIGH_TICKET_PRODUCTS[:3]:
+            caption = SOCIAL_CAPTION_TEMPLATES[len(posted) % len(SOCIAL_CAPTION_TEMPLATES)].format(
+                name=prod["name"],
+                price=prod["price"],
+            )
+            result = await post_to_all(
+                message=caption,
+                link=prod["starter"],
+                topic=f"{prod['name']} Shopify Automation",
+                platforms=["facebook", "instagram", "linkedin", "telegram"],
+            )
+            posted.append({
+                "product": prod["name"],
+                "posted": result.get("posted", 0),
+                "blocked": result.get("blocked", 0),
+                "failed": result.get("failed", 0),
+            })
+            await asyncio.sleep(2)
     except Exception as exc:
         errors.append(f"social: {exc}")
         log.warning("Social post: %s", exc)
-
-    # Telegram broadcast
-    if TG_TOKEN and TG_CHAT:
-        try:
-            import aiohttp as _aiohttp
-            for prod in HIGH_TICKET_PRODUCTS[:3]:
-                msg = (
-                    f"🚀 *{prod['name']}* — {prod['price']}\n\n"
-                    f"Starte jetzt: {prod['starter']}\n\n_AiiteC KI-Suite_"
-                )
-                url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
-                async with _aiohttp.ClientSession() as s:
-                    await s.post(url, json={
-                        "chat_id": TG_CHAT, "text": msg, "parse_mode": "Markdown",
-                        "disable_web_page_preview": False,
-                    })
-                await asyncio.sleep(4)
-            posted.append("telegram_broadcast")
-        except Exception as exc:
-            errors.append(f"telegram: {exc}")
 
     return {"ok": True, "posted": posted, "errors": errors}
 
