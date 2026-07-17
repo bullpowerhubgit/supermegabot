@@ -49,14 +49,15 @@ POST /api/agents/run
 |-------|-----------|
 | GitHub Actions `deploy.yml` | baseline syntax + guards on push to `main` |
 | GitHub Actions `autonomous_loop.yml` | every commit/PR + every 3h quick/full loop + changed-target verification |
-| GitHub Actions `autonomous_deploy.yml` | changed Railway/Vercel targets auto-deploy from one registry |
+| GitHub Actions `autonomous_deploy.yml` | changed Railway/Vercel/Netlify targets auto-deploy from one registry |
 | GitHub Actions `claude_agent.yml` | daily Claude maintenance |
 | Railway | auto-deploy on `main` (GitHub App) |
 | Vercel | auto-deploy per connected project |
+| Netlify | auto-deploy per canonical `netlify-deploy/*` site when `NETLIFY_AUTH_TOKEN` is available |
 
 ## Cross-project target registry
 
-- `modules/autonomous_projects.py` discovers deploy targets from `railway.toml` and `vercel.json`
+- `modules/autonomous_projects.py` discovers deploy targets from `railway.toml`, `vercel.json`, and canonical `netlify-deploy/*/netlify.toml`
 - `config/autonomous_projects.json` overrides watch-paths and shared-module dependencies
 - `scripts/autonomous_project_matrix.py` emits the GitHub Actions matrix for changed targets
 
@@ -70,6 +71,7 @@ POST /api/agents/run
 | Loops | `LOOPS_API_KEY` | contact sync (optional) |
 | Plausible | `PLAUSIBLE_API_KEY`, `PLAUSIBLE_SITE_ID` | traffic metrics |
 | PostHog | `POSTHOG_API_KEY`, `POSTHOG_PROJECT_ID` | product analytics |
+| Netlify | `NETLIFY_AUTH_TOKEN` | static-site auto deploy for canonical production sites |
 | OpenClaw / Ollama | `OLLAMA_BASE`, `OLLAMA_CLAW_MODEL`, `OLLAMA_*` | local-first drafts, cheap automation, fallback-free iteration |
 | Claude / AI chain | `ANTHROPIC_*` + fallbacks | plan next iteration |
 
