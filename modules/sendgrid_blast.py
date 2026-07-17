@@ -335,29 +335,32 @@ async def blast_klaviyo_list(subject: str, html: str) -> Dict:
 
     sent = 0
     failed = 0
+    skipped = 0
     sem = asyncio.Semaphore(10)
+    _demo_domains = {"klaviyo-demo.com", "example.com", "mailinator.com", "test.com"}
 
-    async def _send_one(profile: Dict) -> bool:
+    async def _send_one(profile: Dict):
         attrs = profile.get("attributes", {})
         email = attrs.get("email", "").strip()
         name = attrs.get("first_name", "") or ""
-        _demo_domains = {"klaviyo-demo.com", "example.com", "mailinator.com", "test.com"}
         if not email or "@" not in email or email.split("@")[-1] in _demo_domains:
-            return False
+            return "skip"
         async with sem:
             r = await send_single(email, name, subject, html)
             await asyncio.sleep(0.05)
-            return r.get("ok", False)
+            return "ok" if r.get("ok") else "fail"
 
     results = await asyncio.gather(*[_send_one(p) for p in profiles], return_exceptions=True)
     for r in results:
-        if r is True:
+        if r == "ok":
             sent += 1
+        elif r == "skip" or r is None:
+            skipped += 1
         else:
             failed += 1
 
-    log.info("SendGrid blast: %d sent, %d failed of %d recipients", sent, failed, len(profiles))
-    return {"ok": sent > 0, "sent": sent, "failed": failed, "total": len(profiles)}
+    log.info("SendGrid blast: %d sent, %d failed, %d skipped of %d", sent, failed, skipped, len(profiles))
+    return {"ok": sent > 0, "sent": sent, "failed": failed, "skipped": skipped, "total": len(profiles)}
 
 
 # ── Specific email types ──────────────────────────────────────────────────────
@@ -453,18 +456,11 @@ async def run_daily_revenue_email() -> Dict:
     Main daily cycle:
     1. Fetch top 4 Shopify products
     2. Build dark-theme revenue email
-    3. Blast via Mailchimp → Klaviyo → SendGrid
+    3. Blast via Klaviyo → SendGrid (Mailchimp GESPERRT 2026-07-12 — NIEMALS wieder verwenden)
     """
     products = await _get_shopify_top_products(limit=4)
     subject, html = build_revenue_email_html(products)
 
-    # Mailchimp Campaign (primär — verifizierter Sender, keine IP-Probleme)
-    mc_result = await _blast_mailchimp_campaign(subject, html)
-    if mc_result.get("ok"):
-        log.info("Daily email via Mailchimp ✅")
-        return {"ok": True, "subject": subject, "products_used": len(products), "blast": mc_result}
-
-    # Fallback: Klaviyo-Einzelversand
     result = await blast_klaviyo_list(subject, html)
 
     log.info("Daily revenue email: %s", result)
