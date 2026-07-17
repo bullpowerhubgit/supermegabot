@@ -514,6 +514,18 @@ class CommandRouter:
             "sofia anrufen":   self._cmd_sofia_call,
             "sofia stats":     self._cmd_sofia_stats,
             "sofia kampagne":  self._cmd_sofia_campaign,
+            # ── KI-AGENT HUB ─────────────────────────────────────────────────
+            "/sales_agent":     self._cmd_ki_sales,
+            "/support_agent":   self._cmd_ki_support,
+            "/research_agent":  self._cmd_ki_research,
+            "/growth_agent":    self._cmd_ki_growth,
+            "/ki_agents":       self._cmd_ki_status,
+            "/ki_agent_status": self._cmd_ki_status,
+            "/ki_status":       self._cmd_ki_status,
+            "sales agent":      self._cmd_ki_sales,
+            "support agent":    self._cmd_ki_support,
+            "research agent":   self._cmd_ki_research,
+            "growth agent":     self._cmd_ki_growth,
             # ── MEGA HUB ────────────────────────────────────────────────────
             "/hub": self._cmd_hub,
             "/hub_status": self._cmd_hub,
@@ -1377,6 +1389,83 @@ class CommandRouter:
             )
         except Exception as e:
             return f"❌ sofia_blast Fehler: {e}"
+
+    # ── KI-Agent Hub Commands ─────────────────────────────────────────────────
+
+    async def _cmd_ki_sales(self, text: str, session_id: str) -> str:
+        try:
+            from modules.ki_agent_hub import run_sales_agent
+            result = await run_sales_agent()
+            leads = result.get("leads_processed", 0)
+            actions = result.get("actions_taken", [])
+            errs = result.get("errors", [])
+            lines = [f"🤖 <b>Sales-Agent</b>", f"Leads: {leads}", f"Aktionen: {len(actions)}"]
+            if actions:
+                lines += [f"  • {a}" for a in actions[:5]]
+            if errs:
+                lines.append(f"⚠️ {errs[0]}")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"❌ sales_agent Fehler: {e}"
+
+    async def _cmd_ki_support(self, text: str, session_id: str) -> str:
+        try:
+            from modules.ki_agent_hub import run_support_agent
+            result = await run_support_agent()
+            return (
+                f"🎫 <b>Support-Agent</b>\n"
+                f"Geprüft: {result.get('tickets_checked',0)}\n"
+                f"Gelöst: {result.get('resolved',0)}\n"
+                f"Eskaliert: {result.get('escalated',0)}"
+            )
+        except Exception as e:
+            return f"❌ support_agent Fehler: {e}"
+
+    async def _cmd_ki_research(self, text: str, session_id: str) -> str:
+        try:
+            from modules.ki_agent_hub import run_research_agent
+            result = await run_research_agent()
+            reports = result.get("reports", [])
+            out = ["🔬 <b>Research-Agent</b>"]
+            for r in reports[:3]:
+                out.append(f"<b>{r['topic'][:60]}</b>\n{r['summary'][:200]}")
+            if result.get("errors"):
+                out.append(f"⚠️ {result['errors'][0]}")
+            return "\n\n".join(out) or "Research läuft…"
+        except Exception as e:
+            return f"❌ research_agent Fehler: {e}"
+
+    async def _cmd_ki_growth(self, text: str, session_id: str) -> str:
+        try:
+            from modules.ki_agent_hub import run_growth_agent
+            result = await run_growth_agent()
+            insights = result.get("insights", [])
+            out = ["📈 <b>Growth-Agent</b>"]
+            for ins in insights[:4]:
+                out.append(f"• {ins[:120]}")
+            out.append(f"Kampagnen: {result.get('campaigns_triggered',0)}")
+            return "\n".join(out)
+        except Exception as e:
+            return f"❌ growth_agent Fehler: {e}"
+
+    async def _cmd_ki_status(self, text: str, session_id: str) -> str:
+        try:
+            from modules.ki_agent_hub import get_all_stats
+            stats = get_all_stats()
+            s = stats.get("sales", {})
+            su = stats.get("support", {})
+            re = stats.get("research", {})
+            gr = stats.get("growth", {})
+            return (
+                f"🤖 <b>KI-Agent Hub Status</b>\n\n"
+                f"📊 <b>Sales:</b> {s.get('total_leads',0)} Leads · Pipeline: {s.get('pipeline_stages',{})}\n"
+                f"🎫 <b>Support:</b> {su.get('tickets_by_status',{})}\n"
+                f"🔬 <b>Research:</b> {re.get('total_reports',0)} Berichte · Letztes: {re.get('last_topic','—')[:50]}\n"
+                f"📈 <b>Growth:</b> {len(gr.get('recent_insights',[]))} Insights\n"
+                f"\nBefehle: /sales_agent · /support_agent · /research_agent · /growth_agent"
+            )
+        except Exception as e:
+            return f"❌ ki_status Fehler: {e}"
 
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle (v2):
