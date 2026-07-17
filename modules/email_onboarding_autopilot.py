@@ -173,6 +173,7 @@ async def run_onboarding_health() -> dict[str, Any]:
         "loops_configured": bool(LOOPS_API_KEY),
         "from": FROM_EMAIL,
         "starter_link": STARTER_LINK,
+        "call_cta": CALL_CTA,
         "steps": [{"day": s["day"], "id": s["id"]} for s in SEQUENCE],
         "at": datetime.now(timezone.utc).isoformat(),
     }

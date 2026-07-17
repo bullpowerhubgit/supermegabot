@@ -169,6 +169,33 @@ async def _push_descriptions_to_shopify(results: list[dict]) -> None:
         log.warning("Shopify-Update übersprungen: %s", e)
 
 
+# ── Post-Bereinigung (Meta-Kommentare entfernen) ──────────────────────────────
+
+_META_PREFIXES = [
+    "hier ist ein möglicher", "hier ist ein", "natürlich! hier", "gerne! hier",
+    "hier ist", "post:", "instagram-post:", "facebook-post:", "linkedin-post:",
+    "hier mein vorschlag:", "vorschlag:", "beispiel:", "entwurf:",
+]
+
+def _clean_post(text: str) -> str:
+    """Entfernt Ollama-Meta-Kommentare und Platzhalter aus generierten Posts."""
+    lines = text.strip().splitlines()
+    # Erste Zeile weg wenn sie Meta-Kommentar ist
+    while lines and any(lines[0].lower().startswith(p) for p in _META_PREFIXES):
+        lines = lines[1:]
+    text = "\n".join(lines).strip()
+    # Platzhalter-Links ersetzen (case-insensitive, ohne Text kleinzuschreiben)
+    import re
+    shop_url = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
+    for placeholder in [r"\[link zur website\]", r"\[link\]", r"\[url\]", r"\[deine website\]",
+                        r"\[shop url\]", r"\[website\]", r"\[hier klicken\]", r"\[link einfügen\]"]:
+        text = re.sub(placeholder, shop_url, text, flags=re.IGNORECASE)
+    # Anführungszeichen außen entfernen wenn ganzer Text in Anführungszeichen
+    if text.startswith('"') and text.endswith('"'):
+        text = text[1:-1].strip()
+    return text
+
+
 # ── Task 2: Social-Media-Posts ───────────────────────────────────────────────
 
 async def task_ollama_social_posts() -> dict[str, Any]:
@@ -176,25 +203,45 @@ async def task_ollama_social_posts() -> dict[str, Any]:
     if not await ollama_available():
         return {"ok": False, "error": "Ollama nicht erreichbar"}
 
+    shop_url = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
+    ig_handle = "@aaiitecc"
+
     system = (
-        "Du bist Social-Media-Manager für AIITEC / ineedit.com.co (Smart-Home & Solar Shop). "
-        "Schreibe authentische, engagierte Posts auf Deutsch. "
-        "Keine Spam-Texte. Echter Mehrwert für die Zielgruppe."
+        "Du bist Social-Media-Manager für ineedit.com.co — ein Smart-Home, Solar & Gadget-Shop.\n"
+        "REGELN (PFLICHT):\n"
+        "- Antworte NUR mit dem fertigen Post-Text. Kein 'Hier ist ein Post:', kein 'Natürlich:', kein Kommentar.\n"
+        "- Verwende NIEMALS Platzhalter wie [Link], [URL], [Website]. Schreibe immer die echte URL: " + shop_url + "\n"
+        "- Schreibe auf Deutsch. Nur echte deutsche Wörter.\n"
+        "- Kein Spam. Echter Mehrwert, konkrete Produkte, konkrete Preise wenn möglich.\n"
+        "- Instagram: immer den Handle " + ig_handle + " erwähnen.\n"
     )
 
     topics = [
-        ("Instagram", "Erstelle einen Instagram-Post mit 3-5 Hashtags für ein Smart-Home-Produkt. "
-                     "Emotional, visuell beschreibend, mit einem klaren CTA. Max 220 Zeichen + Hashtags."),
-        ("Facebook",  "Erstelle einen Facebook-Post über Solar-Energie oder Smart-Home Automation. "
-                     "Informativ, teilt einen praktischen Tipp. 3-5 Sätze + ein Satz CTA."),
-        ("LinkedIn",  "Erstelle einen LinkedIn-Post über E-Commerce-Automation und KI für Shop-Betreiber. "
-                     "Professionell, enthält eine konkrete Zahl (z.B. % Umsatzsteigerung). 4-6 Sätze."),
+        ("Instagram",
+         f"Schreibe einen Instagram-Post für ein Smart-Home-Produkt aus unserem Shop {shop_url}.\n"
+         f"Erwähne den Handle {ig_handle}. Füge 4-5 relevante Hashtags ein. "
+         f"Emotional, kurz, klarer Kauf-Link am Ende. Max 200 Zeichen + Hashtags.\n"
+         f"Antworte NUR mit dem fertigen Post. Kein Kommentar davor."),
+        ("Facebook",
+         f"Schreibe einen Facebook-Post über ein Solar- oder Smart-Home-Produkt von {shop_url}.\n"
+         f"Nenne einen konkreten Vorteil (z.B. Stromersparnis, Komfort). "
+         f"Ende mit: Jetzt entdecken: {shop_url}\n"
+         f"3-4 Sätze. Antworte NUR mit dem fertigen Post. Kein Kommentar davor."),
+        ("LinkedIn",
+         f"Schreibe einen LinkedIn-Post über E-Commerce-Automatisierung für Shopify-Händler.\n"
+         f"Erwähne eine konkrete Zahl (z.B. '30% mehr Umsatz' oder '5 Stunden/Woche sparen').\n"
+         f"Ende mit einem Link zu {shop_url} oder einem Call-to-Action.\n"
+         f"4-5 Sätze professionell. Antworte NUR mit dem fertigen Post. Kein Kommentar davor."),
     ]
 
     posts = []
     for platform, prompt in topics:
         try:
-            text = await ollama_chat(prompt, system=system, max_tokens=300)
+            raw  = await ollama_chat(prompt, system=system, max_tokens=350)
+            text = _clean_post(raw)
+            if len(text) < 30:
+                log.warning("%s-Post zu kurz nach Bereinigung (%d Zeichen) — verworfen", platform, len(text))
+                continue
             posts.append({"platform": platform, "text": text, "generated_at": _now()})
             log.info("✅ %s-Post generiert (%d Zeichen)", platform, len(text))
             await asyncio.sleep(1)
@@ -205,7 +252,6 @@ async def task_ollama_social_posts() -> dict[str, Any]:
     out = _DATA / f"social_posts_{int(time.time())}.json"
     out.write_text(json.dumps(posts, ensure_ascii=False, indent=2))
 
-    # An Telegram senden zur Genehmigung
     if posts:
         await _send_posts_to_telegram(posts)
 
@@ -217,10 +263,10 @@ async def _send_posts_to_telegram(posts: list[dict]) -> None:
     chat  = _tg_chat()
     if not token or not chat:
         return
-    msg = "🤖 <b>Ollama Social Posts — bereit zum Posten</b>\n\n"
+    msg = "✅ <b>Social Posts fertig — bereit zum Posten</b>\n\n"
     for p in posts:
-        msg += f"<b>{p['platform']}:</b>\n{p['text'][:400]}\n\n"
-    msg += "ℹ️ <i>Generiert lokal via Ollama — kein API-Verbrauch</i>"
+        msg += f"<b>📱 {p['platform']}:</b>\n{p['text'][:500]}\n\n"
+    msg += "🤖 <i>Lokal via Ollama — 0 API-Kosten</i>"
     try:
         async with aiohttp.ClientSession() as s:
             await s.post(
@@ -300,7 +346,7 @@ async def task_ollama_seo_meta() -> dict[str, Any]:
             f"Nur die Description — kein zusätzlicher Text."
         )
         try:
-            meta = await ollama_chat(prompt, system=system, max_tokens=80)
+            meta = _clean_post(await ollama_chat(prompt, system=system, max_tokens=80))
             metas.append({"page": page["url"], "keyword": page["keyword"], "meta": meta[:160]})
             await asyncio.sleep(1)
         except Exception as e:
