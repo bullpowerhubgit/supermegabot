@@ -210,6 +210,13 @@ Unser E-Rechnungs-Autopilot wandelt jede Rechnung automatisch um — für nur �
 # ── E-Mail-Lieferung ──────────────────────────────────────────────────
 def send_gmail(to: str, subject: str, html_body: str, text_body: str = "") -> bool:
     try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to):
+            log.warning("BLOCKED (noreply/dead): %s", to)
+            return False
+    except ImportError:
+        pass
+    try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
         msg["From"]    = f"BullPower BPI <{GMAIL_USER}>"
@@ -217,8 +224,8 @@ def send_gmail(to: str, subject: str, html_body: str, text_body: str = "") -> bo
         if text_body:
             msg.attach(MIMEText(text_body, "plain", "utf-8"))
         msg.attach(MIMEText(html_body, "html", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-            server.login(GMAIL_USER, GMAIL_PASS)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
+            server.ehlo(); server.starttls(); server.login(GMAIL_USER, GMAIL_PASS)
             server.sendmail(GMAIL_USER, to, msg.as_string())
         return True
     except Exception as e:

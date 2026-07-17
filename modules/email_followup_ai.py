@@ -472,6 +472,13 @@ async def handle_unsubscribe(email: str, token: str) -> dict:
 
 def _send_email_smtp(smtp_acct: dict, to_email: str, subject: str, body: str, from_name: str = "Rudolf Sarkany | AIITEC") -> None:
     """Sendet via SMTP (SSL oder STARTTLS)."""
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return
+    except ImportError:
+        pass
     msg              = MIMEMultipart("alternative")
     msg["Subject"]   = subject
     msg["From"]      = f"{from_name} <{smtp_acct['user']}>"

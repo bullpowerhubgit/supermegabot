@@ -525,6 +525,13 @@ footer{{background:var(--card);border-top:1px solid var(--border);padding:3rem 0
 # ---------------------------------------------------------------------------
 
 async def _send_welcome_email(email: str, package: str, token: str):
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(email):
+            log.warning("BLOCKED (noreply/dead): %s", email)
+            return
+    except ImportError:
+        pass
     pkg = PACKAGES.get(package, PACKAGES["basic"])
     dashboard_url = f"{BASE_URL}/ki-leasing/dashboard?token={token}"
     cancel_url = f"{BASE_URL}/ki-leasing/cancel?token={token}"

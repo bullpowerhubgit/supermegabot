@@ -481,6 +481,13 @@ def _fetch_inbox_replies(account: Dict, since_hours: int = 1) -> List[Dict]:
 # ── Email senden ──────────────────────────────────────────────────────────────
 def _send_reply(account: Dict, to_email: str, subject: str,
                 body: str, in_reply_to: str = "") -> bool:
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
     user = account["user"]
     pw   = account["pass"]
     name = account.get("name", "Rudolf Sarkany | AiiteC")
@@ -496,8 +503,8 @@ def _send_reply(account: Dict, to_email: str, subject: str,
             msg["In-Reply-To"] = in_reply_to
             msg["References"]  = in_reply_to
         msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as s:
-            s.login(user, pw)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.login(user, pw)
             s.sendmail(user, [to_email], msg.as_string())
         return True
     except Exception as e:

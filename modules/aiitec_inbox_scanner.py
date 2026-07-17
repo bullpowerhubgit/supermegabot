@@ -286,6 +286,13 @@ def _extract_email_addr(raw: str) -> str:
 
 async def _send_auto_response(to_email: str, company_name: str, checkout_url: str) -> bool:
     """Sendet automatische Antwort mit Stripe-Checkout an interessierte Leads."""
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return False
+    except ImportError:
+        pass
     import smtplib
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText

@@ -250,6 +250,13 @@ def _render(template: str, **kwargs) -> str:
 
 
 def _send_smtp(cfg: dict, to_email: str, subject: str, body: str) -> None:
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return
+    except ImportError:
+        pass
     msg                 = MIMEMultipart("alternative")
     msg["Subject"]      = subject
     msg["From"]         = cfg["from"]

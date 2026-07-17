@@ -88,6 +88,13 @@ async def _stripe_get(path: str, params: dict = None):
 # ── Onboarding-Email ─────────────────────────────────────────────────────────
 
 def _send_onboarding_email(to_email: str, customer_name: str, amount_eur: float, product: str):
+    try:
+        from modules.gmail_accounts import _is_valid_recipient
+        if not _is_valid_recipient(to_email):
+            log.warning("BLOCKED (noreply/dead): %s", to_email)
+            return
+    except ImportError:
+        pass
     subject = f"Willkommen bei AIITEC — {product} ist jetzt aktiv!"
     body = f"""Hallo {customer_name or 'dort'},
 
