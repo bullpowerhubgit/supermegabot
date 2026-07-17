@@ -83,7 +83,7 @@ async def get_shopify_products(limit: int = 10) -> list:
                 f"https://{SHOP}/admin/api/{SHOPIFY_VER}/products.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
                 params={"limit": limit, "status": "active"},
-                timeout=aiohttp.ClientTimeout(total=15)
+                timeout=aiohttp.ClientTimeout(total=60)
             ) as r:
                 data = await r.json()
         return data.get("products", [])
@@ -117,7 +117,7 @@ async def sync_products_to_tiktok() -> dict:
                         headers={"x-tts-access-token": TIKTOK_TOKEN,
                                  "Content-Type": "application/json"},
                         json=payload,
-                        timeout=aiohttp.ClientTimeout(total=15)
+                        timeout=aiohttp.ClientTimeout(total=60)
                     ) as r:
                         if r.status < 300:
                             synced += 1
