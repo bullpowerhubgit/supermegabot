@@ -143,11 +143,52 @@ class AgentProcess:
         return self.cfg["name"]
 
     def is_alive(self) -> bool:
-        if self.proc is None:
-            return False
-        return self.proc.poll() is None
+        # Erst internes Proc-Handle prüfen
+        if self.proc is not None and self.proc.poll() is None:
+            return True
+        # Fallback: PID-File prüfen (überlebt empire-Neustart)
+        pid_file = self.cfg.get("pid_file", "")
+        if pid_file and Path(pid_file).exists():
+            try:
+                pid = int(Path(pid_file).read_text().strip())
+                os.kill(pid, 0)   # 0 = nur prüfen ob Prozess existiert
+                return True
+            except (ProcessLookupError, ValueError, OSError):
+                Path(pid_file).unlink(missing_ok=True)
+        return False
+
+    def _kill_existing(self):
+        """Killt vorhandene Instanz via PID-File — verhindert Prozess-Explosion."""
+        pid_file = self.cfg.get("pid_file", "")
+        if not pid_file:
+            return
+        pf = Path(pid_file)
+        if pf.exists():
+            try:
+                pid = int(pf.read_text().strip())
+                os.kill(pid, signal.SIGTERM)
+                time.sleep(1)
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except OSError:
+                    pass
+                log.info("▷ %s: alte Instanz PID %d beendet", self.name, pid)
+            except (ProcessLookupError, ValueError, OSError):
+                pass
+            pf.unlink(missing_ok=True)
 
     def start(self) -> bool:
+        # Doppelstart verhindern — läuft bereits via PID-File?
+        if self.is_alive():
+            pid_file = self.cfg.get("pid_file", "")
+            pid = Path(pid_file).read_text().strip() if pid_file and Path(pid_file).exists() else "?"
+            log.info("▷ %s läuft bereits (PID %s) — kein Neustart", self.name, pid)
+            self.started_once = True
+            return True
+
+        # Sicherheitshalber alte Instanz killen (falls PID-File veraltet war)
+        self._kill_existing()
+
         env = {**os.environ, **self.cfg.get("env", {})}
         log_path = self.cfg.get("log_file", f"/tmp/empire_{self.name.lower().replace(' ','_')}.log")
         try:
