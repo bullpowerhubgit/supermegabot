@@ -9852,6 +9852,15 @@ async def handle_revenue_agent_result(req):
         return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
 
 
+async def handle_bridge_status(req):
+    """GET /api/bridge/status — Bridge-Status (Alias fuer revenue-agent/status)."""
+    try:
+        from modules.revenue_agent_bridge import get_bridge_status
+        return web.json_response(await get_bridge_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
+
+
 async def handle_system_info(req):
     """GET /api/system/info — System info and versions."""
     import platform
@@ -12698,6 +12707,7 @@ async def create_app():
     app.router.add_get( "/api/revenue-agent/status",          handle_revenue_agent_status)
     app.router.add_get( "/api/revenue-agent/inbox",           handle_revenue_agent_inbox)
     app.router.add_get( "/api/revenue-agent/results",         handle_revenue_agent_result)
+    app.router.add_get( "/api/bridge/status",                 handle_bridge_status)
     app.router.add_get( "/api/system/info",              handle_system_info)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)
