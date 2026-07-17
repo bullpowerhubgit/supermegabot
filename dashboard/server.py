@@ -11644,6 +11644,14 @@ async def create_app():
     except Exception as _bp_err:
         log.warning("Stripe BULLPOWER-ONLY enforce: %s", _bp_err)
 
+    # Shopify Token Resolver — prüft SHOPIFY_ACCESS_TOKEN, fällt auf SHOPIFY_ADMIN_API_TOKEN zurück
+    try:
+        from modules.shopify_token_resolver import enforce_valid_token as _stok
+        _sr = _stok()
+        log.info("ShopifyTokenResolver: ok=%s source=%s fixed=%s", _sr.get("ok"), _sr.get("source"), _sr.get("fixed"))
+    except Exception as _sr_err:
+        log.warning("ShopifyTokenResolver: %s", _sr_err)
+
     # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
     # + StripeGuard (pm_card_visa@live, url_invalid, type=recurring auf /prices)
     try:
