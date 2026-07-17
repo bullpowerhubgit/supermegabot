@@ -188,6 +188,18 @@ async def handle_highticket(req):
     return web.Response(text=html, content_type="text/html")
 
 
+_KI_OPERATOR_HTML = Path(__file__).parent / "ki-operator.html"
+
+
+async def handle_ki_operator(req):
+    """GET /ki-operator — MegaDash KI-Business-Operator Sales Page (€497/€997/€2.497)."""
+    try:
+        html = _KI_OPERATOR_HTML.read_text(encoding="utf-8")
+    except Exception:
+        html = "<h1>ki-operator.html nicht gefunden</h1>"
+    return web.Response(text=html, content_type="text/html")
+
+
 async def handle_ht_demo_data(req):
     """GET /api/ht/demo — Personalisierte Demo-Metriken."""
     from modules.ht_demo_system import get_demo_data, track_demo_view
@@ -11454,6 +11466,7 @@ async def create_app():
     app.router.add_get("/", handle_index)
     app.router.add_get("/money-machines", handle_money_machines)
     app.router.add_get("/highticket", handle_highticket)
+    app.router.add_get("/ki-operator", handle_ki_operator)
     app.router.add_get("/api/ht/demo", handle_ht_demo_data)
     app.router.add_post("/api/ht/apply", handle_ht_apply)
     app.router.add_get("/api/ht/onboarding", handle_ht_onboarding)
