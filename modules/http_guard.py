@@ -50,6 +50,9 @@ _tg_last_sent: float = 0.0
 _tg_lock = asyncio.Lock()
 _tg_blocked_count: int = 0
 _alert_cache: dict[str, float] = {}
+_global_alert_count: int = 0
+_global_alert_window_start: float = 0.0
+_GLOBAL_ALERT_MAX: int = 3  # max 3 HttpGuard-Alerts pro 30min
 
 
 async def _tg_rate_check() -> bool:
@@ -68,6 +71,15 @@ async def _tg_rate_check() -> bool:
 
 
 def _should_send_guard_alert(reason: str, url: str, text: str = "", window_seconds: int = 1800) -> bool:
+    global _global_alert_count, _global_alert_window_start
+    # Globales Throttle: max 3 HttpGuard-Alerts pro 30min
+    now = time.monotonic()
+    if now - _global_alert_window_start > 1800:
+        _global_alert_count = 0
+        _global_alert_window_start = now
+    if _global_alert_count >= _GLOBAL_ALERT_MAX:
+        return False
+
     lowered = (reason or "").lower()
     noisy_markers = (
         "duplikat",
@@ -76,16 +88,18 @@ def _should_send_guard_alert(reason: str, url: str, text: str = "", window_secon
         "rate_limited",
         "database is locked",
         "never_twice_error_blocked",
+        "never_twice:",          # NeverTwice Content-Blocks (kein Fehler, normaler Betrieb)
+        "validator_error_blocked",  # Post-Validator interne Fehler
         "text_extraktion_fehlgeschlagen",
     )
     if any(marker in lowered for marker in noisy_markers):
         return False
     key = f"{url[:80]}|{reason[:120]}|{text[:80]}"
-    now = time.monotonic()
     last = _alert_cache.get(key, 0.0)
     if now - last < window_seconds:
         return False
     _alert_cache[key] = now
+    _global_alert_count += 1
     return True
 
 # ── Posting-Endpoints die abgefangen werden ───────────────────────────────────
@@ -405,11 +419,11 @@ async def _guard_check(url: str, content_type: str, kwargs: dict) -> tuple[bool,
             return False, f"never_twice: {short_reason}"
     except Exception as e:
         err_text = str(e).lower()
-        if "locked" in err_text or "busy" in err_text or "unable to open database file" in err_text:
-            log.warning("HttpGuard NeverTwice locked — fail-open")
+        if any(kw in err_text for kw in ("locked", "busy", "unable to open", "disk i/o", "no such table", "readonly", "malformed")):
+            log.warning("HttpGuard NeverTwice DB-Fehler — fail-open: %s", e)
         else:
-            log.error("HttpGuard NeverTwice fail-closed: %s", e)
-            return False, f"never_twice_error_blocked: {e}"
+            # NeverTwice ist Dedup-Guard, kein Security-Gate → immer fail-open
+            log.warning("HttpGuard NeverTwice unexpected error — fail-open: %s", e)
 
     # Wenn Text nur URL ist (Extraktion fehlgeschlagen) → BLOCK (fail-closed)
     # Niemals Social-Posts ohne lesbaren Content durchlassen (LinkedIn-Bug war: nur API-URL)

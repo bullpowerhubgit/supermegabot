@@ -64,17 +64,20 @@ _REASON_TO_RULE: list[tuple[str, str]] = [
 
 def _conn() -> sqlite3.Connection:
     _DB.parent.mkdir(parents=True, exist_ok=True)
-    c = sqlite3.connect(str(_DB), timeout=30)
+    c = sqlite3.connect(str(_DB), timeout=60)
     c.row_factory = sqlite3.Row
+    # busy_timeout ZUERST — damit alle weiteren Pragmas warten können
+    c.execute("PRAGMA busy_timeout=60000")
     c.execute("PRAGMA journal_mode=WAL")
     c.execute("PRAGMA synchronous=NORMAL")
-    c.execute("PRAGMA busy_timeout=30000")
+    c.execute("PRAGMA wal_autocheckpoint=100")
     return c
 
 
 def init_db() -> None:
-    with _conn() as c:
-        c.executescript(
+    try:
+        with _conn() as c:
+            c.executescript(
             """
             CREATE TABLE IF NOT EXISTS events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -114,37 +117,43 @@ def init_db() -> None:
             CREATE INDEX IF NOT EXISTS idx_events_fp ON events(fingerprint);
             """
         )
-        now = time.time()
-        for rid, pat, desc in _SEED_RULES:
+            now = time.time()
+            for rid, pat, desc in _SEED_RULES:
             # UPSERT: Seed-Patterns immer aktualisieren (Bugfixes wie \bwar\b → warfare)
-            c.execute(
+                c.execute(
                 """INSERT INTO permanent_rules(rule_id,pattern,description,hits,created_at,source)
                    VALUES(?,?,?,0,?,?)
                    ON CONFLICT(rule_id) DO UPDATE SET
                      pattern=excluded.pattern,
                      description=excluded.description,
                      source='seed'""",
-                (rid, pat, desc, now, "seed"),
-            )
-        # Toxische Blacklist-Einträge: reine API-URLs (Extraktions-Bug) entfernen
-        try:
-            c.execute(
-                "DELETE FROM content_blacklist WHERE reason LIKE '%api.linkedin.com%' "
-                "OR reason LIKE '%ugcPosts%' OR reason LIKE '%text_extraktion%'"
-            )
-        except Exception:
-            pass
-        try:
-            for bad_url in (
-                "https://api.linkedin.com/v2/ugcPosts",
-                "https://api.linkedin.com/v2/shares",
-                "https://api.linkedin.com/v2/posts",
-            ):
-                for plat in ("linkedin", "default", "unknown", ""):
-                    ch = _content_hash(bad_url, plat)
-                    c.execute("DELETE FROM content_blacklist WHERE content_hash=?", (ch,))
-        except Exception:
-            pass
+                    (rid, pat, desc, now, "seed"),
+                )
+            # Toxische Blacklist-Einträge: reine API-URLs (Extraktions-Bug) entfernen
+            try:
+                c.execute(
+                    "DELETE FROM content_blacklist WHERE reason LIKE '%api.linkedin.com%' "
+                    "OR reason LIKE '%ugcPosts%' OR reason LIKE '%text_extraktion%'"
+                )
+            except Exception:
+                pass
+            try:
+                for bad_url in (
+                    "https://api.linkedin.com/v2/ugcPosts",
+                    "https://api.linkedin.com/v2/shares",
+                    "https://api.linkedin.com/v2/posts",
+                ):
+                    for plat in ("linkedin", "default", "unknown", ""):
+                        ch = _content_hash(bad_url, plat)
+                        c.execute("DELETE FROM content_blacklist WHERE content_hash=?", (ch,))
+            except Exception:
+                pass
+    except sqlite3.OperationalError as e:
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
+            log.warning("NeverTwice init_db unavailable — fail-open")
+            return
+        raise
 
 
 def _content_hash(text: str, platform: str = "") -> str:
@@ -188,10 +197,11 @@ def check_never_twice(text: str, platform: str = "default") -> Tuple[bool, List[
     try:
         init_db()
     except sqlite3.OperationalError as e:
-        if "locked" in str(e).lower():
-            log.warning("NeverTwice init locked — fail-open")
-            return True, []
-        raise
+        log.warning("NeverTwice init DB-Fehler — fail-open: %s", e)
+        return True, []
+    except Exception as e:
+        log.warning("NeverTwice init unexpected error — fail-open: %s", e)
+        return True, []
     errors: List[str] = []
     platform = (platform or "default").lower()
     text = text or ""
@@ -204,15 +214,27 @@ def check_never_twice(text: str, platform: str = "default") -> Tuple[bool, List[
                 "SELECT reason, hits FROM content_blacklist WHERE content_hash=?", (ch,)
             ).fetchone()
             if row:
-                c.execute(
-                    "UPDATE content_blacklist SET hits=hits+1 WHERE content_hash=?", (ch,)
-                )
-                errors.append(f"NEVER-TWICE: exakter Content bereits blockiert ({row['reason'][:80]})")
+                reason_lo = (row["reason"] or "").lower()
+                # False-Positive: Transiente DB-Fehler dürfen NIEMALS permanent blockieren
+                if any(t in reason_lo for t in (
+                    "database is locked", "database locked", "never_twice_error",
+                    "unable to open database", "busy",
+                )):
+                    log.debug("NeverTwice: skip false-positive blacklist entry (transient reason)")
+                else:
+                    try:
+                        c.execute(
+                            "UPDATE content_blacklist SET hits=hits+1 WHERE content_hash=?", (ch,)
+                        )
+                    except sqlite3.OperationalError:
+                        pass
+                    errors.append(f"NEVER-TWICE: exakter Content bereits blockiert ({row['reason'][:80]})")
     except sqlite3.OperationalError as e:
-        if "locked" in str(e).lower():
-            log.warning("NeverTwice blacklist locked — fail-open")
-            return True, []
-        raise
+        log.warning("NeverTwice blacklist DB-Fehler — fail-open: %s", e)
+        return True, []
+    except Exception as e:
+        log.warning("NeverTwice blacklist unexpected error — fail-open: %s", e)
+        return True, []
 
     # 2) Permanent rules (seed + learned)
     for rid, cre, desc in _load_rules():
@@ -224,7 +246,8 @@ def check_never_twice(text: str, platform: str = "default") -> Tuple[bool, List[
                         "UPDATE permanent_rules SET hits=hits+1 WHERE rule_id=?", (rid,)
                     )
             except sqlite3.OperationalError as e:
-                if "locked" in str(e).lower():
+                err = str(e).lower()
+                if "locked" in err or "unable to open database file" in err or "busy" in err:
                     log.warning("NeverTwice rule update locked — fail-open")
                     return True, []
                 raise
@@ -262,6 +285,12 @@ _TRANSIENT_REASONS = frozenset({
     "503",
     "kein gültiger token",
     "token fehlt",
+    # DB-Lock ist immer transient — NIEMALS permanent sperren!
+    "database is locked",
+    "database locked",
+    "never_twice_error",
+    "unable to open database",
+    "busy",
 })
 
 
@@ -292,7 +321,8 @@ def remember_block(
     try:
         init_db()
     except sqlite3.OperationalError as e:
-        if "locked" in str(e).lower():
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
             log.warning("NeverTwice remember locked during init — skip")
             return {"skipped": True, "reason": "database locked"}
         raise
@@ -367,7 +397,8 @@ def remember_block(
                             break
                 c.execute("UPDATE error_classes SET promoted=1 WHERE fingerprint=?", (fp,))
     except sqlite3.OperationalError as e:
-        if "locked" in str(e).lower():
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
             log.warning("NeverTwice remember locked — skip")
             return {"skipped": True, "reason": "database locked"}
         raise
@@ -388,7 +419,8 @@ def remember_sent(text: str, platform: str, source_module: str = "unknown") -> N
     try:
         init_db()
     except sqlite3.OperationalError as e:
-        if "locked" in str(e).lower():
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
             log.warning("NeverTwice remember_sent init locked — skip")
             return
         raise
@@ -401,7 +433,8 @@ def remember_sent(text: str, platform: str, source_module: str = "unknown") -> N
                 ("sent", platform.lower(), ch, "", "ok", (text or "")[:160], source_module, time.time()),
             )
     except sqlite3.OperationalError as e:
-        if "locked" in str(e).lower():
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
             log.warning("NeverTwice remember_sent locked — skip")
             return
         raise
@@ -466,19 +499,27 @@ def stats() -> dict:
 
 
 def purge_transient_blacklist() -> dict:
-    """Entfernt alle content_blacklist-Einträge mit transienten Gründen
-    (duplikat_innerhalb_24h, bereits_blockiert, text_extraktion, rate_limit, api_error).
-    Diese wurden früher fälschlich permanent gespeichert — sind aber kein echter Content-Fehler.
+    """Entfernt alle content_blacklist-Einträge mit transienten Gründen.
+    Inkl. DB-Lock-Einträge die fälschlich permanent gespeichert wurden.
     """
     init_db()
     patterns = [f"%{t}%" for t in _TRANSIENT_REASONS]
     deleted = 0
+    deleted_events = 0
     with _conn() as c:
         for p in patterns:
             result = c.execute("DELETE FROM content_blacklist WHERE reason LIKE ?", (p,))
             deleted += result.rowcount
-    log.info("purge_transient_blacklist: %d Einträge entfernt", deleted)
-    return {"purged": deleted}
+        # Auch error_classes bereinigen
+        for p in ("%database is locked%", "%never_twice_error%", "%busy%"):
+            c.execute("DELETE FROM error_classes WHERE reason_sample LIKE ?", (p,))
+        # False-Positive Block-Events löschen (optional — nur für Sauberkeit)
+        for p in ("%never_twice_error_blocked: database is locked%",
+                  "%never_twice_error: database is locked%"):
+            result = c.execute("DELETE FROM events WHERE reason LIKE ? AND kind='block'", (p,))
+            deleted_events += result.rowcount
+    log.info("purge_transient_blacklist: %d Blacklist, %d Events entfernt", deleted, deleted_events)
+    return {"purged_blacklist": deleted, "purged_events": deleted_events}
 
 
 def self_check() -> dict:
