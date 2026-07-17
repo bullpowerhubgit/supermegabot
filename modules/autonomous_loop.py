@@ -217,11 +217,42 @@ async def phase_payments() -> dict[str, Any]:
             out["stripe"]["snapshot_error"] = str(e)[:160]
 
     try:
+        from modules.stripe_revenue_activator import (
+            create_all_payment_links,
+            get_revenue_24h,
+            get_stored_links,
+            setup_stripe_webhooks,
+        )
+
+        stored_links = await get_stored_links()
+        created_links = []
+        if len(stored_links) < 3:
+            created_links = await create_all_payment_links()
+            stored_links = await get_stored_links()
+        out["stripe"]["payment_links"] = {
+            "stored": len(stored_links),
+            "created": len(created_links),
+            "sample": stored_links[:5],
+        }
+        out["stripe"]["webhook"] = await setup_stripe_webhooks()
+        out["stripe"]["revenue_24h"] = await get_revenue_24h()
+    except Exception as e:
+        out["stripe"]["activation_error"] = str(e)[:160]
+
+    try:
         from modules.lemon_squeezy_autopilot import run_lemon_cycle
         out["lemon"] = await run_lemon_cycle()
     except Exception as e:
         out["lemon"] = {"ok": False, "error": str(e)[:160]}
 
+    out["automation_ready"] = {
+        "stripe": bool(
+            out["stripe"].get("key_ok")
+            and (out["stripe"].get("webhook") or {}).get("ok")
+            and (out["stripe"].get("payment_links") or {}).get("stored", 0) > 0
+        ),
+        "lemon": bool(out["lemon"].get("ok") or out["lemon"].get("skipped")),
+    }
     out["ok"] = bool(out["stripe"].get("key_ok") or out["lemon"].get("ok") or out["lemon"].get("skipped"))
     out["at"] = _now()
     return out
@@ -232,7 +263,9 @@ async def phase_payments() -> dict[str, Any]:
 async def phase_onboarding() -> dict[str, Any]:
     try:
         from modules.email_onboarding_autopilot import run_onboarding_health
-        return await run_onboarding_health()
+        health = await run_onboarding_health()
+        health["automation_ready"] = bool(health.get("resend_configured") and health.get("starter_link"))
+        return health
     except Exception as e:
         return {"ok": False, "error": str(e)[:160]}
 
@@ -259,6 +292,7 @@ def phase_plan_next(report: dict) -> dict[str, Any]:
     next_actions = [
         "Ship highest-priority optimization_task",
         "Keep Stripe bullpower-only + payment links live",
+        "Keep Stripe webhooks + Lemon catalog + email onboarding automation healthy",
         "Use OpenClaw/Ollama drafts for local-first automation before cloud spend",
         "Run email day-0 enroll on new leads",
         "CI: tests → main → Railway/Vercel auto-deploy",
@@ -268,6 +302,10 @@ def phase_plan_next(report: dict) -> dict[str, Any]:
         next_actions.insert(0, f"Add missing deploy secrets/providers: {', '.join(missing_providers)}")
     if not local_ai_online:
         next_actions.insert(0, "Bring OpenClaw/Ollama back online for cheaper local automation")
+    if not ((report.get("payments") or {}).get("automation_ready") or {}).get("stripe"):
+        next_actions.insert(0, "Repair Stripe automation: payment links/webhook/billing readiness")
+    if not ((report.get("onboarding") or {}).get("automation_ready")):
+        next_actions.insert(0, "Repair Resend/Loops onboarding automation before next traffic push")
     plan = {
         "generated_at": _now(),
         "top_tasks": tasks[:5],

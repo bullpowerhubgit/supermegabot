@@ -163,6 +163,20 @@ def _save_state(state: dict):
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 
+def _default_platforms() -> list[str]:
+    """Aktiviere nur tatsächlich konfigurierte Plattformen für den Auto-Zyklus."""
+    active: list[str] = []
+    if FB_TOKEN:
+        active.append("facebook")
+    if FB_TOKEN and IG_ID:
+        active.append("instagram")
+    if LI_TOKEN:
+        active.append("linkedin")
+    if TG_TOKEN and TG_CHAT:
+        active.append("telegram")
+    return active or ["facebook", "instagram"]
+
+
 # ── AI Caption Generator ─────────────────────────────────────────────────────
 async def _ai_caption(topic: str = "", lang: str = "de") -> str:
     try:
@@ -543,11 +557,14 @@ async def post_to_all(
     """
     if not message:
         message = await _ai_caption(topic or "Smart Home E-Commerce Automatisierung")
+    publish_text = message.strip()
+    if link and link not in publish_text:
+        publish_text = f"{publish_text}\n\n{link}".strip()
 
     # ── PostErrorGuard: kritische Vorab-Prüfung (sync, fail-closed) ─────────
     try:
         from modules.post_error_guard import guard_post as _peg
-        _peg_ok, _peg_reason = _peg(message, url=link or SHOP_URL, platform="social",
+        _peg_ok, _peg_reason = _peg(publish_text, url=link or SHOP_URL, platform="social",
                                      source_module="social_autoposter")
         if not _peg_ok:
             log.warning("PostErrorGuard BLOCKIERT: %s", _peg_reason)
@@ -559,16 +576,16 @@ async def post_to_all(
     # ── PostGuard: Qualitätsprüfung vor jedem Post ────────────────────────
     try:
         from modules.post_guard import guard
-        ok, reason = await guard.check("social", text=message, link=link or SHOP_URL)
+        ok, reason = await guard.check("social", text=publish_text, link=link or SHOP_URL)
         if not ok:
             log.warning("PostGuard BLOCKIERT: %s", reason)
-            await _tg(f"🚫 <b>PostGuard blockiert Post</b>\nGrund: {reason}\n\nText: <i>{message[:200]}</i>")
+            await _tg(f"🚫 <b>PostGuard blockiert Post</b>\nGrund: {reason}\n\nText: <i>{publish_text[:200]}</i>")
             return {"ok": False, "blocked": True, "reason": reason}
     except ImportError:
         log.error("PostGuard (modules.post_guard) nicht importierbar — Post abgebrochen")
         return {"ok": False, "blocked": True, "reason": "PostGuard nicht verfügbar — Post abgebrochen"}
 
-    active = platforms or ["facebook", "instagram"]
+    active = platforms or _default_platforms()
 
     # ── Auto-Bild via Pexels wenn kein image_url übergeben ───────────────────
     if "instagram" in active and not image_url:
@@ -577,38 +594,32 @@ async def post_to_all(
             log.warning("Kein Pexels-Bild verfügbar — Instagram-Post wird übersprungen")
             active = [p for p in active if p != "instagram"]
 
-    tasks = []
-    if "facebook" in active:
-        if image_url:
-            tasks.append(post_photo_to_facebook(message, image_url))
-        else:
-            tasks.append(post_to_facebook(message, link=link or SHOP_URL))
-    if "instagram" in active and image_url:
-        tasks.append(post_to_instagram(message, image_url))
+    from modules.post_gateway import safe_post_all
+    gateway_result = await safe_post_all(
+        text=publish_text,
+        platforms=active,
+        image_url=image_url,
+        source_module="social_autoposter",
+    )
 
-    results = await asyncio.gather(*tasks, return_exceptions=True)
-
-    summary = []
-    ok_count = 0
-    for r in results:
-        if isinstance(r, Exception):
-            summary.append({"ok": False, "error": str(r)})
-        else:
-            summary.append(r)
-            if r.get("ok"):
-                ok_count += 1
-
-    report = f"📢 *Social Post* ({ok_count}/{len(tasks)} OK)\n"
-    for r in summary:
-        icon = "✅" if r.get("ok") else "❌"
-        plat = r.get("platform", "?")
-        detail = r.get("post_id", r.get("error", ""))
-        report += f"{icon} {plat}: {str(detail)[:60]}\n"
-    report += f"_Nachricht: {message[:80]}_"
-
+    details = gateway_result.get("details", {})
+    report = f"📢 *Social Post* ({gateway_result.get('ok_count', 0)}/{len(active)} OK)\n"
+    for plat in active:
+        r = details.get(plat, {})
+        icon = "✅" if r.get("ok") else ("🚫" if r.get("blocked") else "❌")
+        detail = r.get("post_id") or ", ".join(r.get("errors", [])) or r.get("error", "")
+        report += f"{icon} {plat}: {str(detail)[:80]}\n"
+    report += f"_Nachricht: {publish_text[:80]}_"
     await _tg(report)
-    log.info("social post_to_all: %d/%d OK", ok_count, len(tasks))
-    return {"ok": ok_count > 0, "posted": ok_count, "total": len(tasks), "results": summary}
+    log.info("social post_to_all via gateway: %d/%d OK", gateway_result.get("ok_count", 0), len(active))
+    return {
+        "ok": gateway_result.get("ok_count", 0) > 0,
+        "posted": gateway_result.get("ok_count", 0),
+        "blocked": gateway_result.get("blocked_count", 0),
+        "failed": gateway_result.get("fail_count", 0),
+        "total": len(active),
+        "results": details,
+    }
 
 
 # ── Scheduler-Einstieg ───────────────────────────────────────────────────────
@@ -617,7 +628,7 @@ async def run_social_cycle() -> dict:
     Wird vom Scheduler alle 6h aufgerufen.
     Generiert Content und postet auf Facebook + Instagram (Pexels-Bild automatisch).
     """
-    message = await _ai_caption(topic="Smart Home & KI-E-Commerce")
+    message = await _ai_caption(topic="Shopify Automation mit KI für E-Commerce Teams")
     # Pexels-Bild vorab holen damit FB-Photo + IG-Post beide ein Bild bekommen
     image_url = await _fetch_pexels_image("smart home gadgets technology 2026")
     result = await post_to_all(message=message, image_url=image_url, link=SHOP_URL)

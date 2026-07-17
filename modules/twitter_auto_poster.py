@@ -75,28 +75,43 @@ def _save_posted(posted: set):
 
 
 _TWEET_TEMPLATES = [
-    "🚀 KI-Automatisierung 2026 — dein E-Commerce Business läuft auf Autopilot! Shopify + DS24 + KI = passives Einkommen. #KI #PassivesEinkommen #Shopify",
-    "💰 Online Geld verdienen 2026 geht einfacher denn je mit KI-Tools! Dropshipping + Affiliate vollautomatisch. #Dropshipping #Ecommerce",
-    "🤖 SuperMegaBot postet täglich auf 6+ Kanälen automatisch für dich. E-Commerce auf Autopilot — kein manueller Aufwand! #AIAutomation #Business",
-    "📈 Shopify + KI = perfekte Kombination 2026. Produkte importieren, Texte erstellen, Traffic generieren — alles autonom! #Shopify #KI",
-    "🔥 Passives Einkommen mit KI: DS24 Affiliate + automatischer Content + KI-Traffic. So geht's 2026! #PassivIncome #Automatisierung",
-    "💡 Digitale Produkte verkaufen war nie einfacher: KI schreibt, SuperMegaBot postet, du verdienst. #DigitaleProdukte #OnlineBusiness",
+    "🚀 Shopify Automation mit KI spart E-Commerce-Teams täglich Zeit bei Content, Leads und Follow-ups. #Shopify #Automation #KI",
+    "📈 Mehr Output, weniger Chaos: KI-Workflows für Shopify, Content und Lead-Qualifizierung im echten Betrieb. #Ecommerce #AI #Automation",
+    "🤖 Smarte E-Commerce-Automation verbindet Shop, Stripe und Content-Prozesse ohne Copy-Paste. #Shopify #SaaS #Automatisierung",
+    "⚡ Conversion-orientierte KI-Setups helfen Teams, Posts, Leads und Onboarding sauber zu orchestrieren. #Marketing #KI #SaaS",
+    "🧠 Gute Automation heißt: klare Prozesse, valide Daten und brauchbarer Content statt Spam. #Automation #Ecommerce #AI",
+    "🔗 Shopify, Content und Follow-up in einem Flow: weniger Fehler, mehr Konsistenz im Tagesgeschäft. #Shopify #Workflow #KI",
 ]
+
+
+def _fallback_tweet() -> str:
+    import random
+    return random.choice(_TWEET_TEMPLATES)
 
 async def generate_tweet(topic: str, product: str = "AI Income Machine") -> str | None:
     """Generate a tweet via AI fallback chain — always returns content."""
-    import random
+    from modules.post_guardian import validate_post as _validate_post
     try:
         from modules.ai_client import ai_complete
         prompt = (f'Schreibe einen viralen Tweet auf Deutsch über "{topic}". '
-                  f'Max 260 Zeichen. 2-3 Hashtags. Nur den Tweet-Text.')
+                  f'Max 260 Zeichen. 2-3 Hashtags. '
+                  f'Keine Einkommensversprechen, kein Hype-Spam, kein "passives Einkommen", '
+                  f'kein "online Geld verdienen". Nur den Tweet-Text.')
         result = await ai_complete(prompt, max_tokens=150)
         if result and len(result.strip()) > 20:
-            return result.strip()[:280]
+            candidate = result.strip()[:280]
+            ok, _errs = _validate_post(candidate, "twitter")
+            if ok:
+                return candidate
     except Exception as e:
         log.warning("Tweet gen error: %s", e)
-    # Template fallback — never returns None
-    return random.choice(_TWEET_TEMPLATES)
+    # Template fallback — nur guard-konforme Templates zulassen
+    for _ in range(len(_TWEET_TEMPLATES)):
+        candidate = _fallback_tweet()
+        ok, _errs = _validate_post(candidate, "twitter")
+        if ok:
+            return candidate
+    return "Shopify Automation mit KI sorgt fuer konsistente Prozesse im E-Commerce. #Shopify #Automation #KI"
 
 
 async def post_tweet(text: str, skip_guard: bool = False) -> dict:
@@ -183,12 +198,12 @@ async def run_auto_tweet(topics: list[str] = None) -> dict:
     """Auto-generate and post tweet about a random topic."""
     if topics is None:
         topics = [
-            "Passives Einkommen mit KI",
-            "Online Geld verdienen 2026",
-            "AI Business Automatisierung",
-            "Shopify Dropshipping Tipps",
-            "Digitale Produkte verkaufen",
-            "KI Tools für Unternehmer",
+            "Shopify Automation mit KI",
+            "E-Commerce Workflows mit AI",
+            "Lead-Qualifizierung fuer DACH Teams",
+            "Content-Automation fuer Shopify Stores",
+            "KI-gestuetzte SaaS-Prozesse",
+            "Conversion-orientierte Marketing-Automation",
         ]
     import random
     topic = random.choice(topics)

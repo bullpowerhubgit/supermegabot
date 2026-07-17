@@ -1,87 +1,45 @@
 #!/bin/bash
-# SuperMegaBot — Lokaler Mac-Start
-# Verwendung: bash start_local.sh
-# Holt immer die aktuelle Version von GitHub ohne Merge-Konflikte.
+# SuperMegaBot — Lokaler Single-Instance Start
+# Verhindert zombie-Prozesse durch PID-File-Management
 
-set -e
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PID_FILE="$DIR/data/server.pid"
+LOG="$DIR/data/local_server.log"
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-cd "$REPO_DIR"
+mkdir -p "$DIR/data"
 
-echo "═══════════════════════════════════════════"
-echo "  SuperMegaBot — Lokaler Start"
-echo "  $(date '+%Y-%m-%d %H:%M:%S')"
-echo "═══════════════════════════════════════════"
+echo "[$(date '+%H:%M:%S')] Starte SuperMegaBot lokal..." | tee -a "$LOG"
 
-# 1. GitHub-Stand holen (ohne Merge-Konflikte)
-echo ""
-echo "▶ Synchronisiere mit GitHub..."
-git fetch origin main
-git reset --hard origin/main
-echo "  ✅ Code aktuell: $(git log --oneline -1)"
-
-# 2. .env prüfen
-echo ""
-echo "▶ Prüfe .env..."
-if [ ! -f ".env" ]; then
-    echo "  ❌ .env nicht gefunden! Bitte aus .env.example kopieren:"
-    echo "     cp .env.example .env && nano .env"
-    exit 1
+# 1. Alle alten dashboard/server.py Prozesse beenden
+OLD_PIDS=$(pgrep -f "dashboard/server.py" 2>/dev/null || true)
+if [ -n "$OLD_PIDS" ]; then
+    echo "[$(date '+%H:%M:%S')] Alte Server-PIDs beenden: $OLD_PIDS" | tee -a "$LOG"
+    echo "$OLD_PIDS" | xargs kill -TERM 2>/dev/null || true
+    sleep 2
+    # Force-kill falls noch nötig
+    echo "$OLD_PIDS" | xargs kill -KILL 2>/dev/null || true
 fi
 
-# Kritische Keys prüfen (ohne Werte anzuzeigen)
-python3 - <<'PYCHECK'
-import os, sys
-from pathlib import Path
-from dotenv import load_dotenv
+# 2. Warte bis Port frei
+for i in $(seq 1 10); do
+    if ! lsof -i :8888 -sTCP:LISTEN >/dev/null 2>&1; then
+        break
+    fi
+    echo "[$(date '+%H:%M:%S')] Warte auf Port 8888 ($i/10)..." | tee -a "$LOG"
+    sleep 1
+done
 
-load_dotenv(Path(__file__).parent / ".env" if False else ".env")
+# 3. Neuen Server starten
+cd "$DIR"
+if [ -f ".env" ]; then
+    set -a
+    source <(grep -v '^#' .env | grep -v '^$' | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | grep -v '[(){}]') 2>/dev/null || true
+    set +a
+fi
 
-CRITICAL = [
-    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_SHOP_DOMAIN",
-    "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
-    "SUPABASE_URL", "SUPABASE_ANON_KEY",
-]
-OPTIONAL = [
-    "ANTHROPIC_API_KEY", "STRIPE_SECRET_KEY",
-    "DIGISTORE24_API_KEY", "KLAVIYO_API_KEY",
-    "OPENAI_API_KEY", "GUARDIAN_API_SECRET",
-]
-
-missing = []
-for k in CRITICAL:
-    v = os.getenv(k, "")
-    status = f"✅ ({len(v)} Zeichen)" if v else "❌ FEHLT"
-    print(f"  {k}: {status}")
-    if not v:
-        missing.append(k)
-
-print("  ---")
-for k in OPTIONAL:
-    v = os.getenv(k, "")
-    status = f"✅ ({len(v)} Zeichen)" if v else "⚠️  nicht gesetzt (optional)"
-    print(f"  {k}: {status}")
-
-if missing:
-    print(f"\n  ⚠️  {len(missing)} kritische Keys fehlen — Dashboard startet trotzdem,")
-    print("     aber manche Funktionen sind deaktiviert.")
-else:
-    print("\n  ✅ Alle kritischen Keys gesetzt")
-PYCHECK
-
-# 3. Python-Abhängigkeiten prüfen
-echo ""
-echo "▶ Prüfe Python-Pakete..."
-python3 -c "import aiohttp, dotenv, aiosqlite" 2>/dev/null && \
-    echo "  ✅ Basis-Pakete OK" || \
-    (echo "  📦 Installiere fehlende Pakete..." && pip3 install -q python-dotenv aiohttp aiosqlite)
-
-# 4. Dashboard starten
-echo ""
-echo "▶ Starte Dashboard auf Port 8888..."
-echo "  → http://localhost:8888"
-echo "  → Zum Beenden: Ctrl+C"
-echo ""
-echo "═══════════════════════════════════════════"
-
-python3 dashboard/server.py 2>&1 | tee /tmp/smb_dashboard.log
+echo "[$(date '+%H:%M:%S')] Starte Server auf Port 8888..." | tee -a "$LOG"
+nohup python3 dashboard/server.py >> "$LOG" 2>&1 &
+NEW_PID=$!
+echo "$NEW_PID" > "$PID_FILE"
+echo "[$(date '+%H:%M:%S')] Server gestartet (PID: $NEW_PID)" | tee -a "$LOG"
+echo "Dashboard: http://localhost:8888"

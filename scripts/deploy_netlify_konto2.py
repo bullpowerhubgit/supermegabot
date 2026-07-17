@@ -4,12 +4,13 @@ Voraussetzung: Account muss Credits haben (https://netlify.com/billing).
 Usage: python3 scripts/deploy_netlify_konto2.py
 """
 import requests, hashlib, time
+import os
 from pathlib import Path
 
-TOKEN2 = "nfp_2QSvRhfRHogb8MQRCys6JzuULuQMF34v929d"
-ACCOUNT_ID = "6a57d8c1171249e9ad564251"  # aiitecbuuss
+TOKEN2 = os.getenv("NETLIFY_AUTH_TOKEN_AIITEC", "")
+ACCOUNT_ID = os.getenv("NETLIFY_ACCOUNT_ID_AIITEC", "")  # aiitecbuuss
 BASE = Path(__file__).parent.parent / "netlify-deploy"
-H = {"Authorization": f"Bearer {TOKEN2}"}
+H = {"Authorization": f"Bearer {TOKEN2}"} if TOKEN2 else {}
 
 SITES = [
     ("bullpower-ai",              "bullpower-ai-aiitec",        "fbc63f82-726b-43a0-912b-aac197d67432"),
@@ -56,6 +57,9 @@ def deploy_to_site(site_id, html_bytes):
 
 
 def main():
+    if not TOKEN2 or not ACCOUNT_ID:
+        print("❌ NETLIFY_AUTH_TOKEN_AIITEC oder NETLIFY_ACCOUNT_ID_AIITEC fehlt")
+        return
     ok = 0
     fail = 0
     for dirname, site_name, site_id in SITES:

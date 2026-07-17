@@ -207,14 +207,14 @@ def _text_hash(text: str) -> str:
 
 
 def _is_duplicate(text: str, platform: str) -> bool:
-    """True wenn identischer Text bereits in den letzten DEDUP_WINDOW_H Stunden gepostet."""
+    """True wenn identischer Text auf DERSELBEN Platform in den letzten DEDUP_WINDOW_H Stunden gepostet."""
     h = _text_hash(text)
     cutoff = time.time() - DEDUP_WINDOW_H * 3600
     try:
         con = sqlite3.connect(str(_DB))
         row = con.execute(
-            "SELECT posted_at FROM posted_hashes WHERE hash=? AND posted_at>?",
-            (h, cutoff)
+            "SELECT posted_at FROM posted_hashes WHERE hash=? AND platform=? AND posted_at>?",
+            (h, platform, cutoff)
         ).fetchone()
         con.close()
         return row is not None
