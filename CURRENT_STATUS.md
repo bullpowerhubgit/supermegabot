@@ -20,11 +20,23 @@
 | SHOPIFY_ACCESS_TOKEN lokal gefixt | ✅ lokal OK |
 | Social Rate-Limiting (TG/LI/FB) | ℹ️ erwartet — löst sich selbst |
 
-## ⚠️ Manuelle Railway-Aktion nötig (DRINGEND)
-**SHOPIFY_ACCESS_TOKEN in Railway Dashboard updaten:**
-- Problem: Railway nutzt alten, ungültigen Token → 401 bei Blog-Erstellung
-- Fix: In Railway → supermegabot → Variables → SHOPIFY_ACCESS_TOKEN = Wert von SHOPIFY_ADMIN_API_TOKEN
-- Lokal bereits gefixt (~/supermegabot/.env)
+## ⚠️ Manuelle Aktionen nötig (DRINGEND)
+
+### 1. Railway: SHOPIFY_ACCESS_TOKEN updaten
+- Railway → supermegabot → Variables → SHOPIFY_ACCESS_TOKEN = Wert von SHOPIFY_ADMIN_API_TOKEN
+- Lokal bereits gefixt
+
+### 2. Meta Ads: Budget setzen
+- 3 Kampagnen mit €0 Budget → kein Spend → ROAS 0.00
+- "Flash Sale ineedit Juli 2026" → min €10-20/Tag setzen
+- "ineedit Smart Home ROAS-Max" → min €10-20/Tag setzen
+- Pixel-Tracking in Events Manager testen
+
+### 3. Gumroad: Dateien hochladen (9 Produkte unpublished)
+- Gumroad braucht Datei pro Produkt zum Publishen
+- MacOBD-Pro ZIP: ~/MacOBD-Pro-v1.0-SALE.zip → tecbuuss.gumroad.com hochladen
+- Andere 8 Produkte: PDF oder ZIP anhängen im Dashboard
+- Dann: `python3 ~/gumroad_publish_ready.py`
 
 ## Stripe (immer)
 - Domain: https://ineedit.com.co
@@ -103,11 +115,12 @@ Alle Preise neu: EUR 97/197/497 pro Monat — neue Payment Links live
 - NIEMALS Massen-Loeschen ohne Bestaetigung
 - Erlaubte Shop-Vendors: iNeedit, Printify, AliExpress Import, eBay Import, AIITEC
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 22:00 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 22:30 UTC
 - Health: ✅ OK
-- Scheduler: 169 Tasks aktiv (war 0 wegen dict-Bug)
-- Gumroad: 9/10 High-Ticket live | MacOBD-Pro morgen
-- GitHub Pages: 11/11 VSL-Seiten live
-- Shopify Blog: 401 auf Railway → manueller Fix nötig (oben)
-- DS24 Key: ✅ korrekt (1581233-...)
-- Social: Rate-Limits (TG/LI/FB) — normal nach Burst-Start
+- Scheduler: **253/400 Tasks aktiv** (Start war 0 wegen dict-Bug)
+- Shopify: ✅ 11.055 Produkte | 169 Bestellungen seit 17.6
+- Gumroad: 9/10 High-Ticket | 0 published (Dateien fehlen → manuell)
+- GitHub Pages: ✅ 11/11 VSL-Seiten live
+- Meta Ads: 12 Kampagnen aktiv, ROAS=0.00 (€0 Budget 3 Kampagnen)
+- Shopify Blog: 401 auf Railway → Railway-Env-Update nötig
+- DS24: ✅ Key 1581233-... korrekt
