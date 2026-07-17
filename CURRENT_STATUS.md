@@ -3,6 +3,22 @@
 
 
 
+
+## ✅ STRIPE = ineedit.com.co ONLY (2026-07-17 16:51 UTC)
+
+| Item | Value |
+|------|--------|
+| **Domain** | https://ineedit.com.co |
+| **Account** | `acct_1Tg1U0RJECiV6vSm` |
+| **Email** | bullpowersrtkennels@gmail.com |
+| **Live key** | `sk_live_51Tg1U…` |
+| **Business URL (Stripe)** | https://ineedit.com.co/de |
+| **Forbidden** | AIITEC `acct_1Swso` / `sk_*_51Swso` — purged |
+| **Resolver** | `modules/stripe_key_resolver.py` → `enforce_ineedit_only()` |
+| **Thank-you** | https://ineedit.com.co/pages/danke |
+
+Self-check: **PASS**. Alle Payment Links / Prices mit `RJECiV6vSm` gehören zu diesem Konto.
+
 ## ✅ STRIPE IMMER ineedit.com.co (2026-07-17 16:50 UTC)
 
 | Feld | Wert |

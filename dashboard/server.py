@@ -65,8 +65,9 @@ except Exception as _mtr_err:
 
 # DAUERHAFT: Stripe NUR bullpowersrtkennels@gmail.com — AIITEC-Keys aus Process löschen
 try:
-    from modules.stripe_key_resolver import enforce_bullpower_only
-    enforce_bullpower_only()
+    # Stripe: NUR ineedit.com.co (acct_1Tg1U0…) — AIITEC permanent verboten
+    from modules.stripe_key_resolver import enforce_ineedit_only
+    enforce_ineedit_only()
 except Exception:
     pass
 

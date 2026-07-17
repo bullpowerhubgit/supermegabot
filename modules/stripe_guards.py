@@ -50,27 +50,30 @@ TEST_ONLY_PAYMENT_METHODS: frozenset[str] = frozenset({
 
 _TEST_PM_PREFIXES = ("pm_card_", "tok_")
 
-# Stripe secret key env names — NUR bullpowersrtkennels@gmail.com Konto!
-# NIEMALS STRIPE_SECRET_KEY_AIITEC — FALSCHES KONTO, DAUERHAFT VERBOTEN
+# Stripe secret key env names — NUR ineedit.com.co (acct_1Tg1U0…)
+# NIEMALS STRIPE_SECRET_KEY_AIITEC / sk_*_51Swso — FALSCHES KONTO, DAUERHAFT VERBOTEN
 _KEY_ENV_NAMES = (
-    "STRIPE_SECRET_KEY",        # bullpowersrtkennels@gmail.com — IMMER DIESE!
-    "STRIPE_SECRET_KEY_FULL",   # nur wenn same account
+    "STRIPE_SECRET_KEY",         # PRIMARY — ineedit.com.co
+    "STRIPE_SECRET_KEY_FULL",
+    "STRIPE_SECRET_KEY_INEEDIT",
     "STRIPE_API_KEY",
     "STRIPE_SECRET",
 )
 
 DEFAULT_THANK_YOU = "https://ineedit.com.co/pages/danke"
+INEEDIT_ACCOUNT_ID = "acct_1Tg1U0RJECiV6vSm"
+INEEDIT_DOMAIN = "ineedit.com.co"
 
 
 # ── Key / mode ───────────────────────────────────────────────────────────────
 
 def resolve_stripe_key() -> str:
-    """Return bullpowersrtkennels Stripe key ONLY — never AIITEC."""
+    """Return ineedit.com.co Stripe key ONLY — never AIITEC / other accounts."""
     try:
-        from modules.stripe_key_resolver import get_working_stripe_key, assert_bullpower_only
+        from modules.stripe_key_resolver import get_working_stripe_key, assert_ineedit_only
         k = get_working_stripe_key()
         if k:
-            return assert_bullpower_only(k)
+            return assert_ineedit_only(k)
     except Exception as e:
         log.warning("stripe_key_resolver: %s", e)
     for name in _KEY_ENV_NAMES:
@@ -87,7 +90,7 @@ def resolve_stripe_key() -> str:
 
 
 def resolve_stripe_key_source() -> tuple[str, str]:
-    """Return (env_name, key) for bullpower key only."""
+    """Return (env_name, key) for ineedit.com.co key only."""
     try:
         from modules.stripe_key_resolver import get_working_stripe_key, get_working_stripe_key_name
         k = get_working_stripe_key()
