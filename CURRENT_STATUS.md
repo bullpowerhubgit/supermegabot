@@ -19,6 +19,14 @@
 | 9 kritische Tasks manuell getriggert | ✅ alle erfolgreich |
 | SHOPIFY_ACCESS_TOKEN lokal gefixt | ✅ lokal OK |
 | Social Rate-Limiting (TG/LI/FB) | ℹ️ erwartet — löst sich selbst |
+| Buyer Intent Router + Hot-Lead-Follow-up | ✅ eingebaut — Supabase/Autonomy ready |
+
+## 💸 Buyer Automation
+- Neuer `modules/buyer_intent_router.py` priorisiert echte Kaufintention aus `lead_events`
+- Bewertet u. a. `ht_demo_application`, `sofia_call`, `ht_demo_view`, `ds24_purchase`
+- Stoßt automatische Follow-ups nur für heiße Leads an und verhindert 24h-Doppelkontakt
+- In `modules/autonomous_loop.py` als neue Phase `buyer_pipeline` verdrahtet
+- Fallback sicher: ohne Supabase-Konfiguration wird sauber `skipped` statt Spam/Crash zurückgegeben
 
 ## ⚠️ Manuelle Aktionen nötig (DRINGEND)
 
