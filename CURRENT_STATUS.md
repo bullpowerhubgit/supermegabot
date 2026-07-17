@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-17 v35 — SESSION ABSCHLUSS + ALLE AGENTEN FERTIG**
+**Stand: 2026-07-17 v36 — Session-Fortsetzung: Bug-Fixes + PR #48**
 
 ## ✅ System
 | Check | Status |
@@ -7,32 +7,28 @@
 | Production Health | ok — Railway live |
 | Stripe | **ineedit.com.co only** — acct_1Tg1U0 (bullpowersrtkennels) |
 | AIITEC Stripe | PERMANENT FORBIDDEN |
-| Scheduler | **253/400 Tasks aktiv** — dict-Bug gefixt |
+| Scheduler | **180/400 Tasks mit Runs** — 220 Tasks warten auf ihr erstes Intervall |
 | GitHub Pages vsl-pages | ✅ 11/11 VSL-Seiten live |
-| Netlify | FREE PLAN — keine neuen Deploys, Credits exhausted |
-| PR #46 | ✅ fix/session-2026-07-17-fixes — bereit zum Mergen |
+| PR #48 | ✅ fix/session-2026-07-17-v2 — bereit zum Mergen |
+| PR #46 | ✅ bereits gemergt |
 
-## 🔧 Session v35 Fixes (2026-07-17 — FINALE ZUSAMMENFASSUNG)
-| Fix | Status | Commit |
-|-----|--------|--------|
-| Scheduler `_log_run` dict→str Bug | ✅ auf main | 929ec236 |
-| GitHub Pages 11 VSL-Seiten | ✅ live | — |
-| Shopify Token Self-Healer | ✅ in PR #46 | 2af527f5 |
-| SendGrid 20-Fehler (Mailchimp-Loop entfernt) | ✅ gefixt + in PR | c7e0417c |
-| SendGrid Fehler-Zählung (skipped≠failed) | ✅ gefixt | c7e0417c |
-| Buyer Intent Router (neues Modul) | ✅ in PR | c7e0417c |
-| Ollama Post-Bereinigung | ✅ in PR | c7e0417c |
-| 23/23 SEO/Content Tasks getriggert | ✅ | — |
-| 25 Ads/Revenue Tasks getriggert | ✅ | — |
-| 21 Shopify Tasks getriggert | ✅ | — |
-| Social-Blast: 17/20 Tasks | ✅ | — |
+## 🔧 Session v36 Neue Fixes (2026-07-17)
+| Fix | Status | Details |
+|-----|--------|---------|
+| ai_client.py Semaphore-Loop-Bug | ✅ in PR #48 | `_get_sem()` erkennt Event-Loop-Wechsel → neues Semaphore pro Loop |
+| YouTube Signatur-Bug | ✅ in PR #48 | `deploy_to_youtube(title, content_dict)` statt falscher kwargs |
+| Content-Cleaner | ✅ in PR #48 | `_clean_ai_text()` entfernt KI-Meta-Kommentare + [link]-Platzhalter |
+| Instagram Pipeline Fix | ✅ in PR #48 | `_strip_meta()` + verbesserter Prompt |
+| KILeasingEngine Klasse fehlt | ✅ in PR #48 | Ersetzt durch `send_daily_reports()` direkt |
+| generate_upsell_sequence fehlt | ✅ in PR #48 | Ersetzt durch `analyze_funnel()` |
+| Scheduler Audit Funktion | ✅ in PR #48 | `get_scheduler_audit()` für Diagnose |
 
 ## ⚠️ Manuelle Aktionen nötig (DRINGEND — NUR RUDOLF)
 
-### 1. Railway Deploy: PR #46 mergen
-- https://github.com/bullpowerhubgit/supermegabot/pull/46
-- Enthält: Shopify Token Resolver, SendGrid Fix, Buyer Pipeline
-- Nach Merge → Railway auto-deploy → Shopify 401-Fehler gehoben
+### 1. PR #48 mergen (WICHTIG)
+- https://github.com/bullpowerhubgit/supermegabot/pull/48
+- Enthält: 6 Bug-Fixes (Semaphore, YouTube, Content-Cleaner, KILeasing, Upsell)
+- Nach Merge → Railway auto-deploy
 
 ### 2. Railway Env: SHOPIFY_ACCESS_TOKEN
 - Railway → supermegabot → Variables → SHOPIFY_ACCESS_TOKEN = Wert von SHOPIFY_ADMIN_API_TOKEN
@@ -49,24 +45,16 @@
 
 ### 5. Gumroad: Dateien hochladen (9 Produkte unpublished)
 - MacOBD-Pro ZIP: ~/MacOBD-Pro-v1.0-SALE.zip → tecbuuss.gumroad.com
-- Andere 8 Produkte: PDF/ZIP im Gumroad Dashboard anhängen
-- Dann: `python3 ~/gumroad_publish_ready.py`
-
-### 6. Etsy Account entsperren
-- Etsy-Account ist GESPERRT — manuell bei Etsy entsperren/reaktivieren
-
-### 7. Gumroad Stripe verbinden
-- gumroad.com/settings/payments → Stripe verbinden (bullpowersrtkennels@gmail.com)
+- `python3 ~/gumroad_publish_ready.py` (nach Upload)
 
 ## Bekannte Issues (kein sofortiger Fix nötig)
 | Issue | Ursache | Fix |
 |-------|---------|-----|
 | shopify_seo_auto 100 Fehler | SHOPIFY_ACCESS_TOKEN 401 Railway | Railway Env Update |
-| facebook_token_check schlägt fehl | OAuth abgelaufen | Punkt 4 oben |
+| facebook_token_check schlägt fehl | OAuth abgelaufen | Manuell FB reconnect |
 | pinterest_auto_post 0 Boards | API verbunden, keine Boards | Pinterest Dashboard |
-| youtube_auto_post Signatur-Fehler | deploy_to_youtube() Signatur | Code-Fix nötig |
-| tiktok_cycle/affiliate_mega Timeout | Externe API langsam | Kein Fix nötig |
-| Gumroad Viral Window Scanner €29 | Tier-Pricing nicht via API änderbar | Manuell im Dashboard |
+| youtube Tasks timeout | YouTube OAuth nicht aktiv | /api/youtube/auth aufrufen |
+| Klaviyo 0 Subs | Klaviyo API verbunden, aber keine Contacts | Liste in Klaviyo aufbauen |
 
 ## Stripe (immer)
 - Domain: https://ineedit.com.co
@@ -77,9 +65,6 @@
 | System | URL | Status |
 |--------|-----|--------|
 | SuperMegaBot | https://supermegabot-production.up.railway.app | ✅ ok |
-| AdPoster | https://adposter-engine-production.up.railway.app | ok |
-| IcomeAuto | https://icomeauto-production-e4e5.up.railway.app | ok |
-| Steuercockpit | https://steuercockpit-production-44c9.up.railway.app | ok |
 | GitHub Pages | bullpowerhubgit.github.io/vsl-pages/ | ✅ ok |
 | Netlify | Credits exhausted bis 01.08 — FREE halten | blocked |
 
@@ -105,13 +90,12 @@
 - NIEMALS Massen-Loeschen ohne Bestaetigung
 - mass_creator / bulk_activate: DAUERHAFT DEAKTIVIERT
 
-## 🤖 WATCHDOG: 2026-07-17 v35 — Session Ende
+## 🤖 WATCHDOG: 2026-07-17 v36
 - Health: ✅ OK (Railway live)
-- Scheduler: 253/400 Tasks aktiv
-- Shopify: 11.055 Produkte | 0 Umsatz (Shopify API 401 auf Railway)
+- Scheduler: 180/400 Tasks aktiv (220 warten auf erstes Intervall — normal)
+- Shopify: 11.055 Produkte | 0 Umsatz (SHOPIFY_ACCESS_TOKEN 401 auf Railway)
 - Gumroad: 9 unpublished (Dateien fehlen)
 - GitHub Pages: 11/11 VSL-Seiten live
 - Meta Ads: 12 Kampagnen, ROAS=0.00 wegen €0 Budget (3 Kampagnen)
-- SEO: 23 Tasks getriggert, IndexNow pings gesendet
-- Social: 17/20 Tasks getriggert (FB OAuth abgelaufen + TikTok Timeouts)
-- PR #46: bereit, wartet auf Rudolfs Merge-Entscheidung
+- SEO: seo_dominator ✅ | klaviyo_cycle ✅ | revenue_engine_evening ✅
+- PR #48: bereit, wartet auf Rudolfs Merge-Entscheidung
