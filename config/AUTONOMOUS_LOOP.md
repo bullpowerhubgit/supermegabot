@@ -44,11 +44,18 @@ POST /api/agents/run
 
 | Layer | Mechanism |
 |-------|-----------|
-| GitHub Actions `deploy.yml` | syntax + guards on every push to `main` |
-| GitHub Actions `autonomous_loop.yml` | every 6h + on loop file changes |
+| GitHub Actions `deploy.yml` | baseline syntax + guards on push to `main` |
+| GitHub Actions `autonomous_loop.yml` | every commit/PR + every 3h quick/full loop + changed-target verification |
+| GitHub Actions `autonomous_deploy.yml` | changed Railway/Vercel targets auto-deploy from one registry |
 | GitHub Actions `claude_agent.yml` | daily Claude maintenance |
 | Railway | auto-deploy on `main` (GitHub App) |
 | Vercel | auto-deploy per connected project |
+
+## Cross-project target registry
+
+- `modules/autonomous_projects.py` discovers deploy targets from `railway.toml` and `vercel.json`
+- `config/autonomous_projects.json` overrides watch-paths and shared-module dependencies
+- `scripts/autonomous_project_matrix.py` emits the GitHub Actions matrix for changed targets
 
 ## Integrations
 

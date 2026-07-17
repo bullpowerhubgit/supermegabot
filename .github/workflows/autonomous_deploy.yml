@@ -1,0 +1,97 @@
+name: Autonomous Deploy
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: autonomous-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  discover-targets:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.discover.outputs.matrix }}
+      count: ${{ steps.discover.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - id: discover
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_REF=""
+          HEAD_REF="${GITHUB_SHA}"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            BASE_REF="${{ github.event.before }}"
+          fi
+          if [ -n "$BASE_REF" ]; then
+            MATRIX="$(python3 scripts/autonomous_project_matrix.py --changed-only --base-ref "$BASE_REF" --head-ref "$HEAD_REF")"
+          else
+            MATRIX="$(python3 scripts/autonomous_project_matrix.py)"
+          fi
+          COUNT="$(python3 - <<'PY' "$MATRIX"
+import json, sys
+print(len(json.loads(sys.argv[1]).get("include", [])))
+PY
+)"
+          echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+  deploy-targets:
+    needs: discover-targets
+    if: ${{ needs.discover-targets.outputs.count != '0' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.discover-targets.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Railway CLI
+        if: ${{ matrix.provider == 'railway' && github.ref_name == 'main' }}
+        run: npm install -g @railway/cli
+      - name: Install Vercel CLI
+        if: ${{ matrix.provider == 'vercel' }}
+        run: npm install -g vercel
+      - name: Deploy target
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ matrix.provider }}" = "railway" ] && [ "${{ github.ref_name }}" != "main" ]; then
+            echo '{"ok": true, "skipped": true, "reason": "Railway deploys are production-only on main"}'
+            exit 0
+          fi
+          if [ "${{ matrix.provider }}" = "railway" ]; then
+            python3 scripts/deploy_autonomous_target.py \
+              --provider railway \
+              --path '${{ matrix.path }}' \
+              --project '${{ matrix.railway.project }}' \
+              --service '${{ matrix.railway.service }}' \
+              --environment '${{ matrix.railway.environment }}' \
+              --production
+          else
+            PROD_FLAG=""
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              PROD_FLAG="--production"
+            fi
+            python3 scripts/deploy_autonomous_target.py \
+              --provider vercel \
+              --path '${{ matrix.path }}' \
+              --project '${{ matrix.vercel.project }}' \
+              $PROD_FLAG
+          fi

@@ -105,8 +105,8 @@ def _send_gmail(user: str, password: str, to: str, subject: str, body: str) -> b
         msg["To"]      = to
         msg["Reply-To"] = user
         msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as s:
-            s.login(user, password)
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:
+            s.ehlo(); s.starttls(); s.login(user, password)
             s.sendmail(user, [to], msg.as_string())
         return True
     except smtplib.SMTPAuthenticationError:

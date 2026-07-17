@@ -2,7 +2,21 @@
 **Stand: 2026-07-16 23:00 UTC (Wave 13 — High-Ticket Upgrade ALLE 16 Sites live)**
 
 
-## ✅ AUTONOMOUS LOOP EVERYWHERE (2026-07-17 16:37 UTC)
+
+## ✅ STRIPE IMMER ineedit.com.co (2026-07-17 16:50 UTC)
+
+| Feld | Wert |
+|------|------|
+| Domain / Brand | **ineedit.com.co** |
+| Account | `acct_1Tg1U0RJECiV6vSm` |
+| Email | bullpowersrtkennels@gmail.com |
+| Key prefix | `sk_live_51Tg1U…` |
+| Enforcement | `modules/stripe_key_resolver.py` — INEEDIT-ONLY (+ brand probe) |
+| Forbidden | AIITEC `sk_live_51Swso…` forever |
+
+API-Check: `business_profile.url=https://ineedit.com.co/de`, dashboard display_name=`ineedit.com.co`.
+
+## ✅ AUTONOMOUS LOOP EVERYWHERE (2026-07-17 16:55 UTC)
 
 **Loop:** Claude/Agents → Tests (CI) → Deploy (Railway/Vercel) → Stripe+Lemon payments → Resend/Loops onboarding → Plausible/PostHog → next plan
 
@@ -15,7 +29,9 @@
 | `modules/analytics_feedback.py` | ✅ Plausible/PostHog → tasks |
 | Scheduler | ✅ every 3h `autonomous_loop` + 2h collab |
 | API | ✅ `POST /api/autonomous-loop/run` · `GET …/status` |
-| CI | ✅ `.github/workflows/autonomous_loop.yml` + deploy.yml compile |
+| CI | ✅ `.github/workflows/autonomous_loop.yml` + changed-target verify |
+| Deploy Registry | ✅ `modules/autonomous_projects.py` + `config/autonomous_projects.json` |
+| Auto Deploy | ✅ `.github/workflows/autonomous_deploy.yml` for Railway/Vercel targets |
 | Docs | ✅ `config/AUTONOMOUS_LOOP.md` |
 
 ```bash

@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 """
-Stripe Key Resolver — NUR bullpowersrtkennels@gmail.com
-========================================================
+Stripe Key Resolver — NUR ineedit.com.co
+========================================
 DAUERHAFT. IMMER. ÜBERALL.
 
-Erlaubt:
-  • Konto: acct_1Tg1U0RJECiV6vSm
-  • Email: bullpowersrtkennels@gmail.com
-  • Live-Key-Prefix: sk_live_51Tg1U…
+Erlaubt (EIN Konto):
+  • Shop / Brand:   https://ineedit.com.co
+  • Konto:          acct_1Tg1U0RJECiV6vSm
+  • Login-Email:    bullpowersrtkennels@gmail.com
+  • Dashboard-Name: ineedit.com.co
+  • Live-Key:       sk_live_51Tg1U… / rk_live_51Tg1U…
 
 VERBOTEN (nie nutzen, nie fallback):
-  • STRIPE_SECRET_KEY_AIITEC
-  • sk_live_51Swso… (AIITEC-Konto)
+  • STRIPE_SECRET_KEY_AIITEC / sk_live_51Swso… (AIITEC)
   • jedes andere Stripe-Konto
 
 Usage:
     from modules.stripe_key_resolver import get_working_stripe_key, assert_bullpower_only
-    key = get_working_stripe_key()
+    key = get_working_stripe_key()  # always ineedit.com.co account
 """
 from __future__ import annotations
 
@@ -29,14 +30,20 @@ from typing import Optional
 
 log = logging.getLogger("StripeKeyResolver")
 
-# ── Kanonisches BullPower-Konto (EINZIGES erlaubtes) ─────────────────────────
-BULLPOWER_ACCOUNT_ID = "acct_1Tg1U0RJECiV6vSm"
-BULLPOWER_EMAIL = "bullpowersrtkennels@gmail.com"
-# Live secret keys for this account always start with this publishable-account prefix
+# ── Kanonisches Konto: ineedit.com.co (EINZIGES erlaubtes) ───────────────────
+INEEDIT_DOMAIN = "ineedit.com.co"
+INEEDIT_URL = "https://ineedit.com.co"
+INEEDIT_ACCOUNT_ID = "acct_1Tg1U0RJECiV6vSm"
+INEEDIT_EMAIL = "bullpowersrtkennels@gmail.com"
+# Back-compat aliases (same account — do not remove)
+BULLPOWER_ACCOUNT_ID = INEEDIT_ACCOUNT_ID
+BULLPOWER_EMAIL = INEEDIT_EMAIL
+# Live secret keys for this account always start with this prefix
 BULLPOWER_LIVE_PREFIXES = (
     "sk_live_51Tg1U",
     "rk_live_51Tg1U",
 )
+INEEDIT_LIVE_PREFIXES = BULLPOWER_LIVE_PREFIXES
 # Explicit ban list (AIITEC + known wrong accounts)
 BANNED_KEY_PREFIXES = (
     "sk_live_51Swso",   # AIITEC — 401 / FALSCHES KONTO
@@ -44,10 +51,11 @@ BANNED_KEY_PREFIXES = (
     "rk_live_51Swso",
 )
 
-# Env vars that MAY hold the bullpower key (order = preference)
+# Env vars that MAY hold the ineedit.com.co key (order = preference)
 _ALLOWED_ENV = (
-    "STRIPE_SECRET_KEY",        # PRIMARY — bullpowersrtkennels
+    "STRIPE_SECRET_KEY",        # PRIMARY — ineedit.com.co
     "STRIPE_SECRET_KEY_FULL",   # alias if set to same account
+    "STRIPE_SECRET_KEY_INEEDIT",
     "STRIPE_API_KEY",
     "STRIPE_SECRET",
 )
@@ -80,7 +88,7 @@ def is_banned_key(key: str) -> bool:
 
 
 def is_bullpower_key(key: str) -> bool:
-    """True if key belongs to bullpowersrtkennels live account (prefix match)."""
+    """True if key belongs to ineedit.com.co live account (prefix match)."""
     k = (key or "").strip()
     if not k:
         return False
@@ -93,6 +101,11 @@ def is_bullpower_key(key: str) -> bool:
     if k.startswith("sk_test_") or k.startswith("rk_test_"):
         return False
     return False
+
+
+def is_ineedit_key(key: str) -> bool:
+    """Alias — same as is_bullpower_key (ineedit.com.co account)."""
+    return is_bullpower_key(key)
 
 
 def purge_forbidden_from_environ() -> list[str]:
@@ -117,41 +130,54 @@ def purge_forbidden_from_environ() -> list[str]:
                 removed.append(name)
     if removed:
         log.warning(
-            "Stripe BULLPOWER-ONLY: removed forbidden env vars from process: %s",
+            "Stripe INEEDIT-ONLY (ineedit.com.co): removed forbidden env vars: %s",
             ", ".join(removed),
         )
     return removed
 
 
 def enforce_bullpower_only() -> dict:
-    """Startup: purge AIITEC + ensure STRIPE_SECRET_KEY is bullpower."""
+    """Startup: purge AIITEC + ensure STRIPE_SECRET_KEY is ineedit.com.co account."""
     global _enforced
     removed = purge_forbidden_from_environ()
     key = get_working_stripe_key(force_refresh=True)
     ok = bool(key) and is_bullpower_key(key)
     _enforced = True
     if ok:
-        # Force all common aliases to the same bullpower key in-process
+        # Force all common aliases to the same ineedit key in-process
         for alias in _ALLOWED_ENV:
             os.environ[alias] = key
+        os.environ["STRIPE_ACCOUNT_ID"] = INEEDIT_ACCOUNT_ID
+        os.environ["STRIPE_BUSINESS_DOMAIN"] = INEEDIT_DOMAIN
+        os.environ["STRIPE_BUSINESS_URL"] = INEEDIT_URL
         log.info(
-            "Stripe BULLPOWER-ONLY enforced: account=%s key=%s…",
-            BULLPOWER_ACCOUNT_ID,
+            "Stripe INEEDIT-ONLY enforced: domain=%s account=%s key=%s…",
+            INEEDIT_DOMAIN,
+            INEEDIT_ACCOUNT_ID,
             key[:14],
         )
     else:
         log.error(
-            "Stripe BULLPOWER-ONLY: KEIN gültiger bullpowersrtkennels Key! "
-            "Setze STRIPE_SECRET_KEY=sk_live_51Tg1U… (acct_1Tg1U0RJECiV6vSm)"
+            "Stripe INEEDIT-ONLY: KEIN gültiger ineedit.com.co Key! "
+            "Setze STRIPE_SECRET_KEY=sk_live_51Tg1U… (%s / %s)",
+            INEEDIT_ACCOUNT_ID,
+            INEEDIT_DOMAIN,
         )
     return {
         "ok": ok,
-        "account_id": BULLPOWER_ACCOUNT_ID,
-        "email": BULLPOWER_EMAIL,
+        "account_id": INEEDIT_ACCOUNT_ID,
+        "email": INEEDIT_EMAIL,
+        "domain": INEEDIT_DOMAIN,
+        "url": INEEDIT_URL,
         "key_prefix": (key[:14] + "…") if key else "",
         "purged_env": removed,
         "source": _cache_name,
     }
+
+
+def enforce_ineedit_only() -> dict:
+    """Alias for enforce_bullpower_only — same ineedit.com.co account."""
+    return enforce_bullpower_only()
 
 
 def _probe(key: str) -> bool:
@@ -174,17 +200,31 @@ def _probe(key: str) -> bool:
             data = json.loads(r.read())
             acct = data.get("id") or ""
             email = (data.get("email") or "").lower()
-            if acct and acct != BULLPOWER_ACCOUNT_ID:
+            if acct and acct != INEEDIT_ACCOUNT_ID:
                 log.error(
-                    "Stripe Key gehört zu %s — erwartet %s — ABGELEHNT",
-                    acct, BULLPOWER_ACCOUNT_ID,
+                    "Stripe Key gehört zu %s — erwartet %s (ineedit.com.co) — ABGELEHNT",
+                    acct, INEEDIT_ACCOUNT_ID,
                 )
                 _dead.add(key)
                 return False
-            if email and email != BULLPOWER_EMAIL.lower():
-                log.error("Stripe email %s ≠ %s — ABGELEHNT", email, BULLPOWER_EMAIL)
+            if email and email != INEEDIT_EMAIL.lower():
+                log.error("Stripe email %s ≠ %s — ABGELEHNT", email, INEEDIT_EMAIL)
                 _dead.add(key)
                 return False
+            # Brand check: dashboard name or business URL must reference ineedit
+            display = (
+                ((data.get("settings") or {}).get("dashboard") or {}).get("display_name")
+                or ""
+            ).lower()
+            biz_url = ((data.get("business_profile") or {}).get("url") or "").lower()
+            if display or biz_url:
+                if INEEDIT_DOMAIN not in display and INEEDIT_DOMAIN not in biz_url:
+                    log.error(
+                        "Stripe brand mismatch display=%r url=%r — erwartet %s — ABGELEHNT",
+                        display, biz_url, INEEDIT_DOMAIN,
+                    )
+                    _dead.add(key)
+                    return False
             return True
     except urllib.error.HTTPError as e:
         if e.code in (401, 403):
@@ -197,7 +237,7 @@ def _probe(key: str) -> bool:
 
 
 def get_working_stripe_key(force_refresh: bool = False) -> str:
-    """Return bullpowersrtkennels secret key ONLY — never AIITEC."""
+    """Return ineedit.com.co secret key ONLY — never AIITEC / other accounts."""
     global _cache_key, _cache_name, _cache_ts
     now = time.time()
     if (
@@ -219,7 +259,7 @@ def get_working_stripe_key(force_refresh: bool = False) -> str:
             continue
         if not is_bullpower_key(val):
             log.error(
-                "Stripe key in %s is NOT bullpower prefix (got %s…) — ignored",
+                "Stripe key in %s is NOT ineedit.com.co prefix (got %s…) — ignored",
                 name, val[:14],
             )
             continue
@@ -228,7 +268,7 @@ def get_working_stripe_key(force_refresh: bool = False) -> str:
             _cache_key = val
             _cache_name = name
             _cache_ts = now
-            log.info("Stripe BULLPOWER key from %s (%s…)", name, val[:14])
+            log.info("Stripe INEEDIT key from %s (%s…) domain=%s", name, val[:14], INEEDIT_DOMAIN)
             return val
 
     # Explicit: never fall through to AIITEC
@@ -245,24 +285,29 @@ def get_working_stripe_key_name() -> str:
 
 
 def assert_bullpower_only(key: Optional[str] = None) -> str:
-    """Raise RuntimeError if key is not bullpower. Returns key if ok."""
+    """Raise RuntimeError if key is not ineedit.com.co. Returns key if ok."""
     k = (key if key is not None else get_working_stripe_key()).strip()
     if not k:
         raise RuntimeError(
-            "Kein STRIPE_SECRET_KEY für bullpowersrtkennels@gmail.com "
-            f"({BULLPOWER_ACCOUNT_ID}). Setze sk_live_51Tg1U…"
+            f"Kein STRIPE_SECRET_KEY für {INEEDIT_DOMAIN} "
+            f"({INEEDIT_ACCOUNT_ID} / {INEEDIT_EMAIL}). Setze sk_live_51Tg1U…"
         )
     if is_banned_key(k) or not is_bullpower_key(k):
         raise RuntimeError(
             f"FALSCHES STRIPE-KONTO blockiert (prefix {k[:14]}…). "
-            f"NUR {BULLPOWER_EMAIL} / {BULLPOWER_ACCOUNT_ID} erlaubt."
+            f"NUR {INEEDIT_DOMAIN} / {INEEDIT_EMAIL} / {INEEDIT_ACCOUNT_ID} erlaubt."
         )
     return k
 
 
+def assert_ineedit_only(key: Optional[str] = None) -> str:
+    """Alias for assert_bullpower_only."""
+    return assert_bullpower_only(key)
+
+
 def rewrite_auth_header_value(auth_header: str) -> str:
     """
-    If Authorization: Bearer sk_… is wrong account, replace with bullpower key.
+    If Authorization: Bearer sk_… is wrong account, replace with ineedit.com.co key.
     Used by HttpGuard process-wide.
     """
     if not auth_header:
@@ -279,7 +324,7 @@ def rewrite_auth_header_value(auth_header: str) -> str:
             good = get_working_stripe_key()
             if good:
                 log.warning(
-                    "Stripe HttpGuard: rewrote FORBIDDEN key %s… → bullpower %s…",
+                    "Stripe HttpGuard: rewrote FORBIDDEN key %s… → ineedit %s…",
                     token[:12], good[:12],
                 )
                 return f"Bearer {good}"
@@ -292,9 +337,13 @@ def stripe_aiitec_status() -> dict:
         "configured": bool((os.getenv("STRIPE_SECRET_KEY_AIITEC") or "").strip()),
         "ok": False,
         "forbidden": True,
-        "error": "STRIPE_SECRET_KEY_AIITEC is PERMANENTLY FORBIDDEN — use bullpowersrtkennels only",
-        "required_account": BULLPOWER_ACCOUNT_ID,
-        "required_email": BULLPOWER_EMAIL,
+        "error": (
+            "STRIPE_SECRET_KEY_AIITEC is PERMANENTLY FORBIDDEN — "
+            f"use {INEEDIT_DOMAIN} only ({INEEDIT_ACCOUNT_ID})"
+        ),
+        "required_account": INEEDIT_ACCOUNT_ID,
+        "required_email": INEEDIT_EMAIL,
+        "required_domain": INEEDIT_DOMAIN,
         "active": get_working_stripe_key_name() or "STRIPE_SECRET_KEY",
     }
 
@@ -304,7 +353,8 @@ def self_check() -> dict:
     enforce_bullpower_only()
     k = get_working_stripe_key()
     checks = [
-        {"name": "has_bullpower_key", "ok": bool(k) and is_bullpower_key(k)},
+        {"name": "has_ineedit_key", "ok": bool(k) and is_bullpower_key(k)},
+        {"name": "has_bullpower_key", "ok": bool(k) and is_bullpower_key(k)},  # alias
         {"name": "aiitec_not_used", "ok": not is_banned_key(k) if k else True},
         {
             "name": "forbidden_env_purged",
@@ -321,7 +371,9 @@ def self_check() -> dict:
     return {
         "ok": all(c["ok"] for c in checks),
         "checks": checks,
-        "account_id": BULLPOWER_ACCOUNT_ID,
-        "email": BULLPOWER_EMAIL,
+        "account_id": INEEDIT_ACCOUNT_ID,
+        "email": INEEDIT_EMAIL,
+        "domain": INEEDIT_DOMAIN,
+        "url": INEEDIT_URL,
         "key_prefix": (k[:14] + "…") if k else "",
     }

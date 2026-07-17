@@ -197,9 +197,8 @@ async def send_via_smtp(subject: str, html: str, to_email: str = "") -> dict:
         msg["To"] = target
         msg.attach(MIMEText(html, "html"))
 
-        ctx = ssl.create_default_context()
-        with smtplib.SMTP_SSL(account["host"], 465, context=ctx) as smtp:
-            smtp.login(account["user"], account["pw"])
+        with smtplib.SMTP(account["host"], 587, timeout=20) as smtp:
+            smtp.ehlo(); smtp.starttls(); smtp.login(account["user"], account["pw"])
             smtp.sendmail(account["user"], target, msg.as_string())
         return {"ok": True, "from": account["user"], "to": target}
     except Exception as e:

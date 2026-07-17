@@ -23,7 +23,7 @@ FROM_EMAIL   = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
 FROM_NAME    = os.getenv("FROM_NAME", "AiiteC Team")
 SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN_RUDICLONE", "")
-TG_CHAT      = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
+TG_CHAT      = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # High-Ticket Produkte mit Payment-Links
 HIGH_TICKET_PRODUCTS = [

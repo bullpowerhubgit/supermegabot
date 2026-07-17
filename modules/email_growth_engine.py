@@ -136,9 +136,8 @@ def _send_smtp_batch(account: Dict, recipients: List[Tuple[str, str]], subject: 
     """Send HTML email to a batch of recipients from one SMTP account. Returns sent count."""
     sent = 0
     try:
-        ctx = ssl.create_default_context()
-        with smtplib.SMTP_SSL(account["host"], account.get("port", 465), context=ctx) as srv:
-            srv.login(account["user"], account["pw"])
+        with smtplib.SMTP(account["host"], 587, timeout=20) as srv:
+            srv.ehlo(); srv.starttls(); srv.login(account["user"], account["pw"])
             for to_email, first_name in recipients[:DAILY_LIMIT]:
                 try:
                     personalised = html.replace("{{first_name}}", first_name or "Kunde")

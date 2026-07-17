@@ -79,13 +79,18 @@ async def run_cycle():
             ok = v.get('ok', True) if isinstance(v, dict) else True
             icon = "OK" if ok else "ERR"
             msg += f"  [{icon}] {k}\n"
-        async with aiohttp.ClientSession() as s:
-            await s.post(
-                f"https://api.telegram.org/bot{os.getenv('TELEGRAM_BOT_TOKEN', '8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718')}/sendMessage",
-                json={'chat_id': os.getenv('TELEGRAM_CHAT_ID', '5088771245'), 'text': msg},
-                timeout=aiohttp.ClientTimeout(total=15)
-            )
-        log.info("Telegram Report gesendet")
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+        tg_chat = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+        if tg_token and tg_chat:
+            async with aiohttp.ClientSession() as s:
+                await s.post(
+                    f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                    json={'chat_id': tg_chat, 'text': msg},
+                    timeout=aiohttp.ClientTimeout(total=15)
+                )
+            log.info("Telegram Report gesendet")
+        else:
+            log.warning("Telegram Report uebersprungen: TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID fehlen")
     except Exception as e:
         log.error("Telegram Report: %s", e)
 

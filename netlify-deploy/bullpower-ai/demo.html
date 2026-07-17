@@ -2,229 +2,116 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BullPower AI — Interaktive Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BullPower AI — Live Demo</title>
+<meta name="description" content="Interaktive Demo von BullPower AI. Testimonials, Case Study und High-Ticket Checkout.">
+<meta name="robots" content="index,follow">
 <style>
-:root { --bg:#0a0a0f; --s:#13131a; --s2:#1a1a24; --bd:#2a2a3d; --a:#6c63ff; --a2:#00d4ff; --t:#e8e8f0; --m:#888899; --g:#00ff88; }
+:root{--bg:#07070c;--card:#12121c;--line:#2a2a3a;--text:#f1f5f9;--muted:#94a3b8;--acc:#818cf8;--ok:#4ade80;--warn:#facc15}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--t);font-family:-apple-system,'Inter','Segoe UI',sans-serif;min-height:100vh;}
-.header{background:rgba(10,10,15,0.95);border-bottom:1px solid var(--bd);padding:1rem 5%;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
-.logo{font-size:1.2rem;font-weight:900;background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.back-btn{color:var(--m);text-decoration:none;font-size:0.9rem;border:1px solid var(--bd);padding:0.4rem 1rem;border-radius:8px;transition:all 0.2s;}
-.back-btn:hover{color:var(--t);border-color:var(--a);}
-.hero{padding:50px 5% 30px;text-align:center;}
-.demo-badge{display:inline-block;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.4);color:var(--a2);padding:0.4rem 1.2rem;border-radius:50px;font-size:0.85rem;font-weight:600;margin-bottom:1.5rem;text-transform:uppercase;letter-spacing:0.05em;animation:fadein 0.5s ease;}
-@keyframes fadein{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;margin-bottom:0.8rem;}
-h1 span{background:linear-gradient(135deg,var(--a),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
-.hero-sub{color:var(--m);max-width:600px;margin:0 auto 2rem;font-size:1.05rem;}
-.demo-area{max-width:1000px;margin:0 auto;padding:0 5% 60px;}
-.tab-bar{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;background:var(--s);border-radius:12px;padding:0.5rem;border:1px solid var(--bd);}
-.tab-btn{background:transparent;border:none;color:var(--m);padding:0.7rem 1.2rem;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;transition:all 0.2s;}
-.tab-btn:hover{color:var(--t);background:var(--s2);}
-.tab-btn.active{background:linear-gradient(135deg,var(--a),var(--a2));color:white;}
-.panel{background:var(--s);border:1px solid var(--bd);border-radius:16px;overflow:hidden;}
-.panel-header{padding:1.5rem 2rem;border-bottom:1px solid var(--bd);}
-.panel-header h3{font-size:1.1rem;font-weight:700;margin-bottom:0.4rem;}
-.panel-header p{color:var(--m);font-size:0.9rem;}
-.input-row{padding:1.2rem 2rem;display:flex;gap:0.8rem;align-items:flex-end;flex-wrap:wrap;border-bottom:1px solid var(--bd);}
-.input-row label{color:var(--m);font-size:0.85rem;display:block;margin-bottom:0.4rem;width:100%;}
-.demo-input{flex:1;min-width:200px;background:var(--s2);border:2px solid var(--bd);border-radius:10px;padding:0.8rem 1.2rem;color:var(--t);font-size:0.95rem;outline:none;transition:border-color 0.2s;}
-.demo-input:focus{border-color:var(--a);}
-.run-btn{background:linear-gradient(135deg,var(--a),var(--a2));color:white;border:none;padding:0.8rem 1.5rem;border-radius:10px;cursor:pointer;font-weight:700;font-size:0.9rem;transition:all 0.2s;white-space:nowrap;}
-.run-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,0.3);}
-.output-box{padding:1.5rem 2rem;}
-.output-header{display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;color:var(--g);font-size:0.85rem;font-weight:600;}
-.live-dot{width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 1.5s infinite;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-.output-text{background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:1.5rem;font-size:0.85rem;line-height:1.7;white-space:pre-wrap;font-family:'SF Mono','Fira Code',monospace;color:var(--t);max-height:350px;overflow-y:auto;}
-.cta-section{text-align:center;padding:2rem 5% 4rem;border-top:1px solid var(--bd);}
-.cta-section h2{font-size:1.6rem;font-weight:800;margin-bottom:1rem;}
-.btn{display:inline-block;background:linear-gradient(135deg,var(--a),var(--a2));color:white;padding:1rem 2.5rem;border-radius:12px;text-decoration:none;font-weight:700;font-size:1.05rem;transition:all 0.3s;box-shadow:0 8px 30px rgba(108,99,255,0.3);}
-.btn:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(108,99,255,0.4);}
+body{background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif;min-height:100vh}
+nav{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.5rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(7,7,12,.92);backdrop-filter:blur(12px);z-index:10}
+.logo{font-weight:900;color:var(--acc)}
+.nav a{color:var(--muted);text-decoration:none;margin-left:1rem;font-weight:600;font-size:.9rem}
+.nav a.cta{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:.55rem 1rem;border-radius:8px}
+main{max-width:1100px;margin:0 auto;padding:2rem 1.25rem 4rem}
+h1{font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;margin-bottom:.5rem}
+.sub{color:var(--muted);margin-bottom:1.5rem;line-height:1.6}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:1.25rem}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:1.25rem}
+.panel h2{font-size:1rem;margin-bottom:1rem;color:#c7d2fe}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.kpi{background:#0a0a12;border:1px solid var(--line);border-radius:12px;padding:.9rem}
+.kpi b{display:block;font-size:1.15rem;margin-top:.25rem}
+.kpi span{color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase}
+.log{font-family:ui-monospace,monospace;font-size:.8rem;color:#94a3b8;background:#0a0a12;border-radius:10px;padding:1rem;max-height:220px;overflow:auto;line-height:1.55}
+.log .ok{color:var(--ok)}
+.btn{display:block;text-align:center;text-decoration:none;font-weight:800;padding:1rem;border-radius:10px;margin-top:.75rem}
+.btn-primary{background:linear-gradient(135deg,#4ade80,#22c55e);color:#000}
+.btn-ghost{border:1px solid var(--line);color:var(--text)}
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
+.tab{padding:.45rem .85rem;border-radius:999px;border:1px solid var(--line);color:var(--muted);cursor:pointer;font-size:.82rem;font-weight:700;background:transparent}
+.tab.active{background:rgba(129,140,248,.2);color:#c7d2fe;border-color:rgba(129,140,248,.5)}
+.case{margin-top:1.5rem;padding:1.25rem;border-radius:16px;border:1px solid rgba(74,222,128,.3);background:linear-gradient(160deg,#0f1a14,#10140f)}
+.case h3{color:var(--ok);margin-bottom:.5rem}
+.quote{margin-top:1rem;padding:1rem;border-radius:12px;border:1px solid rgba(250,204,21,.25);background:#14120a;color:#e4e4e7;font-size:.92rem;line-height:1.55}
 </style>
 </head>
 <body>
-<header class="header">
-  <div class="logo">BullPower AI Demo</div>
-  <a href="index.html" class="back-btn">← Zur Hauptseite</a>
-</header>
-<section class="hero">
-  <div class="demo-badge">🎯 Interaktive Live-Demo — Kein Account nötig</div>
-  <h1><span>BullPower AI</span><br>in Aktion erleben</h1>
-  <p class="hero-sub">Teste alle Features direkt im Browser. Echte Funktionen, echte Daten-Simulation.</p>
-</section>
-<div class="demo-area">
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="showTab('Content_Generator', this)">Content Generator</button>
-<button class="tab-btn " onclick="showTab('Lead_Radar', this)">Lead Radar</button>
-<button class="tab-btn " onclick="showTab('Revenue_Dashboard', this)">Revenue Dashboard</button>
-<button class="tab-btn " onclick="showTab('Social_Autopilot', this)">Social Autopilot</button>
+<nav>
+  <div class="logo">BullPower AI · DEMO</div>
+  <div class="nav">
+    <a href="index.html">← Produkt</a>
+    <a href="https://bullpower-ai.vercel.app" target="_blank" rel="noopener">Live System</a>
+    <a class="cta" href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS">Jetzt kaufen</a>
   </div>
-  
-        <div id="panel_Content_Generator" class="panel" style="display:block">
-          <div class="panel-header">
-            <h3>KI Content Generator — Live Demo</h3>
-            <p>Gib ein Thema ein und sieh wie BullPower AI in Sekunden professionellen Content erstellt.</p>
-          </div>
-          <div class="input-row">
-            <label>Thema / Keyword:</label>
-            <input type="text" value="z.B. Shopify Automatisierung 2026" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Generierter Content (Instagram Post)
-            </div>
-            <pre class="output-text">🚀 Shopify Automatisierung 2026 — So verdienen Top-Seller 10x mehr ohne mehr zu arbeiten
-
-Die Realität: 87% aller Shopify-Stores lassen täglich Geld auf dem Tisch liegen. Nicht wegen schlechter Produkte — sondern wegen fehlender Automatisierung.
-
-Was passiert wenn du automatisierst:
-✅ Produkte werden 24/7 optimiert
-✅ Preise passen sich dem Markt an
-✅ Kunden erhalten personalisierte E-Mails
-✅ Neue Trends werden sofort erkannt
-
-Das Ergebnis? Durchschnittlich +340% Conversion-Rate in 30 Tagen.
-
-Welcher dieser Punkte kostet dich gerade am meisten? 👇
-
-#Shopify #Ecommerce #Automatisierung #OnlineShop #DigitalBusiness</pre>
-          </div>
-        </div>
-        <div id="panel_Lead_Radar" class="panel" style="display:none">
-          <div class="panel-header">
-            <h3>Lead Radar — Live Demo</h3>
-            <p>Der Lead Radar scannt täglich 50.000+ Quellen und liefert kaufbereite Kontakte.</p>
-          </div>
-          <div class="input-row">
-            <label>Zielgruppe:</label>
-            <input type="text" value="z.B. Shopify Merchant, Deutschland, 1M+ Umsatz" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Gefundene Leads (letzte 24h)
-            </div>
-            <pre class="output-text">LEAD RADAR — 1.247 neue Leads gefunden ✅
-
-Kontakt 1: Thomas M. — CEO @ AutoShop GmbH
-Intent-Signale: "Shopify Skalierung", "Automatisierung suche"
-Kontakt: thomas.m@autoshop-gmbh.de | LinkedIn: /in/thomasm
-Score: 94/100 (SEHR HEISS)
-
-Kontakt 2: Sandra K. — Gründerin @ FashionBoutique
-Intent-Signale: "Shopify App", "mehr Umsatz", "Zeit sparen"
-Kontakt: sk@fashionboutique.de | Tel: +49 172 xxx xxxx
-Score: 87/100 (HEISS)
-
-Kontakt 3: Marcus W. — E-Commerce Manager
-Intent-Signale: B2B-Einkauf, "Automatisierung evaluiert"
-Kontakt: m.weber@techstore-ag.de
-Score: 81/100 (WARM)
-
-[... + 1.244 weitere Leads]
-Ø Cost per Lead: €0,39</pre>
-          </div>
-        </div>
-        <div id="panel_Revenue_Dashboard" class="panel" style="display:none">
-          <div class="panel-header">
-            <h3>Revenue Dashboard — Live Demo</h3>
-            <p>Dein kompletter Revenue-Überblick in Echtzeit. Alle Streams, ein Dashboard.</p>
-          </div>
-          <div class="input-row">
-            <label>Zeitraum:</label>
-            <input type="text" value="Diese Woche" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Revenue Übersicht
-            </div>
-            <pre class="output-text">REVENUE DASHBOARD — Diese Woche
-
-💰 Gesamt-Revenue: €14.820
-├─ Shopify Store: €8.240 (+34% ggü. Vorwoche)
-├─ Affiliate (DS24): €3.120 (+18%)
-├─ E-Mail Liste: €2.180 (+41%)
-└─ Telegram Subs: €1.280 (+22%)
-
-📈 Top-Produkte:
-1. Smart Home Hub Set — €3.420 (41 Verkäufe)
-2. Solar Powerstation — €2.180 (7 Verkäufe)
-3. DS24 Affiliate: KI-Kurs — €1.840 (23 Sales)
-
-🎯 KI-Empfehlung:
-Produkt "Smart Home Hub" zeigt 3x Conversion-Peak
-Di-Do 18-22h → Erhöhe Budget in diesem Slot um €200/Tag
-Erwarteter Effekt: +€1.400/Woche
-
-⚡ Auto-Aktionen heute:
-• 47 Produkte preisoptimiert
-• 312 Abandoned Carts zurückgeholt
-• 8.400 SEO-Keywords aktualisiert</pre>
-          </div>
-        </div>
-        <div id="panel_Social_Autopilot" class="panel" style="display:none">
-          <div class="panel-header">
-            <h3>Social Autopilot — Live Demo</h3>
-            <p>Automatische Posts auf 7 Plattformen — abgestimmt auf Peak-Zeiten deiner Zielgruppe.</p>
-          </div>
-          <div class="input-row">
-            <label>Plattform + Ziel:</label>
-            <input type="text" value="Instagram — Produkt bewerben" class="demo-input" onchange="simulateAction(this)" />
-            <button class="run-btn" onclick="simulateAction(this.previousElementSibling)">▶ Ausführen</button>
-          </div>
-          <div class="output-box">
-            <div class="output-header">
-              <span class="live-dot"></span> Geplante Posts diese Woche
-            </div>
-            <pre class="output-text">SOCIAL AUTOPILOT — 34 Posts geplant ✅
-
-📅 MONTAG 09:15
-Instagram: "Warum 87% der Shopify-Stores scheitern..."
-Predicted Reach: 4.200 | Engagement: 6.8%
-
-📅 MONTAG 18:30
-Facebook: Produktvorstellung Smart Home Hub
-Ad Budget: €12 | Expected ROAS: 4.2x
-
-📅 DIENSTAG 07:45
-LinkedIn: Thought Leadership "Automatisierung 2026"
-Target: 2.400 Impressions | 180 Klicks
-
-📅 DIENSTAG 19:00
-TikTok: Behind-the-Scenes Automatisierung (30s)
-Predicted Views: 8.000 | Saves: 340
-
-[... + 30 weitere Posts]
-
-Performance letzte 7 Tage:
-• 128.000 Gesamtreichweite
-• 6.240 Website-Klicks
-• 312 Leads generiert</pre>
-          </div>
-        </div>
-</div>
-<div class="cta-section">
-  <h2>Überzeugt? Starte noch heute.</h2>
-  <p style="color:var(--m);margin-bottom:2rem;max-width:500px;margin-left:auto;margin-right:auto;">30 Tage Geld-zurück-Garantie. Setup in 30 Minuten. Erste Ergebnisse in 7-14 Tagen.</p>
-  <a href="index.html#preise" class="btn">Jetzt starten — Preise ansehen →</a>
-</div>
+</nav>
+<main>
+  <h1>BullPower AI — interaktive Demo</h1>
+  <p class="sub">KI Business Automation Suite. Mock-Dashboard mit Live-Feel · Case Study · High-Ticket Checkout.</p>
+  <div class="grid">
+    <div class="panel">
+      <div class="tabs" id="tabs">
+        <button class="tab active" data-t="overview">Overview</button>
+        <button class="tab" data-t="pipeline">Pipeline</button>
+        <button class="tab" data-t="billing">Billing</button>
+        <button class="tab" data-t="alerts">Alerts</button>
+      </div>
+      <div id="view-overview"><h2>KPI Stream</h2><div class="kpis"><div class="kpi"><span>Zeitraum</span><b>8 Wochen</b></div><div class="kpi"><span>Ergebnis</span><b>ROAS 6.3× nach Optimierung</b></div><div class="kpi"><span>Ops-Last</span><b>−45%</b></div><div class="kpi"><span>Empfehlung</span><b>10/10</b></div></div></div>
+      <div id="view-pipeline" style="display:none"><h2>Automation Pipeline</h2><div class="log" id="pipe-log"></div></div>
+      <div id="view-billing" style="display:none"><h2>Billing Preview</h2>
+        <div class="log">plan: high-ticket<br>status: <span class="ok">ready_to_charge</span><br>stripe: connected (live)</div>
+        <a class="btn btn-primary" href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS">Checkout öffnen →</a>
+      </div>
+      <div id="view-alerts" style="display:none"><h2>System Alerts</h2>
+        <div class="log"><span class="ok">[ok]</span> health check passed<br><span class="ok">[ok]</span> webhooks listening<br><span class="ok">[ok]</span> social proof loaded</div>
+      </div>
+    </div>
+    <div>
+      <div class="panel">
+        <h2>Demo Controls</h2>
+        <button class="btn btn-ghost" id="btn-run" style="width:100%;cursor:pointer;background:#1e1e2e;color:#fff;border:1px solid #333">▶ Pipeline simulieren</button>
+        <a class="btn btn-primary" href="https://buy.stripe.com/6oU14p1R8a663ok9kO4F42DS">High-Ticket Plan wählen</a>
+        <a class="btn btn-ghost" href="https://bullpower-ai.vercel.app" target="_blank" rel="noopener">Echtes Live-System ↗</a>
+        <a class="btn btn-ghost" href="index.html#autonomous-social-proof">Testimonials & Cases</a>
+      </div>
+      <div class="case">
+        <h3>Case Study · Performance Team</h3>
+        <div style="font-weight:800;color:#86efac;margin-bottom:.5rem">ROAS 6.3× nach Optimierung</div>
+        <p style="color:#a1a1aa;line-height:1.6;font-size:.92rem">Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. BullPower AI wurde zum Operating System.</p>
+        <div class="quote">⭐ „Endlich ein System das liefert: Conversion 0.9% → 2.4%. Support top, Automation brutal."<br><span style="color:#71717a;font-size:.85rem">— Michael F.</span></div>
+      </div>
+    </div>
+  </div>
+</main>
 <script>
-function showTab(id, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel_' + id).style.display = 'block';
-  btn.classList.add('active');
+const tabs=[...document.querySelectorAll('.tab')];
+const views={overview:'view-overview',pipeline:'view-pipeline',billing:'view-billing',alerts:'view-alerts'};
+tabs.forEach(t=>t.addEventListener('click',()=>{
+  tabs.forEach(x=>x.classList.remove('active')); t.classList.add('active');
+  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById(views[t.dataset.t]).style.display='block';
+}));
+const lines=['[boot] loading automation graph…','[ok] connectors ready','[ok] scheduler online','[run] pipeline queued','[run] social_proof injected','[ok] demo cycle complete'];
+const log=document.getElementById('pipe-log');
+function typeLines(){
+  log.innerHTML=''; let i=0;
+  const t=setInterval(()=>{
+    if(i>=lines.length){clearInterval(t);return;}
+    const el=document.createElement('div');
+    el.innerHTML=lines[i].includes('[ok]')||lines[i].includes('complete')?'<span class="ok">'+lines[i]+'</span>':lines[i];
+    log.appendChild(el); log.scrollTop=log.scrollHeight; i++;
+  },280);
 }
-function simulateAction(input) {
-  const output = input.closest('.panel').querySelector('.output-text');
-  const orig = output.textContent;
-  output.textContent = '⏳ KI verarbeitet...';
-  setTimeout(() => { output.textContent = orig; }, 1200);
-}
+document.getElementById('btn-run').onclick=()=>{
+  tabs.forEach(x=>x.classList.remove('active'));
+  tabs.find(x=>x.dataset.t==='pipeline').classList.add('active');
+  Object.values(views).forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('view-pipeline').style.display='block';
+  typeLines();
+};
+setTimeout(typeLines,400);
 </script>
 </body>
 </html>
