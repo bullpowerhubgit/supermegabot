@@ -14,11 +14,31 @@ import asyncio
 import json
 import logging
 import os
+import time
 import urllib.request
 from datetime import datetime
 from typing import Optional
 
 log = logging.getLogger("NotifyHub")
+
+# ── Throttle: max 1 error/warn pro Key pro Stunde ────────────────────────────
+_throttle_cache: dict[str, float] = {}
+_THROTTLE_TYPES = {"error", "warn"}
+_THROTTLE_TTL   = 3600  # 1 Stunde
+
+def _throttle_key(event_type: str, title: str) -> str:
+    return f"{event_type}:{title[:60]}"
+
+def _should_throttle(event_type: str, title: str) -> bool:
+    if event_type not in _THROTTLE_TYPES:
+        return False
+    key = _throttle_key(event_type, title)
+    now = time.monotonic()
+    last = _throttle_cache.get(key, 0.0)
+    if now - last < _THROTTLE_TTL:
+        return True
+    _throttle_cache[key] = now
+    return False
 
 
 def _env(*keys: str) -> str:
@@ -96,7 +116,11 @@ def notify(title: str, body: str = "", event_type: str = "info") -> bool:
     """
     Sende Benachrichtigung an alle konfigurierten Channels.
     Gibt True zurück wenn mindestens ein Channel erfolgreich war.
+    Error/Warn-Events werden auf max. 1x/Stunde pro Titel gedrosselt.
     """
+    if _should_throttle(event_type, title):
+        log.debug("NotifyHub throttled: [%s] %s", event_type, title)
+        return True
     icon = _icon(event_type)
     tg_msg = f"{icon} <b>{title}</b>"
     if body:
