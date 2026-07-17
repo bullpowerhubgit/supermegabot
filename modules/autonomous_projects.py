@@ -19,6 +19,8 @@ ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = ROOT / "config" / "autonomous_projects.json"
 IGNORE_PARTS = {
     ".git",
+    ".claude",
+    ".copilot",
     ".next",
     ".netlify",
     ".vercel",
@@ -35,7 +37,7 @@ def _norm(path: str | Path) -> str:
 
 
 def _is_ignored(path: Path) -> bool:
-    return any(part in IGNORE_PARTS for part in path.parts)
+    return any(part in IGNORE_PARTS or part.startswith(".") for part in path.parts)
 
 
 def _load_config() -> dict[str, Any]:

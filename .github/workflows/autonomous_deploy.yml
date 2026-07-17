@@ -2,6 +2,7 @@ name: Autonomous Deploy
 
 on:
   push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -33,11 +34,7 @@ jobs:
           else
             MATRIX="$(python3 scripts/autonomous_project_matrix.py)"
           fi
-          COUNT="$(python3 - <<'PY' "$MATRIX"
-import json, sys
-print(len(json.loads(sys.argv[1]).get("include", [])))
-PY
-)"
+          COUNT="$(python3 -c 'import json,sys; print(len(json.loads(sys.argv[1]).get("include", [])))' "$MATRIX")"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
