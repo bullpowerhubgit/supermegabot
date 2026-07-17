@@ -11709,26 +11709,11 @@ async def create_app():
     except Exception as _sr_err:
         log.warning("ShopifyTokenResolver: %s", _sr_err)
 
-    # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
-    # + StripeGuard (pm_card_visa@live, url_invalid, type=recurring auf /prices)
-    try:
-        from modules.http_guard import activate as _hg_activate
-        _hg_activate()
-    except Exception as _hg_err:
-        log.warning("HttpGuard konnte nicht aktiviert werden: %s", _hg_err)
+    # HttpGuard DEAKTIVIERT 2026-07-18 — wurde durch SmartPoster ersetzt
+    # (HttpGuard monkey-patched aiohttp global → verursachte DB-Locks, 401-Fehler auf Stripe etc.)
 
-    # NeverTwice — Legacy-Blocks importieren + transiente False-Positives bereinigen
-    try:
-        from modules.post_never_twice import import_legacy_blocks, init_db, purge_transient_blacklist
-        init_db()
-        r = import_legacy_blocks()
-        p = purge_transient_blacklist()
-        log.info(
-            "NeverTwice init: %d Legacy-Blocks importiert, %d transiente False-Positives bereinigt",
-            r.get("imported", 0), p.get("purged", 0),
-        )
-    except Exception as _nt_err:
-        log.warning("NeverTwice init: %s", _nt_err)
+    # NeverTwice DEAKTIVIERT 2026-07-18 — wurde durch SmartPoster ersetzt
+    # (22.765+ false-positive Blocks durch DB-Lock-Kaskade)
 
     # StripeGuard Fallback — falls HttpGuard fehlschlägt, trotzdem process-wide patchen
     try:
