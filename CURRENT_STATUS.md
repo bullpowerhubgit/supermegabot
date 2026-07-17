@@ -1,6 +1,43 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-16 23:00 UTC (Wave 13 — High-Ticket Upgrade ALLE 16 Sites live)**
 
+## ✅ HIGH-TICKET V3 — ECHTE STRIPE-LINKS LIVE (Wave 15)
+
+**16/17 Netlify Konto 1 Sites mit neuen Stripe-Links (4F465/4F466 Serie) deployed:**
+
+Alle Preisstufen-Buttons zeigen jetzt die echten buy.stripe.com Links aus `config/stripe_ht_links.json`.
+
+| Site | URL | Status |
+|------|-----|--------|
+| BullPower AI | bullpower-ai-tools.netlify.app | ✅ live |
+| BullPower Hub | bullpower-hub-portal.netlify.app | ✅ live |
+| AutoIncome AI | autoincome-ai.netlify.app | ✅ live |
+| CreatorAI Ultra | creatorai-ultra.netlify.app | ✅ live |
+| CreatorStudio Pro | creatorstudio-pro.netlify.app | ✅ live |
+| Cognitive Symphony | cognitive-symphony-ds24.netlify.app | ✅ live |
+| Shopify Brutal | shopify-brutal-tuning.netlify.app | ✅ live |
+| Shopify Acq Engine | shopify-acquisition-engine.netlify.app | ✅ live |
+| Shopify Suite | shopify-automaton-suite.netlify.app | ✅ live |
+| Digistore24 Suite | digistore24-automation-suite.netlify.app | ✅ live |
+| Steuercockpit | bullpower-steuercockpit.netlify.app | ✅ live |
+| Telegram Bot | telegram-marketing-bot.netlify.app | ✅ live |
+| IcomeAuto | bullpower-icomeauto.netlify.app | ✅ live |
+| Launcher | bullpower-launcher.netlify.app | ✅ live |
+| Lead Capture | bullpower-lead.netlify.app | ✅ live |
+| Gumroad Discord | gumroad-discord-bot.netlify.app | ✅ live |
+| Master Dashboard | master-dashboard-hub.netlify.app | ⚠ Credits erschöpft |
+
+**Offen (Rudolf-Aktion erforderlich):**
+- `master-dashboard`: Datei geändert, deploy blockiert → Netlify Konto 1 Credits erschöpft
+- Konto 2 (aiitecbuuss): weiterhin wegen Billing blockiert
+  → Lösung: https://netlify.com/billing Credits aufladen, dann `python3 scripts/update_stripe_links.py` (master-dashboard) + `python3 scripts/deploy_netlify_konto2.py` (Konto 2)
+
+**Gumroad (bleibt offen):**
+- Stripe in Gumroad verbinden: gumroad.com/settings/payments
+- Dann: `python3 ~/gumroad_retry_tomorrow.py` (MacOBD Pro + Bundle)
+
+---
+
 ## ✅ HIGH-TICKET UPGRADE KOMPLETT — 18 SITES LIVE (Wave 14)
 
 **54 Stripe Payment Links erstellt + 18 Sites vollständig upgraded:**
