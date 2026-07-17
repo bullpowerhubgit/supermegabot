@@ -34,6 +34,25 @@ async def _brutus_fire(message: str, channels: list = None):
         logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
 
 
+import re as _re
+
+def _clean_ai_text(text: str) -> str:
+    """Entfernt KI-Meta-Kommentare und Platzhalter aus generiertem Text."""
+    lines = text.strip().splitlines()
+    bad = ["hier ist", "natürlich", "gerne!", "gerne,", "post:", "instagram-post:",
+           "facebook-post:", "linkedin-post:", "caption:", "vorschlag:"]
+    while lines and any(lines[0].lower().strip().startswith(b) for b in bad):
+        lines = lines[1:]
+    text = "\n".join(lines).strip()
+    shop_url = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
+    for ph in [r"\[link\]", r"\[url\]", r"\[link zur website\]", r"\[website\]",
+               r"\[deine website\]", r"\[shop url\]", r"\[hier klicken\]"]:
+        text = _re.sub(ph, shop_url, text, flags=_re.IGNORECASE)
+    if text.startswith('"') and text.endswith('"'):
+        text = text[1:-1].strip()
+    return text
+
+
 async def _ollama(prompt: str, model: Optional[str] = None) -> str:
     """POST to Ollama /api/generate. Returns response text or a fallback string."""
     if model is None:
@@ -52,7 +71,7 @@ async def _ollama(prompt: str, model: Optional[str] = None) -> str:
                     log.warning("Ollama returned %d: %s", resp.status, body[:200])
                     return f"[Ollama error {resp.status}]"
                 data = await resp.json(content_type=None)
-                return data.get("response", "")
+                return _clean_ai_text(data.get("response", ""))
     except Exception as exc:
         log.warning("Ollama not available (%s) — returning fallback", exc)
         return f"[Ollama unavailable: {exc}]"

@@ -76,24 +76,44 @@ async def _page_token() -> str:
     )
 
 
+def _strip_meta(text: str) -> str:
+    """Entfernt KI-Meta-Kommentare aus generiertem Text."""
+    import re
+    lines = text.strip().splitlines()
+    bad = ["hier ist", "natürlich", "gerne", "post:", "instagram-post:", "caption:"]
+    while lines and any(lines[0].lower().startswith(b) for b in bad):
+        lines = lines[1:]
+    text = "\n".join(lines).strip()
+    shop_url = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
+    for ph in [r"\[link\]", r"\[url\]", r"\[link zur website\]", r"\[website\]", r"\[hier\]"]:
+        text = re.sub(ph, shop_url, text, flags=re.IGNORECASE)
+    if text.startswith('"') and text.endswith('"'):
+        text = text[1:-1].strip()
+    return text
+
+
 async def _generate_content() -> tuple[str, str]:
     """Generiert Titel + Text (OpenClaw → Fallback auf Pool)."""
+    shop_url = os.getenv("PUBLIC_SHOP_URL", "https://ineedit.com.co")
     try:
         from modules.open_claw import claw_complete
-        prompt = ("Erstelle einen kurzen viralen Instagram-Post auf Deutsch (max 120 Wörter) "
-                  "über KI-Automatisierung für E-Commerce / Online Business. "
-                  "Mit Emojis, Hashtags, Call-to-Action. "
-                  "Kein Markdown, nur Text.")
+        prompt = (
+            f"Erstelle einen Instagram-Post auf Deutsch (max 120 Wörter) "
+            f"über KI-Automatisierung für E-Commerce / Online Business. "
+            f"Mit Emojis, Hashtags, Link zu {shop_url} am Ende. "
+            f"WICHTIG: Antworte NUR mit dem fertigen Post-Text. Kein Kommentar, kein 'Hier ist', "
+            f"keine Anführungszeichen außen. Verwende NIEMALS Platzhalter wie [Link]."
+        )
         text = await asyncio.wait_for(claw_complete(prompt, fast=True), timeout=15)
+        text = _strip_meta(text)
         if text and len(text) > 30:
             lines = text.strip().split("\n", 1)
             title = lines[0][:60].strip("*#- ")
-            body  = text.strip()
-            return title, body
+            return title, text.strip()
     except Exception as e:
         log.warning("Ignored error: %s", e)
     title, body = random.choice(CONTENT_POOL)
-    hashtags = "\n\n#KI #Shopify #PassivesEinkommen #OnlineBusiness #Automatisierung #Ecommerce #MakeMoneyOnline #AIitec"
+    hashtags = "\n\n#KI #Shopify #PassivesEinkommen #OnlineBusiness #Automatisierung #Ecommerce #AIitec"
     return title, body + hashtags
 
 

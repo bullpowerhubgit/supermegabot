@@ -99,13 +99,19 @@ _last_provider: str = ""
 _monitor_running: bool = False
 _last_all_failed_log: float = 0.0
 
-# Globales Semaphore: max. 8 gleichzeitige AI-Calls (erhöht da 4 Groq + 9 OR Modelle verfügbar)
+# Globales Semaphore: max. 8 gleichzeitige AI-Calls — pro Event-Loop (thread-safe)
 _AI_SEM: Optional[asyncio.Semaphore] = None
+_AI_SEM_LOOP: Optional[asyncio.AbstractEventLoop] = None
 
 def _get_sem() -> asyncio.Semaphore:
-    global _AI_SEM
-    if _AI_SEM is None:
+    global _AI_SEM, _AI_SEM_LOOP
+    try:
+        current_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        current_loop = None
+    if _AI_SEM is None or _AI_SEM_LOOP is not current_loop:
         _AI_SEM = asyncio.Semaphore(8)
+        _AI_SEM_LOOP = current_loop
     return _AI_SEM
 
 
