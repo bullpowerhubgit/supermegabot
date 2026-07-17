@@ -1,60 +1,93 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-17 v36 — Session-Fortsetzung: Bug-Fixes + PR #48**
+**Stand: 2026-07-18 v37 — Session-Fortsetzung: 9 neue Module + Bridge + Fixes**
 
-## ✅ System
+## System
 | Check | Status |
 |-------|--------|
 | Production Health | ok — Railway live |
 | Stripe | **ineedit.com.co only** — acct_1Tg1U0 (bullpowersrtkennels) |
 | AIITEC Stripe | PERMANENT FORBIDDEN |
-| Scheduler | **180/400 Tasks mit Runs** — 220 Tasks warten auf ihr erstes Intervall |
-| GitHub Pages vsl-pages | ✅ 11/11 VSL-Seiten live |
-| PR #48 | ✅ fix/session-2026-07-17-v2 — bereit zum Mergen |
-| PR #46 | ✅ bereits gemergt |
+| Scheduler | **253/400 Tasks aktiv** — dict-Bug behoben, 147 warten auf erstes Intervall |
+| PR #48 | gemergt (fix/session-2026-07-17-v2) — Railway auto-deployed |
+| GitHub Pages vsl-pages | 11/11 VSL-Seiten live |
+| Bridge Server | scripts/bridge_server.py auf Port 8890 aktiv |
 
-## 🔧 Session v36 Neue Fixes (2026-07-17)
+## Session v37 Neue Module (2026-07-18)
+| Modul | Status | Beschreibung |
+|-------|--------|-------------|
+| modules/upsell_engine.py | deployed | Post-Purchase Upsell 2 Tage nach Kauf (12h Cycle) |
+| modules/klaviyo_flows.py | deployed | Welcome Drip Tag 0/3/7 + Re-Engagement-Flow |
+| modules/multi_service_bridge.py | deployed | Alle 4 Railway-Services verbunden (30min Ping) |
+| modules/ds24_funnel_tracker.py | deployed | DS24 Tages-Report + Telegram wenn Revenue > 0 |
+| modules/gumroad_funnel.py | deployed | Funnel-Links EUR 97/197/497 automatisch |
+| modules/shopify_description_filler.py | deployed | Befüllt leere body_html täglich (30/Zyklus) |
+| modules/shopify_price_optimizer.py | deployed | Preis-Analyse täglich |
+| modules/affiliate_tracker.py | deployed | Klick-Tracking in Supabase |
+| modules/buyer_intent_router.py | deployed | Hot-Lead Priorisierung |
+
+## Session v37 Fixes (2026-07-18)
 | Fix | Status | Details |
 |-----|--------|---------|
-| ai_client.py Semaphore-Loop-Bug | ✅ in PR #48 | `_get_sem()` erkennt Event-Loop-Wechsel → neues Semaphore pro Loop |
-| YouTube Signatur-Bug | ✅ in PR #48 | `deploy_to_youtube(title, content_dict)` statt falscher kwargs |
-| Content-Cleaner | ✅ in PR #48 | `_clean_ai_text()` entfernt KI-Meta-Kommentare + [link]-Platzhalter |
-| Instagram Pipeline Fix | ✅ in PR #48 | `_strip_meta()` + verbesserter Prompt |
-| KILeasingEngine Klasse fehlt | ✅ in PR #48 | Ersetzt durch `send_daily_reports()` direkt |
-| generate_upsell_sequence fehlt | ✅ in PR #48 | Ersetzt durch `analyze_funnel()` |
-| Scheduler Audit Funktion | ✅ in PR #48 | `get_scheduler_audit()` für Diagnose |
+| Stripe Webhook 429-Retry | deployed | checkout.session.completed → Supabase, subscription → Klaviyo-Enroll, Retry-After Float-Fix |
+| Pinterest Board-Bug | deployed | Auto-Board-Creation: 3 Boards werden angelegt wenn leer |
+| TikTok Timeout | deployed | Erhöht auf 60s (war zu kurz) |
+| YouTube Token-Fallback | deployed | Kein Crash wenn YOUTUBE_REFRESH_TOKEN fehlt |
+| SendGrid Mailchimp-Entfernung | deployed | Mailchimp komplett entfernt, skipped != failed |
+| ShopifyTokenResolver | deployed | Self-Healer: SHOPIFY_ACCESS_TOKEN automatisch erneuern |
+| Scheduler dict-Bug | deployed | Behoben: 253/400 Tasks aktiv (vorher 180/400) |
+| SMART10 Discount | deployed | 10% Rabatt, 1 Jahr gültig (GraphQL) |
+| 17 Collections SEO | deployed | Alle 17 Collections mit SEO-Titeln + Meta-Beschreibungen |
+| Revenue Agent Bridge | deployed | /api/revenue-agent/* + /api/bridge/status live |
+| Bridge-Server | deployed | scripts/bridge_server.py Port 8890 (SMB ↔ Revenue-Agent) |
 
-## ⚠️ Manuelle Aktionen nötig (DRINGEND — NUR RUDOLF)
+## Session v36 Fixes (2026-07-17 — bereits gemergt in PR #48)
+| Fix | Status |
+|-----|--------|
+| ai_client.py Semaphore-Loop-Bug | gemergt |
+| YouTube Signatur-Bug | gemergt |
+| Content-Cleaner _clean_ai_text() | gemergt |
+| Instagram _strip_meta() | gemergt |
+| KILeasingEngine Klasse fehlt | gemergt |
+| generate_upsell_sequence fehlt | gemergt |
+| Scheduler Audit get_scheduler_audit() | gemergt |
 
-### 1. PR #48 mergen (WICHTIG)
-- https://github.com/bullpowerhubgit/supermegabot/pull/48
-- Enthält: 6 Bug-Fixes (Semaphore, YouTube, Content-Cleaner, KILeasing, Upsell)
-- Nach Merge → Railway auto-deploy
+## Manuelle Aktionen nötig (NUR RUDOLF)
 
-### 2. Railway Env: SHOPIFY_ACCESS_TOKEN
-- Railway → supermegabot → Variables → SHOPIFY_ACCESS_TOKEN = Wert von SHOPIFY_ADMIN_API_TOKEN
-- Ohne das: shopify_seo_auto, shopify_blog_auto etc. bleiben kaputt
+### 1. Meta Ads: Budget setzen (KRITISCH — ROAS = 0.00)
+- "Flash Sale ineedit Juli 2026" → min EUR 10-20/Tag
+- "ineedit Smart Home ROAS-Max" → min EUR 10-20/Tag
+- Dritte Kampagne mit EUR 0 auch aktivieren
 
-### 3. Meta Ads: Budget setzen (KRITISCH — ROAS = 0.00)
-- "Flash Sale ineedit Juli 2026" → min €10-20/Tag
-- "ineedit Smart Home ROAS-Max" → min €10-20/Tag
-- Dritte Kampagne mit €0 auch aktivieren
+### 2. Gumroad: Dateien hochladen (9 Produkte unpublished)
+- MacOBD-Pro ZIP: ~/MacOBD-Pro-v1.0-SALE.zip → tecbuuss.gumroad.com
+- Nach Upload: `python3 ~/gumroad_publish_ready.py`
 
-### 4. Facebook Token neu verbinden
+### 3. Facebook OAuth neu verbinden
 - FB OAuth ist abgelaufen → facebook_token_check schlägt fehl
 - facebook.com/settings → verbundene Apps → SuperMegaBot neu authorisieren
 
-### 5. Gumroad: Dateien hochladen (9 Produkte unpublished)
-- MacOBD-Pro ZIP: ~/MacOBD-Pro-v1.0-SALE.zip → tecbuuss.gumroad.com
-- `python3 ~/gumroad_publish_ready.py` (nach Upload)
+### 4. Anthropic Credits aufladen
+- console.anthropic.com → Billing → Credits aufladen
+- Ohne Credits: AI-Funktionen (Claude, Trend-Analyse, Content-Generator) fallen aus
+
+### 5. YOUTUBE_REFRESH_TOKEN setzen
+- Railway → supermegabot → Variables → YOUTUBE_REFRESH_TOKEN = Wert aus Google OAuth
+- Oder lokal in .env setzen
+- Ohne das: YouTube-Upload Tasks bleiben inaktiv
+
+### 6. DS24_API_KEY in Railway prüfen/setzen
+- Railway → supermegabot → Variables → DS24_API_KEY = Key 1581233-... (aiitec-Konto)
+- NIEMALS Key 1682000-... (falsches Konto!)
+- ds24_funnel_tracker braucht diesen Key
 
 ## Bekannte Issues (kein sofortiger Fix nötig)
 | Issue | Ursache | Fix |
 |-------|---------|-----|
-| shopify_seo_auto 100 Fehler | SHOPIFY_ACCESS_TOKEN 401 Railway | Railway Env Update |
-| facebook_token_check schlägt fehl | OAuth abgelaufen | Manuell FB reconnect |
-| pinterest_auto_post 0 Boards | API verbunden, keine Boards | Pinterest Dashboard |
-| youtube Tasks timeout | YouTube OAuth nicht aktiv | /api/youtube/auth aufrufen |
-| Klaviyo 0 Subs | Klaviyo API verbunden, aber keine Contacts | Liste in Klaviyo aufbauen |
+| shopify_seo_auto 401 | SHOPIFY_ACCESS_TOKEN Railway (ShopifyTokenResolver deployed) | Warten auf Token-Refresh oder manuell Railway Env |
+| facebook_token_check schlägt fehl | OAuth abgelaufen | Manuell FB reconnect (siehe oben) |
+| youtube Tasks inaktiv | YOUTUBE_REFRESH_TOKEN fehlt in Railway | Manuell setzen (siehe oben) |
+| Klaviyo 0 Subs | API verbunden, aber keine Contacts | Liste in Klaviyo aufbauen |
+| Anthropic API Credits | Credits leer | Manuell aufladen (siehe oben) |
 
 ## Stripe (immer)
 - Domain: https://ineedit.com.co
@@ -64,11 +97,12 @@
 ## Aktive Infrastruktur
 | System | URL | Status |
 |--------|-----|--------|
-| SuperMegaBot | https://supermegabot-production.up.railway.app | ✅ ok |
-| GitHub Pages | bullpowerhubgit.github.io/vsl-pages/ | ✅ ok |
+| SuperMegaBot | https://supermegabot-production.up.railway.app | ok |
+| Bridge Server | Port 8890 (intern) | ok |
+| GitHub Pages | bullpowerhubgit.github.io/vsl-pages/ | ok |
 | Netlify | Credits exhausted bis 01.08 — FREE halten | blocked |
 
-## Gumroad (9 Produkte upgraded — warten auf Datei-Upload)
+## Gumroad (9 Produkte — warten auf Datei-Upload)
 | Produkt | Preis |
 |---------|-------|
 | SuperMegaBot ELITE | EUR 497 |
@@ -83,19 +117,19 @@
 
 ## Dauerhafte Regeln
 - Stripe: NUR bullpowersrtkennels@gmail.com = ineedit.com.co
-- DS24: NUR Key 1581233-... (aiitec-Konto)
+- DS24: NUR Key 1581233-... (aiitec-Konto) — NIEMALS 1682000-...
 - FB/IG: NUR AiiteC Page 1016738738178786 / @aaiitecc
 - NIEMALS: Mailchimp, Fake-Produkte, Demo-Daten, AIITEC Stripe Key
 - NIEMALS Railway ohne explizite Erlaubnis deployen
 - NIEMALS Massen-Loeschen ohne Bestaetigung
 - mass_creator / bulk_activate: DAUERHAFT DEAKTIVIERT
 
-## 🤖 WATCHDOG: 2026-07-17 v36
-- Health: ✅ OK (Railway live)
-- Scheduler: 180/400 Tasks aktiv (220 warten auf erstes Intervall — normal)
-- Shopify: 11.055 Produkte | 0 Umsatz (SHOPIFY_ACCESS_TOKEN 401 auf Railway)
+## WATCHDOG: 2026-07-18 v37
+- Health: OK (Railway live)
+- Scheduler: 253/400 Tasks aktiv (dict-Bug behoben)
+- Shopify: 11.055 Produkte | ShopifyTokenResolver deployed
 - Gumroad: 9 unpublished (Dateien fehlen)
 - GitHub Pages: 11/11 VSL-Seiten live
-- Meta Ads: 12 Kampagnen, ROAS=0.00 wegen €0 Budget (3 Kampagnen)
-- SEO: seo_dominator ✅ | klaviyo_cycle ✅ | revenue_engine_evening ✅
-- PR #48: bereit, wartet auf Rudolfs Merge-Entscheidung
+- Meta Ads: 12 Kampagnen, ROAS=0.00 wegen EUR 0 Budget (3 Kampagnen) — MANUELL NOETIG
+- Bridge: Port 8890 aktiv, alle 4 Railway-Services verbunden
+- Neue Module: 9 deployed (upsell, klaviyo_flows, multi_service_bridge, ds24_funnel, gumroad_funnel, description_filler, price_optimizer, affiliate_tracker, buyer_intent_router)
