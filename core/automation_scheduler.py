@@ -8178,6 +8178,56 @@ async def task_klaviyo_sync() -> str:
     return f"klaviyo_sync: {synced} upserted, {errors} errors"
 
 
+# ── KI-Agent Hub Tasks ───────────────────────────────────────────────────────
+
+async def task_ki_sales_agent() -> str:
+    """KI-Sales-Agent: Lead-Qualifizierung, Nurture-Pipeline, Outreach."""
+    try:
+        from modules.ki_agent_hub import run_sales_agent
+        result = await run_sales_agent()
+        leads = result.get("leads_processed", 0)
+        actions = len(result.get("actions_taken", []))
+        return f"KI-Sales: {leads} Leads · {actions} Aktionen"
+    except Exception as e:
+        return f"KI-Sales Fehler: {e}"
+
+
+async def task_ki_support_agent() -> str:
+    """KI-Support-Agent: Bestellstatus prüfen, Tickets bearbeiten."""
+    try:
+        from modules.ki_agent_hub import run_support_agent
+        result = await run_support_agent()
+        checked = result.get("tickets_checked", 0)
+        resolved = result.get("resolved", 0)
+        escalated = result.get("escalated", 0)
+        return f"KI-Support: {checked} geprüft · {resolved} gelöst · {escalated} eskaliert"
+    except Exception as e:
+        return f"KI-Support Fehler: {e}"
+
+
+async def task_ki_research_agent() -> str:
+    """KI-Research-Agent: Marktanalyse, Trends, Produkt-Chancen."""
+    try:
+        from modules.ki_agent_hub import run_research_agent
+        result = await run_research_agent()
+        reports = len(result.get("reports", []))
+        return f"KI-Research: {reports} Berichte · {len(result.get('actions',[]))} Aktionen"
+    except Exception as e:
+        return f"KI-Research Fehler: {e}"
+
+
+async def task_ki_growth_agent() -> str:
+    """KI-Growth-Agent: Conversion-Optimierung, Preis-Analyse, Reaktivierung."""
+    try:
+        from modules.ki_agent_hub import run_growth_agent
+        result = await run_growth_agent()
+        insights = len(result.get("insights", []))
+        campaigns = result.get("campaigns_triggered", 0)
+        return f"KI-Growth: {insights} Insights · {campaigns} Kampagnen"
+    except Exception as e:
+        return f"KI-Growth Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -8705,6 +8755,11 @@ TASKS = [
     ("sofia_sms_outbox",        task_sofia_sms_outbox,          1800,  700),  # 30min — SMS Outbox abarbeiten
     ("sofia_sms_cart_sms",      task_sofia_sms_cart_recovery,   3600,  800),  # 1h — Warenkorb SMS-Sequenz
     ("sofia_sms_weekly",        task_sofia_sms_weekly_deals,   604800, 1000), # 1×/Woche — Weekly Deals Blast
+    # ── KI-AGENT HUB ────────────────────────────────────────────────────────
+    ("ki_sales",    task_ki_sales_agent,    1800,  1100),  # 30min — Leads qualifizieren + Nurture
+    ("ki_support",  task_ki_support_agent,   900,  1200),  # 15min — Support-Tickets bearbeiten
+    ("ki_research", task_ki_research_agent, 21600, 1300),  # 6h — Marktanalyse + Trends
+    ("ki_growth",   task_ki_growth_agent,   7200,  1400),  # 2h — Conversion + Preis-Optimierung
 ]
 
 
