@@ -203,7 +203,7 @@ def _fallback_content(platform: str, angle: str, top_products: List[Dict]) -> st
     if platform == "telegram":
         return f"🔥 <b>Viral Scanner</b>: '{kw}' Score {sc}/100 — jetzt viral!\nAlert €29/mo 👉 {SUBSCRIBE_URL}"
     if platform == "reddit":
-        return f"I built a scraper that found '{kw}' trending across TikTok, Google Trends and Amazon Movers simultaneously (score {sc}/100) — 48 hours before it went mainstream. Happy to share more details: {SUBSCRIBE_URL}"
+        return f"Our AI scanner spotted '{kw}' trending (score {sc}/100) across TikTok, Google Trends and Amazon Movers — 48h before it went mainstream. Automated Shopify import included. Details: {SUBSCRIBE_URL}"
     return (f"🔥 Neues Trend-Produkt entdeckt: {kw} (AI-Score: {sc}/100)\n\n"
             f"Unser Viral Window Scanner findet Produkte bevor alle anderen sie kennen — "
             f"automatisch in Shopify importiert.\n\n"
@@ -684,11 +684,11 @@ async def run_promo_cycle(top_products: Optional[List[Dict]] = None) -> Dict:
     kw    = top_products[0].get("keyword", "Smart Home Gadgets") if top_products else "Smart Home Gadgets"
     score = int(top_products[0].get("score", 78)) if top_products else 78
     title_templates = [
-        f"These Smart Home gadgets changed my daily routine completely ({kw})",
-        f"I tested 50+ smart home products — here are the ones actually worth buying",
-        f"Smart Home on a budget: best gadgets under €50 that actually work",
-        f"My honest review of {kw} after 3 months of daily use",
-        f"How to automate your home without spending a fortune — {kw} review",
+        f"Best Smart Home deals right now: {kw} and more",
+        f"Top-rated Smart Home gadgets under €50 — {kw} worth checking out",
+        f"Smart Home on a budget: best gadgets that actually work ({kw})",
+        f"How to automate your home without spending a fortune — {kw}",
+        f"Smart Home essentials 2026: {kw} and what to look for",
     ]
     title = random.choice(title_templates)
     for sub in _REDDIT_MONETIZED_SUBREDDITS:

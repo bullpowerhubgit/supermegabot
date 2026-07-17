@@ -75,12 +75,12 @@ def _save_posted(posted: set):
 
 
 _TWEET_TEMPLATES = [
-    "🚀 KI-Automatisierung 2026 — dein Business läuft auf Autopilot! Shopify + DS24 + BRUTUS = passives Einkommen. #KI #PassivesEinkommen #Shopify",
-    "💰 Online Geld verdienen 2026 geht einfacher denn je mit KI-Tools! AliExpress Dropshipping + Affiliate vollautomatisch. #Dropshipping #Ecommerce",
-    "🤖 BRUTUS postet täglich auf 6+ Kanälen automatisch für dich. E-Commerce auf Autopilot — kein manueller Aufwand! #AIAutomation #Business",
-    "📈 Shopify + AI = perfekte Kombination 2026. Produkte importieren, Texte erstellen, Traffic generieren — alles autonom! #Shopify #KI",
-    "🔥 Passives Einkommen mit KI: DS24 Affiliate + automatischer Content + BRUTUS Traffic. So geht's 2026! #PassivIncome #Automatisierung",
-    "💡 Digitale Produkte verkaufen war nie einfacher: KI schreibt, BRUTUS postet, du verdienst. #DigitaleProdukte #OnlineBusiness",
+    "🚀 KI-Automatisierung 2026 — dein E-Commerce Business läuft auf Autopilot! Shopify + DS24 + KI = passives Einkommen. #KI #PassivesEinkommen #Shopify",
+    "💰 Online Geld verdienen 2026 geht einfacher denn je mit KI-Tools! Dropshipping + Affiliate vollautomatisch. #Dropshipping #Ecommerce",
+    "🤖 SuperMegaBot postet täglich auf 6+ Kanälen automatisch für dich. E-Commerce auf Autopilot — kein manueller Aufwand! #AIAutomation #Business",
+    "📈 Shopify + KI = perfekte Kombination 2026. Produkte importieren, Texte erstellen, Traffic generieren — alles autonom! #Shopify #KI",
+    "🔥 Passives Einkommen mit KI: DS24 Affiliate + automatischer Content + KI-Traffic. So geht's 2026! #PassivIncome #Automatisierung",
+    "💡 Digitale Produkte verkaufen war nie einfacher: KI schreibt, SuperMegaBot postet, du verdienst. #DigitaleProdukte #OnlineBusiness",
 ]
 
 async def generate_tweet(topic: str, product: str = "AI Income Machine") -> str | None:

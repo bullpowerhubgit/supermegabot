@@ -114,14 +114,13 @@ async def run_reddit_blast(topic: str = "passives Einkommen KI 2026") -> dict:
     """Post to up to 3 subreddits per run — Cookie Auth primary, OAuth2 fallback."""
     title = f"[Guide] {topic} — Vollständiger Leitfaden 2026"
     text = (  # noqa: E501 — guard runs below after text construction
-        f"Hey alle!\n\nIch wollte meine Erfahrungen teilen, wie man mit KI-Tools wirklich passives Einkommen aufbaut.\n\n"
+        f"Hey alle!\n\nKurzer Überblick wie KI-Tools das E-Commerce-Game 2026 verändern:\n\n"
         f"**Was wirklich funktioniert:**\n\n"
         f"1. **Automatisierte Shops** — Shopify + KI-Produktbeschreibungen + Auto-Fulfillment\n"
         f"2. **Affiliate Marketing** — Digistore24 Produkte mit hohen Provisionen bewerben\n"
         f"3. **KI Content Creation** — Einmal erstellen, immer wieder recyceln\n\n"
-        f"**Das Tool das alles vereint:** {DS24_LINK}\n\n"
-        f"Hat jemand ähnliche Erfahrungen? Gerne im Kommentar teilen!\n\n"
-        f"---\n*Eigene Erfahrungen, kein bezahlter Post*"
+        f"**Tool-Empfehlung (Affiliate-Link):** {DS24_LINK}\n\n"
+        f"Fragen oder eigene Erfahrungen? Gerne im Kommentar!\n"
     )
 
     try:
