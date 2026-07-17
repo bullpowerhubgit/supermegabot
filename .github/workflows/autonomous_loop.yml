@@ -1,8 +1,6 @@
 name: Autonomous Loop
 
 on:
-  push:
-  pull_request:
   workflow_dispatch:
     inputs:
       quick:
@@ -39,11 +37,7 @@ jobs:
           else
             MATRIX="$(python3 scripts/autonomous_project_matrix.py)"
           fi
-          COUNT="$(python3 - <<'PY' "$MATRIX"
-import json, sys
-print(len(json.loads(sys.argv[1]).get("include", [])))
-PY
-)"
+          COUNT="$(python3 -c 'import json,sys; print(len(json.loads(sys.argv[1]).get("include", [])))' "$MATRIX")"
           echo "matrix=$MATRIX" >> "$GITHUB_OUTPUT"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
@@ -140,7 +134,7 @@ PY
           node-version: "20"
       - name: Verify changed target
         env:
-          AUTONOMOUS_ENABLE_NODE_BUILD: ${{ matrix.runtime == 'node' && '1' || '0' }}
+          AUTONOMOUS_ENABLE_NODE_BUILD: "1"
         run: |
           python3 scripts/verify_autonomous_target.py \
             --runtime '${{ matrix.runtime }}' \

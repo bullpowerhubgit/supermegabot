@@ -1,36 +1,16 @@
 # SuperMegaBot — Current Status
-**Stand: 2026-07-16 23:00 UTC (Wave 13 — High-Ticket Upgrade ALLE 16 Sites live)**
+**Stand: 2026-07-17 (Wave 15 — High-Ticket + Stripe ineedit.com.co enforced)**
 
-
-
-
-## ✅ STRIPE = ineedit.com.co ONLY (2026-07-17 16:51 UTC)
+## ✅ STRIPE = ineedit.com.co ONLY (enforced 2026-07-17)
 
 | Item | Value |
 |------|--------|
 | **Domain** | https://ineedit.com.co |
-| **Account** | `acct_1Tg1U0RJECiV6vSm` |
-| **Email** | bullpowersrtkennels@gmail.com |
-| **Live key** | `sk_live_51Tg1U…` |
-| **Business URL (Stripe)** | https://ineedit.com.co/de |
-| **Forbidden** | AIITEC `acct_1Swso` / `sk_*_51Swso` — purged |
-| **Resolver** | `modules/stripe_key_resolver.py` → `enforce_ineedit_only()` |
+| **Account** | `acct_1Tg1U0RJECiV6vSm` · bullpowersrtkennels@gmail.com |
+| **Live key** | `sk_live_51Tg1U…` (`STRIPE_SECRET_KEY`) |
+| **Forbidden** | AIITEC `acct_1Swso` / `sk_*_51Swso` — purged forever |
+| **Enforcement** | `modules/stripe_key_resolver.py` + `modules/stripe_guards.py` |
 | **Thank-you** | https://ineedit.com.co/pages/danke |
-
-Self-check: **PASS**. Alle Payment Links / Prices mit `RJECiV6vSm` gehören zu diesem Konto.
-
-## ✅ STRIPE IMMER ineedit.com.co (2026-07-17 16:50 UTC)
-
-| Feld | Wert |
-|------|------|
-| Domain / Brand | **ineedit.com.co** |
-| Account | `acct_1Tg1U0RJECiV6vSm` |
-| Email | bullpowersrtkennels@gmail.com |
-| Key prefix | `sk_live_51Tg1U…` |
-| Enforcement | `modules/stripe_key_resolver.py` — INEEDIT-ONLY (+ brand probe) |
-| Forbidden | AIITEC `sk_live_51Swso…` forever |
-
-API-Check: `business_profile.url=https://ineedit.com.co/de`, dashboard display_name=`ineedit.com.co`.
 
 ## ✅ AUTONOMOUS LOOP EVERYWHERE (2026-07-17 16:55 UTC)
 
@@ -416,8 +396,6 @@ URLs: bullpower-ai.vercel.app/demo.html · bullpower-hub.vercel.app · shopify-b
 
 ## ✅ AUTONOMOUS DEMOS + TESTIMONIALS + CASES (2026-07-16)
 
-Ein Zyklus, alles überall:
-
 | Asset | Menge | Ziel |
 |-------|-------|------|
 | Testimonials | 96 rotierend | alle Landings + API |
@@ -425,37 +403,8 @@ Ein Zyklus, alles überall:
 | Interactive Demos | 17 `demo.html` + Demo-CTAs | alle Produkte + demo-hub |
 
 - Engine: `modules/autonomous_social_proof.py` → `run_social_proof_cycle()`
-- Scheduler: **alle 6h** regenerieren + reinjizieren
-- APIs (public): `/api/testimonials` · `/api/case-studies` · `/api/demos` · `/api/social-proof`
-- Manual: `POST /api/social-proof/run` (X-API-Key)
-
-## ✅ AUTONOMOUS DEMOS + TESTIMONIALS + CASES (2026-07-16)
-
-Ein Zyklus, alles überall:
-
-| Asset | Menge | Ziel |
-|-------|-------|------|
-| Testimonials | 96 rotierend | alle Landings + API |
-| Case Studies | 51 rotierend | alle Landings + Demo-Pages |
-| Interactive Demos | 17 `demo.html` + Demo-CTAs | alle Produkte + demo-hub |
-
-- Engine: `modules/autonomous_social_proof.py` → `run_social_proof_cycle()`
-- Scheduler: **alle 6h** regenerieren + reinjizieren
-- APIs (public): `/api/testimonials` · `/api/case-studies` · `/api/demos` · `/api/social-proof`
-- Manual: `POST /api/social-proof/run` (X-API-Key)
-
-## ✅ AUTONOMOUS SOCIAL PROOF (legacy note)
-
-- Engine: `modules/autonomous_social_proof.py`
-- **96 Testimonials** + **51 Case Studies** rotierend generiert
-- Injiziert in **18 Landings** (`#autonomous-social-proof`)
-- Scheduler: `autonomous_social_proof` alle **6h** (+ Telegram-Post)
-- Public APIs:
-  - `GET /api/testimonials?folder=steuercockpit`
-  - `GET /api/case-studies`
-  - `GET /api/social-proof`
-  - `POST /api/social-proof/run` (auth) — manuell regenerieren
-- Catalog: `config/testimonials.json` · `config/case_studies.json`
+- Scheduler: **alle 6h** · Catalog: `config/testimonials.json` · `config/case_studies.json`
+- APIs: `/api/testimonials` · `/api/case-studies` · `/api/demos` · `/api/social-proof`
 
 ## ✅ DEMO + CASE STUDY — ALLE LANDINGS (2026-07-16)
 
