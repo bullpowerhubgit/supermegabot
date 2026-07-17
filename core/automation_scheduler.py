@@ -6469,6 +6469,27 @@ async def task_api_key_health() -> str:
         return f"API Health Fehler: {e}"
 
 
+async def task_upsell_cycle() -> str:
+    """Upsell Engine: 2-Tage-Post-Purchase Upsell Emails (alle 12h)."""
+    try:
+        from modules.upsell_engine import run_upsell_cycle
+        r = await run_upsell_cycle()
+        return f"Upsell: {r.get('sent',0)} gesendet | {r.get('skipped',0)} uebersprungen | {r.get('checked',0)} Orders geprueft"
+    except Exception as e:
+        return f"Upsell Fehler: {e}"
+
+
+async def task_klaviyo_flows() -> str:
+    """Klaviyo Flows: Welcome-Drip + Re-Engagement (taeglich)."""
+    try:
+        from modules.klaviyo_flows import run_welcome_drip, run_reengagement
+        drip = await run_welcome_drip()
+        reng = await run_reengagement()
+        return f"KlaviyoFlows: Drip {drip.get('sent',0)} gesendet | ReEngage {reng.get('sent',0)} gesendet"
+    except Exception as e:
+        return f"KlaviyoFlows Fehler: {e}"
+
+
 async def task_sendgrid_daily() -> str:
     """SendGrid: tägliche Revenue-Email an alle Klaviyo-Profile (täglich)."""
     try:
@@ -8415,6 +8436,8 @@ TASKS = [
     # ── Email & API Monitoring ────────────────────────────────────────────────
     ("email_monitor",            task_email_monitor,              120,    5),  # alle 2min — Gmail IMAP: Pinterest/API Alerts
     ("api_key_health",           task_api_key_health,           43200,   15),  # alle 12h — API-Key Validierung + Alert
+    ("upsell_cycle",             task_upsell_cycle,             43200,   60),  # 12h  — Post-Purchase Upsell Emails
+    ("klaviyo_flows",            task_klaviyo_flows,            86400,   80),  # täglich — Welcome-Drip + Re-Engagement
     # ── Pinterest Traffic ─────────────────────────────────────────────────────
     ("pinterest_cycle",          task_pinterest_cycle,          14400,  860),  # 4h — Pinterest autonomy
     ("pinterest_traffic",        task_pinterest_traffic_cycle,   7200,  870),  # 2h — Smart Home Pins ineedit.com.co
