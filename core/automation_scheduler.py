@@ -1714,6 +1714,46 @@ async def task_api_hunt_watchdog() -> str:
         return f"APIHunt Fehler: {e}"
 
 
+async def task_sofia_sms_outbox() -> str:
+    """Sofia SMS Outbox: sendet alle pending SMS (max 50/Durchlauf)."""
+    try:
+        from modules.sofia_sms_agent import run_sms_outbox
+        result = await run_sms_outbox()
+        return f"Sofia SMS Outbox: {result.get('sent',0)} gesendet · {result.get('failed',0)} Fehler"
+    except Exception as e:
+        return f"Sofia SMS Outbox Fehler: {e}"
+
+
+async def task_sofia_sms_cart_recovery() -> str:
+    """Sofia SMS Warenkorb-Abbrecher: 3-Schritt-Sequenz automatisch."""
+    try:
+        from modules.sofia_sms_agent import run_cart_recovery_campaign
+        result = await run_cart_recovery_campaign()
+        return f"Sofia SMS CartRecovery: {result.get('sent',0)} gesendet"
+    except Exception as e:
+        return f"Sofia SMS CartRecovery Fehler: {e}"
+
+
+async def task_sofia_sms_weekly_deals() -> str:
+    """Sofia SMS Weekly Deals: Blast an alle aktiven Kontakte (Sonntag)."""
+    try:
+        import sqlite3, os
+        from modules.sofia_sms_agent import send_weekly_deals_blast, get_sms_stats, _DB
+        # Alle Nummern aus Konversations-DB holen (aktiv, kein opt-out)
+        conn = sqlite3.connect(str(_DB), timeout=5)
+        rows = conn.execute(
+            "SELECT phone FROM sms_conversations WHERE opt_out=0 ORDER BY last_msg_at DESC LIMIT 200"
+        ).fetchall()
+        conn.close()
+        numbers = [r[0] for r in rows if r[0].startswith("+")]
+        if not numbers:
+            return "Sofia SMS Weekly: keine Nummern"
+        result = await send_weekly_deals_blast(numbers)
+        return f"Sofia SMS Weekly Deals: {result.get('sent',0)}/{len(numbers)} gesendet"
+    except Exception as e:
+        return f"Sofia SMS Weekly Fehler: {e}"
+
+
 async def task_sofia_outbound_campaign() -> str:
     """Sofia Outbound: ruft alle Nummern aus der Queue an (max 30/Durchlauf)."""
     try:
@@ -8611,6 +8651,9 @@ TASKS = [
     ("seo_scaler",              task_seo_scaler,              21600,  450),  # 6h — AI-SEO + Bundles auto-erstellen
     ("sofia_campaign",          task_sofia_outbound_campaign,  3600,  600),  # 1h — Sofia ruft Queue an
     ("sofia_cart_recovery",     task_sofia_abandoned_cart_call, 1800, 900),  # 30min — Sofia ruft Warenkorbabbrecher an
+    ("sofia_sms_outbox",        task_sofia_sms_outbox,          1800,  700),  # 30min — SMS Outbox abarbeiten
+    ("sofia_sms_cart_sms",      task_sofia_sms_cart_recovery,   3600,  800),  # 1h — Warenkorb SMS-Sequenz
+    ("sofia_sms_weekly",        task_sofia_sms_weekly_deals,   604800, 1000), # 1×/Woche — Weekly Deals Blast
 ]
 
 
