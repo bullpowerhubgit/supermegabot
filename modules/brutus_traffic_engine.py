@@ -144,12 +144,65 @@ YOUTUBE_KEY    = os.getenv("YOUTUBE_API_KEY", "") or os.getenv("GOOGLE_API_KEY",
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 
+# ── Shop-Nischen-Keywords (ineedit.com.co: Smart Home / Solar / Tech Gadgets) ─
+SHOP_NICHE_SEEDS: list[str] = [
+    "smart home set alexa kompatibel 2026",
+    "solar powerstation balkonkraftwerk test",
+    "smart lock türschloss wifi vergleich",
+    "roboter staubsauger mapping test 2026",
+    "smart plug google home energiemessung",
+    "zigbee smart home gateway starter kit",
+    "solar generator tragbar camping",
+    "smart thermostat heizung wlan sparen",
+    "überwachungskamera wlan outdoor nachtsicht",
+    "led streifen smart rgb alexa google",
+    "air purifier hepa smart pm2.5",
+    "smart display touchscreen küche alexa",
+    "balkonkraftwerk speicher 800w 2026",
+    "solar mini set outdoor 12v akku",
+    "smart home starter kit zigbee 2026",
+    "wifi steckdose energiemessung verbrauch",
+    "co2 sensor luftqualität indoor smart",
+    "smart smoke detector zigbee feuermelder",
+    "wlan verstärker mesh system ax3000",
+    "smart home hub kompatibel alexa google",
+    "powerstation 1000wh solar panel set",
+    "smart irrigation bewässerung wlan garten",
+    "wifi türklingel kamera nachtsicht 2k",
+    "smart radiator thermostat heizung sparen",
+    "tragbare powerstation e-bike laden solar",
+]
+
+# YouTube-Suchbegriffe rotieren (deterministisch über Stunde)
+_NICHE_YT_SEARCHES: list[str] = [
+    "smart home gadgets 2026 test",
+    "solar powerstation balkonkraftwerk 2026",
+    "smart home amazon bestseller 2026",
+    "wifi smart home neuheiten 2026",
+    "smart lock tech gadgets review",
+]
+
+# Signalwörter für Relevanz-Check
+_NICHE_SIGNALS: tuple = (
+    "smart", "solar", "gadget", "wifi", "wlan", "iot", "bluetooth", "energie",
+    "power", "station", "alexa", "google home", "zigbee", "home", "outdoor",
+    "roboter", "sensor", "kamera", "akku", "led", "usb", "charging", "tech",
+    "heizung", "thermostat", "steckdose", "schalter", "hub", "mesh", "ax",
+    "powerbank", "powerstation", "balkon", "photovoltaik", "ai gadget",
+)
+
+
+def _is_niche_relevant(keyword: str) -> bool:
+    """Gibt True zurück wenn Keyword zum Shop-Nischen passt (Smart Home/Solar/Tech)."""
+    k = (keyword or "").lower()
+    return any(sig in k for sig in _NICHE_SIGNALS)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PHASE 1: TREND SCANNER — Echtzeit Trend-Erkennung
 # ─────────────────────────────────────────────────────────────────────────────
 
-async def scan_youtube_trends(niche: str = "shopify automation") -> list[dict]:
+async def scan_youtube_trends(niche: str = "smart home gadgets 2026") -> list[dict]:
     """YouTube trending Videos in Nische — extrahiere Winning-Keywords."""
     if not YOUTUBE_KEY:
         return []
@@ -459,6 +512,19 @@ def _is_safe_keyword(keyword: str) -> bool:
         if re.search(pattern, text):
             return False
     return True
+
+
+def _sanitize_keywords(keywords: list[str] | None) -> list[str]:
+    cleaned: list[str] = []
+    for keyword in keywords or []:
+        kw = str(keyword or "").strip()
+        if not kw:
+            continue
+        if _is_safe_keyword(kw):
+            cleaned.append(kw)
+        else:
+            log.warning("BRUTUS keyword dropped as unsafe: %s", kw[:120])
+    return cleaned
 
 
 def _deploy_enabled() -> bool:
@@ -1012,6 +1078,30 @@ async def generate_video_script(keyword: str, content_pack: dict) -> dict:
 # BRUTUS MAIN RUN — Alles in einem Durchlauf
 # ─────────────────────────────────────────────────────────────────────────────
 
+_SAFE_NICHE_FALLBACK = "shopify ecommerce automation"
+
+_BAD_NICHE_PATTERNS = [
+    r"geld verdienen",
+    r"passives einkommen",
+    r"online verdienen",
+    r"reich werden",
+    r"reich\s+mit",
+    r"schnell.*geld",
+    r"passive.*income",
+    r"earn.*online",
+]
+
+
+def _sanitize_niche(niche: str) -> str:
+    """Blockt Nischen mit Einkommensversprechen — für seriösen B2B-Content."""
+    import re
+    for p in _BAD_NICHE_PATTERNS:
+        if re.search(p, (niche or "").lower()):
+            log.warning("BRUTUS: unsafe niche '%s' → replaced with safe fallback", niche)
+            return _SAFE_NICHE_FALLBACK
+    return niche or _SAFE_NICHE_FALLBACK
+
+
 async def brutus_run(niche: str = "shopify ecommerce automation", custom_keywords: list = None) -> dict:
     """
     BRUTUS Hauptlauf:
@@ -1024,6 +1114,8 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     if not _deploy_enabled():
         log.warning("BRUTUS: BRUTUS_DEPLOY_ENABLED not set — run skipped")
         return {"ok": False, "skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
+
+    niche = _sanitize_niche(niche)
     log.info("=" * 60)
     log.info("BRUTUS START — Nische: %s", niche)
     log.info("=" * 60)
@@ -1035,8 +1127,11 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
 
     # Phase 1: Scan
     log.info("Phase 1: Scanning trends...")
+    # YouTube-Suche mit nischen-spezifischem Suchbegriff (rotiert stündlich)
+    import time as _t
+    _yt_query = _NICHE_YT_SEARCHES[int(_t.time() // 3600) % len(_NICHE_YT_SEARCHES)]
     yt_trends, reddit_trends, google_trends = await asyncio.gather(
-        scan_youtube_trends(niche),
+        scan_youtube_trends(_yt_query),
         scan_reddit_hot(),
         scan_google_trends_rss([niche]),
         return_exceptions=True,
@@ -1050,27 +1145,32 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     if isinstance(google_trends, list):
         raw_trends += [{"keyword": t["keyword"], "source": "google_trends"} for t in google_trends]
 
-    if custom_keywords:
-        raw_trends = [{"keyword": k, "source": "custom"} for k in custom_keywords] + raw_trends
+    safe_custom_keywords = _sanitize_keywords(custom_keywords)
+    if safe_custom_keywords:
+        raw_trends = [{"keyword": k, "source": "custom"} for k in safe_custom_keywords] + raw_trends
 
-    # Safe seeds: fokussiert auf Operations/Automation, keine Einkommensversprechen.
-    _safe_seeds = [
-        {"keyword": "shopify automation workflows 2026", "source": "seed"},
-        {"keyword": "ecommerce operations automation", "source": "seed"},
-        {"keyword": "crm outreach automation b2b", "source": "seed"},
-        {"keyword": "content workflow automation teams", "source": "seed"},
-        {"keyword": "shopify conversion automation", "source": "seed"},
-    ]
+    # Nischen-Seeds: Shop-relevante Smart Home / Solar / Tech Gadgets Keywords
+    import random as _random
+    _niche_seeds = [{"keyword": k, "source": "seed"} for k in SHOP_NICHE_SEEDS]
     if not raw_trends:
-        raw_trends = _safe_seeds
-        log.info("Phase 1: No trends found — using safe automation seed keywords")
+        raw_trends = _niche_seeds[:5]
+        log.info("Phase 1: No trends found — using niche shop seeds")
     else:
-        raw_trends = _safe_seeds[:2] + raw_trends
+        # Nischen-Filter: entferne nicht-relevante Google-Trends (News, Sport, Politik)
+        niche_raw = [t for t in raw_trends if _is_niche_relevant(t.get("keyword", ""))]
+        if not niche_raw:
+            log.info("Phase 1: All raw trends non-niche — replacing with shop seeds")
+            raw_trends = _niche_seeds[:5]
+        else:
+            # Mische niche-relevante Trends mit 2 Shop-Seeds zur Absicherung
+            _shuffle_seeds = _niche_seeds.copy()
+            _random.shuffle(_shuffle_seeds)
+            raw_trends = _shuffle_seeds[:2] + niche_raw
 
     filtered_trends = [trend for trend in raw_trends if _is_safe_keyword(trend.get("keyword", ""))]
     if not filtered_trends:
-        filtered_trends = _safe_seeds[:3]
-        log.info("Phase 1: All raw trends were unsafe — using safe automation seeds")
+        filtered_trends = _niche_seeds[:3]
+        log.info("Phase 1: All trends were unsafe — using shop niche seeds")
     raw_trends = filtered_trends
 
     log.info("Phase 1 done: %d raw trends found", len(raw_trends))
@@ -1081,7 +1181,13 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     if not top_trends:
         top_trends = raw_trends[:3]
 
-    log.info("Phase 2 done: %d pre-peak trends selected", len(top_trends))
+    # KRITISCH: AI-generierte Keywords ebenfalls filtern (predict kann neue unsichere Keywords erzeugen)
+    top_trends = [t for t in top_trends if _is_safe_keyword(t.get("keyword", ""))]
+    if not top_trends:
+        log.warning("Phase 2: ALL AI-predicted keywords were unsafe — using safe seeds")
+        top_trends = _safe_seeds[:3]
+
+    log.info("Phase 2 done: %d pre-peak trends selected (after safety filter)", len(top_trends))
 
     # Phase 3+4+7: Swarm + Deploy + Track (parallel per keyword)
     for trend in top_trends[:5]:
@@ -1191,8 +1297,10 @@ async def run_brutus_swarm(keywords: list = None, max_keywords: int = 3,
     if not _deploy_enabled():
         log.warning("BRUTUS swarm: BRUTUS_DEPLOY_ENABLED not set — run skipped")
         return {"ok": False, "skipped": True, "reason": "BRUTUS_DEPLOY_ENABLED not set"}
-    kw_niche = niche
-    if keywords:
-        kw_niche = " ".join(keywords[:2]) if len(keywords) >= 2 else keywords[0]
-    result = await brutus_run(niche=kw_niche, custom_keywords=keywords)
+    safe_keywords = _sanitize_keywords(keywords)
+    kw_niche = niche if _is_safe_keyword(niche) else "shopify ecommerce automation"
+    if safe_keywords:
+        safe_keywords = safe_keywords[:max_keywords]
+        kw_niche = " ".join(safe_keywords[:2]) if len(safe_keywords) >= 2 else safe_keywords[0]
+    result = await brutus_run(niche=kw_niche, custom_keywords=safe_keywords)
     return result
