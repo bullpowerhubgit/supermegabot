@@ -59,6 +59,9 @@ jobs:
       - name: Install Vercel CLI
         if: ${{ matrix.provider == 'vercel' }}
         run: npm install -g vercel
+      - name: Install Netlify CLI
+        if: ${{ matrix.provider == 'netlify' }}
+        run: npm install -g netlify-cli
       - name: Deploy target
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -66,6 +69,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
@@ -81,7 +85,7 @@ jobs:
               --service '${{ matrix.railway.service }}' \
               --environment '${{ matrix.railway.environment }}' \
               --production
-          else
+          elif [ "${{ matrix.provider }}" = "vercel" ]; then
             PROD_FLAG=""
             if [ "${{ github.ref_name }}" = "main" ]; then
               PROD_FLAG="--production"
@@ -90,5 +94,18 @@ jobs:
               --provider vercel \
               --path '${{ matrix.path }}' \
               --project '${{ matrix.vercel.project }}' \
+              $PROD_FLAG
+          else
+            PROD_FLAG=""
+            if [ "${{ github.ref_name }}" = "main" ]; then
+              PROD_FLAG="--production"
+            fi
+            python3 scripts/deploy_autonomous_target.py \
+              --provider netlify \
+              --path '${{ matrix.path }}' \
+              --project '${{ matrix.netlify.site_name }}' \
+              --site-id '${{ matrix.netlify.site_id }}' \
+              --site-name '${{ matrix.netlify.site_name }}' \
+              --account-id '${{ matrix.netlify.account_id }}' \
               $PROD_FLAG
           fi

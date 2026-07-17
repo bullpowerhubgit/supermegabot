@@ -1,6 +1,40 @@
 # SuperMegaBot — Current Status
 **Stand: 2026-07-17 (Wave 15 — High-Ticket + Stripe ineedit.com.co enforced)**
 
+## ✅ DEEP-SCAN PLATFORM HARDENING (2026-07-17 18:05 UTC)
+
+| Item | Status |
+|------|--------|
+| `modules/autonomous_projects.py` | ✅ Netlify added as first-class deploy provider; only canonical `netlify-deploy/*` targets are auto-discovered |
+| Target pruning | ✅ duplicate root Netlify surfaces stay out of the autonomous registry; broad `CascadeProjects` umbrella target disabled |
+| `scripts/deploy_autonomous_target.py` | ✅ supports Railway / Vercel / Netlify from one entrypoint |
+| GitHub Actions | ✅ `autonomous_deploy.yml` now installs/uses Netlify CLI; `autonomous_loop.yml` now carries Netlify token into readiness scan |
+| Netlify scripts | ✅ hardcoded Netlify tokens removed from `scripts/deploy_netlify_both.py` and `scripts/deploy_netlify_konto2.py` |
+| Current external blockers | ⚠️ local env still missing Vercel / Netlify / Lemon / Loops / Plausible / PostHog tokens; Netlify account billing/credits remain platform-side blockers |
+| Mac Claude scan | ✅ 10+ Claude terminals mapped; no broad build/deploy storm active, mainly MCP helper processes |
+
+## ✅ MONETIZATION HARDENED (2026-07-17 17:52 UTC)
+
+| Item | Status |
+|------|--------|
+| `modules/monetize_master.py` | ✅ hardcoded Klaviyo key fallback removed |
+| Sender / Telegram | ✅ monetization mail + Telegram defaults now use canonical ineedit/BullPower env surface |
+| Social monetization | ✅ high-ticket blasts now go through `modules.social_autoposter.post_to_all` instead of ad-hoc Telegram posting |
+| Sales copy | ✅ spammy “earn while you sleep” / passive-income style defaults replaced with guard-safe automation copy |
+| `modules/monetization_engine.py` | ✅ public shop URL normalized from `SHOPIFY_PUBLIC_DOMAIN` / canonical ineedit URL |
+| Affiliate copy | ✅ Amazon/automation promo text rewritten away from hype claims and validated against post guards |
+
+## ✅ POST AUTOMATION HARDENED (2026-07-17 17:40 UTC)
+
+| Item | Status |
+|------|--------|
+| `modules/social_autoposter.py` | ✅ posts now flow through `modules/post_gateway.safe_post_all` instead of mixed direct platform calls |
+| Active channels | ✅ auto-cycle now targets configured Facebook / Instagram / LinkedIn / Telegram surfaces consistently |
+| Link handling | ✅ canonical public link appended once before publish validation |
+| `modules/twitter_auto_poster.py` | ✅ spammy fallback tweets + risky default topics replaced with niche-safe automation copy |
+| Tweet generation | ✅ AI output is revalidated; invalid AI text falls back only to guard-approved templates |
+| Validation | ✅ posting audit still green; dry-run gateway fanout confirmed |
+
 ## ✅ STRIPE = ineedit.com.co ONLY (enforced 2026-07-17)
 
 | Item | Value |
@@ -785,7 +819,7 @@ Alle 16 Sites mit vollständigem High-Ticket Upgrade (ROI-Kalkulator, Demo, Verg
 - Bug: Railway-Autobot-Mails wurden mit Demo-Link beantwortet
 - Fix: Subdomain-Matching `domain.endswith(".railway.app")` → jetzt geblockt
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 17:21 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 18:03 UTC
 - Health: ✅ OK
 - Umsatz heute: €0.00
 - Probleme:

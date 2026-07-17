@@ -1,6 +1,13 @@
 name: Autonomous Loop
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
+  push:
+    branches: ["**"]
+  pull_request:
   workflow_dispatch:
     inputs:
       quick:
@@ -77,14 +84,18 @@ jobs:
       - name: Run autonomous loop
         env:
           STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+          POSTHOG_PROJECT_ID: ${{ secrets.POSTHOG_PROJECT_ID }}
           PLAUSIBLE_API_KEY: ${{ secrets.PLAUSIBLE_API_KEY }}
           PLAUSIBLE_SITE_ID: ${{ secrets.PLAUSIBLE_SITE_ID }}
           LEMON_SQUEEZY_API_KEY: ${{ secrets.LEMON_SQUEEZY_API_KEY }}
           LEMON_SQUEEZY_STORE_ID: ${{ secrets.LEMON_SQUEEZY_STORE_ID }}
           LOOPS_API_KEY: ${{ secrets.LOOPS_API_KEY }}
+          SALES_CALL_URL: ${{ secrets.SALES_CALL_URL }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
@@ -92,6 +103,7 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         run: |
           QUICK="true"
           if [ "${{ github.event_name }}" = "schedule" ]; then
