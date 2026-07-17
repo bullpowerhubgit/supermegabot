@@ -9702,12 +9702,35 @@ async def handle_autonomous_loop_status(req):
             "ran": True,
             "mrr": (data.get("payments") or {}).get("mrr"),
             "top_task": (data.get("analytics") or {}).get("top_task"),
+            "local_ai": {
+                "online": ((data.get("local_ai") or {}).get("health") or {}).get("online"),
+                "topic": (data.get("local_ai") or {}).get("topic"),
+                "model_count": ((data.get("local_ai") or {}).get("health") or {}).get("model_count", 0),
+                "base": ((data.get("local_ai") or {}).get("health") or {}).get("base"),
+            },
             "phases": data.get("phases"),
             "finished_at": data.get("finished_at"),
             "code_health_ok": (data.get("code_health") or {}).get("ok"),
         })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)[:200]})
+
+
+async def handle_autonomous_loop_local_ai(req):
+    """POST /api/autonomous-loop/local-ai — OpenClaw/Ollama cycle on demand."""
+    topic = ""
+    try:
+        body = await req.json()
+        topic = str(body.get("topic") or "").strip()
+    except Exception:
+        pass
+    try:
+        from modules.local_ai_autopilot import run_local_ai_cycle
+
+        result = await run_local_ai_cycle(topic=topic or None)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)[:200]}, status=500)
 
 
 async def handle_system_info(req):
@@ -12537,7 +12560,8 @@ async def create_app():
     app.router.add_post("/api/pipeline/run",              handle_autonomous_pipeline_run)
     app.router.add_get( "/api/pipeline/status",          handle_autonomous_pipeline_status)
     app.router.add_post("/api/autonomous-loop/run",       handle_autonomous_loop_run)
-    app.router.add_get( "/api/autonomous-loop/status",   handle_autonomous_loop_status)
+    app.router.add_get( "/api/autonomous-loop/status",    handle_autonomous_loop_status)
+    app.router.add_post("/api/autonomous-loop/local-ai",  handle_autonomous_loop_local_ai)
     app.router.add_get( "/api/system/info",              handle_system_info)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)

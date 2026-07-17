@@ -4,11 +4,13 @@ Autonomous Loop — Claude → Tests → Deploy → Payments → Analytics → N
 
 Phases:
   1. code_health     — syntax / self-checks
-  2. claude_iterate  — AI agents propose next feature/fix from analytics
-  3. payments        — Stripe billing snapshot + Lemon Squeezy catalog
-  4. onboarding      — Resend/Loops sequence health
+  2. project_surface — deployability across Railway/Vercel targets
+  3. local_ai        — OpenClaw/Ollama health + autonomous drafts
+  4. payments        — Stripe billing snapshot + Lemon Squeezy catalog
   5. analytics       — Plausible/PostHog → optimization tasks
-  6. plan_next       — persist next iteration plan for Claude/CI
+  6. claude_iterate  — AI agents propose next feature/fix from analytics
+  7. onboarding      — Resend/Loops sequence health
+  8. plan_next       — persist next iteration plan for Claude/CI
 
 CLI:
   python3 -m modules.autonomous_loop
@@ -91,6 +93,15 @@ def phase_project_surface() -> dict[str, Any]:
         from modules.autonomous_projects import get_deploy_surface_summary
 
         return get_deploy_surface_summary()
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:160]}
+
+
+async def phase_local_ai() -> dict[str, Any]:
+    try:
+        from modules.local_ai_autopilot import run_local_ai_cycle
+
+        return await run_local_ai_cycle()
     except Exception as e:
         return {"ok": False, "error": str(e)[:160]}
 
@@ -243,21 +254,32 @@ def phase_plan_next(report: dict) -> dict[str, Any]:
     ai_plan = (report.get("claude") or {}).get("ai_plan")
     project_surface = report.get("project_surface") or {}
     missing_providers = project_surface.get("missing_providers") or []
+    local_ai = report.get("local_ai") or {}
+    local_ai_online = bool((local_ai.get("health") or {}).get("online"))
     next_actions = [
         "Ship highest-priority optimization_task",
         "Keep Stripe bullpower-only + payment links live",
+        "Use OpenClaw/Ollama drafts for local-first automation before cloud spend",
         "Run email day-0 enroll on new leads",
         "CI: tests → main → Railway/Vercel auto-deploy",
         "Re-run autonomous loop after deploy",
     ]
     if missing_providers:
         next_actions.insert(0, f"Add missing deploy secrets/providers: {', '.join(missing_providers)}")
+    if not local_ai_online:
+        next_actions.insert(0, "Bring OpenClaw/Ollama back online for cheaper local automation")
     plan = {
         "generated_at": _now(),
         "top_tasks": tasks[:5],
         "ai_plan_excerpt": (ai_plan or "")[:1500],
         "mrr": (report.get("payments") or {}).get("mrr"),
         "code_health_ok": (report.get("code_health") or {}).get("ok"),
+        "local_ai": {
+            "online": local_ai_online,
+            "topic": local_ai.get("topic"),
+            "base": (local_ai.get("health") or {}).get("base"),
+            "model_count": (local_ai.get("health") or {}).get("model_count", 0),
+        },
         "project_surface": {
             "targets_total": project_surface.get("targets_total", 0),
             "provider_counts": project_surface.get("provider_counts", {}),
@@ -334,6 +356,9 @@ async def run_autonomous_loop(quick: bool = False, notify: bool = True) -> dict[
 
     report["project_surface"] = phase_project_surface()
     report["phases"].append("project_surface")
+
+    report["local_ai"] = await phase_local_ai()
+    report["phases"].append("local_ai")
 
     # 3 payments early (MRR for analytics)
     pay = await phase_payments()
@@ -533,6 +558,12 @@ def main(argv: list[str] | None = None) -> int:
     except Exception:
         traceback.print_exc()
         return 2
+    finally:
+        try:
+            from modules.open_claw import close_session
+            asyncio.run(close_session())
+        except Exception:
+            pass
 
 
 if __name__ == "__main__":
