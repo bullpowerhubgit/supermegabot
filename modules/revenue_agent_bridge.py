@@ -38,6 +38,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import aiohttp
+
 log = logging.getLogger("RevenueAgentBridge")
 
 _BASE      = Path(__file__).resolve().parents[1]
@@ -46,6 +48,10 @@ _INBOX     = _SYNC_DIR / "inbox.json"
 _OUTBOX    = _SYNC_DIR / "outbox.json"
 _COORD     = _SYNC_DIR / "coordination.json"
 _SYNC_DIR.mkdir(parents=True, exist_ok=True)
+_HTTP_BRIDGE_URL = os.getenv("SMB_HTTP_BRIDGE_URL", "http://127.0.0.1:8890").rstrip("/")
+_BRIDGE_TIMEOUT = aiohttp.ClientTimeout(total=10)
+_LOCAL_AGENT = "supermegabot"
+_PEER_AGENT = "revenue_agent"
 
 SUPPORTED_COMMANDS = frozenset({
     "revenue_snapshot",
@@ -84,6 +90,45 @@ def update_my_status(status: str, last_action: str = "") -> None:
 
 def get_coordination() -> dict:
     return _read_json(_COORD, {})
+
+
+async def get_http_bridge_inbox(agent: str = _LOCAL_AGENT) -> dict[str, Any]:
+    """Liest Live-Nachrichten vom lokalen HTTP-Bridge-Server."""
+    try:
+        async with aiohttp.ClientSession(timeout=_BRIDGE_TIMEOUT) as s:
+            async with s.get(f"{_HTTP_BRIDGE_URL}/inbox/{agent}") as r:
+                if r.status != 200:
+                    return {"ok": False, "agent": agent, "status": r.status, "messages": []}
+                data = await r.json(content_type=None)
+                if isinstance(data, dict):
+                    return data
+                return {"ok": False, "agent": agent, "messages": [], "error": "invalid bridge response"}
+    except Exception as e:
+        return {"ok": False, "agent": agent, "messages": [], "error": str(e)[:200]}
+
+
+async def send_http_bridge_message(
+    text: str,
+    to_agent: str = _PEER_AGENT,
+    from_agent: str = _LOCAL_AGENT,
+) -> dict[str, Any]:
+    """Sendet eine Live-Nachricht an den Peer-Agenten über Port 8890."""
+    if not text.strip():
+        return {"ok": False, "error": "empty message"}
+    payload = {"from": from_agent, "to": to_agent, "text": text[:4000]}
+    try:
+        async with aiohttp.ClientSession(timeout=_BRIDGE_TIMEOUT) as s:
+            async with s.post(
+                f"{_HTTP_BRIDGE_URL}/send",
+                json=payload,
+                headers={"Content-Type": "application/json"},
+            ) as r:
+                data = await r.json(content_type=None)
+                if r.status != 200:
+                    return {"ok": False, "status": r.status, "response": data}
+                return data if isinstance(data, dict) else {"ok": False, "response": data}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:200]}
 
 
 # ── Inbox / Outbox ────────────────────────────────────────────────────────────
@@ -362,6 +407,8 @@ async def _cmd_full_status() -> dict:
     except Exception as e:
         status["scheduler_audit"] = {"ok": False, "error": str(e)[:120]}
 
+    status["http_bridge"] = await get_http_bridge_inbox(_LOCAL_AGENT)
+
     # Koordination
     status["coordination"] = get_coordination()
     return status
@@ -472,6 +519,8 @@ async def get_bridge_status() -> dict[str, Any]:
     return {
         "ok":           True,
         "supported_commands": sorted(SUPPORTED_COMMANDS),
+        "http_bridge_url": _HTTP_BRIDGE_URL,
+        "http_bridge": await get_http_bridge_inbox(_LOCAL_AGENT),
         "coordination": get_coordination(),
         "pending":      len(pending_commands),
         "pending_commands": pending_commands[:10],
