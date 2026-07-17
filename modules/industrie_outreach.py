@@ -339,7 +339,7 @@ async def run_industrie_outreach(daily_limit: int = 20) -> dict:
             followup += 1
         else:
             errors += 1
-        time.sleep(2)
+        await asyncio.sleep(2)
 
     # Dann: Neue Erst-Mails
     queued = conn.execute(
@@ -365,7 +365,7 @@ async def run_industrie_outreach(daily_limit: int = 20) -> dict:
         else:
             errors += 1
         tmpl_idx += 1
-        time.sleep(2)
+        await asyncio.sleep(2)
 
     conn.commit()
     conn.close()

@@ -43,6 +43,68 @@ python3 -m modules.autonomous_loop
 | Safe Fallbacks | Telegram-Notifier skippen jetzt sauber mit Log-Warnung statt versteckte Fallback-Credentials zu benutzen |
 | DS24 Logging | `modules/digistore24_automation.py` loggt jetzt HTTP-Status + Body-Ausschnitt bei `listProducts`/`listTransactions`/`ping` statt leerem `DS24 get_products error:` |
 
+
+
+
+
+## ✅ CASE STUDIES + SALES-CALL ÜBERALL (2026-07-17 15:46 UTC)
+
+| Item | Detail |
+|------|--------|
+| Inject | **56** HTML pages in `netlify-deploy/**` |
+| Module | `modules/sales_call_process.py` |
+| Docs | `config/sales_call_process.md` |
+| Script | `python3 scripts/inject_sales_case_everywhere.py` |
+| CTAs | Trial Stripe €49 + Strategy Call → t.me/DudiRudibot |
+| Cases | 4 (Shopify Recovery, Agency Hub, Telegram Sub, Tax DACH) |
+| Process | 5 Steps: Qualify → Discovery → Case → Demo → Close |
+| Marketing | EN/DE landing copy + DM sheet snippets |
+| Agents | Claude collab marketing prompt includes sales process |
+| Live (Vercel) | bullpower-hub, steuercockpit, launcher, telegram-bot, lead-capture, aiitec-pinterest-portal |
+
+Anchors: `#case-studies` · `#sales-call-process`
+
+## ✅ CLAUDE AGENT COLLAB LIVE (2026-07-17 15:38 UTC)
+
+| Item | Status |
+|------|--------|
+| Module | `modules/claude_agent_collab.py` |
+| Teams | `claude_collab` + `outreach` in `agent_teams` |
+| Scheduler | every **2h** `task_claude_agent_collab` |
+| Assets | DM-Sheet + Landing EN + Stripe catalog wired |
+| Anthropic | ⚠️ **Credits leer** — Fallback Groq/Gemini/OpenRouter |
+| Run | `python3 -m modules.claude_agent_collab` |
+| API | `POST /api/agents/run` `{"team":"claude_collab","task":"..."}` |
+
+Reports: `data/agent_collab/collab_*.json`
+
+## ✅ ICLOUD ASSET IMPORT (2026-07-17 15:31 UTC)
+
+| Asset | Result |
+|-------|--------|
+| Telegram DM Sheet 30 | `marketing/` + `modules/telegram_dm_sheet.py` |
+| Landing EN copy | `marketing/landingpage_copy_en.md` |
+| Stripe catalog YAML | `config/stripe_products_prices.yml` (€49/99/299) |
+| Billing env template | placeholders only — no secrets |
+| claude_automation iCloud | **not overwritten** (budget guard preserved); ref in `config/icloud_import/` |
+| Bank PDF 7/2026 | private `data/private/` — Saldo **−€5.85**, no SaaS inflows |
+| Copilot DMG | left in iCloud (manual install) |
+
+Report: `config/ICLOUD_IMPORT_REPORT.md`
+
+## 🟡 PINTEREST TRIAL BLOCKED (Screenshot 2026-07-17 15:21 UTC)
+
+| Portal | Status |
+|--------|--------|
+| App 1582363 | **trial-Zugriff verweigert** → kein App Secret |
+| Tokens `pina_…` | Pre-check FAIL (401 code 2/3) — **nicht installiert** |
+| Production begrenzt | nur read scopes, 24h, API blockiert |
+| AIITEC Portal | clean redeploy (BullPower-Injection entfernt) |
+| Primary URL | https://aiitec-pinterest-portal.vercel.app/ (+ netlify wenn deploy ok) |
+| Nächster Schritt | Developer Portal: Website/Privacy auf AIITEC-URLs setzen → **Trial resubmit** |
+
+Docs: `config/PINTEREST_RESUBMIT.md`
+
 ## ✅ HIGH-TICKET V3 — ECHTE STRIPE-LINKS LIVE (Wave 15)
 
 **16/17 Netlify Konto 1 Sites mit neuen Stripe-Links (4F465/4F466 Serie) deployed:**
@@ -723,7 +785,7 @@ Alle 16 Sites mit vollständigem High-Ticket Upgrade (ROI-Kalkulator, Demo, Verg
 - Bug: Railway-Autobot-Mails wurden mit Demo-Link beantwortet
 - Fix: Subdomain-Matching `domain.endswith(".railway.app")` → jetzt geblockt
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-07-16 18:34 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 17:21 UTC
 - Health: ✅ OK
 - Umsatz heute: €0.00
 - Probleme:

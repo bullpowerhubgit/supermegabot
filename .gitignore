@@ -57,3 +57,8 @@ CascadeProjects/**/.env*
 # CascadeProjects sensitive scripts
 CascadeProjects/tools/sync_env.py
 **/yt-tracker-sa.json
+
+# private financial
+data/private/
+*.PDF
+*.pdf

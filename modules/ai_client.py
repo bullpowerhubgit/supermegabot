@@ -76,10 +76,11 @@ _MISTRAL_BASE   = "https://api.mistral.ai/v1/chat/completions"
 
 # ── Gemini Modelle (kostenlos) ─────────────────────────────────────────────────
 _GEMINI_MODELS = [
+    "gemma-4-26b-a4b-it",  # works when flash quota empty
+    "gemini-2.0-flash-lite",
+    "gemini-2.0-flash",
     "gemini-2.5-flash",
     "gemini-2.5-pro",
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
     "gemini-1.5-flash",
 ]
 _GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models"

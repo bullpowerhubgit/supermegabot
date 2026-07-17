@@ -174,6 +174,10 @@ def build_email_html(products: List[Dict], subject: str, campaign_type: str = "n
 # ── Mailchimp sender ──────────────────────────────────────────────────────────
 
 async def send_mailchimp_campaign(subject: str, html: str, list_id: str = "") -> Dict:
+    # PERMANENT DEAKTIVIERT — alle 3 Mailchimp-Konten gesperrt 2026-07-12 (NIEMALS reaktivieren)
+    import logging as _log
+    _log.getLogger(__name__).warning("Mailchimp GEBANNT — send_mailchimp_campaign blockiert")
+    return {"ok": False, "error": "Mailchimp GEBANNT seit 2026-07-12 — nur Klaviyo verwenden"}
     if not MC_API_KEY:
         return {"ok": False, "error": "MAILCHIMP_API_KEY not set"}
     lid = list_id or MC_LIST_ID

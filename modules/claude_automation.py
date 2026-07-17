@@ -33,8 +33,8 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-MODEL = "claude-haiku-4-5-20251001"         # Haiku: billig, für alle Revenue-Tasks
-FAST_MODEL = "claude-haiku-4-5-20251001"
+MODEL = "claude-sonnet-5"                    # schnell + stark; Alternative: "claude-opus-4-8"
+FAST_MODEL = "claude-haiku-4-5-20251001"     # billig, für Massen-Tasks
 
 _CLIENT: Optional[Anthropic] = None
 
@@ -43,15 +43,21 @@ _CLIENT: Optional[Anthropic] = None
 # Client / Health-Check
 # ---------------------------------------------------------------------------
 def is_configured() -> bool:
+    """True, wenn ein API-Key gesetzt ist. Für den Dashboard-Health-Check."""
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
 def _client() -> Anthropic:
+    """Lazy Singleton. Erzeugt den Client erst beim ersten Aufruf."""
     global _CLIENT
     if _CLIENT is None:
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
-            raise RuntimeError("ANTHROPIC_API_KEY fehlt → console.anthropic.com → API Keys")
+            raise RuntimeError(
+                "ANTHROPIC_API_KEY ist nicht gesetzt. "
+                "Key auf console.anthropic.com erzeugen und als Umgebungsvariable setzen."
+            )
+        log.debug("Anthropic-Client wird initialisiert (Modell: %s)", MODEL)
         _CLIENT = Anthropic(api_key=key)
     return _CLIENT
 
