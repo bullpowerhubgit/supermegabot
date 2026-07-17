@@ -1390,8 +1390,8 @@ async def auto_create_affiliate_blog_posts(count: int = 3) -> dict:
 
     topics = [
         ("KI Tools für Selbstständige 2026", "ki tools selbststaendige automatisierung"),
-        ("Passives Einkommen mit Digitalprodukten", "passives einkommen digitale produkte"),
-        ("Shopify Automatisierung: Mehr Umsatz ohne Arbeit", "shopify automatisierung umsatz"),
+        ("Digitale Produkte sauber automatisieren", "digitale produkte workflow automation"),
+        ("Shopify Automatisierung: effizientere Prozesse", "shopify automatisierung prozesse"),
         ("Digistore24 Affiliate Marketing Guide 2026", "digistore24 affiliate marketing"),
         ("KI Business Blueprint: So automatisierst du alles", "ki business automatisierung"),
     ]

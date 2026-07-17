@@ -66,6 +66,9 @@ def _conn() -> sqlite3.Connection:
     _DB.parent.mkdir(parents=True, exist_ok=True)
     c = sqlite3.connect(str(_DB), timeout=30)
     c.row_factory = sqlite3.Row
+    c.execute("PRAGMA journal_mode=WAL")
+    c.execute("PRAGMA synchronous=NORMAL")
+    c.execute("PRAGMA busy_timeout=30000")
     return c
 
 
@@ -182,31 +185,49 @@ def check_never_twice(text: str, platform: str = "default") -> Tuple[bool, List[
     Returns (ok, errors). ok=False → MUST NOT post.
     Checks: content blacklist + permanent learned/seed rules.
     """
-    init_db()
+    try:
+        init_db()
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("NeverTwice init locked — fail-open")
+            return True, []
+        raise
     errors: List[str] = []
     platform = (platform or "default").lower()
     text = text or ""
     ch = _content_hash(text, platform)
 
     # 1) Exact content blacklisted forever
-    with _conn() as c:
-        row = c.execute(
-            "SELECT reason, hits FROM content_blacklist WHERE content_hash=?", (ch,)
-        ).fetchone()
-        if row:
-            c.execute(
-                "UPDATE content_blacklist SET hits=hits+1 WHERE content_hash=?", (ch,)
-            )
-            errors.append(f"NEVER-TWICE: exakter Content bereits blockiert ({row['reason'][:80]})")
+    try:
+        with _conn() as c:
+            row = c.execute(
+                "SELECT reason, hits FROM content_blacklist WHERE content_hash=?", (ch,)
+            ).fetchone()
+            if row:
+                c.execute(
+                    "UPDATE content_blacklist SET hits=hits+1 WHERE content_hash=?", (ch,)
+                )
+                errors.append(f"NEVER-TWICE: exakter Content bereits blockiert ({row['reason'][:80]})")
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("NeverTwice blacklist locked — fail-open")
+            return True, []
+        raise
 
     # 2) Permanent rules (seed + learned)
     for rid, cre, desc in _load_rules():
         if cre.search(text):
             errors.append(f"NEVER-TWICE rule[{rid}]: {desc}")
-            with _conn() as c:
-                c.execute(
-                    "UPDATE permanent_rules SET hits=hits+1 WHERE rule_id=?", (rid,)
-                )
+            try:
+                with _conn() as c:
+                    c.execute(
+                        "UPDATE permanent_rules SET hits=hits+1 WHERE rule_id=?", (rid,)
+                    )
+            except sqlite3.OperationalError as e:
+                if "locked" in str(e).lower():
+                    log.warning("NeverTwice rule update locked — fail-open")
+                    return True, []
+                raise
 
     if errors:
         log.warning("NeverTwice BLOCK [%s]: %s", platform, errors)
@@ -268,7 +289,13 @@ def remember_block(
     content der nach 24h wieder gepostet werden darf, permanent verbannt.
     After 2 hits of same fingerprint → promote permanent rule if mappable.
     """
-    init_db()
+    try:
+        init_db()
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("NeverTwice remember locked during init — skip")
+            return {"skipped": True, "reason": "database locked"}
+        raise
     platform = (platform or "default").lower()
     reasons = [_sanitize_reason(r) for r in (reasons or ["unknown"]) if r]
     ch = _content_hash(text, platform)
@@ -277,68 +304,73 @@ def remember_block(
     preview = (text or "")[:160].replace("\n", " ")
     reason_s = " | ".join(reasons)[:500]
 
-    with _conn() as c:
-        c.execute(
-            """INSERT INTO events(kind,platform,content_hash,fingerprint,reason,preview,source_module,ts)
-               VALUES(?,?,?,?,?,?,?,?)""",
-            (kind, platform, ch, fp, reason_s, preview, source_module, now),
-        )
-        # content blacklist — NUR für dauerhafte Content-Qualitätsfehler
-        if not _is_transient(reasons):
-            existing = c.execute(
-                "SELECT hits FROM content_blacklist WHERE content_hash=?", (ch,)
+    try:
+        with _conn() as c:
+            c.execute(
+                """INSERT INTO events(kind,platform,content_hash,fingerprint,reason,preview,source_module,ts)
+                   VALUES(?,?,?,?,?,?,?,?)""",
+                (kind, platform, ch, fp, reason_s, preview, source_module, now),
+            )
+            # content blacklist — NUR für dauerhafte Content-Qualitätsfehler
+            if not _is_transient(reasons):
+                existing = c.execute(
+                    "SELECT hits FROM content_blacklist WHERE content_hash=?", (ch,)
+                ).fetchone()
+                if existing:
+                    c.execute(
+                        "UPDATE content_blacklist SET hits=hits+1, reason=? WHERE content_hash=?",
+                        (reason_s, ch),
+                    )
+                else:
+                    c.execute(
+                        """INSERT INTO content_blacklist(content_hash,platform,reason,first_seen,hits)
+                           VALUES(?,?,?,?,1)""",
+                        (ch, platform, reason_s, now),
+                    )
+            # error class counter
+            row = c.execute(
+                "SELECT hits, promoted FROM error_classes WHERE fingerprint=?", (fp,)
             ).fetchone()
-            if existing:
+            if row:
+                hits = row["hits"] + 1
                 c.execute(
-                    "UPDATE content_blacklist SET hits=hits+1, reason=? WHERE content_hash=?",
-                    (reason_s, ch),
+                    "UPDATE error_classes SET hits=?, last_seen=?, reason_sample=? WHERE fingerprint=?",
+                    (hits, now, reason_s, fp),
                 )
+                promoted = row["promoted"]
             else:
+                hits = 1
+                promoted = 0
                 c.execute(
-                    """INSERT INTO content_blacklist(content_hash,platform,reason,first_seen,hits)
-                       VALUES(?,?,?,?,1)""",
-                    (ch, platform, reason_s, now),
+                    """INSERT INTO error_classes(fingerprint,reason_sample,hits,first_seen,last_seen,promoted)
+                       VALUES(?,?,1,?,?,0)""",
+                    (fp, reason_s, now, now),
                 )
-        # error class counter
-        row = c.execute(
-            "SELECT hits, promoted FROM error_classes WHERE fingerprint=?", (fp,)
-        ).fetchone()
-        if row:
-            hits = row["hits"] + 1
-            c.execute(
-                "UPDATE error_classes SET hits=?, last_seen=?, reason_sample=? WHERE fingerprint=?",
-                (hits, now, reason_s, fp),
-            )
-            promoted = row["promoted"]
-        else:
-            hits = 1
-            promoted = 0
-            c.execute(
-                """INSERT INTO error_classes(fingerprint,reason_sample,hits,first_seen,last_seen,promoted)
-                   VALUES(?,?,1,?,?,0)""",
-                (fp, reason_s, now, now),
-            )
 
-        # Auto-promote after 2 identical error-class hits
-        newly_promoted = []
-        if hits >= 2 and not promoted:
-            for r in reasons:
-                for pat, rid in _REASON_TO_RULE:
-                    if re.search(pat, r, re.I):
-                        # ensure rule exists / mark promoted
-                        seed = next((s for s in _SEED_RULES if s[0] == rid), None)
-                        if seed:
-                            c.execute(
-                                """INSERT OR IGNORE INTO permanent_rules(rule_id,pattern,description,hits,created_at,source)
-                                   VALUES(?,?,?,1,?,?)""",
-                                (seed[0], seed[1], seed[2], now, "auto_promote"),
-                            )
-                            c.execute(
-                                "UPDATE permanent_rules SET hits=hits+1 WHERE rule_id=?", (rid,)
-                            )
-                            newly_promoted.append(rid)
-                        break
-            c.execute("UPDATE error_classes SET promoted=1 WHERE fingerprint=?", (fp,))
+            # Auto-promote after 2 identical error-class hits
+            newly_promoted = []
+            if hits >= 2 and not promoted:
+                for r in reasons:
+                    for pat, rid in _REASON_TO_RULE:
+                        if re.search(pat, r, re.I):
+                            seed = next((s for s in _SEED_RULES if s[0] == rid), None)
+                            if seed:
+                                c.execute(
+                                    """INSERT OR IGNORE INTO permanent_rules(rule_id,pattern,description,hits,created_at,source)
+                                       VALUES(?,?,?,1,?,?)""",
+                                    (seed[0], seed[1], seed[2], now, "auto_promote"),
+                                )
+                                c.execute(
+                                    "UPDATE permanent_rules SET hits=hits+1 WHERE rule_id=?", (rid,)
+                                )
+                                newly_promoted.append(rid)
+                            break
+                c.execute("UPDATE error_classes SET promoted=1 WHERE fingerprint=?", (fp,))
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("NeverTwice remember locked — skip")
+            return {"skipped": True, "reason": "database locked"}
+        raise
 
     log.info(
         "NeverTwice remembered [%s] hits=%s fp=%s promoted=%s",
@@ -353,14 +385,26 @@ def remember_block(
 
 
 def remember_sent(text: str, platform: str, source_module: str = "unknown") -> None:
-    init_db()
+    try:
+        init_db()
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("NeverTwice remember_sent init locked — skip")
+            return
+        raise
     ch = _content_hash(text, platform)
-    with _conn() as c:
-        c.execute(
-            """INSERT INTO events(kind,platform,content_hash,fingerprint,reason,preview,source_module,ts)
-               VALUES(?,?,?,?,?,?,?,?)""",
-            ("sent", platform.lower(), ch, "", "ok", (text or "")[:160], source_module, time.time()),
-        )
+    try:
+        with _conn() as c:
+            c.execute(
+                """INSERT INTO events(kind,platform,content_hash,fingerprint,reason,preview,source_module,ts)
+                   VALUES(?,?,?,?,?,?,?,?)""",
+                ("sent", platform.lower(), ch, "", "ok", (text or "")[:160], source_module, time.time()),
+            )
+    except sqlite3.OperationalError as e:
+        if "locked" in str(e).lower():
+            log.warning("NeverTwice remember_sent locked — skip")
+            return
+        raise
 
 
 def import_legacy_blocks() -> dict:

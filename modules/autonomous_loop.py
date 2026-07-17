@@ -270,6 +270,14 @@ async def phase_onboarding() -> dict[str, Any]:
         return {"ok": False, "error": str(e)[:160]}
 
 
+async def phase_buyer_pipeline() -> dict[str, Any]:
+    try:
+        from modules.buyer_intent_router import run_buyer_priority_cycle
+        return await run_buyer_priority_cycle(limit=5)
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:160], "top_leads": [], "followups_sent": 0}
+
+
 # ── Phase 5: Analytics feedback ──────────────────────────────────────────────
 
 async def phase_analytics(stripe_mrr: float = 0.0) -> dict[str, Any]:
@@ -293,6 +301,7 @@ def phase_plan_next(report: dict) -> dict[str, Any]:
         "Ship highest-priority optimization_task",
         "Keep Stripe bullpower-only + payment links live",
         "Keep Stripe webhooks + Lemon catalog + email onboarding automation healthy",
+        "Prioritize hot leads with fastest path: call or checkout",
         "Use OpenClaw/Ollama drafts for local-first automation before cloud spend",
         "Run email day-0 enroll on new leads",
         "CI: tests → main → Railway/Vercel auto-deploy",
@@ -306,6 +315,8 @@ def phase_plan_next(report: dict) -> dict[str, Any]:
         next_actions.insert(0, "Repair Stripe automation: payment links/webhook/billing readiness")
     if not ((report.get("onboarding") or {}).get("automation_ready")):
         next_actions.insert(0, "Repair Resend/Loops onboarding automation before next traffic push")
+    if ((report.get("buyer_pipeline") or {}).get("followups_sent", 0)) == 0 and (report.get("buyer_pipeline") or {}).get("top_leads"):
+        next_actions.insert(0, "Repair buyer follow-up execution so hot leads get immediate call/checkout CTA")
     plan = {
         "generated_at": _now(),
         "top_tasks": tasks[:5],
@@ -322,6 +333,10 @@ def phase_plan_next(report: dict) -> dict[str, Any]:
             "targets_total": project_surface.get("targets_total", 0),
             "provider_counts": project_surface.get("provider_counts", {}),
             "missing_providers": missing_providers,
+        },
+        "buyer_pipeline": {
+            "followups_sent": (report.get("buyer_pipeline") or {}).get("followups_sent", 0),
+            "top_leads": (report.get("buyer_pipeline") or {}).get("top_leads", [])[:3],
         },
         "next_actions": next_actions,
     }
@@ -423,6 +438,9 @@ async def run_autonomous_loop(quick: bool = False, notify: bool = True) -> dict[
     # 4 onboarding
     report["onboarding"] = await phase_onboarding()
     report["phases"].append("onboarding")
+
+    report["buyer_pipeline"] = await phase_buyer_pipeline()
+    report["phases"].append("buyer_pipeline")
 
     # 6 plan
     report["next"] = phase_plan_next(report)
