@@ -470,6 +470,18 @@ async def task_claude_agent_check() -> str:
         return f"Claude Agent Fehler: {exc}"
 
 
+
+async def task_claude_agent_collab() -> str:
+    """SuperMegaBot × Claude Agent Collab — DM sheet + teams + synthesis."""
+    try:
+        from modules.claude_agent_collab import run_collab_cycle
+        r = await run_collab_cycle(notify=True)
+        ok = sum(1 for v in (r.get("agents") or {}).values() if v.get("ok"))
+        return f"Claude Collab: {ok} agents ok — {(r.get('synthesis') or '')[:200]}"
+    except Exception as ex:
+        return f"Claude Collab Fehler: {ex}"
+
+
 async def task_system_health() -> str:
     """Check system resources, alert on critical thresholds."""
     try:
@@ -1690,6 +1702,51 @@ async def task_api_hunt_watchdog() -> str:
         return f"APIHunt: {result.get('active_providers',0)}/8 Provider aktiv"
     except Exception as e:
         return f"APIHunt Fehler: {e}"
+
+
+async def task_sofia_outbound_campaign() -> str:
+    """Sofia Outbound: ruft alle Nummern aus der Queue an (max 30/Durchlauf)."""
+    try:
+        from modules.sofia_voice_agent import run_outbound_campaign, get_sofia_stats
+        result = await run_outbound_campaign(limit=30)
+        stats  = get_sofia_stats()
+        called  = result.get("called", 0)
+        pending = stats.get("queue_pending", 0)
+        return f"Sofia Kampagne: {called} angerufen · {pending} noch in Queue · {stats.get('conversion_rate',0)}% Conversion"
+    except Exception as e:
+        return f"Sofia Kampagne Fehler: {e}"
+
+
+async def task_sofia_abandoned_cart_call() -> str:
+    """Sofia ruft Kunden an die Warenkorb abgebrochen haben (sofern Telefonnummer in DB)."""
+    try:
+        from modules.sofia_voice_agent import queue_sofia_call, run_outbound_campaign
+        import sqlite3, os
+        # Abandoned cart DB lesen (falls vorhanden)
+        db_path = os.path.join(os.path.dirname(__file__), "..", "data", "abandoned_carts.db")
+        queued = 0
+        try:
+            conn = sqlite3.connect(db_path, timeout=5)
+            rows = conn.execute(
+                "SELECT phone, email, product_title FROM abandoned_carts WHERE phone != '' AND sofia_called = 0 AND created_at < ? LIMIT 20",
+                (time.time() - 1800,)  # mind. 30 Min alt
+            ).fetchall()
+            for row in rows:
+                phone, email, product = row[0], row[1], row[2]
+                queue_sofia_call(to_number=phone, product_id=product or "", contact=email, source="abandoned_cart")
+                conn.execute("UPDATE abandoned_carts SET sofia_called=1 WHERE phone=?", (phone,))
+                queued += 1
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+        # Queue abarbeiten
+        if queued > 0:
+            result = await run_outbound_campaign(limit=queued)
+            return f"Sofia AbandonedCart: {result.get('called',0)} angerufen"
+        return "Sofia AbandonedCart: keine offenen Nummern"
+    except Exception as e:
+        return f"Sofia AbandonedCart Fehler: {e}"
 
 
 async def task_email_seq_enroll() -> str:
@@ -7114,6 +7171,15 @@ async def task_outreach_auto() -> str:
         return f"Outreach Fehler: {e}"
 
 
+async def task_smb_outreach_daily() -> str:
+    try:
+        from modules.smb_outreach_auto import task_smb_outreach_daily as _run
+        result = await _run()
+        return f"SMB Outreach: {str(result)[:200]}"
+    except Exception as e:
+        return f"SMB Outreach Fehler: {e}"
+
+
 async def task_mega_hub_autopilot() -> str:
     try:
         from modules.mega_hub import run_autopilot
@@ -8024,6 +8090,7 @@ TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Monitoring & Self-Repair ──────────────────────────────────────────────
     ("claude_agent",         task_claude_agent_check,   3600,  120),  # 1h — Claude KI-Agent: Health-Check + Selbstanalyse + Telegram
+    ("claude_collab",        task_claude_agent_collab,  7200,  125),  # 2h — Multi-Agent Collab (Claude+Rudi+DMs)
     ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
     ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
@@ -8254,6 +8321,7 @@ TASKS = [
     ("ki_leasing_reports",     task_ki_leasing_daily_reports, 86400, 3870),  # 24h — KI-Leasing Kunden-Reports per Email
     ("gumroad_brutus",         task_gumroad_brutus_traffic,  43200, 3890),  # 12h — Gumroad Stats + Traffic Swarm
     ("outreach_batch",         task_outreach_engine_batch,   43200, 3910),  # 12h — B2B Outreach 10 Nachrichten
+    ("smb_outreach_daily",     task_smb_outreach_daily,      86400, 3912),  # 24h — SaaS Akquise 5-Stufen Email-Sequenz
     # ── MASS OUTREACH 1000/TAG ────────────────────────────────────────────────
     ("mass_outreach_research", task_mass_outreach_research, 86400, 3915),  # 24h — Lead-Research: Gelbe Seiten+11880+HN+RSS
     ("mass_outreach_morning",  task_mass_outreach_batch,    28800, 3920),  # 8h  — 333 Emails Batch (09:00 + 17:00 + 01:00)
@@ -8530,6 +8598,8 @@ TASKS = [
     ("api_hunt_watchdog",       task_api_hunt_watchdog,        3600,   40),  # 1h — sichert AI-API-Verfügbarkeit
     # ── SEO SCALER + SHOP PERFEKTIONIST ──────────────────────────────────────
     ("seo_scaler",              task_seo_scaler,              21600,  450),  # 6h — AI-SEO + Bundles auto-erstellen
+    ("sofia_campaign",          task_sofia_outbound_campaign,  3600,  600),  # 1h — Sofia ruft Queue an
+    ("sofia_cart_recovery",     task_sofia_abandoned_cart_call, 1800, 900),  # 30min — Sofia ruft Warenkorbabbrecher an
 ]
 
 
