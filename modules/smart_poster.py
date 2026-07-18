@@ -473,6 +473,14 @@ async def send_telegram_guarded(
     decision = _telegram_guard_decision(bot_token, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
     if not decision.get("ok"):
         return decision
+
+    # ── LINK-VALIDIERUNG: jeden Link öffnen + auf Fehlerseiten prüfen ─────────
+    links_ok, link_reason = await validate_links_async(text)
+    if not links_ok:
+        log.warning("send_telegram_guarded: Link-Check BLOCKIERT — %s", link_reason)
+        return {"ok": False, "blocked": True, "reason": f"link_check_failed:{link_reason}"}
+    # ── Ende Link-Validierung ──────────────────────────────────────────────────
+
     payload = decision["payload"]
 
     try:
@@ -512,6 +520,14 @@ def send_telegram_guarded_sync(
     decision = _telegram_guard_decision(bot_token, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
     if not decision.get("ok"):
         return decision
+
+    # ── LINK-VALIDIERUNG (sync) ────────────────────────────────────────────────
+    links_ok, link_reason = _check_links_sync(text)
+    if not links_ok:
+        log.warning("send_telegram_guarded_sync: Link-Check BLOCKIERT — %s", link_reason)
+        return {"ok": False, "blocked": True, "reason": f"link_check_failed:{link_reason}"}
+    # ── Ende Link-Validierung ──────────────────────────────────────────────────
+
     payload = decision["payload"]
 
     try:
@@ -736,6 +752,142 @@ def _is_clean(text: str) -> tuple[bool, str]:
     for pattern in _BANNED_PATTERNS:
         if re.search(pattern, lower):
             return False, pattern
+    return True, ""
+
+
+# ── Link-Validator ────────────────────────────────────────────────────────────
+# KERN-SCHUTZ 2026-07-18: Jeder Link im Post wird aufgerufen und geprüft.
+# Fehlerseite erkannt → Post wird BLOCKIERT, egal wie gut der Text aussieht.
+
+_BAD_PAGE_PATTERNS = [
+    "noch nicht genehmigt",
+    "das produkt wurde noch nicht genehmigt",
+    "nicht genehmigt",
+    "produkt nicht verfügbar",
+    "das produkt ist nicht mehr verfügbar",
+    "nicht verfügbar",
+    "nicht im handel erhältlich",
+    "seite nicht gefunden",
+    "page not found",
+    "404 not found",
+    "error 404",
+    "this page could not be found",
+    "this page doesn't exist",
+    "we couldn't find that page",
+    "product unavailable",
+    "not available",
+    "sold out",
+    "ausverkauft",
+    "currently unavailable",
+    "this product is not available",
+    "kein produkt gefunden",
+    "item not found",
+    "access denied",
+]
+
+_URL_RE = re.compile(r"https?://[^\s\)\]\>\"\'<]+")
+
+_LINK_CHECK_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+}
+
+_LINK_SKIP_HOSTS = frozenset({
+    "api.telegram.org", "t.me", "telegram.me",
+    "api.anthropic.com", "api.openai.com",
+})
+
+
+async def validate_links_async(text: str) -> tuple[bool, str]:
+    """
+    Öffnet JEDEN Link im Post und prüft:
+      - HTTP-Status muss 200 sein
+      - Seiten-Inhalt darf keine Fehler-Muster enthalten
+    Gibt (True, "") zurück wenn alle Links OK, sonst (False, Grund).
+    Wird in run_posting_cycle() und send_telegram_guarded() aufgerufen.
+    """
+    raw_urls = _URL_RE.findall(text or "")
+    urls = [u.rstrip(".,;:)>\"'") for u in raw_urls]
+    urls_to_check = [u for u in urls[:5] if not any(h in u for h in _LINK_SKIP_HOSTS)]
+    if not urls_to_check:
+        return True, ""
+
+    timeout = aiohttp.ClientTimeout(total=10, connect=5)
+    try:
+        async with aiohttp.ClientSession(
+            timeout=timeout,
+            headers=_LINK_CHECK_HEADERS,
+        ) as session:
+            for url in urls_to_check:
+                try:
+                    async with session.get(url, allow_redirects=True, ssl=False) as resp:
+                        if resp.status != 200:
+                            log.warning("Link-Check: HTTP %d — %s", resp.status, url)
+                            return False, f"HTTP {resp.status}: {url}"
+                        try:
+                            body = await resp.text(errors="ignore")
+                            body_lower = body[:15000].lower()
+                        except Exception:
+                            body_lower = ""
+                        for pattern in _BAD_PAGE_PATTERNS:
+                            if pattern in body_lower:
+                                log.warning(
+                                    "Link-Check: Fehlerseite erkannt (%r) — %s", pattern, url
+                                )
+                                return False, f"Fehlerseite ({pattern!r}): {url}"
+                except aiohttp.ClientConnectorError as e:
+                    log.warning("Link-Check: Nicht erreichbar — %s — %s", url, e)
+                    return False, f"Nicht erreichbar: {url}"
+                except asyncio.TimeoutError:
+                    log.warning("Link-Check: Timeout — %s", url)
+                    return False, f"Timeout (>10s): {url}"
+                except Exception as e:
+                    log.warning("Link-Check: Fehler bei %s — %s", url, e)
+                    return False, f"Fehler: {url} ({str(e)[:60]})"
+    except Exception as e:
+        log.warning("validate_links_async: Session-Fehler: %s", e)
+        return True, ""  # Session selbst kaputt → nicht blockieren
+
+    return True, ""
+
+
+def _check_links_sync(text: str) -> tuple[bool, str]:
+    """
+    Synchrone Link-Prüfung für Telegram-Guard (urllib, 5s Timeout, max 3 URLs).
+    """
+    raw_urls = _URL_RE.findall(text or "")
+    urls = [u.rstrip(".,;:)>\"'") for u in raw_urls]
+    urls_to_check = [u for u in urls[:3] if not any(h in u for h in _LINK_SKIP_HOSTS)]
+    if not urls_to_check:
+        return True, ""
+
+    for url in urls_to_check:
+        try:
+            req = urllib.request.Request(url, headers=dict(_LINK_CHECK_HEADERS))
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                code = resp.getcode()
+                if code != 200:
+                    return False, f"HTTP {code}: {url}"
+                try:
+                    body = resp.read(15000).decode("utf-8", errors="ignore").lower()
+                except Exception:
+                    body = ""
+                for pattern in _BAD_PAGE_PATTERNS:
+                    if pattern in body:
+                        log.warning("Link-Check (sync): Fehlerseite %r — %s", pattern, url)
+                        return False, f"Fehlerseite ({pattern!r}): {url}"
+        except urllib.error.HTTPError as e:
+            return False, f"HTTP {e.code}: {url}"
+        except urllib.error.URLError as e:
+            return False, f"Nicht erreichbar: {url}"
+        except Exception as e:
+            return False, f"Fehler: {url} ({str(e)[:60]})"
+
     return True, ""
 
 
@@ -1142,6 +1294,19 @@ async def run_posting_cycle() -> dict:
                 continue
 
             log.info("SmartPoster [%s]: ✅ Alle %d Checks bestanden", platform, len(checks))
+
+            # ── Check 11: Link-Validierung — jeden Link öffnen + Inhalt prüfen ─
+            links_ok, link_reason = await validate_links_async(text)
+            if not links_ok:
+                log.warning(
+                    "SmartPoster [%s]: Link-Check BLOCKIERT — %s", platform, link_reason
+                )
+                result["skipped"].append(
+                    f"{platform}: Link-Check fehlgeschlagen — {link_reason}"
+                )
+                continue
+            log.info("SmartPoster [%s]: ✅ Link-Check OK", platform)
+            # ── Ende Link-Validierung ──────────────────────────────────────────
 
             # Duplikat-Check
             ch = _content_hash(text)

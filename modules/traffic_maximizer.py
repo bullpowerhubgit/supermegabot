@@ -400,6 +400,14 @@ async def post_reddit(
 
 async def run_full_traffic_blast() -> dict:
     """Generiert Content und postet auf alle Kanäle. 3× täglich aufgerufen."""
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception:
+        pause_reason = ""
+    if pause_reason:
+        log.warning("Traffic Blast: posting paused (%s) — übersprungen", pause_reason)
+        return {"skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
     from modules.agent_coordinator import run as coord_run
     async with coord_run("traffic_blast", "traffic_maximizer", ttl=900, reuse_result_age=600) as ctx:
         if ctx.already_running:
