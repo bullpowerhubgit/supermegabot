@@ -20,6 +20,12 @@ try:
 except Exception as _e:
     import logging; logging.getLogger(__name__).warning(f"Global AI budget guard install failed: {_e}")
 
+try:
+    from modules.never_again import engine as _never_again_engine
+    _never_again_engine.init()
+except Exception as _e:
+    import logging; logging.getLogger(__name__).warning(f"NeverAgain init failed: {_e}")
+
 import asyncio
 import hashlib
 import json
@@ -11822,6 +11828,50 @@ async def handle_tg_gate_stats(request):
     return web.json_response(stats)
 
 
+async def handle_never_again_status(request):
+    """GET /api/never-again/status — Fehler-Gedächtnis Übersicht."""
+    try:
+        from modules.never_again import engine
+        return web.json_response(engine.status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_never_again_add(request):
+    """POST /api/never-again/add — Neuen bekannten Fehler registrieren."""
+    try:
+        data = await request.json()
+        pattern  = data.get("pattern", "")
+        fix_type = data.get("fix_type", "ALERT")
+        payload  = data.get("fix_payload", "")
+        desc     = data.get("fix_desc", "Manuell registriert")
+        err_type = data.get("error_type", "ManualEntry")
+        location = data.get("location", "*")
+        if not pattern:
+            return web.json_response({"ok": False, "error": "pattern required"}, status=400)
+        from modules.never_again import engine
+        fp = engine.add_known_error(pattern, fix_type, payload, desc, err_type, location)
+        return web.json_response({"ok": True, "fingerprint": fp, "fix_desc": desc})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_never_again_report(request):
+    """POST /api/never-again/report — Fehler manuell melden (z.B. aus Logs)."""
+    try:
+        data = await request.json()
+        error_msg = data.get("error", "")
+        location  = data.get("location", "manual")
+        if not error_msg:
+            return web.json_response({"ok": False, "error": "error field required"}, status=400)
+        from modules.never_again import engine
+        exc = Exception(error_msg)
+        fixed = await engine.handle(exc, location=location)
+        return web.json_response({"ok": True, "auto_fixed": fixed})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def create_app():
     # ── TgGate: Globaler Telegram-Spam-Schutz — ZUERST installieren ──────────
     # Intercept für aiohttp + urllib: ALLE sendMessage-Calls laufen durch den
@@ -12018,7 +12068,10 @@ async def create_app():
     app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
-    app.router.add_get("/api/tg-gate/stats", handle_tg_gate_stats)
+    app.router.add_get("/api/tg-gate/stats",         handle_tg_gate_stats)
+    app.router.add_get("/api/never-again/status",     handle_never_again_status)
+    app.router.add_post("/api/never-again/add",       handle_never_again_add)
+    app.router.add_post("/api/never-again/report",    handle_never_again_report)
     # /api/ai/status bereits oben registriert — Duplikat entfernt
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
