@@ -9116,6 +9116,34 @@ class AutomationScheduler:
         "priority_cluster",       # inkl. Posting
         "geldmaschine_skalierung",
         "saas_factory_cycle",     # postet neue MVP-Launches
+        # Test-Engine — schickt Fake-Shopify-Webhooks → Telegram-Spam-Schleifen
+        "test_purchase", "run_test_purchase", "test_funnel", "test_webhook",
+        "test_inbound", "funnel_test", "test_checkout",
+        # Viral Window Scanner — schickt Scraping-Müll als "Viral Alert" (72x/Lauf!)
+        "viral_window_scan", "viral_window", "viral_scan", "viral_alert",
+        "product_intelligence_hub", "product_intel",
+        # VORSPRUNG Intelligence — schickt rohen KI-Analyse-Text direkt an Telegram
+        "vorsprung_scan", "vorsprung_intelligence", "vorsprung",
+        # TikTok Ads Engine — sendet "0 Kampagnen, €0" alle 4h (kein Mehrwert)
+        "tiktok_ads_engine", "tiktok_ads",
+        # Claude Collab — sendet t.me/DudiRudibot Link (Bot widerrufen!) + Duplikate
+        "claude_collab", "claude_agent_collab",
+        # Autonomous Loop — "MRR €0.0" Duplikat alle 3h
+        "autonomous_loop", "auto_loop",
+        # Shop Scaling — alles 0 (kein Mehrwert)
+        "shop_scaling", "shop_scaling_cycle",
+        # Trending NOW — generische Fake-Trends, doppelt gesendet
+        "trending_topic_scan", "trending_now",
+        # Insolvenz Radar — postet ungeprüfte Leads direkt in Telegram
+        "insolvenz_radar_scan", "insolvenz_radar_autopost",
+        # eBay Arbitrage — sendet "0 Chancen" Berichte
+        "ebay_arbitrage_scan", "ebay_arbitrage",
+        # Conversion Optimizer — sendet alles-0 Berichte alle 6h
+        "conversion_optimizer",
+        # Money Machine — sendet Produktlinks + "0 Imports" Berichte
+        "money_machine_run", "money_machine",
+        # Buyer Traffic Engine — sendet Reddit/Blog-Spam
+        "buyer_traffic_engine",
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
@@ -9128,35 +9156,12 @@ class AutomationScheduler:
     _REVENUE_TASKS = frozenset({
         "health", "system_health", "github_backup",
         "shopify_sync", "shopify_orders_alert", "email_check",
-        "ds24_funnel_sync", "digistore_sync", "ds24_affiliate_blast",
-        "ds24_affiliate_hourly", "ds24_affiliate_daily", "ds24_traffic",
-        "geldmaschine_skalierung", "revenue_engine",
+        "ds24_funnel_sync", "digistore_sync",
         "abandoned_cart_recovery", "revenue_fast_track", "revenue_maximizer",
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
-        "email_blast", "ads_monitor", "ads_optimize",
-        "stripe_monitor", "digistore_sync",
         "buyer_pipeline", "revenue_agent_sync", "revenue_blitz",
         "upsell_sequence_run", "upsell_cycle", "klaviyo_flows",
-        "b2b_prospecting", "money_machine_run",
-        # Test-Engine — schickt Fake-Shopify-Webhooks → Telegram-Spam-Schleifen
-        "test_purchase", "run_test_purchase", "test_funnel", "test_webhook",
-        "test_inbound", "funnel_test", "test_checkout",
-        # Viral Window Scanner — schickt Scraping-Müll als "Viral Alert" (72x/Lauf!)
-        # z.B. "Tastenkürzel ein-/ausblenden", Reddit-Headlines als "Produkte"
-        "viral_window_scan", "viral_window", "viral_scan", "viral_alert",
-        "product_intelligence_hub", "product_intel",
-        # VORSPRUNG Intelligence — schickt rohen KI-Analyse-Text direkt an Telegram
-        "vorsprung_scan", "vorsprung_intelligence", "vorsprung",
-        # TikTok Ads Engine — sendet "0 Kampagnen, €0" alle 4h (kein Mehrwert)
-        "tiktok_ads_engine", "tiktok_ads",
-        # Claude Collab — sendet t.me/DudiRudibot Link (Bot widerrufen!) + Duplikate
-        "claude_collab", "claude_agent_collab",
-        # Autonomous Loop — "MRR €0.0" Duplikat alle 3h
-        "autonomous_loop", "auto_loop",
-        # Shop Scaling — "Skalierungszyklus: 0 Produkte, 0 Emails, €0" alle 12h
-        "shop_scaling", "geldmaschine_skalierung", "shop_scaling_cycle",
-        # Trending NOW — generische Fake-Trends 2x gesendet
-        "trending_topic_scan", "trending_now",
+        "b2b_prospecting",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
