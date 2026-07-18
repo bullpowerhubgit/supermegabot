@@ -9144,6 +9144,13 @@ class AutomationScheduler:
         "money_machine_run", "money_machine",
         # Buyer Traffic Engine — sendet Reddit/Blog-Spam
         "buyer_traffic_engine",
+        # B2B Cold-Outreach — sendet unerwünschte Mails an fremde Firmen (DSGVO!)
+        "lead_outreach", "cold_outreach", "b2b_outreach",
+        # Partner Channel Reply-Scanner — klassifiziert Bounces als "interested"
+        # und schickt Onboarding-Mails an Bonprix, Spiegel, Vodafone etc.
+        "bpi_sys13_partner_channel", "partner_channel", "partner_outreach",
+        # Lead Delivery an Subscribers (verknüpft mit Cold-Outreach-Daten)
+        "lead_delivery",
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
