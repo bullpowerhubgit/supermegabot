@@ -561,6 +561,15 @@ async def post_to_all(
     if link and link not in publish_text:
         publish_text = f"{publish_text}\n\n{link}".strip()
 
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception:
+        pause_reason = ""
+    if pause_reason:
+        log.warning("social_autoposter: posting paused (%s) — post_to_all abgebrochen", pause_reason)
+        return {"ok": False, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+
     # ── PostErrorGuard: kritische Vorab-Prüfung (sync, fail-closed) ─────────
     try:
         from modules.post_error_guard import guard_post as _peg
@@ -628,6 +637,15 @@ async def run_social_cycle() -> dict:
     Wird vom Scheduler alle 6h aufgerufen.
     Generiert Content und postet auf Facebook + Instagram (Pexels-Bild automatisch).
     """
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception:
+        pause_reason = ""
+    if pause_reason:
+        log.warning("social_autoposter: posting paused (%s) — run_social_cycle übersprungen", pause_reason)
+        return {"ok": False, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+
     message = await _ai_caption(topic="Shopify Automation mit KI für E-Commerce Teams")
     # Pexels-Bild vorab holen damit FB-Photo + IG-Post beide ein Bild bekommen
     image_url = await _fetch_pexels_image("smart home gadgets technology 2026")

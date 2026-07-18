@@ -33,6 +33,7 @@ import sqlite3
 import time
 import urllib.error
 import urllib.request
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -50,6 +51,8 @@ _TELEGRAM_GUARD_STATE = Path(__file__).parent.parent / "data" / "telegram_send_g
 _POSTING_EMERGENCY_STATE = Path(__file__).parent.parent / "data" / "posting_emergency_stop.json"
 _TELEGRAM_MIN_INTERVAL_S = 4.0
 _TELEGRAM_NETWORK_BACKOFF_S = 90
+_TELEGRAM_PATCH_BYPASS: ContextVar[bool] = ContextVar("telegram_patch_bypass", default=False)
+_GLOBAL_TELEGRAM_GUARD_INSTALLED = False
 
 # Verbotene Keywords — wird auf generierten Content angewendet
 _BANNED_PATTERNS = [
@@ -278,14 +281,13 @@ def _telegram_guard_mark_backoff(bot_token: str, chat_id: str, seconds: int, rea
     _save_telegram_guard_state(state)
 
 
-async def send_telegram_guarded(
+def _telegram_guard_decision(
     bot_token: str,
     chat_id: str,
     text: str,
     reply_markup: dict | None = None,
     parse_mode: str = "HTML",
 ) -> dict:
-    """Rate-limited Telegram sender with backoff on 429/network failures."""
     if not bot_token or not chat_id:
         return {"ok": False, "reason": "telegram_credentials_missing"}
 
@@ -312,24 +314,193 @@ async def send_telegram_guarded(
     if not allowed:
         return {"ok": False, "skipped": True, "reason": reason}
 
-    payload = {"chat_id": chat_id, "text": text[:4096], "parse_mode": parse_mode}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
+    return {
+        "ok": True,
+        "payload": {
+            "chat_id": chat_id,
+            "text": text[:4096],
+            "parse_mode": parse_mode,
+            **({"reply_markup": reply_markup} if reply_markup else {}),
+        },
+    }
+
+
+def _parse_telegram_send_target(url: str) -> tuple[str, str] | tuple[None, None]:
+    match = re.search(r"api\.telegram\.org/bot([^/]+)/([^/?#]+)", str(url))
+    if not match:
+        return None, None
+    return match.group(1), match.group(2)
+
+
+def _extract_telegram_payload(raw_json=None, raw_data=None) -> dict:
+    if isinstance(raw_json, dict):
+        return dict(raw_json)
+    if isinstance(raw_data, (bytes, bytearray)):
+        try:
+            return json.loads(raw_data.decode())
+        except Exception:
+            return {}
+    if isinstance(raw_data, str):
+        try:
+            return json.loads(raw_data)
+        except Exception:
+            return {}
+    return {}
+
+
+def _intercept_telegram_send_payload(url: str, payload: dict) -> tuple[bool, str, dict]:
+    bot_token, method = _parse_telegram_send_target(url)
+    if method != "sendMessage" or not bot_token:
+        return False, "", {}
+    data = payload or {}
+    return True, bot_token, {
+        "chat_id": str(data.get("chat_id", "")),
+        "text": str(data.get("text", "")),
+        "reply_markup": data.get("reply_markup"),
+        "parse_mode": str(data.get("parse_mode", "HTML")),
+    }
+
+
+class _GuardedAioHTTPResponse:
+    def __init__(self, payload: dict):
+        self._payload = payload
+        reason = str(payload.get("reason", ""))
+        if payload.get("ok"):
+            self.status = 200
+        elif "429" in reason or "rate_limit" in reason or "backoff" in reason:
+            self.status = 429
+        else:
+            self.status = 400
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def json(self, content_type=None):
+        return self._payload
+
+    async def text(self):
+        return json.dumps(self._payload, ensure_ascii=False)
+
+    async def read(self):
+        return (await self.text()).encode()
+
+
+class _GuardedSyncHTTPResponse:
+    def __init__(self, payload: dict):
+        self._payload = payload
+        reason = str(payload.get("reason", ""))
+        if payload.get("ok"):
+            self.status = 200
+        elif "429" in reason or "rate_limit" in reason or "backoff" in reason:
+            self.status = 429
+        else:
+            self.status = 400
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def getcode(self):
+        return self.status
+
+    def read(self):
+        return json.dumps(self._payload, ensure_ascii=False).encode()
+
+
+def install_global_telegram_send_guard() -> None:
+    global _GLOBAL_TELEGRAM_GUARD_INSTALLED
+    if _GLOBAL_TELEGRAM_GUARD_INSTALLED:
+        return
+
+    orig_aiohttp_request = aiohttp.ClientSession._request
+
+    async def _guarded_aiohttp_request(self, method, url, *args, **kwargs):
+        if _TELEGRAM_PATCH_BYPASS.get():
+            return await orig_aiohttp_request(self, method, url, *args, **kwargs)
+        should_intercept, bot_token, tg = _intercept_telegram_send_payload(
+            str(url),
+            _extract_telegram_payload(kwargs.get("json"), kwargs.get("data")),
+        )
+        if should_intercept:
+            result = await send_telegram_guarded(
+                bot_token,
+                tg["chat_id"],
+                tg["text"],
+                reply_markup=tg.get("reply_markup"),
+                parse_mode=tg.get("parse_mode", "HTML"),
+            )
+            return _GuardedAioHTTPResponse(result)
+        return await orig_aiohttp_request(self, method, url, *args, **kwargs)
+
+    aiohttp.ClientSession._request = _guarded_aiohttp_request
+
+    orig_urlopen = urllib.request.urlopen
+
+    def _guarded_urlopen(req, *args, **kwargs):
+        if _TELEGRAM_PATCH_BYPASS.get():
+            return orig_urlopen(req, *args, **kwargs)
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        payload = _extract_telegram_payload(raw_data=getattr(req, "data", None))
+        should_intercept, bot_token, tg = _intercept_telegram_send_payload(url, payload)
+        if should_intercept:
+            result = send_telegram_guarded_sync(
+                bot_token,
+                tg["chat_id"],
+                tg["text"],
+                reply_markup=tg.get("reply_markup"),
+                parse_mode=tg.get("parse_mode", "HTML"),
+            )
+            return _GuardedSyncHTTPResponse(result)
+        return orig_urlopen(req, *args, **kwargs)
+
+    urllib.request.urlopen = _guarded_urlopen
+    _GLOBAL_TELEGRAM_GUARD_INSTALLED = True
+
+
+async def send_telegram_guarded(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+    reply_markup: dict | None = None,
+    parse_mode: str = "HTML",
+) -> dict:
+    """Rate-limited Telegram sender with backoff on 429/network failures."""
+    decision = _telegram_guard_decision(bot_token, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
+    if not decision.get("ok"):
+        return decision
+
+    # ── LINK-VALIDIERUNG: jeden Link öffnen + auf Fehlerseiten prüfen ─────────
+    links_ok, link_reason = await validate_links_async(text)
+    if not links_ok:
+        log.warning("send_telegram_guarded: Link-Check BLOCKIERT — %s", link_reason)
+        return {"ok": False, "blocked": True, "reason": f"link_check_failed:{link_reason}"}
+    # ── Ende Link-Validierung ──────────────────────────────────────────────────
+
+    payload = decision["payload"]
 
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
-            async with s.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json=payload,
-            ) as r:
-                data = await r.json(content_type=None)
-                if r.status == 429:
-                    retry_after = int(((data.get("parameters") or {}).get("retry_after")) or 120)
-                    _telegram_guard_mark_backoff(bot_token, str(chat_id), retry_after, "telegram_http_429")
-                    return {"ok": False, "skipped": True, "reason": f"telegram_http_429_retry_after_{retry_after}"}
-                if r.status >= 400:
-                    _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, f"telegram_http_{r.status}")
-                    return {"ok": False, "reason": f"telegram_http_{r.status}"}
+        bypass_token = _TELEGRAM_PATCH_BYPASS.set(True)
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
+                async with s.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json=payload,
+                ) as r:
+                    data = await r.json(content_type=None)
+                    if r.status == 429:
+                        retry_after = int(((data.get("parameters") or {}).get("retry_after")) or 120)
+                        _telegram_guard_mark_backoff(bot_token, str(chat_id), retry_after, "telegram_http_429")
+                        return {"ok": False, "skipped": True, "reason": f"telegram_http_429_retry_after_{retry_after}"}
+                    if r.status >= 400:
+                        _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, f"telegram_http_{r.status}")
+                        return {"ok": False, "reason": f"telegram_http_{r.status}"}
+        finally:
+            _TELEGRAM_PATCH_BYPASS.reset(bypass_token)
         if data.get("ok"):
             _telegram_guard_mark_sent(bot_token, str(chat_id))
         return data
@@ -346,44 +517,31 @@ def send_telegram_guarded_sync(
     parse_mode: str = "HTML",
 ) -> dict:
     """Sync variant for legacy urllib-based Telegram senders."""
-    if not bot_token or not chat_id:
-        return {"ok": False, "reason": "telegram_credentials_missing"}
+    decision = _telegram_guard_decision(bot_token, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
+    if not decision.get("ok"):
+        return decision
 
-    pause_reason = get_posting_pause_reason()
-    if pause_reason:
-        return {"ok": False, "skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+    # ── LINK-VALIDIERUNG (sync) ────────────────────────────────────────────────
+    links_ok, link_reason = _check_links_sync(text)
+    if not links_ok:
+        log.warning("send_telegram_guarded_sync: Link-Check BLOCKIERT — %s", link_reason)
+        return {"ok": False, "blocked": True, "reason": f"link_check_failed:{link_reason}"}
+    # ── Ende Link-Validierung ──────────────────────────────────────────────────
 
-    hard_block_reason = block_reason_for_telegram_text(text)
-    if hard_block_reason:
-        return {"ok": False, "blocked": True, "reason": hard_block_reason}
-
-    if should_validate_telegram_text(text):
-        valid, checks = validate_post(text, "telegram")
-        if not valid:
-            failed = [c.reason for c in checks if not c.passed]
-            return {
-                "ok": False,
-                "blocked": True,
-                "reason": "telegram_validation_failed",
-                "details": failed,
-            }
-
-    allowed, reason = _telegram_guard_precheck(bot_token, str(chat_id))
-    if not allowed:
-        return {"ok": False, "skipped": True, "reason": reason}
-
-    payload = {"chat_id": chat_id, "text": text[:4096], "parse_mode": parse_mode}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
+    payload = decision["payload"]
 
     try:
-        req = urllib.request.Request(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=12) as r:
-            data = json.loads(r.read().decode())
+        bypass_token = _TELEGRAM_PATCH_BYPASS.set(True)
+        try:
+            req = urllib.request.Request(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                data=json.dumps(payload).encode(),
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=12) as r:
+                data = json.loads(r.read().decode())
+        finally:
+            _TELEGRAM_PATCH_BYPASS.reset(bypass_token)
         if data.get("ok"):
             _telegram_guard_mark_sent(bot_token, str(chat_id))
             return data
@@ -594,6 +752,142 @@ def _is_clean(text: str) -> tuple[bool, str]:
     for pattern in _BANNED_PATTERNS:
         if re.search(pattern, lower):
             return False, pattern
+    return True, ""
+
+
+# ── Link-Validator ────────────────────────────────────────────────────────────
+# KERN-SCHUTZ 2026-07-18: Jeder Link im Post wird aufgerufen und geprüft.
+# Fehlerseite erkannt → Post wird BLOCKIERT, egal wie gut der Text aussieht.
+
+_BAD_PAGE_PATTERNS = [
+    "noch nicht genehmigt",
+    "das produkt wurde noch nicht genehmigt",
+    "nicht genehmigt",
+    "produkt nicht verfügbar",
+    "das produkt ist nicht mehr verfügbar",
+    "nicht verfügbar",
+    "nicht im handel erhältlich",
+    "seite nicht gefunden",
+    "page not found",
+    "404 not found",
+    "error 404",
+    "this page could not be found",
+    "this page doesn't exist",
+    "we couldn't find that page",
+    "product unavailable",
+    "not available",
+    "sold out",
+    "ausverkauft",
+    "currently unavailable",
+    "this product is not available",
+    "kein produkt gefunden",
+    "item not found",
+    "access denied",
+]
+
+_URL_RE = re.compile(r"https?://[^\s\)\]\>\"\'<]+")
+
+_LINK_CHECK_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "text/html,application/xhtml+xml",
+    "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+}
+
+_LINK_SKIP_HOSTS = frozenset({
+    "api.telegram.org", "t.me", "telegram.me",
+    "api.anthropic.com", "api.openai.com",
+})
+
+
+async def validate_links_async(text: str) -> tuple[bool, str]:
+    """
+    Öffnet JEDEN Link im Post und prüft:
+      - HTTP-Status muss 200 sein
+      - Seiten-Inhalt darf keine Fehler-Muster enthalten
+    Gibt (True, "") zurück wenn alle Links OK, sonst (False, Grund).
+    Wird in run_posting_cycle() und send_telegram_guarded() aufgerufen.
+    """
+    raw_urls = _URL_RE.findall(text or "")
+    urls = [u.rstrip(".,;:)>\"'") for u in raw_urls]
+    urls_to_check = [u for u in urls[:5] if not any(h in u for h in _LINK_SKIP_HOSTS)]
+    if not urls_to_check:
+        return True, ""
+
+    timeout = aiohttp.ClientTimeout(total=10, connect=5)
+    try:
+        async with aiohttp.ClientSession(
+            timeout=timeout,
+            headers=_LINK_CHECK_HEADERS,
+        ) as session:
+            for url in urls_to_check:
+                try:
+                    async with session.get(url, allow_redirects=True, ssl=False) as resp:
+                        if resp.status != 200:
+                            log.warning("Link-Check: HTTP %d — %s", resp.status, url)
+                            return False, f"HTTP {resp.status}: {url}"
+                        try:
+                            body = await resp.text(errors="ignore")
+                            body_lower = body[:15000].lower()
+                        except Exception:
+                            body_lower = ""
+                        for pattern in _BAD_PAGE_PATTERNS:
+                            if pattern in body_lower:
+                                log.warning(
+                                    "Link-Check: Fehlerseite erkannt (%r) — %s", pattern, url
+                                )
+                                return False, f"Fehlerseite ({pattern!r}): {url}"
+                except aiohttp.ClientConnectorError as e:
+                    log.warning("Link-Check: Nicht erreichbar — %s — %s", url, e)
+                    return False, f"Nicht erreichbar: {url}"
+                except asyncio.TimeoutError:
+                    log.warning("Link-Check: Timeout — %s", url)
+                    return False, f"Timeout (>10s): {url}"
+                except Exception as e:
+                    log.warning("Link-Check: Fehler bei %s — %s", url, e)
+                    return False, f"Fehler: {url} ({str(e)[:60]})"
+    except Exception as e:
+        log.warning("validate_links_async: Session-Fehler: %s", e)
+        return True, ""  # Session selbst kaputt → nicht blockieren
+
+    return True, ""
+
+
+def _check_links_sync(text: str) -> tuple[bool, str]:
+    """
+    Synchrone Link-Prüfung für Telegram-Guard (urllib, 5s Timeout, max 3 URLs).
+    """
+    raw_urls = _URL_RE.findall(text or "")
+    urls = [u.rstrip(".,;:)>\"'") for u in raw_urls]
+    urls_to_check = [u for u in urls[:3] if not any(h in u for h in _LINK_SKIP_HOSTS)]
+    if not urls_to_check:
+        return True, ""
+
+    for url in urls_to_check:
+        try:
+            req = urllib.request.Request(url, headers=dict(_LINK_CHECK_HEADERS))
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                code = resp.getcode()
+                if code != 200:
+                    return False, f"HTTP {code}: {url}"
+                try:
+                    body = resp.read(15000).decode("utf-8", errors="ignore").lower()
+                except Exception:
+                    body = ""
+                for pattern in _BAD_PAGE_PATTERNS:
+                    if pattern in body:
+                        log.warning("Link-Check (sync): Fehlerseite %r — %s", pattern, url)
+                        return False, f"Fehlerseite ({pattern!r}): {url}"
+        except urllib.error.HTTPError as e:
+            return False, f"HTTP {e.code}: {url}"
+        except urllib.error.URLError as e:
+            return False, f"Nicht erreichbar: {url}"
+        except Exception as e:
+            return False, f"Fehler: {url} ({str(e)[:60]})"
+
     return True, ""
 
 
@@ -1000,6 +1294,19 @@ async def run_posting_cycle() -> dict:
                 continue
 
             log.info("SmartPoster [%s]: ✅ Alle %d Checks bestanden", platform, len(checks))
+
+            # ── Check 11: Link-Validierung — jeden Link öffnen + Inhalt prüfen ─
+            links_ok, link_reason = await validate_links_async(text)
+            if not links_ok:
+                log.warning(
+                    "SmartPoster [%s]: Link-Check BLOCKIERT — %s", platform, link_reason
+                )
+                result["skipped"].append(
+                    f"{platform}: Link-Check fehlgeschlagen — {link_reason}"
+                )
+                continue
+            log.info("SmartPoster [%s]: ✅ Link-Check OK", platform)
+            # ── Ende Link-Validierung ──────────────────────────────────────────
 
             # Duplikat-Check
             ch = _content_hash(text)

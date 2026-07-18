@@ -90,6 +90,22 @@ async def run_ebay_brutus_cycle() -> dict:
     """Full cycle: pick niche → generate content → blast via BRUTUS."""
     import random
     from modules.post_validator import validate_post
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception:
+        pause_reason = ""
+    if pause_reason:
+        result = {
+            "telegram_ok": False,
+            "channels_hit": 0,
+            "content_pieces": 0,
+            "blocked": True,
+            "reason": f"posting_paused:{pause_reason}",
+            "ts": datetime.now(timezone.utc).isoformat(),
+        }
+        log.warning("eBay BRUTUS blocked: %s", result)
+        return result
     niche = random.choice(TRENDING_NICHES)
     link  = build_ebay_link(niche, EBAY_CAMPAIGN)
 
