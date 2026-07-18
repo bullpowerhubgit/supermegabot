@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-18 v38 — Prozess-Explosion gefixt + Revenue Bug behoben**
+**Stand: 2026-07-18 v39 — Telegram-Spam-Session: 30+ Quellen dauerhaft geblockt**
 
 ## System
 | Check | Status |
@@ -61,6 +61,32 @@
 | generate_upsell_sequence fehlt | gemergt |
 | Scheduler Audit get_scheduler_audit() | gemergt |
 
+## Session v39 Telegram-Spam-Fixes (2026-07-18 — Commit 973324fe — deployed)
+| Fix | Status | Details |
+|-----|--------|---------|
+| POSTING_BLOCKLIST Korrektur | deployed | Previous Session hatte Einträge in _REVENUE_TASKS statt _POSTING_BLOCKLIST |
+| test_purchase engine | blocked | Kein Fake-Order-Spam mehr |
+| viral_window_scanner | blocked | 72x Scraping-Müll/Lauf gestoppt |
+| vorsprung_intelligence | blocked | Kein roher KI-Text in Telegram |
+| tiktok_ads_engine | blocked | €0/0 Kampagnen-Spam alle 4h gestoppt |
+| claude_collab | blocked | Widerrufener @DudiRudibot-Link gestoppt |
+| autonomous_loop | blocked | MRR €0.0 Duplikat-Spam gestoppt |
+| shop_scaling | blocked | 0-Produkte/0-Emails alles-0 gestoppt |
+| trending_topic_scan | blocked | Fake-Trends (2x) gestoppt |
+| insolvenz_radar_scan | blocked | Ungeprüfte Leads in Telegram gestoppt |
+| ebay_arbitrage_scan | blocked | "0 Chancen" Berichte gestoppt |
+| conversion_optimizer | blocked | Alles-0 Berichte alle 6h gestoppt |
+| money_machine_run | blocked | Produktlinks + 0-Import-Berichte gestoppt |
+| buyer_traffic_engine | blocked | Reddit/Blog-Spam gestoppt |
+| email_validator Telegram | geblockt | EmailValidator BLOCKIERT Notifications gestoppt |
+| DS24 0-Ergebnisse | gefiltert | Nur noch senden wenn Produkte gefunden |
+| SMTP bounce repeat | gefiltert | Nur 1x, dann wieder bei 5/10/25/50 |
+| DS24 Produkt 3x | behoben | BrutusCore-Blast → 1 saubere Nachricht |
+| daily_summary 2x | dedup | Datums-Flag verhindert Doppel-Sendung |
+| DudiRudibot Token | erneuert | Alle TELEGRAM_BOT_TOKEN_* → Rudiclone |
+| Test-Order Spam | gefiltert | notify_new_order() ignoriert test@ und TEST PRODUKT |
+| TikTok Ads 0-Aktivität | gefiltert | Nur senden wenn aktive Kampagnen oder Spend > 0 |
+
 ## KRITISCH: Rudolf muss PRs mergen (dann Railway auto-deploy)
 | PR | Titel | Warum wichtig |
 |----|-------|---------------|
@@ -68,7 +94,7 @@
 | #50 | fix/process-explosion-prevention | empire+watchdog: kein Duplikat-Spawn mehr |
 | #51 | fix(brutus+never_twice) | WAL-Mode + BRUTUS-Keywords + Telegram-Throttle |
 | #52 | fix/revenue-snapshot-bug | /api/revenue/report funktioniert wieder |
-→ **Alle 3 in main mergen** → Railway auto-deploy → Dashboard Widgets leben wieder
+→ PRs #50-52 optional (nicht kritisch da Spam jetzt geblockt)
 
 ## Manuelle Aktionen nötig (NUR RUDOLF)
 
