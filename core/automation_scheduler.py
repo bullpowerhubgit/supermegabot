@@ -1380,6 +1380,12 @@ async def task_daily_summary() -> str:
         ok_runs    = sum(v.get("ok", 0) for v in stats.values())
         parts.append(f"🤖 Automation: {ok_runs}/{total_runs} Tasks erfolgreich")
 
+        # Dedup: max 1x pro Kalendertag
+        _flag = DATA_DIR / f"daily_summary_{datetime.now().strftime('%Y%m%d')}.sent"
+        if _flag.exists():
+            return "Tages-Summary bereits heute gesendet — übersprungen"
+        _flag.touch()
+
         msg = f"📊 <b>SuperMegaBot — Tages-Zusammenfassung</b>\n{datetime.now().strftime('%d.%m.%Y')}\n\n" + "\n".join(parts)
         await _tg(msg)
         return f"Tages-Summary gesendet ({len(parts)} Bereiche)"
@@ -9136,8 +9142,13 @@ class AutomationScheduler:
         "test_purchase", "run_test_purchase", "test_funnel", "test_webhook",
         "test_inbound", "funnel_test", "test_checkout",
         # Viral Window Scanner — schickt Scraping-Müll als "Viral Alert" (72x/Lauf!)
+        # z.B. "Tastenkürzel ein-/ausblenden", Reddit-Headlines als "Produkte"
         "viral_window_scan", "viral_window", "viral_scan", "viral_alert",
         "product_intelligence_hub", "product_intel",
+        # VORSPRUNG Intelligence — schickt rohen KI-Analyse-Text direkt an Telegram
+        "vorsprung_scan", "vorsprung_intelligence", "vorsprung",
+        # TikTok Ads Engine — sendet "0 Kampagnen, €0" alle 4h (kein Mehrwert)
+        "tiktok_ads_engine", "tiktok_ads",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:

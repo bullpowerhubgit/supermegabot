@@ -246,14 +246,21 @@ async def run_tiktok_ads_cycle(budget: float = 10.0) -> dict:
 
     insights = await get_insights(days=7)
 
-    msg = (
-        f"📱 TikTok Ads Update\n"
-        f"{'✅ Neue Kampagne erstellt: ' + str(created_campaign) if created_campaign else f'✅ {len(active)} aktive Kampagne(n)'}\n"
-        f"📊 Letzte 7 Tage: €{insights.get('total_spend',0)} | "
-        f"{insights.get('total_clicks',0)} Klicks | "
-        f"{insights.get('total_conversions',0)} Conversions"
-    )
-    await _tg(msg)
+    # Nur senden wenn aktive Kampagnen ODER neue erstellt ODER Umsatz > 0
+    has_activity = (created_campaign or len(active) > 0
+                    or float(insights.get("total_spend", 0)) > 0
+                    or int(insights.get("total_conversions", 0)) > 0)
+    if has_activity:
+        msg = (
+            f"📱 TikTok Ads Update\n"
+            f"{'✅ Neue Kampagne erstellt: ' + str(created_campaign) if created_campaign else f'✅ {len(active)} aktive Kampagne(n)'}\n"
+            f"📊 Letzte 7 Tage: €{insights.get('total_spend',0)} | "
+            f"{insights.get('total_clicks',0)} Klicks | "
+            f"{insights.get('total_conversions',0)} Conversions"
+        )
+        await _tg(msg)
+    else:
+        log.debug("TikTok Ads: 0 Aktivität — kein Telegram")
 
     return {
         "ok": True,
