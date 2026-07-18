@@ -495,28 +495,28 @@ async def create_full_product(
     except Exception as e:
         log.debug("Supabase DS24 log: %s", e)
 
-    # 7. BrutusCore Blast
-    usp = data.get("usp", f"Neues Produkt: {data['name_de']}")
-    blast_msg = (
-        f"🆕 Neues DS24-Produkt live!\n\n"
-        f"📦 {data['name_de']}\n"
-        f"💶 Preis: €{price}\n"
-        f"💰 Affiliate: {affiliate_commission}% Provision\n\n"
-        f"⚡ {usp}\n\n"
-        f"🛒 Kaufen: {checkout_link}\n"
-        f"🔗 Affiliate: {affiliate_link}"
-    )
-    try:
-        from modules.brutus_core import fire
-        await fire(
-            data["name_de"],
-            blast_msg,
-            link=affiliate_link,
-            channels=["telegram", "slack", "mailchimp", "klaviyo",
-                      "linkedin", "discord", "shopify_blog"],
+    # 7. Einmalige saubere Telegram-Notification (kein BrutusCore-Blast → kein Duplikat)
+    tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    tg_chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+    if tg_token and tg_chat:
+        tg_msg = (
+            f"🆕 <b>Neues DS24-Produkt live!</b>\n\n"
+            f"📦 {data['name_de']}\n"
+            f"💶 Preis: €{price}\n"
+            f"💰 Affiliate: {affiliate_commission}% Provision\n\n"
+            f"👉 <a href=\"{affiliate_link}\">Affiliate-Link</a>"
         )
-    except Exception as e:
-        log.debug("Blast error: %s", e)
+        try:
+            import urllib.request as _ur
+            import json as _json
+            _pl = _json.dumps({"chat_id": tg_chat, "text": tg_msg,
+                               "parse_mode": "HTML", "disable_web_page_preview": True}).encode()
+            _ur.urlopen(_ur.Request(
+                f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                data=_pl, headers={"Content-Type": "application/json"}
+            ), timeout=8)
+        except Exception as e:
+            log.debug("DS24 TG notify error: %s", e)
 
     log.info("DS24 Komplett-Produkt erstellt: %s (ID: %s, Plan: %s)",
              data['name_de'][:50], product_id, plan_id)
