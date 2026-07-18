@@ -928,7 +928,20 @@ async def _ai_complete_inner(
                 log.debug("Mistral %s: %s", model, e)
         _cb_fail("Mistral")
 
-    # ── 11. Ollama (lokal / OpenClaw) ───────────────────────────────────────────
+    # ── 12. APIHunt Bridge — OpenAI, Together, Fireworks, Gemini, Cohere, AI21,
+    #        Lepton, Cloudflare, Pollinations (kein Key) ────────────────────────
+    # Autonomer Wechsel: Circuit-Breaker in api_hunt_ai_bridge.py skippt ausgefallene
+    # Provider automatisch und versucht den nächsten.
+    try:
+        from modules.api_hunt_ai_bridge import try_bridge_providers
+        _bridge_result = await try_bridge_providers(messages, max_tokens=max_tokens)
+        if _bridge_result:
+            _cb_success("Bridge")
+            return _bridge_result
+    except Exception as _bridge_e:
+        log.debug("Bridge import/run error: %s", _bridge_e)
+
+    # ── 13. Ollama (lokal / OpenClaw) ───────────────────────────────────────────
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
