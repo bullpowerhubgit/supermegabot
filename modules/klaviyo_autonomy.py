@@ -126,7 +126,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
         mc_result = await mc_send(subject=subject, html_body=html_content)
         if mc_result.get("ok"):
             await track_event(
-                email=os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com"),
+                email=os.getenv("FROM_EMAIL", "bullpowersrtkennels@gmail.com"),
                 event_name="Email Campaign Sent",
                 properties={"name": name, "subject": subject, "channel": "mailchimp"},
             )
@@ -139,7 +139,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
     if not API_KEY:
         return {"ok": False, "error": "no KLAVIYO_API_KEY and no Mailchimp fallback"}
     try:
-        from_email = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
+        from_email = os.getenv("FROM_EMAIL", "bullpowersrtkennels@gmail.com")
         campaign_payload = {
             "data": {
                 "type": "campaign",

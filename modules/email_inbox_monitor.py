@@ -83,10 +83,10 @@ def _categorize(subject: str, sender: str) -> str:
 
 def _imap_accounts() -> list:
     accounts = []
-    user1 = os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-    pass1 = os.getenv("GMAIL_APP_PASSWORD_AIITEC", "")
+    user1 = os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
+    pass1 = os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", "")
     if user1 and pass1:
-        accounts.append({"user": user1, "password": pass1, "label": "AiiteC"})
+        accounts.append({"user": user1, "password": pass1, "label": "BullPower"})
     user2 = os.getenv("GMAIL_USER_PERSONAL", os.getenv("EMAIL_FROM", ""))
     pass2 = os.getenv("GMAIL_APP_PASSWORD_PERSONAL", os.getenv("EMAIL_PASSWORD", ""))
     if user2 and pass2 and user2 != user1:

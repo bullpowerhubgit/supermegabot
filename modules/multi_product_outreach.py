@@ -78,8 +78,8 @@ def _load_env():
 
 _load_env()
 
-_GMAIL_USER   = lambda: os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-_GMAIL_PASS   = lambda: os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
+_GMAIL_USER   = lambda: os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
+_GMAIL_PASS   = lambda: os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", "")
 _TG_TOKEN     = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT      = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 _SB_URL       = lambda: os.getenv("SUPABASE_URL", "")
@@ -164,8 +164,8 @@ Demo vereinbaren (15 Minuten, unverbindlich):
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         2: {
             "subject": "Re: KI-Agenten für {name} — kurze Rückfrage",
@@ -180,8 +180,8 @@ Konkret: Unser {product_name} läuft bei {branche}-Unternehmen seit dem ersten T
 Preis: {product_price}. Demo: {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         3: {
             "subject": "Letzte Nachricht: KI für {name}",
@@ -194,7 +194,7 @@ Falls {name} zukünftig KI-Agenten für Vertrieb, Content oder Compliance einset
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC""",
+Rudolf Sarkany | BullPower""",
         },
     },
 
@@ -221,8 +221,8 @@ Kostenlose Erstanalyse (unverbindlich):
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC Compliance
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         2: {
             "subject": "Re: EU AI Act — Prüfwelle Q4/2026 für {branche}",
@@ -237,8 +237,8 @@ Unser {product_name} ist in 48h einsatzbereit. {product_promise}.
 Preis: {product_price}. Demo: {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         3: {
             "subject": "Letzte Nachricht: AI Act Compliance für {name}",
@@ -251,7 +251,7 @@ Falls {name} noch kein dokumentiertes KI-Inventar hat: {product_name} für {prod
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC""",
+Rudolf Sarkany | BullPower""",
         },
     },
 
@@ -275,8 +275,8 @@ Preis: {product_price}. 7 Tage kostenlos testen — keine Kreditkarte:
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC Intelligence
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         2: {
             "subject": "Re: Insolvenz-Leads — konkrete Zahlen für {branche}",
@@ -294,8 +294,8 @@ Aktuelle Systemdaten (letzte 7 Tage):
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         3: {
             "subject": "Letzte Nachricht: Insolvenz-Intelligence für {name}",
@@ -308,7 +308,7 @@ Falls {name} zukünftig Insolvenz-Frühinformationen für {branche} benötigt: {
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC""",
+Rudolf Sarkany | BullPower""",
         },
     },
 
@@ -333,8 +333,8 @@ Preis: {product_price}. Direkt loslegen:
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         2: {
             "subject": "Re: Viral-Produkte für {name} — Systembericht diese Woche",
@@ -349,8 +349,8 @@ Diese Woche identifiziert: 12 Produkte mit Score ≥ 80 — davon 4 bereits auf 
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC
-aiitecbuuss@gmail.com""",
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com""",
         },
         3: {
             "subject": "Letzte Nachricht: Trend-Erkennung für {name}",
@@ -363,7 +363,7 @@ letzte Kontaktaufnahme.
 {product_url}
 
 Mit freundlichen Grüßen
-Rudolf Sarkany | AiiteC""",
+Rudolf Sarkany | BullPower""",
         },
     },
 }
@@ -547,7 +547,7 @@ def _send_email(to: str, subject: str, body: str) -> bool:
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"]    = f"Rudolf Sarkany | AiiteC <{_GMAIL_USER()}>"
+        msg["From"]    = f"Rudolf Sarkany | BullPower <{_GMAIL_USER()}>"
         msg["To"]      = to
         msg["Reply-To"] = _GMAIL_USER()
         msg.attach(MIMEText(body, "plain", "utf-8"))

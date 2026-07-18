@@ -286,8 +286,8 @@ def _send_delivery_email(to_email: str, product_name: str, content: str) -> bool
         pass
     try:
         msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"✅ Ihre {product_name} sind fertig — AIITEC"
-        msg["From"]    = f"Rudolf Sarkany | AIITEC <{GMAIL_USER}>"
+        msg["Subject"] = f"✅ Ihre {product_name} sind fertig — BullPower"
+        msg["From"]    = f"Rudolf Sarkany | BullPower <{GMAIL_USER}>"
         msg["To"]      = to_email
 
         body = f"""Sehr geehrte Damen und Herren,
