@@ -487,17 +487,30 @@ async def ai_complete(
 
 
 async def _ai_complete_inner(
-    prompt: str,
+    prompt: str = "",
     system: str = "",
     model_hint: str = "fast",
     max_tokens: int = 1200,
+    _messages: Optional[list] = None,
 ) -> str:
     import aiohttp
 
-    messages = []
-    if system:
-        messages.append({"role": "system", "content": system})
-    messages.append({"role": "user", "content": prompt})
+    if _messages is not None:
+        messages = list(_messages)
+        # Extract last user message text for providers that need it (e.g. Gemini)
+        prompt = ""
+        for m in reversed(messages):
+            if m.get("role") == "user":
+                c = m.get("content", "")
+                prompt = c if isinstance(c, str) else " ".join(
+                    p.get("text", "") for p in c if isinstance(p, dict)
+                )
+                break
+    else:
+        messages = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
 
     # ── 0. OpenClaw / Ollama LOKAL — IMMER ERSTE WAHL ────────────────────────────
     # Kostenlos, kein Rate-Limit, kein Datenschutzproblem, läuft auf Rudolfs Rechner.
@@ -659,7 +672,20 @@ async def _ai_complete_inner(
 
     # ── 4. Gemini (3 kostenlose Modelle) ──────────────────────────────────────
     if _gemini() and _cb_ok("Gemini"):
-        full_prompt = f"{system}\n\n{prompt}" if system else prompt
+        if _messages is not None:
+            parts = []
+            for m in messages:
+                role = m.get("role", "user")
+                content = m.get("content", "")
+                if role == "system":
+                    continue
+                prefix = "Human" if role == "user" else "Assistant"
+                parts.append(f"{prefix}: {content}")
+            full_prompt = "\n\n".join(parts)
+            if system:
+                full_prompt = f"{system}\n\n{full_prompt}"
+        else:
+            full_prompt = f"{system}\n\n{prompt}" if system else prompt
         gemini_hard_fail = False
         for model in _GEMINI_MODELS:
             try:
@@ -949,6 +975,35 @@ def ai_complete_sync(prompt: str, system: str = "", max_tokens: int = 800) -> st
             return loop.run_until_complete(ai_complete(prompt, system, max_tokens=max_tokens))
     except Exception as e:
         log.error("ai_complete_sync error: %s", e)
+        return ""
+
+
+# ── Multi-Turn Chat (mit vollständiger Message-History) ───────────────────────
+async def ai_complete_chat(
+    messages: list,
+    system: str = "",
+    max_tokens: int = 1200,
+) -> str:
+    """Multi-turn Chat — vollständige Message-History durch die Fallback-Kette.
+    messages: [{"role": "user"/"assistant"/"system", "content": "..."}]
+    """
+    async with _get_sem():
+        return await _ai_complete_inner(system=system, max_tokens=max_tokens, _messages=messages)
+
+
+def ai_complete_chat_sync(messages: list, system: str = "", max_tokens: int = 800) -> str:
+    """Synchroner Wrapper für ai_complete_chat()."""
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, ai_complete_chat(messages, system, max_tokens=max_tokens))
+                return future.result(timeout=45)
+        else:
+            return loop.run_until_complete(ai_complete_chat(messages, system, max_tokens=max_tokens))
+    except Exception as e:
+        log.error("ai_complete_chat_sync error: %s", e)
         return ""
 
 
