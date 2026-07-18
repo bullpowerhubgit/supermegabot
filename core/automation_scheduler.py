@@ -9132,6 +9132,12 @@ class AutomationScheduler:
         "buyer_pipeline", "revenue_agent_sync", "revenue_blitz",
         "upsell_sequence_run", "upsell_cycle", "klaviyo_flows",
         "b2b_prospecting", "money_machine_run",
+        # Test-Engine — schickt Fake-Shopify-Webhooks → Telegram-Spam-Schleifen
+        "test_purchase", "run_test_purchase", "test_funnel", "test_webhook",
+        "test_inbound", "funnel_test", "test_checkout",
+        # Viral Window Scanner — schickt Scraping-Müll als "Viral Alert" (72x/Lauf!)
+        "viral_window_scan", "viral_window", "viral_scan", "viral_alert",
+        "product_intelligence_hub", "product_intel",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
