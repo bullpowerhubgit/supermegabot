@@ -480,6 +480,11 @@ async def _send_telegram_report(summary: dict) -> None:
     imported = summary["imported"]
     top      = summary.get("top_opportunities", [])
 
+    # Nur senden wenn tatsächlich Chancen gefunden oder importiert (kein 0-Spam)
+    if found == 0 and imported == 0:
+        log.debug("eBay-Arbitrage: 0 Chancen, 0 Imports — kein Telegram")
+        return
+
     lines = [f"🎯 <b>eBay-Arbitrage-Scan</b>"]
     lines.append(f"Gefunden: {found} Chancen | Importiert: {imported} Produkte")
 
