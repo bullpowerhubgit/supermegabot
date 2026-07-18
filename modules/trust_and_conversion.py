@@ -243,6 +243,24 @@ TRUST_JS = r"""
       var node = document.getElementById(id);
       if (node && node.parentNode) node.parentNode.removeChild(node);
     });
+    document.querySelectorAll(
+      'script[src*="static.klaviyo.com/onsite/js/"], iframe[src*="klaviyo"], [class*="klaviyo"], [id*="klaviyo"], [data-testid*="klaviyo"]'
+    ).forEach(function(node) {
+      if (node && node.parentNode) node.parentNode.removeChild(node);
+    });
+    document.querySelectorAll('div, section, aside, form').forEach(function(node) {
+      if (!node || !node.textContent) return;
+      var text = node.textContent.toLowerCase();
+      var looksLikePopup =
+        text.includes('smarter einkaufen') ||
+        text.includes('mehr sparen') ||
+        text.includes('jetzt 10% sichern') ||
+        text.includes('ich bezahle lieber vollen preis') ||
+        text.includes('exklusives angebot');
+      if (!looksLikePopup) return;
+      var popup = node.closest('[style*="position: fixed"], [style*="position:fixed"], [class*="modal"], [class*="popup"], [role="dialog"]') || node;
+      if (popup && popup.parentNode) popup.parentNode.removeChild(popup);
+    });
   }
   function startLegacyKlaviyoPopupSuppression() {
     suppressLegacyKlaviyoPopup();
@@ -250,8 +268,10 @@ TRUST_JS = r"""
       suppressLegacyKlaviyoPopup();
     });
     observer.observe(document.documentElement, { childList: true, subtree: true });
-    setTimeout(function() { observer.disconnect(); }, 30000);
+    setTimeout(function() { observer.disconnect(); }, 120000);
     window.addEventListener('pageshow', suppressLegacyKlaviyoPopup);
+    window.addEventListener('load', suppressLegacyKlaviyoPopup);
+    setInterval(suppressLegacyKlaviyoPopup, 1500);
   }
   var exitShown = false;
   document.addEventListener('mouseleave', function(e) {

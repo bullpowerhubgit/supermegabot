@@ -4332,6 +4332,13 @@ async def handle_telegram_webhook(req):
             cb_message_id = cb["message"]["message_id"]
             cb_data = cb.get("data", "")
             cb_id = cb["id"]
+            cb_user = (cb.get("from") or {}).get("username") or (cb.get("from") or {}).get("first_name") or "unknown"
+            log.info(
+                "Telegram callback chat=%s user=%s data=%s",
+                cb_chat_id,
+                cb_user,
+                cb_data[:160],
+            )
             from modules.telegram_control import handle_callback
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, handle_callback, cb_data, cb_chat_id, cb_message_id, cb_id)
@@ -4343,6 +4350,28 @@ async def handle_telegram_webhook(req):
 
         chat_id = msg.get("chat", {}).get("id")
         text = (msg.get("text") or "").strip()
+        chat_type = (msg.get("chat") or {}).get("type", "?")
+        chat_name = (
+            (msg.get("chat") or {}).get("title")
+            or (msg.get("chat") or {}).get("username")
+            or (msg.get("chat") or {}).get("first_name")
+            or "unknown"
+        )
+        sender = (
+            (msg.get("from") or {}).get("username")
+            or (msg.get("from") or {}).get("first_name")
+            or "unknown"
+        )
+        event_kind = "edited_message" if data.get("edited_message") else "message"
+        log.info(
+            "Telegram %s chat=%s type=%s name=%s from=%s text=%s",
+            event_kind,
+            chat_id,
+            chat_type,
+            chat_name,
+            sender,
+            (text or "<non_text>")[:220],
+        )
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
 
         if not chat_id or not bot_token:
