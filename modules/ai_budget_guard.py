@@ -86,15 +86,112 @@ REVENUE_MODULES = frozenset({
     "newsletter_engine",
 })
 
-# ── Tagesbudget — KONSERVATIV nach Credit-Verlust ──────────────────────────────
-DAILY_USD_LIMIT       = float(os.getenv("ANTHROPIC_DAILY_USD_LIMIT",   "2.0"))  # War $8 — zu hoch!
-DAILY_OAI_USD_LIMIT   = float(os.getenv("OPENAI_DAILY_USD_LIMIT",      "2.0"))
-DAILY_PPLX_USD_LIMIT  = float(os.getenv("PERPLEXITY_DAILY_USD_LIMIT",  "1.0"))
+# ── Tagesbudget + Stundenlimit — DAUERHAFTER KERN-SCHUTZ 2026-07-18 ───────────
+# NIEMALS diese Limits erhöhen ohne Rudolf zu fragen!
+# Credits drainten in 30min (€10 in 30min) weil:
+#  - content_factory_run machte 20+ parallele Claude-Calls
+#  - seo_content_factory lief stündlich mit vielen Calls
+#  - Jetzt: alle diese Tasks in POSTING_BLOCKLIST → laufen gar nicht mehr
+
+# Tages-Limits (niedrig halten!)
+DAILY_USD_LIMIT       = float(os.getenv("ANTHROPIC_DAILY_USD_LIMIT",   "1.00"))  # €0.92/Tag max
+DAILY_OAI_USD_LIMIT   = float(os.getenv("OPENAI_DAILY_USD_LIMIT",      "1.00"))  # €0.92/Tag max
+DAILY_PPLX_USD_LIMIT  = float(os.getenv("PERPLEXITY_DAILY_USD_LIMIT",  "0.50"))  # €0.46/Tag max
+
+# Stunden-Limits (verhindert 30min-Drain!)
+HOURLY_USD_LIMIT      = float(os.getenv("ANTHROPIC_HOURLY_USD_LIMIT",  "0.20"))  # max $0.20/h
+HOURLY_OAI_USD_LIMIT  = float(os.getenv("OPENAI_HOURLY_USD_LIMIT",     "0.15"))  # max $0.15/h
+
+# Gesamt-Cap über alle Provider (€ equivalent, ~$2.75 total = €2.53/Tag)
+GLOBAL_DAILY_USD_CAP  = float(os.getenv("GLOBAL_AI_DAILY_USD_CAP",     "2.50"))
+
+# Token-Kosten
 COST_PER_1K_IN        = 0.00080
 COST_PER_1K_OUT       = 0.00400
 OAI_COST_PER_1K_IN    = 0.00015
 OAI_COST_PER_1K_OUT   = 0.00060
 PPLX_COST_PER_REQ     = 0.005
+
+# ── In-Memory Echtzeit-Zähler (verhindert Race-Conditions) ────────────────────
+# Diese Zähler laufen parallel zum Supabase-State und stoppen sofort
+# wenn das Limit in der aktuellen Stunde erreicht wird, OHNE auf DB zu warten.
+import threading as _threading
+_mem_lock        = _threading.Lock()
+_mem_hourly: dict[str, float]  = {}   # "provider:YYYY-MM-DD-HH" → USD spent
+_mem_daily:  dict[str, float]  = {}   # "provider:YYYY-MM-DD"    → USD spent
+_mem_global: dict[str, float]  = {}   # "global:YYYY-MM-DD"      → USD spent total
+_alert_sent: dict[str, bool]   = {}   # "provider:50pct" → True wenn Alert gesendet
+
+
+def _hour_key(provider: str) -> str:
+    return f"{provider}:{time.strftime('%Y-%m-%d-%H')}"
+
+
+def _add_mem_cost(provider: str, usd: float) -> None:
+    """Addiert Kosten zum In-Memory Zähler (threadsafe)."""
+    with _mem_lock:
+        dk = f"{provider}:{_today()}"
+        hk = _hour_key(provider)
+        gk = f"global:{_today()}"
+        _mem_hourly[hk]  = _mem_hourly.get(hk, 0.0)  + usd
+        _mem_daily[dk]   = _mem_daily.get(dk, 0.0)   + usd
+        _mem_global[gk]  = _mem_global.get(gk, 0.0)  + usd
+
+
+def _mem_check(provider: str) -> tuple[bool, str]:
+    """Prüft In-Memory Limits. Gibt (allowed, reason) zurück."""
+    with _mem_lock:
+        hk = _hour_key(provider)
+        dk = f"{provider}:{_today()}"
+        gk = f"global:{_today()}"
+        spent_hourly = _mem_hourly.get(hk, 0.0)
+        spent_daily  = _mem_daily.get(dk, 0.0)
+        spent_global = _mem_global.get(gk, 0.0)
+
+    # Stunden-Check (schnellster Schutz gegen 30min-Drain)
+    if provider == "anthropic" and spent_hourly >= HOURLY_USD_LIMIT:
+        return False, f"Anthropic Stundenlimit ${HOURLY_USD_LIMIT:.2f} erreicht (spent ${spent_hourly:.3f})"
+    if provider == "openai" and spent_hourly >= HOURLY_OAI_USD_LIMIT:
+        return False, f"OpenAI Stundenlimit ${HOURLY_OAI_USD_LIMIT:.2f} erreicht (spent ${spent_hourly:.3f})"
+
+    # Tages-Check pro Provider
+    daily_limit = {"anthropic": DAILY_USD_LIMIT, "openai": DAILY_OAI_USD_LIMIT, "perplexity": DAILY_PPLX_USD_LIMIT}.get(provider, 1.0)
+    if spent_daily >= daily_limit:
+        return False, f"{provider.capitalize()} Tageslimit ${daily_limit:.2f} erreicht (spent ${spent_daily:.3f})"
+
+    # Globaler Cap
+    if spent_global >= GLOBAL_DAILY_USD_CAP:
+        return False, f"Globaler AI-Cap ${GLOBAL_DAILY_USD_CAP:.2f}/Tag erreicht (${spent_global:.3f} total)"
+
+    return True, ""
+
+
+def _maybe_send_budget_alert(provider: str, usd_spent: float, usd_limit: float) -> None:
+    """Telegram-Alert wenn 50% oder 90% des Limits erreicht."""
+    pct = (usd_spent / max(usd_limit, 0.001)) * 100
+    for threshold in (50, 90):
+        key = f"{provider}:{threshold}pct:{_today()}"
+        if pct >= threshold and not _alert_sent.get(key):
+            _alert_sent[key] = True
+            try:
+                tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                chat = os.getenv("TELEGRAM_CHAT_ID", "")
+                if not tok or not chat:
+                    return
+                emoji = "⚠️" if threshold == 50 else "🚨"
+                msg  = (f"{emoji} <b>AI-Budget {threshold}% ausgeschöpft</b>\n"
+                        f"Provider: {provider.upper()}\n"
+                        f"Verbraucht: ${usd_spent:.3f} / ${usd_limit:.2f}\n"
+                        f"Datum: {_today()}\n"
+                        f"→ Kein weiterer {provider.upper()}-Einsatz bis Mitternacht wenn 100% erreicht!")
+                import urllib.request as _ur, json as _json
+                data = _json.dumps({"chat_id": chat, "text": msg, "parse_mode": "HTML"}).encode()
+                req  = _ur.Request(f"https://api.telegram.org/bot{tok}/sendMessage",
+                                   data=data, headers={"Content-Type": "application/json"})
+                with _ur.urlopen(req, timeout=5):
+                    pass
+            except Exception:
+                pass
 
 # ── Supabase State (überlebt Neustarts) ───────────────────────────────────────
 _SUPABASE_URL  = os.getenv("SUPABASE_URL", "")
@@ -284,13 +381,21 @@ def is_allowed(caller: str = "") -> tuple[bool, str]:
     if module not in REVENUE_MODULES:
         log.warning("AIBudgetGuard: '%s' BLOCKIERT (nicht in Whitelist)", module)
         return False, f"Modul '{module}' nicht in Revenue-Whitelist"
+    # ── In-Memory Check ZUERST (kein DB-Hit, kein Race-Condition) ──────────────
+    ok, reason = _mem_check("anthropic")
+    if not ok:
+        log.warning("AIBudgetGuard: Anthropic MEM-LIMIT — %s", reason)
+        return False, reason
+    # ── Supabase State als zweite Prüfung ──────────────────────────────────────
     state = _sb_get("anthropic")
-    if state is None:  # FAIL-CLOSED: Supabase + lokales Backup nicht verfügbar
+    if state is None:
         log.error("AIBudgetGuard: Kein State-Backend! Anthropic BLOCKIERT (fail-closed)")
         return False, "State-Backend nicht verfügbar — fail-closed"
     if state["usd_spent"] >= DAILY_USD_LIMIT:
         log.warning("AIBudgetGuard: Anthropic Tageslimit $%.2f erreicht!", DAILY_USD_LIMIT)
+        _maybe_send_budget_alert("anthropic", state["usd_spent"], DAILY_USD_LIMIT)
         return False, f"Anthropic Tageslimit ${DAILY_USD_LIMIT:.2f} erreicht"
+    _maybe_send_budget_alert("anthropic", state["usd_spent"], DAILY_USD_LIMIT)
     return True, module
 
 
@@ -298,11 +403,16 @@ def is_allowed_oai(caller: str = "") -> tuple[bool, str]:
     module = caller or _caller_module()
     if module not in REVENUE_MODULES:
         return False, f"Modul '{module}' nicht in Revenue-Whitelist"
+    ok, reason = _mem_check("openai")
+    if not ok:
+        log.warning("AIBudgetGuard: OpenAI MEM-LIMIT — %s", reason)
+        return False, reason
     state = _sb_get("openai")
     if state is None:
         log.error("AIBudgetGuard: Kein State-Backend! OpenAI BLOCKIERT (fail-closed)")
         return False, "State-Backend nicht verfügbar — fail-closed"
     if state["usd_spent"] >= DAILY_OAI_USD_LIMIT:
+        _maybe_send_budget_alert("openai", state["usd_spent"], DAILY_OAI_USD_LIMIT)
         return False, f"OpenAI Tageslimit ${DAILY_OAI_USD_LIMIT:.2f} erreicht"
     return True, module
 
@@ -311,6 +421,10 @@ def is_allowed_pplx(caller: str = "") -> tuple[bool, str]:
     module = caller or _caller_module()
     if module not in REVENUE_MODULES:
         return False, f"Modul '{module}' nicht in Revenue-Whitelist"
+    ok, reason = _mem_check("perplexity")
+    if not ok:
+        log.warning("AIBudgetGuard: Perplexity MEM-LIMIT — %s", reason)
+        return False, reason
     state = _sb_get("perplexity")
     if state is None:
         log.error("AIBudgetGuard: Kein State-Backend! Perplexity BLOCKIERT (fail-closed)")
@@ -322,26 +436,33 @@ def is_allowed_pplx(caller: str = "") -> tuple[bool, str]:
 
 def record_usage(input_tokens: int, output_tokens: int, caller: str = "") -> None:
     cost = (input_tokens / 1000 * COST_PER_1K_IN) + (output_tokens / 1000 * COST_PER_1K_OUT)
+    # In-Memory zuerst aktualisieren (sofort wirksam, kein DB-Lag)
+    _add_mem_cost("anthropic", cost)
     state = _sb_get("anthropic") or {"date": _today(), "usd_spent": 0.0, "calls": 0}
     state["usd_spent"] = round(state["usd_spent"] + cost, 6)
     state["calls"] = state.get("calls", 0) + 1
     _sb_save("anthropic", state)
     log.info("Anthropic: +$%.5f | Heute: $%.4f / $%.2f", cost, state["usd_spent"], DAILY_USD_LIMIT)
+    _maybe_send_budget_alert("anthropic", state["usd_spent"], DAILY_USD_LIMIT)
 
 
 def record_usage_oai(input_tokens: int, output_tokens: int, caller: str = "") -> None:
     cost = (input_tokens / 1000 * OAI_COST_PER_1K_IN) + (output_tokens / 1000 * OAI_COST_PER_1K_OUT)
+    _add_mem_cost("openai", cost)
     state = _sb_get("openai") or {"date": _today(), "usd_spent": 0.0, "calls": 0}
     state["usd_spent"] = round(state["usd_spent"] + cost, 6)
     state["calls"] = state.get("calls", 0) + 1
     _sb_save("openai", state)
+    _maybe_send_budget_alert("openai", state["usd_spent"], DAILY_OAI_USD_LIMIT)
 
 
 def record_usage_pplx(caller: str = "") -> None:
+    _add_mem_cost("perplexity", PPLX_COST_PER_REQ)
     state = _sb_get("perplexity") or {"date": _today(), "usd_spent": 0.0, "calls": 0}
     state["usd_spent"] = round(state["usd_spent"] + PPLX_COST_PER_REQ, 6)
     state["calls"] = state.get("calls", 0) + 1
     _sb_save("perplexity", state)
+    _maybe_send_budget_alert("perplexity", state["usd_spent"], DAILY_PPLX_USD_LIMIT)
 
 
 def record_blocked() -> None:
