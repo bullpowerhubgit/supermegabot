@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-18 v37 — Session-Fortsetzung: 9 neue Module + Bridge + Fixes**
+**Stand: 2026-07-18 v38 — Prozess-Explosion gefixt + Revenue Bug behoben**
 
 ## System
 | Check | Status |
@@ -24,6 +24,16 @@
 | modules/shopify_price_optimizer.py | deployed | Preis-Analyse täglich |
 | modules/affiliate_tracker.py | deployed | Klick-Tracking in Supabase |
 | modules/buyer_intent_router.py | deployed | Hot-Lead Priorisierung |
+
+## Session v38 Fixes (2026-07-18 — PR #50 + #51 + #52 — warten auf Rudolf-OK für main-Merge)
+| Fix | Status | Details |
+|-----|--------|---------|
+| Prozess-Explosion | lokal gefixt | 117+ → 1 Dashboard-Prozess; empire_controller PID-File-Check; mac_watchdog kill-before-restart |
+| SQLite WAL-Mode | aktiv | busy_timeout=60000, journal_mode=WAL — keine DB-Locks mehr |
+| BRUTUS Bad Keywords | aktiv | _sanitize_niche() + double-pass _is_safe_keyword() nach predict_peak_trends() |
+| Telegram Block-Spam | aktiv | _QUIET_NOTIFY_REASONS erweitert (DB-Lock, off_topic_nische) |
+| NeverTwice False-Positives | aktiv | DB-Fehler nie permanent blockiert, 99 Blacklist-Einträge bereinigt |
+| Revenue Dict-Bug | lokal gefixt | save_daily_snapshot: revenue_history.json war Dict → now validates list |
 
 ## Session v37 Fixes (2026-07-18)
 | Fix | Status | Details |
@@ -50,6 +60,15 @@
 | KILeasingEngine Klasse fehlt | gemergt |
 | generate_upsell_sequence fehlt | gemergt |
 | Scheduler Audit get_scheduler_audit() | gemergt |
+
+## KRITISCH: Rudolf muss PRs mergen (dann Railway auto-deploy)
+| PR | Titel | Warum wichtig |
+|----|-------|---------------|
+| #48 | fix/session-2026-07-17-v2 | bereits gemergt ✅ |
+| #50 | fix/process-explosion-prevention | empire+watchdog: kein Duplikat-Spawn mehr |
+| #51 | fix(brutus+never_twice) | WAL-Mode + BRUTUS-Keywords + Telegram-Throttle |
+| #52 | fix/revenue-snapshot-bug | /api/revenue/report funktioniert wieder |
+→ **Alle 3 in main mergen** → Railway auto-deploy → Dashboard Widgets leben wieder
 
 ## Manuelle Aktionen nötig (NUR RUDOLF)
 
@@ -133,3 +152,9 @@
 - Meta Ads: 12 Kampagnen, ROAS=0.00 wegen EUR 0 Budget (3 Kampagnen) — MANUELL NOETIG
 - Bridge: Port 8890 aktiv, alle 4 Railway-Services verbunden
 - Neue Module: 9 deployed (upsell, klaviyo_flows, multi_service_bridge, ds24_funnel, gumroad_funnel, description_filler, price_optimizer, affiliate_tracker, buyer_intent_router)
+
+## 🤖 WATCHDOG LETZTER CHECK: 2026-07-17 23:41 UTC
+- Health: ✅ OK
+- Umsatz heute: €0.00
+- Probleme:
+  - keine

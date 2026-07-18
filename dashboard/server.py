@@ -8,6 +8,12 @@ try:
 except Exception as _e:
     import logging; logging.getLogger(__name__).warning(f"DS24Guardian import failed: {_e}")
 
+try:
+    from modules.smart_poster import install_global_telegram_send_guard
+    install_global_telegram_send_guard()
+except Exception as _e:
+    import logging; logging.getLogger(__name__).warning(f"Global Telegram guard install failed: {_e}")
+
 import asyncio
 import hashlib
 import json
@@ -3168,7 +3174,13 @@ async def handle_pinterest_verify_domain(req):
     if not code:
         return web.json_response({"ok": False, "error": "code parameter required"}, status=400)
 
-    shop  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    shop  = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN", "") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    if shop and ".myshopify.com" not in shop:
+        import re as _re
+        store_url = os.getenv("SHOPIFY_STORE_URL", "")
+        match = _re.search(r"([\w-]+\.myshopify\.com)", store_url)
+        if match:
+            shop = match.group(1)
     token = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
     ver   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
@@ -4266,11 +4278,14 @@ Oder einfach schreib mir — ich antworte sofort! 💬"""
 
 
 async def _tg_send(bot_token: str, chat_id: int, text: str, reply_markup: dict = None):
-    payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
-    async with aiohttp.ClientSession() as s:
-        await s.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload)
+    from modules.smart_poster import send_telegram_guarded
+    await send_telegram_guarded(
+        bot_token,
+        str(chat_id),
+        text,
+        reply_markup=reply_markup,
+        parse_mode="HTML",
+    )
 
 
 async def handle_telegram_webhook(req):
@@ -11709,26 +11724,11 @@ async def create_app():
     except Exception as _sr_err:
         log.warning("ShopifyTokenResolver: %s", _sr_err)
 
-    # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
-    # + StripeGuard (pm_card_visa@live, url_invalid, type=recurring auf /prices)
-    try:
-        from modules.http_guard import activate as _hg_activate
-        _hg_activate()
-    except Exception as _hg_err:
-        log.warning("HttpGuard konnte nicht aktiviert werden: %s", _hg_err)
+    # HttpGuard DEAKTIVIERT 2026-07-18 — wurde durch SmartPoster ersetzt
+    # (HttpGuard monkey-patched aiohttp global → verursachte DB-Locks, 401-Fehler auf Stripe etc.)
 
-    # NeverTwice — Legacy-Blocks importieren + transiente False-Positives bereinigen
-    try:
-        from modules.post_never_twice import import_legacy_blocks, init_db, purge_transient_blacklist
-        init_db()
-        r = import_legacy_blocks()
-        p = purge_transient_blacklist()
-        log.info(
-            "NeverTwice init: %d Legacy-Blocks importiert, %d transiente False-Positives bereinigt",
-            r.get("imported", 0), p.get("purged", 0),
-        )
-    except Exception as _nt_err:
-        log.warning("NeverTwice init: %s", _nt_err)
+    # NeverTwice DEAKTIVIERT 2026-07-18 — wurde durch SmartPoster ersetzt
+    # (22.765+ false-positive Blocks durch DB-Lock-Kaskade)
 
     # StripeGuard Fallback — falls HttpGuard fehlschlägt, trotzdem process-wide patchen
     try:
@@ -13754,7 +13754,16 @@ async def create_app():
         return web.json_response({"ok": True, "results": results})
 
     async def handle_emergency_stop(request):
-        return web.json_response({"ok": True, "message": "Emergency stop signalled — scheduler paused"})
+        try:
+            from modules.smart_poster import activate_posting_pause
+            state = activate_posting_pause("api_emergency_stop")
+            return web.json_response({
+                "ok": True,
+                "message": "Emergency stop activated — posting paused",
+                "state": state,
+            })
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
 
     async def handle_sync_env(request):
         try:

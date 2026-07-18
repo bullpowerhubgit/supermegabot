@@ -51,13 +51,13 @@ PING_ENDPOINTS = [
 ]
 
 NICHE_KEYWORDS = [
-    "KI-Passiveinkommen 2026", "Shopify Dropshipping Automatisierung",
-    "E-Commerce Automation Tools", "Digistore24 Affiliate Marketing",
-    "Online Geld verdienen 2026", "AI Business automatisieren",
+    "KI-gestuetzte Shop-Automation 2026", "Shopify Dropshipping Automatisierung",
+    "E-Commerce Automation Tools", "Digistore24 Funnel Optimierung",
+    "Digitale Vertriebsprozesse 2026", "AI Business automatisieren",
     "Printify Print on Demand", "Dropshipping Produkte finden",
     "Amazon Affiliate Marketing", "Digitale Produkte verkaufen",
-    "Shopify Store erstellen", "KI Tools für E-Commerce",
-    "Passiveinkommen Ideen 2026", "Automatisiertes Onlinebusiness",
+    "Shopify Store erstellen", "KI Tools fuer E-Commerce",
+    "CRM Automation Ideen 2026", "Automatisierte Online-Prozesse",
     "Shopify Apps 2026", "Beste Dropshipping Produkte",
 ]
 

@@ -346,16 +346,11 @@ async def _post_telegram(text: str, chat_id: str = "") -> dict:
     if not token or not chat:
         return {"ok": False, "error": "Kein Telegram-Token/Chat"}
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat, "text": text, "parse_mode": "HTML"},
-                timeout=aiohttp.ClientTimeout(total=15)
-            ) as r:
-                data = await r.json(content_type=None)
-                if data.get("ok"):
-                    return {"ok": True, "post_id": str(data.get("result", {}).get("message_id", ""))}
-                return {"ok": False, "error": data.get("description", str(data))}
+        from modules.smart_poster import send_telegram_guarded
+        data = await send_telegram_guarded(token, str(chat), text, parse_mode="HTML")
+        if data.get("ok"):
+            return {"ok": True, "post_id": str((data.get("result") or {}).get("message_id", ""))}
+        return {"ok": False, "error": data.get("reason") or data.get("description") or str(data)}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -379,6 +374,19 @@ async def safe_post(
         "ok": False, "platform": platform, "post_id": None,
         "errors": [], "blocked": False, "source": source_module,
     }
+
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception as e:
+        log.debug("posting pause helper unavailable: %s", e)
+        pause_reason = ""
+    if pause_reason:
+        result["errors"] = [f"posting_paused:{pause_reason}"]
+        result["blocked"] = True
+        _log_blocked(platform, f"posting_paused:{pause_reason}", text)
+        log.warning("Post blockiert [%s] von %s — global pause %s", platform, source_module, pause_reason)
+        return result
 
     def _remember(reasons: list) -> None:
         try:

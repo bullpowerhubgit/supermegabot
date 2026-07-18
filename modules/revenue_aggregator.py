@@ -328,7 +328,9 @@ async def save_daily_snapshot() -> None:
     if history_path.exists():
         try:
             with open(history_path, "r", encoding="utf-8") as fh:
-                history = json.load(fh)
+                loaded = json.load(fh)
+            # revenue_history.json muss eine Liste sein — korruptes Dict ignorieren
+            history = loaded if isinstance(loaded, list) else []
         except (json.JSONDecodeError, OSError) as exc:
             log.warning("Could not read revenue_history.json (%s) — starting fresh", exc)
             history = []

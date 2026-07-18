@@ -165,16 +165,30 @@ def check_mac_system() -> dict:
 def check_local_processes() -> dict:
     issues = []
     running = {}
+    dashboard_pids = []
+    scheduler_pids = []
 
-    for proc in psutil.process_iter(["name", "cmdline", "status"]):
+    for proc in psutil.process_iter(["pid", "name", "cmdline", "status"]):
         try:
             cmd = " ".join(proc.info.get("cmdline") or [])
             if "dashboard/server.py" in cmd:
+                dashboard_pids.append(proc.pid)
                 running["local_server"] = proc.pid
             if "automation_scheduler" in cmd:
+                scheduler_pids.append(proc.pid)
                 running["scheduler"] = proc.pid
         except Exception:
             pass
+
+    # Prozess-Explosion erkennen und bereinigen
+    if len(dashboard_pids) > 1:
+        log.warning("Watchdog: %d Dashboard-Duplikate gefunden — bereinige", len(dashboard_pids))
+        for pid in dashboard_pids[1:]:
+            try:
+                psutil.Process(pid).kill()
+                log.info("Watchdog: Dashboard-Duplikat PID %d gekillt", pid)
+            except Exception:
+                pass
 
     if "local_server" not in running:
         issues.append("⚠️ Lokaler Server (port 8888) nicht aktiv")
@@ -185,15 +199,29 @@ def check_local_processes() -> dict:
 
 
 def restart_local_server() -> bool:
-    """Startet den lokalen Server neu."""
+    """Startet den lokalen Server neu — killt erst alle alten Instanzen."""
     try:
+        # Erst ALLE alten Instanzen killen (verhindert Prozess-Explosion)
+        killed = 0
+        for proc in psutil.process_iter(["pid", "cmdline"]):
+            try:
+                cmd = " ".join(proc.info.get("cmdline") or [])
+                if "dashboard/server.py" in cmd:
+                    proc.kill()
+                    killed += 1
+            except Exception:
+                pass
+        if killed:
+            import time as _t; _t.sleep(1)
+            log.info("Watchdog: %d alte Dashboard-Prozesse beendet", killed)
+
         subprocess.Popen(
             LOCAL_SERVER_CMD,
             cwd=str(PROJECT_DIR),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
         )
-        log.info("Lokaler Server neu gestartet")
+        log.info("Lokaler Server neu gestartet (clean restart)")
         return True
     except Exception as e:
         log.error("Server-Restart fehlgeschlagen: %s", e)

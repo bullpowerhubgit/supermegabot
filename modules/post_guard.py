@@ -358,8 +358,12 @@ async def check_post(
                 pass
             return False, nt_errs
     except Exception as e:
-        log.error("NeverTwice fail-closed in post_guard: %s", e)
-        return False, [f"NeverTwice fail-closed: {e}"]
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
+            log.warning("NeverTwice unavailable in post_guard — fail-open")
+        else:
+            log.error("NeverTwice fail-closed in post_guard: %s", e)
+            return False, [f"NeverTwice fail-closed: {e}"]
 
     ok, r = check_forbidden_patterns(text)
     if not ok:
