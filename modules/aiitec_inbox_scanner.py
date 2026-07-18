@@ -416,18 +416,11 @@ async def scan_inbox() -> dict:
                     if snippet:
                         tg_msg += f"*Inhalt:* _{snippet[:200]}_\n"
                     if category == "interest":
-                        checkout_url = "https://buy.stripe.com/7sYeVf53k5PQ7EA2Wq4F203"
-                        # Auto-Responder NUR an echte B2B-Adressen
-                        if _is_safe_to_auto_reply(sender_addr):
-                            tg_msg += (
-                                f"\n🎯 *HOT LEAD — Auto-Responder gesendet!*\n"
-                                f"💳 Checkout: {checkout_url}"
-                            )
-                            asyncio.create_task(
-                                _send_auto_response(sender_addr, company_name, checkout_url)
-                            )
-                        else:
-                            tg_msg += "\n🎯 *HOT LEAD — Bitte manuell antworten!*"
+                        # AUTO-RESPONDER DEAKTIVIERT 2026-07-18
+                        # Grund: Cold-Outreach erzeugt "interest"-Replies →
+                        # automatische Checkout-Links = unprofessionell + DSGVO-Risiko.
+                        # Rudolf antwortet manuell auf HOT LEADs.
+                        tg_msg += "\n🎯 *HOT LEAD — Bitte manuell antworten!*"
                     elif category == "bounce":
                         tg_msg += "\n_→ Firma als 'bounced' markiert_"
                     elif category == "unsubscribe":

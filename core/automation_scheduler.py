@@ -9151,6 +9151,44 @@ class AutomationScheduler:
         "bpi_sys13_partner_channel", "partner_channel", "partner_outreach",
         # Lead Delivery an Subscribers (verknüpft mit Cold-Outreach-Daten)
         "lead_delivery",
+
+        # ── NOTFALL-SPERRE 2026-07-18 ─────────────────────────────────────────
+        # 4.000+ Cold Emails in 7 Tagen → alle 4 Gmail-Konten kurz vor Sperre!
+        # Alle Massen-Email-Tasks dauerhaft gesperrt bis Kontakt-Liste sauber ist.
+
+        # Compliance Cold-Outreach (GPSR/NIS2/AI Act an Zalando, Heine etc.)
+        "compliance_outreach", "compliance_outreach_all", "compliance_blast",
+        "bpi_compliance", "gpsr_outreach", "gpsr_blast", "nis2_outreach",
+
+        # Massen-Outreach (Gelbe Seiten → 333 Emails/Batch 3x täglich)
+        "mass_outreach_research", "mass_outreach_morning", "mass_outreach_batch",
+        "mass_outreach_evening", "mass_outreach_night", "mass_outreach",
+        "email_outreach_bulk", "email_outreach", "outreach_bulk",
+
+        # Affiliate-Recruiter (30% Provision Cold Emails)
+        "affiliate_recruiter", "affiliate_recruiter_run", "affiliate_recruit",
+        "affiliate_campaign",
+
+        # KI-Newsletter (sys18)
+        "bpi_sys18_newsletter", "sys18_newsletter", "newsletter_ki",
+        "newsletter_blast", "newsletter_send",
+
+        # Email Blast / Growth (sendet an Demo-Kontakte + Fremdadressen)
+        "email_blast", "email_blast_daily", "email_blast_engine",
+        "email_growth", "email_growth_engine", "email_growth_cycle",
+        "email_revenue_blast", "lead_email_blaster",
+        "sendgrid_blast", "sendgrid_daily", "brevo_blast",
+
+        # Email Sequences für Nicht-Kunden
+        "email_sequences", "email_sequence_engine", "email_sequence_run",
+        "email_drip", "email_drip_followup",
+
+        # Follow-up AI (automatische Antworten auf Cold-Outreach-Antworten)
+        "email_followup_ai", "email_ai_conversations", "email_conversation_ai",
+        "reply_engine", "reply_auto",
+
+        # Streetwear Email Blast
+        "streetwear_email", "streetwear_email_blast",
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
