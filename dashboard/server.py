@@ -14,6 +14,12 @@ try:
 except Exception as _e:
     import logging; logging.getLogger(__name__).warning(f"Global Telegram guard install failed: {_e}")
 
+try:
+    from modules.ai_budget_guard import install_global_ai_budget_guard
+    install_global_ai_budget_guard()
+except Exception as _e:
+    import logging; logging.getLogger(__name__).warning(f"Global AI budget guard install failed: {_e}")
+
 import asyncio
 import hashlib
 import json
@@ -831,7 +837,7 @@ async def handle_gmc_setup(req):
                 msg = (f"🛍️ <b>Google Shopping Feed</b>\n\n"
                        f"{'✅ Bereits registriert' if status == 'already_registered' else '🎉 JETZT REGISTRIERT!'}\n"
                        f"Feed ID: {result.get('feed_id','?')}\n"
-                       f"URL: {result.get('feed_url', 'https://supermegabot-production.up.railway.app/api/gmc/feed.xml')}\n"
+                       f"URL: {result.get('feed_url', '')}\n"
                        f"662 Produkte gehen live bei Google Shopping!")
                 async with aiohttp.ClientSession() as s2:
                     await s2.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
@@ -5461,7 +5467,8 @@ async def handle_google_callback(req):
             try:
                 access_token = result.get("access_token", "")
                 merchant_id  = os.getenv("GMC_MERCHANT_ID", "5813214419")
-                feed_url     = "https://supermegabot-production.up.railway.app/api/gmc/feed.xml"
+                from modules.gmc_feed_uploader import _feed_url
+                feed_url     = _feed_url()
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s2:
                     # Check existing feeds
                     r2 = await s2.get(
@@ -11689,7 +11696,27 @@ async def _auto_register_brevo_ip() -> None:
         log.warning("Brevo IP-Check: %s", e)
 
 
+async def handle_tg_gate_stats(request):
+    """GET /api/tg-gate/stats — Telegram Gatekeeper Statistik."""
+    try:
+        from modules.tg_gate import get_stats
+        stats = get_stats()
+    except Exception as e:
+        stats = {"error": str(e)}
+    return web.json_response(stats)
+
+
 async def create_app():
+    # ── TgGate: Globaler Telegram-Spam-Schutz — ZUERST installieren ──────────
+    # Intercept für aiohttp + urllib: ALLE sendMessage-Calls laufen durch den
+    # Gatekeeper (Rate-Limit + Dedup + Spam-Pattern-Filter).
+    # Egal welches Modul schreibt — kein Spam kommt durch.
+    try:
+        from modules.tg_gate import install_global_intercept
+        install_global_intercept()
+    except Exception as _tg_gate_err:
+        log.warning("TgGate install failed: %s", _tg_gate_err)
+
     # Meta Token Resolver — AiiteC Page Token in ALLE Alias-Env-Vars erzwingen
     try:
         from modules.meta_token_resolver import apply_aiitec_aliases_to_process, audit_aliases
@@ -11873,6 +11900,7 @@ async def create_app():
     app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
+    app.router.add_get("/api/tg-gate/stats", handle_tg_gate_stats)
     # /api/ai/status bereits oben registriert — Duplikat entfernt
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
@@ -16158,10 +16186,11 @@ async def handle_facebook_callback(req):
     """GET /api/facebook/callback — OAuth callback for token exchange."""
     try:
         from modules.facebook_token_manager import handle_facebook_oauth_callback
+        from modules.facebook_token_manager import get_callback_url
         code = req.rel_url.query.get("code", "")
         if not code:
             return web.Response(text="Missing code parameter", status=400)
-        redirect_uri = "https://supermegabot-production.up.railway.app/api/facebook/callback"
+        redirect_uri = get_callback_url()
         result = await handle_facebook_oauth_callback(code, redirect_uri)
         if result.get("ok"):
             html = ("<html><body style='background:#1a1a2e;color:#fff;font-family:Arial;text-align:center;padding:50px'>"
