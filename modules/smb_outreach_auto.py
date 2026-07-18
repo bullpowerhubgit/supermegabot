@@ -51,12 +51,12 @@ def _env(key: str, default: str = "") -> str:
                     os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
     return os.getenv(key, default)
 
-# Rotation: aiitecbuuss → rudolf.aiitec → rudolfsarkany1984 → dragonadnp
+# Rotation: bullpowersrtkennels → dragonadnp → aiitecbuuss → rudolfsarkany1984
 _GMAIL_POOL = [
-    ("GMAIL_USER_5",  "GMAIL_APP_PASSWORD_5",  "aiitecbuuss@gmail.com"),
-    ("GMAIL_USER_7",  "GMAIL_APP_PASSWORD_7",  "rudolf.sarkany.aiitec@gmail.com"),
-    ("GMAIL_USER_8",  "GMAIL_APP_PASSWORD_8",  "rudolfsarkany1984@gmail.com"),
+    ("GMAIL_USER_BULLPOWER", "GMAIL_APP_PASSWORD_BULLPOWER", "bullpowersrtkennels@gmail.com"),
     ("GMAIL_USER_1",  "GMAIL_APP_PASSWORD_1",  "dragonadnp@gmail.com"),
+    ("GMAIL_USER_5",  "GMAIL_APP_PASSWORD_5",  "aiitecbuuss@gmail.com"),
+    ("GMAIL_USER_8",  "GMAIL_APP_PASSWORD_8",  "rudolfsarkany1984@gmail.com"),
 ]
 
 def _get_available_sender() -> tuple[str, str] | tuple[None, None]:
@@ -180,7 +180,7 @@ def _send_email(to: str, subject: str, body: str) -> tuple[bool, str]:
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
-            msg["From"]    = f"Rudolf Sarkany | AIITEC <{user}>"
+            msg["From"]    = f"Rudolf Sarkany | BullPower <{user}>"
             msg["To"]      = to
             msg.attach(MIMEText(body, "plain", "utf-8"))
             with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as s:

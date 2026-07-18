@@ -20,11 +20,13 @@ log = logging.getLogger("GmailAccounts")
 SECRETS_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "gmail_secrets.json"
 
 DEFAULT_EMAILS: Dict[int, str] = {
-    1: "dragonadnp@gmail.com",
+    # NUR diese 2 Konten für System-Mails (Transaktional, kein Bulk-Outreach)
     3: "bullpowersrtkennels@gmail.com",
     5: "aiitecbuuss@gmail.com",
-    7: "rudolf.sarkany.aiitec@gmail.com",
-    8: "rudolfsarkany1984@gmail.com",
+    # GESPERRT 2026-07-18 — persönliche Konten, kein Bulk-Versand!
+    # 1: "dragonadnp@gmail.com",          → Reputation beschädigt (1427 Bounces)
+    # 7: "rudolf.sarkany.aiitec@gmail.com" → Reputation beschädigt (431 Delays)
+    # 8: "rudolfsarkany1984@gmail.com",    → Reputation beschädigt (549 Failures)
 }
 
 ALIASES: List[Tuple[str, str, int]] = [
@@ -60,6 +62,15 @@ _DEAD_DOMAINS: frozenset[str] = frozenset({
     "skalum.com",                       # Domain existiert nicht
     "bullpower.de",                     # eigene Test-Domain
     "supermegabot.com",                 # eigene Domain
+    # Demo/Test-Domains (2026-07-18 — verursachten Massen-Bounces)
+    "klaviyo-demo.com",                 # Klaviyo Fake-Demo-Kontakte
+    "test-ds24.com",                    # DS24 Test-Adressen
+    "bullpowerhub.com",                 # eigene Domain existiert nicht
+    "storebotmail.joonix.net",          # Spam-Trap
+    "ilovemyemail.net",                 # Spam-Trap
+    "example.com", "example.de",       # RFC Test-Domains
+    "test.com", "test.de",             # Test-Domains
+    "demo.com", "demo.de",             # Demo-Domains
 })
 _OWN_SEND_EMAILS: frozenset[str] = frozenset({
     "aiitecbuuss@gmail.com", "bullpowersrtkennels@gmail.com",

@@ -460,10 +460,10 @@ async def run_bounce_fix_cycle() -> dict:
 
     # IMAP-Accounts holen
     accounts = []
-    u1 = os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-    p1 = os.getenv("GMAIL_APP_PASSWORD_AIITEC", "")
+    u1 = os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
+    p1 = os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", "")
     if u1 and p1:
-        accounts.append({"user": u1, "password": p1, "label": "AiiteC"})
+        accounts.append({"user": u1, "password": p1, "label": "BullPower"})
     u2 = os.getenv("GMAIL_USER_PERSONAL", "")
     p2 = os.getenv("GMAIL_APP_PASSWORD_PERSONAL", "")
     if u2 and p2 and u2 != u1:

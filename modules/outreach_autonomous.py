@@ -69,8 +69,8 @@ def _load_env():
 
 _load_env()
 
-def _gmail_user() -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
+def _gmail_user() -> str: return os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
+def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", "")
 def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 
@@ -499,7 +499,7 @@ Kostenloser 7-Tage-Test, keine Kreditkarte nötig:
 
 Mit freundlichen Grüßen,
 Rudolf Sarkany
-AiiteC — Intelligente Geschäftslösungen
+BullPower — Intelligente Geschäftslösungen
 """
         li_msg = (
             f"Hallo {target['name'].split()[0]},\n\n"
