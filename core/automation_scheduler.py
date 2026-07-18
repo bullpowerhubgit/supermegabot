@@ -9149,6 +9149,14 @@ class AutomationScheduler:
         "vorsprung_scan", "vorsprung_intelligence", "vorsprung",
         # TikTok Ads Engine — sendet "0 Kampagnen, €0" alle 4h (kein Mehrwert)
         "tiktok_ads_engine", "tiktok_ads",
+        # Claude Collab — sendet t.me/DudiRudibot Link (Bot widerrufen!) + Duplikate
+        "claude_collab", "claude_agent_collab",
+        # Autonomous Loop — "MRR €0.0" Duplikat alle 3h
+        "autonomous_loop", "auto_loop",
+        # Shop Scaling — "Skalierungszyklus: 0 Produkte, 0 Emails, €0" alle 12h
+        "shop_scaling", "geldmaschine_skalierung", "shop_scaling_cycle",
+        # Trending NOW — generische Fake-Trends 2x gesendet
+        "trending_topic_scan", "trending_now",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
