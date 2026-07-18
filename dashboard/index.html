@@ -953,7 +953,7 @@ setInterval(loadTasks,120000);
   style.textContent = `
     #ra-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;cursor:pointer;z-index:9999;box-shadow:0 4px 20px rgba(168,85,247,.5);font-size:26px;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
     #ra-btn:hover{transform:scale(1.1);}
-    #ra-box{position:fixed;bottom:92px;right:24px;width:400px;max-height:580px;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9998;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);overflow:hidden;}
+    #ra-box{position:fixed;bottom:92px;right:24px;width:440px;max-height:620px;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9998;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);overflow:hidden;}
     #ra-box.open{display:flex;}
     #ra-head{background:linear-gradient(135deg,#a855f7,#6366f1);padding:10px 14px;font-weight:700;font-size:13px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
     #ra-modes{display:flex;gap:4px;padding:8px 10px;background:#12122a;border-bottom:1px solid #2a2a4a;flex-wrap:wrap;}
@@ -976,13 +976,22 @@ setInterval(loadTasks,120000);
   document.head.appendChild(style);
 
   const MODES = [
-    {id:'general',  label:'🤖 Allgemein'},
-    {id:'shop',     label:'🛒 Shop'},
-    {id:'mail',     label:'📧 Mail'},
-    {id:'post',     label:'📱 Posts'},
-    {id:'revenue',  label:'💰 Revenue'},
-    {id:'expansion',label:'🚀 Expansion'},
-    {id:'browser',  label:'🔍 Recherche'},
+    {id:'general',     label:'🤖 Allgemein'},
+    {id:'manager',     label:'📋 Manager'},
+    {id:'automation',  label:'⚙️ Automation'},
+    {id:'shop',        label:'🛒 Shop'},
+    {id:'sales',       label:'🎯 Verkauf'},
+    {id:'money',       label:'💸 Geldverdienen'},
+    {id:'finance',     label:'📊 Finanzen'},
+    {id:'rich',        label:'🏆 Reichwerden'},
+    {id:'revenue',     label:'💰 Revenue'},
+    {id:'mail',        label:'📧 Mail'},
+    {id:'post',        label:'📱 Posts'},
+    {id:'expansion',   label:'🚀 Expansion'},
+    {id:'browser',     label:'🔍 Recherche'},
+    {id:'maintenance', label:'🔧 Instandhalter'},
+    {id:'fix',         label:'🛠 Fix-Assistent'},
+    {id:'files',       label:'💾 Dateien'},
   ];
   let currentMode = 'general';
 
