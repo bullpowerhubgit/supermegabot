@@ -15097,6 +15097,83 @@ async def create_app():
     app.router.add_post("/api/ki-agents/leads/add",    handle_ki_lead_add)
     log.info("KI-Agent Hub routes registered (6 routes)")
 
+    # ── Gumroad Digital Product Downloads ────────────────────────────────────
+    _DOWNLOADS_DIR = BASE_DIR / "data" / "downloads"
+    _DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+    _GUMROAD_PRODUCTS = {
+        "python-scripts":    ("python-scripts-bundle.zip",   "33 Python Scripts — E-Commerce Automation Bundle"),
+        "social-autopilot":  ("social-autopilot-bundle.zip", "Social Media AUTOPILOT"),
+        "macobd-pro":        ("macobd-pro-bundle.zip",       "MacOBD-Pro v2.0"),
+        "supermegabot-elite":("supermegabot-elite.zip",      "SuperMegaBot ELITE"),
+        "ki-marketing":      ("ki-marketing-engine.zip",     "KI-Marketing ENGINE"),
+        "ai-income-machine": ("ai-income-machine.zip",       "AI Income Machine ELITE"),
+        "ecommerce-tools":   ("ecommerce-powertools.zip",    "E-Commerce POWERTOOLS PRO"),
+        "printify-autopilot":("printify-autopilot.zip",      "Print-on-Demand AUTOPILOT"),
+        "ki-mastery":        ("ki-automation-mastery.zip",   "KI-Automation MASTERY"),
+    }
+
+    async def handle_gumroad_download(request: web.Request) -> web.Response:
+        product_slug = request.match_info.get("slug", "")
+        key = request.query.get("key", "")
+        gumroad_sale_id = request.query.get("sale_id", "")
+        expected_key = os.getenv("GUMROAD_DOWNLOAD_KEY", os.getenv("DASHBOARD_SECRET", ""))[:16]
+        if not key or key != expected_key:
+            return web.Response(text="Unauthorized — invalid download key", status=403)
+        if product_slug not in _GUMROAD_PRODUCTS:
+            return web.Response(text="Product not found", status=404)
+        filename, product_name = _GUMROAD_PRODUCTS[product_slug]
+        filepath = _DOWNLOADS_DIR / filename
+        if not filepath.exists():
+            return web.Response(text=f"File not yet available — contact support", status=404)
+        return web.FileResponse(
+            filepath,
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+
+    async def handle_gumroad_webhook(request: web.Request) -> web.Response:
+        try:
+            data = await request.post()
+            product_name = data.get("product_name", "")
+            buyer_email = data.get("email", "")
+            sale_id = data.get("sale_id", "")
+            permalink = data.get("product_permalink", "")
+            slug_map = {
+                "noahyb": "python-scripts", "ggbos": "macobd-pro",
+                "liastd": "", "qjsiv": "ki-marketing",
+                "social": "social-autopilot",
+            }
+            product_slug = slug_map.get(permalink, permalink)
+            download_key = os.getenv("GUMROAD_DOWNLOAD_KEY", os.getenv("DASHBOARD_SECRET", ""))[:16]
+            base_url = os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
+            download_url = f"{base_url}/api/downloads/{product_slug}?key={download_key}&sale_id={sale_id}"
+            log.info("Gumroad sale: %s | %s | %s", product_name, buyer_email, sale_id)
+            token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+            if token and chat_id:
+                msg = f"🛒 GUMROAD KAUF!\n{product_name}\nKäufer: {buyer_email}\nDownload: {download_url}"
+                async with aiohttp.ClientSession() as s:
+                    await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                                 json={"chat_id": chat_id, "text": msg})
+            return web.Response(text="OK", status=200)
+        except Exception as e:
+            log.error("Gumroad webhook error: %s", e)
+            return web.Response(text="Error", status=500)
+
+    async def handle_downloads_list(request: web.Request) -> web.Response:
+        files = []
+        for slug, (fname, name) in _GUMROAD_PRODUCTS.items():
+            fp = _DOWNLOADS_DIR / fname
+            files.append({"slug": slug, "name": name, "available": fp.exists(),
+                          "size_kb": round(fp.stat().st_size / 1024) if fp.exists() else 0})
+        return web.Response(text=json.dumps({"products": files, "count": len(files)}),
+                            content_type="application/json")
+
+    app.router.add_get("/api/downloads/{slug}", handle_gumroad_download)
+    app.router.add_post("/api/gumroad/webhook",  handle_gumroad_webhook)
+    app.router.add_get("/api/downloads",          handle_downloads_list)
+    log.info("Gumroad download endpoints registered (3 routes)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
