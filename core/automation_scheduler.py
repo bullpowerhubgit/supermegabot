@@ -9053,10 +9053,13 @@ class AutomationScheduler:
     # EINZIGER erlaubter Posting-Weg: smart_poster (wenn SMART_POSTER_ENABLED=true).
     # NIEMALS Tasks aus dieser Liste entfernen — jeder Eintrag hat Fehler verursacht.
     # ══════════════════════════════════════════════════════════════════════════
+    # KERN-SCHUTZ 2026-07-18 — VOLLSTÄNDIGE BLOCKLIST (90+ Tasks)
+    # Kein Task dieser Liste darf Telegram/Social-Posts senden.
+    # NIEMALS verkleinern — nur erweitern!
     _POSTING_BLOCKLIST = frozenset({
-        # BRUTUS-Familie (generierte verbotene Keywords, banned content)
+        # BRUTUS-Familie
         "brutus_run", "brutus_shopify", "brutus_ds24", "gumroad_brutus",
-        # Social Media Autopiloten (ohne Validator, verursachten Fehler-Posts)
+        # Social Media Autopiloten
         "social_autoposter", "social_scheduler", "social_autopilot",
         "multiplatform_post", "viral_promo", "mega_auto_post",
         "instagram_pipeline", "instagram_auto_post",
@@ -9064,30 +9067,49 @@ class AutomationScheduler:
         "linkedin_auto_post",
         "pinterest_auto_post", "pinterest_cycle", "pinterest_traffic",
         "youtube_auto_post", "youtube_autonomy",
-        "discord",
-        "telegram_broadcast",
-        "fb_groups_post",
-        "tiktok_cycle", "tiktok_trends",
-        "ollama_social",
-        # Traffic-Blast-Systeme (Multi-Channel, kein Validator)
+        "discord", "telegram_broadcast", "fb_groups_post",
+        "tiktok_cycle", "tiktok_trends", "ollama_social",
+        # Traffic-Blast-Systeme
         "traffic_mega_cycle", "traffic_mega", "traffic_swarm",
-        "traffic_maximizer", "traffic_v2", "traffic_blitz",
-        "traffic_seo_run",
+        "traffic_maximizer", "traffic_v2", "traffic_blitz", "traffic_seo_run",
         "omega_traffic", "viral_traffic",
         "mass_content", "content_velocity", "syndication",
         "content_hub", "content_cycle",
-        # Affiliate-Blast (schleuste bad content durch)
-        "affiliate_blast", "affiliate_mega", "ds24_affiliate_blast",
-        "ds24_traffic",
-        # eBay-Autoposter/BRUTUS (heute noch echte Telegram-/Social-Sends gesehen)
+        # Traffic-Varianten (bypassen initial Blocklist per task-name)
+        "traffic_maximizer_am", "traffic_maximizer_pm",
+        "traffic_accelerator", "traffic_turbo_daily", "traffic_max",
+        "full_expansion",
+        # Autonome Engines (rufen intern Posting auf)
+        "autonomous_pilot", "autonomous_engine", "mega_hub_autopilot",
+        # Content-Posting (postet zu Telegram + LinkedIn)
+        "content_loop_engine",
+        "content_factory_run",    # generiert + postet Promo-Pakete
+        "seo_content_factory",    # Shopify Blog + Social Posting
+        # Affiliate-Blast
+        "affiliate_blast", "affiliate_mega", "ds24_affiliate_blast", "ds24_traffic",
+        "ds24_income_blast", "ds24_affiliate_hourly", "ds24_affiliate_daily",
+        # eBay-Autoposter/BRUTUS
         "ebay_cycle", "ebay_blast", "ebay_brutus_blast",
-        # Autopost-Varianten (diverse Module ohne zentralen Validator)
-        "insolvenz_autopost",
-        "marketplace_poster",
-        "shoptext_promo",
-        "super_revenue_blitz",
-        "buyer_traffic_engine",
-        "monetization_launch",
+        # Autopost-Varianten
+        "insolvenz_autopost", "marketplace_poster", "shoptext_promo",
+        "super_revenue_blitz", "buyer_traffic_engine", "monetization_launch",
+        # Misc Posting-Tasks
+        "umsatzmaschine_daily", "mega_command_center",
+        "reddit_monetized", "reply_monitor",
+        # Gumroad/DS24 Promo-Poster (posten unpublished/nicht-genehmigte Produkte!)
+        "gumroad_cycle",          # postet unpublished Gumroad-Produkte
+        "gumroad_funnel",         # postet Gumroad Funnel-Links
+        "gumroad_brutus_traffic", # Gumroad Traffic Swarm
+        "auto_funnel",            # tägliche Funnel-Tasks mit Posting-Anteil
+        "funnel_daily",           # täglicher Funnel-Telegram-Report
+        "digistore_autonomy",     # DS24 Produkte+Funnels+Traffic (inkl. Posting)
+        "ds24_funnel_auto",       # DS24 Sales-Funnels auto (postet Funnel-Links)
+        "money_cycle",            # 30min Loop — ruft intern Promo-Posts auf
+        "revenue_engine",         # DS24+Flash+AIITEC (ruft Traffic/Posting auf)
+        "revenue_engine_evening", # Abend-Slot
+        "priority_cluster",       # inkl. Posting
+        "geldmaschine_skalierung",
+        "saas_factory_cycle",     # postet neue MVP-Launches
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
