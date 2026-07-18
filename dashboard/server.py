@@ -15341,6 +15341,41 @@ async def create_app():
     except Exception as _img_e:
         log.warning("Image Optimizer routes failed: %s", _img_e)
 
+    # ── AI Provider Status (alle 13+ Provider + Bridge) ──────────────────────
+    try:
+        async def handle_ai_providers_status(request: web.Request) -> web.Response:
+            from modules.ai_client import get_ai_status
+            from modules.api_hunt_ai_bridge import get_bridge_status
+            status = get_ai_status()
+            bridge = get_bridge_status()
+            return web.Response(
+                text=json.dumps({"core": status, "bridge": bridge}),
+                content_type="application/json",
+            )
+
+        app.router.add_get("/api/ai-providers/status", handle_ai_providers_status)
+        log.info("AI Providers status route registered")
+    except Exception as _aip_e:
+        log.warning("AI Providers route failed: %s", _aip_e)
+
+    # ── Klaviyo Assistent ─────────────────────────────────────────────────────
+    try:
+        async def handle_klaviyo_status(request: web.Request) -> web.Response:
+            from modules.klaviyo_assistant import get_status
+            return web.Response(text=json.dumps(await get_status()),
+                                content_type="application/json")
+
+        async def handle_klaviyo_run(request: web.Request) -> web.Response:
+            from modules.klaviyo_assistant import run_klaviyo_cycle
+            result = await run_klaviyo_cycle()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        app.router.add_get( "/api/klaviyo/status", handle_klaviyo_status)
+        app.router.add_post("/api/klaviyo/run",    handle_klaviyo_run)
+        log.info("Klaviyo Assistant routes registered")
+    except Exception as _klv_e:
+        log.warning("Klaviyo routes failed: %s", _klv_e)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

@@ -7954,6 +7954,21 @@ async def task_omega_revenue_brain() -> str:
         return f"OMEGA Brain Fehler: {e}"
 
 
+async def task_klaviyo_assistant() -> str:
+    """Klaviyo Assistent: neue Subscriber, Kampagnen-Check, AI-Optimierung (alle 6h)."""
+    try:
+        from modules.klaviyo_assistant import run_klaviyo_cycle
+        result = await run_klaviyo_cycle()
+        if not result.get("ok"):
+            return f"Klaviyo: {result.get('reason', 'fehler')}"
+        subs = result.get("new_subscribers", 0)
+        camps = result.get("campaigns_checked", 0)
+        lists = result.get("lists_count", 0)
+        return f"Klaviyo: {subs} neue Subs | {camps} Kampagnen | {lists} Listen"
+    except Exception as e:
+        return f"Klaviyo Fehler: {e}"
+
+
 async def task_free_api_hunt_daemon() -> str:
     """Free API Hunt Daemon: entdeckt neue kostenlose APIs aus öffentlichen Verzeichnissen (alle 6h)."""
     try:
@@ -9017,6 +9032,8 @@ TASKS = [
     # ── OMEGA REVENUE BRAIN + APIHunt Daemon ──────────────────────────────────
     ("omega_brain",         task_omega_revenue_brain,    900,    30),  # 15min — Alle Revenue-Streams + Auto-Action
     ("api_hunt_daemon",     task_free_api_hunt_daemon,  21600,  9600), # 6h — Entdeckt neue kostenlose APIs
+    # ── Klaviyo Assistent ─────────────────────────────────────────────────────
+    ("klaviyo_assistant",   task_klaviyo_assistant,     21600,  7200), # 6h — Subscriber + Kampagnen + AI-Optimierung
 ]
 
 
