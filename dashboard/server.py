@@ -11893,6 +11893,75 @@ async def handle_never_again_report(request):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── Organic Traffic Manager ───────────────────────────────────────────────────
+
+async def handle_organic_traffic_status(request):
+    """GET /api/organic-traffic/status"""
+    try:
+        from modules.organic_traffic_manager import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_organic_traffic_post(request):
+    """POST /api/organic-traffic/post — Sofort auf einer oder allen Plattformen posten."""
+    try:
+        data     = await request.json()
+        platform = data.get("platform")   # None = alle
+        c_type   = data.get("content_type")
+        topic    = data.get("topic")
+
+        from modules.organic_traffic_manager import (
+            generate_content, PLATFORM_POSTERS, _log_post, run_posting_session
+        )
+
+        if platform and platform in PLATFORM_POSTERS:
+            content = await generate_content(platform, c_type, topic)
+            result  = await PLATFORM_POSTERS[platform](content)
+            _log_post(platform, content, result)
+            return web.json_response({"ok": result["ok"], "platform": platform,
+                                      "topic": content["topic"], "text": content["text"][:200]})
+        else:
+            result = await run_posting_session()
+            return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_organic_traffic_preview(request):
+    """POST /api/organic-traffic/preview — Content-Vorschau ohne zu posten."""
+    try:
+        data     = await request.json()
+        platform = data.get("platform", "instagram")
+        topic    = data.get("topic")
+        c_type   = data.get("content_type")
+        from modules.organic_traffic_manager import generate_content
+        content = await generate_content(platform, c_type, topic)
+        return web.json_response({"ok": True, "content": content})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_organic_traffic_logs(request):
+    """GET /api/organic-traffic/logs"""
+    try:
+        import sqlite3
+        from pathlib import Path
+        db = Path("data/organic_traffic.db")
+        if not db.exists():
+            return web.json_response({"ok": True, "logs": []})
+        with sqlite3.connect(db) as c:
+            c.row_factory = sqlite3.Row
+            rows = c.execute("""
+                SELECT platform, content_type, topic, text_snippet, posted_at, success, error
+                FROM post_log ORDER BY posted_at DESC LIMIT 50
+            """).fetchall()
+        return web.json_response({"ok": True, "logs": [dict(r) for r in rows]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def create_app():
     # ── TgGate: Globaler Telegram-Spam-Schutz — ZUERST installieren ──────────
     # Intercept für aiohttp + urllib: ALLE sendMessage-Calls laufen durch den
@@ -12095,6 +12164,10 @@ async def create_app():
     app.router.add_get("/api/never-again/status",     handle_never_again_status)
     app.router.add_post("/api/never-again/add",       handle_never_again_add)
     app.router.add_post("/api/never-again/report",    handle_never_again_report)
+    app.router.add_get( "/api/organic-traffic/status",  handle_organic_traffic_status)
+    app.router.add_post("/api/organic-traffic/post",     handle_organic_traffic_post)
+    app.router.add_post("/api/organic-traffic/preview",  handle_organic_traffic_preview)
+    app.router.add_get( "/api/organic-traffic/logs",     handle_organic_traffic_logs)
     # /api/ai/status bereits oben registriert — Duplikat entfernt
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
@@ -15014,6 +15087,14 @@ async def create_app():
     # Start daily SEO blog content pipeline
     asyncio.create_task(_run_seo_loop())
     log.info("SEO blog content pipeline started")
+
+    # Organic Traffic Manager — 7 Plattformen, 4× täglich
+    try:
+        from modules.organic_traffic_manager import run_traffic_loop
+        asyncio.create_task(run_traffic_loop())
+        log.info("OrganicTrafficManager gestartet: Instagram/Facebook/TikTok/Pinterest/Twitter/Reddit/LinkedIn")
+    except Exception as _otm_err:
+        log.warning("OrganicTrafficManager start failed: %s", _otm_err)
 
     # Auto-configure Telegram webhook + commands on startup
     async def _setup_tg_on_start():
