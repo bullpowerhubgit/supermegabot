@@ -6507,6 +6507,20 @@ async def task_klaviyo_flows() -> str:
         return f"KlaviyoFlows Fehler: {e}"
 
 
+async def task_free_ads_cycle() -> str:
+    """FreeAdsEngine: Meta-Ads-Ersatz — 5 Slots tägl. kostenlos auf 6 Plattformen."""
+    try:
+        from modules.free_ads_engine import run_free_ads_cycle
+        r = await run_free_ads_cycle()
+        if r.get("skipped"):
+            return f"FreeAds: Slot bereits heute gepostet"
+        return (f"FreeAds [{r.get('slot')}]: {r.get('product')} | "
+                f"{r.get('platforms_run', 0)} Plattformen | "
+                f"OK: {', '.join(r.get('platforms_ok', []))}")
+    except Exception as e:
+        return f"FreeAds Fehler: {e}"
+
+
 async def task_sendgrid_daily() -> str:
     """SendGrid: tägliche Revenue-Email an alle Klaviyo-Profile (täglich)."""
     try:
@@ -8554,6 +8568,8 @@ TASKS = [
     ("pinterest_token_health",   task_pinterest_token_health,   86400,  880),  # täglich — Token-Validierung + Auto-Refresh
     # ── Meta Ads Engine ───────────────────────────────────────────────────────
     ("meta_ads",                 task_meta_ads_cycle,           14400,  300),  # 4h — Facebook/Instagram Kampagnen
+    # ── Free Ads Engine (Meta-Ads-Ersatz, kostenlos) ──────────────────────────
+    ("free_ads_cycle",           task_free_ads_cycle,            7200,  310),  # 2h — 5 Slots/Tag auf 6 Plattformen gratis
     # ── SendGrid Revenue Email ────────────────────────────────────────────────
     ("sendgrid_daily",           task_sendgrid_daily,           86400,  120),  # täglich — Revenue-Email via SendGrid
     # ── Shopify Description Filler ────────────────────────────────────────────
@@ -9206,7 +9222,7 @@ class AutomationScheduler:
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
         "buyer_pipeline", "revenue_agent_sync", "revenue_blitz",
         "upsell_sequence_run", "upsell_cycle", "klaviyo_flows",
-        "b2b_prospecting",
+        "b2b_prospecting", "free_ads_cycle",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
