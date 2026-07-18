@@ -4679,8 +4679,16 @@ async def handle_telegram_setup(req):
         ) as r:
             results["setMyCommands"] = await r.json()
 
+        # 3. Dashboard-Button dauerhaft auf Railway-URL setzen (NIEMALS ngrok!)
+        async with session.post(
+            f"https://api.telegram.org/bot{token}/setChatMenuButton",
+            json={"menu_button": {"type": "web_app", "text": "Dashboard",
+                                  "web_app": {"url": base_url}}}
+        ) as r:
+            results["setChatMenuButton"] = await r.json()
+
     log.info("Telegram setup completed: %s", results)
-    return web.json_response({"ok": True, "results": results, "webhook": webhook_url})
+    return web.json_response({"ok": True, "results": results, "webhook": webhook_url, "dashboard": base_url})
 
 
 async def handle_discord_interactions(req: web.Request) -> web.Response:
