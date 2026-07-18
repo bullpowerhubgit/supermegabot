@@ -389,7 +389,11 @@ async def task_traffic_seo_run() -> str:
 
 
 async def task_smart_poster_run() -> str:
-    """SmartPoster — Neues sauberes Posting-System (ersetzt BRUTUS + social_autoposter)."""
+    """SmartPoster — Neues sauberes Posting-System (ersetzt BRUTUS + social_autoposter).
+    Kill-Switch: SMART_POSTER_ENABLED=true (Railway Env) muss explizit gesetzt sein.
+    """
+    if os.getenv("SMART_POSTER_ENABLED", "").lower() != "true":
+        return "SmartPoster: SMART_POSTER_ENABLED nicht gesetzt — kein Post geht raus (Railway Env setzen zum Aktivieren)"
     try:
         from modules.smart_poster import task_smart_poster_run as _run
         return await _run()
@@ -4061,7 +4065,7 @@ Antworte NUR als JSON-Array:
                     price=price,
                 )
             except Exception as _gk_exc:
-                _gk_ok, _gk_reason = True, ""  # fail-open wenn Modul nicht erreichbar
+                _gk_ok, _gk_reason = False, f"gatekeeper_unavailable: {_gk_exc}"  # fail-closed
             if not _gk_ok:
                 log.info("Shopify TrendFill: Gatekeeper blocked '%s' — %s", name[:40], _gk_reason)
                 continue
@@ -4151,7 +4155,7 @@ async def task_shopify_publish_drafts() -> str:
                         price=_draft_price,
                     )
                 except Exception:
-                    _gk_ok, _gk_reason = True, ""  # fail-open
+                    _gk_ok, _gk_reason = False, "gatekeeper_unavailable"  # fail-closed
                 if not _gk_ok:
                     log.info(
                         "PublishDrafts: Gatekeeper blocked '%s' — %s",
@@ -8441,12 +8445,13 @@ TASKS = [
     ("buyer_pipeline",       task_buyer_pipeline,        1800,  140),  # 30min — hot leads priorisieren + Follow-up
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
-    ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
     ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
     ("ebay_arbitrage_scan",  task_ebay_arbitrage_scan,  21600, 180),  # 6h — eBay Arbitrage: AliExpress→eBay→Shopify
     ("demand_oracle_scan",   task_demand_oracle_scan,   43200, 240),  # 12h — Demand Oracle: Reddit→Cluster→Pre-Order
     ("b2b_intent_radar",    task_b2b_intent_radar_scan, 21600, 280),  # 6h — B2B Intent Radar: HN+Reddit+GitHub→Leads
-    ("social_scheduler",     task_social_scheduler,    21600, 1800), # 6h — Twitter + Telegram (30min startup delay)
+    # DEAKTIVIERT 2026-07-18 → ersetzt durch smart_poster (alle Social-Posts laufen nur noch durch Validator)
+    # ("ds24_traffic",       task_ds24_traffic,        10800,  90),
+    # ("social_scheduler",   task_social_scheduler,    21600, 1800),
     ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
     ("viral_window_scan",      task_viral_window_scan,       7200, 600),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
@@ -9043,6 +9048,46 @@ class AutomationScheduler:
         except Exception:
             pass
 
+    # ══════════════════════════════════════════════════════════════════════════
+    # KERN-SCHUTZ 2026-07-18: ALLE alten Social-Posting-Tasks permanent gesperrt.
+    # EINZIGER erlaubter Posting-Weg: smart_poster (wenn SMART_POSTER_ENABLED=true).
+    # NIEMALS Tasks aus dieser Liste entfernen — jeder Eintrag hat Fehler verursacht.
+    # ══════════════════════════════════════════════════════════════════════════
+    _POSTING_BLOCKLIST = frozenset({
+        # BRUTUS-Familie (generierte verbotene Keywords, banned content)
+        "brutus_run", "brutus_shopify", "brutus_ds24", "gumroad_brutus",
+        # Social Media Autopiloten (ohne Validator, verursachten Fehler-Posts)
+        "social_autoposter", "social_scheduler", "social_autopilot",
+        "multiplatform_post", "viral_promo", "mega_auto_post",
+        "instagram_pipeline", "instagram_auto_post",
+        "twitter_auto_post", "twitter_auto",
+        "linkedin_auto_post",
+        "pinterest_auto_post", "pinterest_cycle", "pinterest_traffic",
+        "youtube_auto_post", "youtube_autonomy",
+        "discord",
+        "telegram_broadcast",
+        "fb_groups_post",
+        "tiktok_cycle", "tiktok_trends",
+        "ollama_social",
+        # Traffic-Blast-Systeme (Multi-Channel, kein Validator)
+        "traffic_mega_cycle", "traffic_mega", "traffic_swarm",
+        "traffic_maximizer", "traffic_v2", "traffic_blitz",
+        "traffic_seo_run",
+        "omega_traffic", "viral_traffic",
+        "mass_content", "content_velocity", "syndication",
+        "content_hub", "content_cycle",
+        # Affiliate-Blast (schleuste bad content durch)
+        "affiliate_blast", "affiliate_mega", "ds24_affiliate_blast",
+        "ds24_traffic",
+        # Autopost-Varianten (diverse Module ohne zentralen Validator)
+        "insolvenz_autopost",
+        "marketplace_poster",
+        "shoptext_promo",
+        "super_revenue_blitz",
+        "buyer_traffic_engine",
+        "monetization_launch",
+    })
+
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
     _ALWAYS_RUN = frozenset({
         "health", "system_health", "github_backup",
@@ -9067,17 +9112,31 @@ class AutomationScheduler:
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
+        # ── KERN-SCHUTZ: Social-Posting-Blocklist ─────────────────────────────
+        # Alle alten Posting-Tasks permanent deaktiviert (2026-07-18).
+        # Grund: keiner dieser Tasks hatte pre-post Validator; alle verursachten
+        # fehlerhafte Posts (verbotene Keywords, "nicht verfügbar", AI-Fehler etc.)
+        if name in self._POSTING_BLOCKLIST:
+            log.debug("[%s] POSTING_BLOCKLIST — Task permanent deaktiviert", name)
+            return "POSTING_DISABLED"
+        # smart_poster nur wenn explizit von Rudolf aktiviert
+        if name == "smart_poster" and os.getenv("SMART_POSTER_ENABLED", "").lower() != "true":
+            log.debug("[smart_poster] Übersprungen — SMART_POSTER_ENABLED nicht gesetzt (Railway Env setzen zum Aktivieren)")
+            return "SMART_POSTER_DISABLED"
+        # ── Ende Kern-Schutz ──────────────────────────────────────────────────
+        try:
+            from modules.smart_poster import get_posting_pause_reason
+            pause_reason = get_posting_pause_reason()
+        except Exception:
+            pause_reason = ""
         if (
             os.getenv("REVENUE_MODE", "false").lower() in ("true", "1", "on")
             and name not in self._REVENUE_TASKS
         ):
             log.debug("[%s] REVENUE_MODE — Vanity-Task übersprungen", name)
             return "REVENUE_SKIP"
-        if (
-            os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes")
-            and name not in self._ALWAYS_RUN
-        ):
-            log.info("[%s] SOCIAL_POSTING_PAUSED=true — Task übersprungen", name)
+        if pause_reason and name not in self._ALWAYS_RUN:
+            log.info("[%s] posting paused (%s) — Task übersprungen", name, pause_reason)
             return "PAUSED"
         t0 = time.monotonic()
         await asyncio.sleep(0)  # yield before acquiring slot
