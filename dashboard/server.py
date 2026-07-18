@@ -7201,8 +7201,15 @@ async def cors_middleware(request, handler):
             resp = exc
     if request.path.startswith("/api/"):
         origin = request.headers.get("Origin", "")
-        resp.headers["Access-Control-Allow-Origin"] = origin if origin in _CORS_TRUSTED else "https://supermegabot-production.up.railway.app"
-        resp.headers["Vary"] = "Origin"
+        # Assistant-Endpunkte: immer * (für lokale Dashboards, file://, claude.ai Artifacts)
+        if request.path.startswith("/api/assistant/") or request.path.startswith("/api/ai-status"):
+            resp.headers["Access-Control-Allow-Origin"] = "*"
+        elif origin in _CORS_TRUSTED or origin == "null":
+            resp.headers["Access-Control-Allow-Origin"] = origin
+            resp.headers["Vary"] = "Origin"
+        else:
+            resp.headers["Access-Control-Allow-Origin"] = "https://supermegabot-production.up.railway.app"
+            resp.headers["Vary"] = "Origin"
     else:
         resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
