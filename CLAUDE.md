@@ -141,7 +141,13 @@ PERPLEXITY_HOURLY_USD_LIMIT  = 0.03  (Railway: PERPLEXITY_HOURLY_USD_LIMIT)
 GLOBAL_AI_DAILY_USD_CAP      = 0.70  (Railway: GLOBAL_AI_DAILY_USD_CAP)
 ```
 
-### AI-Provider-Reihenfolge (`modules/ai_client.py`)
+### PFLICHT-REGEL: NIEMALS ohne API-Zugang!
+Rudolf darf NIE in die Situation kommen dass alle Provider leer/ausgefallen sind.
+- **Alle neuen Module die KI nutzen → IMMER über `ai_client.ai_complete()`** — nie direkt Anthropic importieren
+- Bei jedem Railway-Deploy: GROQ_API_KEY + OPENROUTER_API_KEY prüfen
+- `free_api_hunter` läuft alle 12h, `api_hunt_watchdog` alle 1h
+
+## AI-Provider-Reihenfolge (`modules/ai_client.py`)
 1. OpenClaw (lokal / gratis)
 2. Groq (gratis-Tier)
 3. DeepSeek

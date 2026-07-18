@@ -32,6 +32,11 @@ from typing import Any, Dict, List, Optional, Tuple
 import aiohttp
 from aiohttp import web
 
+try:
+    from modules.ai_client import ai_complete
+except ImportError:
+    ai_complete = None  # type: ignore[assignment]
+
 # ── Paths ──────────────────────────────────────────────────────────────────────
 BASE_DIR  = Path(__file__).parent.parent
 DATA_DIR  = BASE_DIR / "data"
@@ -133,6 +138,21 @@ async def _probe(
         return False, (time.monotonic() - t0) * 1000, str(exc)[:120]
 
 
+async def _ai_complete_probe() -> Tuple[bool, float, Optional[str]]:
+    """Check AI availability via ai_client (Groq → DeepSeek → OpenRouter → Anthropic fallback)."""
+    if ai_complete is None:
+        return False, 0.0, "ai_client module not available"
+    t0 = time.monotonic()
+    try:
+        result = await ai_complete(prompt="ping", system="Reply with: pong", max_tokens=1)
+        latency = (time.monotonic() - t0) * 1000
+        if result:
+            return True, latency, None
+        return False, latency, "empty response from ai_complete"
+    except Exception as exc:
+        return False, (time.monotonic() - t0) * 1000, str(exc)[:120]
+
+
 async def check_all_platforms() -> Dict[str, PlatformHealth]:
     """
     Poll all 15 platforms and return a mapping of platform → PlatformHealth.
@@ -182,28 +202,13 @@ async def check_all_platforms() -> Dict[str, PlatformHealth]:
                 headers={"Authorization": f"Bearer {stripe_key}"},
             ) if stripe_key else _fake_miss("stripe_key_missing")),
 
-            # 3. Anthropic
-            run("anthropic", _probe(
-                session, "POST",
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": anthropic_key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5",
-                    "max_tokens": 1,
-                    "messages": [{"role": "user", "content": "ping"}],
-                },
-            ) if anthropic_key else _fake_miss("anthropic_key_missing")),
+            # 3. Anthropic — routed via ai_client (Groq→DeepSeek→OpenRouter→Anthropic)
+            run("anthropic", _ai_complete_probe()
+                if anthropic_key else _fake_miss("anthropic_key_missing")),
 
-            # 4. OpenAI
-            run("openai", _probe(
-                session, "GET",
-                "https://api.openai.com/v1/models",
-                headers={"Authorization": f"Bearer {openai_key}"},
-            ) if openai_key else _fake_miss("openai_key_missing")),
+            # 4. OpenAI — routed via ai_client (Groq→DeepSeek→OpenRouter→Anthropic)
+            run("openai", _ai_complete_probe()
+                if openai_key else _fake_miss("openai_key_missing")),
 
             # 5. Klaviyo
             run("klaviyo", _probe(

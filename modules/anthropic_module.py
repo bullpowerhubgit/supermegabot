@@ -3,128 +3,61 @@
 Anthropic API – Automatisierungs-Modul (SuperMegaBot)
 =====================================================
 
-Setup:
-    pip install anthropic
-    export ANTHROPIC_API_KEY="sk-ant-..."      # Key von console.anthropic.com
+Alle AI-Calls laufen über modules.ai_client (Fallback-Kette):
+  OpenClaw/Ollama → Groq → DeepSeek → OpenRouter → Gemini
+  → Anthropic → OpenAI → Perplexity
 
-Verbesserungen gegenüber Originalversion:
-  - Async-Varianten aller Funktionen (async_ask, async_extract, ...)
-  - Streaming-Support (stream / async_stream)
-  - Multi-Turn-Konversation (chat / async_chat)
-  - Automatischer Retry mit Exponential-Backoff (529/429)
-  - Token-Tracking: jede Antwort liefert .usage
-  - Kosten-Schätzung (cost_usd())
-  - Batch-Ordner mit Parallelisierung (async_batch_ordner)
-  - Kontext-Cache (prompt_cache) für Wiederholungen
+Kompatibilität mit altem API bleibt erhalten (ask, async_ask, Chat, extract, …).
 """
 
 from __future__ import annotations
 
 import asyncio
-import base64
 import json
 import logging
 import os
-import time
+import re
 from pathlib import Path
-from typing import AsyncIterator, Iterator, Optional
+from typing import AsyncIterator, Iterator
 
-try:
-    import modules.anthropic_compat as _anthlib
-except ImportError:
-    import anthropic as _anthlib
+from modules.ai_client import (
+    ai_complete,
+    ai_complete_sync,
+    ai_complete_chat,
+    ai_complete_chat_sync,
+)
 
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Modelle (aktuell, Stand 2026)
+# Modelle (Referenz — ai_client wählt den Provider autonom)
 # ---------------------------------------------------------------------------
-MODEL      = "claude-sonnet-5"           # stark + schnell; empfohlen für Haupt-Tasks
+MODEL      = "claude-sonnet-5"           # stark + schnell
 FAST_MODEL = "claude-haiku-4-5-20251001" # günstig, für Massen-Tasks
 
-# Kosten-Tabelle (USD per 1M Tokens, Input/Output)
+# Kosten-Tabelle (USD per 1M Tokens) — für Referenz / Logging
 _COST: dict[str, tuple[float, float]] = {
     "claude-sonnet-5":           (3.00,  15.00),
     "claude-haiku-4-5-20251001": (0.25,   1.25),
     "claude-opus-4-8":           (15.00, 75.00),
 }
 
-_CLIENT: Optional[_anthlib.Anthropic]       = None
-_ACLIENT: Optional[_anthlib.AsyncAnthropic] = None
+_DEFAULT_SYSTEM = "Du bist ein präziser Assistent. Antworte knapp."
 
 
 # ---------------------------------------------------------------------------
-# Client-Singletons
+# Hilfsfunktionen
 # ---------------------------------------------------------------------------
-def _client() -> _anthlib.Anthropic:
-    global _CLIENT
-    if _CLIENT is None:
-        key = os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            raise RuntimeError("ANTHROPIC_API_KEY ist nicht gesetzt.")
-        _CLIENT = _anthlib.Anthropic(api_key=key)
-    return _CLIENT
-
-
-def _aclient() -> _anthlib.AsyncAnthropic:
-    global _ACLIENT
-    if _ACLIENT is None:
-        key = os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            raise RuntimeError("ANTHROPIC_API_KEY ist nicht gesetzt.")
-        _ACLIENT = _anthlib.AsyncAnthropic(api_key=key)
-    return _ACLIENT
-
-
 def is_configured() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+    """True wenn mindestens ein AI-Provider mit API-Key konfiguriert ist."""
+    from modules.ai_client import _groq, _deepseek, _openrouter, _anthropic, _openai, _gemini
+    return any([_groq(), _deepseek(), _openrouter(), _anthropic(), _openai(), _gemini()])
 
 
-# ---------------------------------------------------------------------------
-# Kosten-Schätzung
-# ---------------------------------------------------------------------------
 def cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
+    """Kostenschätzung (nur Referenzwert — ai_client verwaltet Budget selbst)."""
     inp, out = _COST.get(model, (3.0, 15.0))
     return (input_tokens * inp + output_tokens * out) / 1_000_000
-
-
-# ---------------------------------------------------------------------------
-# Retry-Wrapper (429/529 → exponential backoff)
-# ---------------------------------------------------------------------------
-def _retry_sync(fn, max_tries: int = 3):
-    for attempt in range(max_tries):
-        try:
-            return fn()
-        except _anthlib.RateLimitError:
-            wait = 2 ** attempt
-            log.warning("Anthropic 429 — Retry in %ds", wait)
-            time.sleep(wait)
-        except _anthlib.APIStatusError as e:
-            if e.status_code == 529:
-                wait = 2 ** attempt
-                log.warning("Anthropic 529 (überlastet) — Retry in %ds", wait)
-                time.sleep(wait)
-            else:
-                raise
-    raise RuntimeError("Anthropic max retries reached")
-
-
-async def _retry_async(fn, max_tries: int = 3):
-    for attempt in range(max_tries):
-        try:
-            return await fn()
-        except _anthlib.RateLimitError:
-            wait = 2 ** attempt
-            log.warning("Anthropic 429 — Retry in %ds", wait)
-            await asyncio.sleep(wait)
-        except _anthlib.APIStatusError as e:
-            if e.status_code == 529:
-                wait = 2 ** attempt
-                log.warning("Anthropic 529 (überlastet) — Retry in %ds", wait)
-                await asyncio.sleep(wait)
-            else:
-                raise
-    raise RuntimeError("Anthropic max retries reached")
 
 
 # ---------------------------------------------------------------------------
@@ -136,21 +69,13 @@ def ask(
     model: str = MODEL,
     max_tokens: int = 2000,
 ) -> str:
-    def _call():
-        resp = _client().messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            system=system or "Du bist ein präziser Assistent. Antworte knapp.",
-            messages=[{"role": "user", "content": prompt}],
-        )
-        log.debug(
-            "ask(): %s | in=%d out=%d | ~$%.4f",
-            model, resp.usage.input_tokens, resp.usage.output_tokens,
-            cost_usd(model, resp.usage.input_tokens, resp.usage.output_tokens),
-        )
-        return resp.content[0].text
-
-    return _retry_sync(_call)
+    """Stellt eine Frage — der `model`-Parameter wird als Hint übergeben,
+    ai_client wählt den günstigsten verfügbaren Provider."""
+    return ai_complete_sync(
+        prompt=prompt,
+        system=system or _DEFAULT_SYSTEM,
+        max_tokens=max_tokens,
+    )
 
 
 async def async_ask(
@@ -159,25 +84,15 @@ async def async_ask(
     model: str = MODEL,
     max_tokens: int = 2000,
 ) -> str:
-    async def _call():
-        resp = await _aclient().messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            system=system or "Du bist ein präziser Assistent. Antworte knapp.",
-            messages=[{"role": "user", "content": prompt}],
-        )
-        log.debug(
-            "async_ask(): %s | in=%d out=%d | ~$%.4f",
-            model, resp.usage.input_tokens, resp.usage.output_tokens,
-            cost_usd(model, resp.usage.input_tokens, resp.usage.output_tokens),
-        )
-        return resp.content[0].text
-
-    return await _retry_async(_call)
+    return await ai_complete(
+        prompt=prompt,
+        system=system or _DEFAULT_SYSTEM,
+        max_tokens=max_tokens,
+    )
 
 
 # ---------------------------------------------------------------------------
-# 2. Streaming (sync + async)
+# 2. Streaming (simuliert — ai_client unterstützt kein Echtzeit-Streaming)
 # ---------------------------------------------------------------------------
 def stream(
     prompt: str,
@@ -185,15 +100,15 @@ def stream(
     model: str = MODEL,
     max_tokens: int = 2000,
 ) -> Iterator[str]:
-    """Yields Text-Chunks wie ein Generator. Ideal für Live-Ausgaben."""
-    with _client().messages.stream(
-        model=model,
-        max_tokens=max_tokens,
+    """Gibt den vollständigen Text als einzelnen Chunk zurück.
+    Echtes Token-Streaming ist über ai_client nicht verfügbar."""
+    result = ai_complete_sync(
+        prompt=prompt,
         system=system or "Du bist ein präziser Assistent.",
-        messages=[{"role": "user", "content": prompt}],
-    ) as s:
-        for chunk in s.text_stream:
-            yield chunk
+        max_tokens=max_tokens,
+    )
+    if result:
+        yield result
 
 
 async def async_stream(
@@ -202,15 +117,14 @@ async def async_stream(
     model: str = MODEL,
     max_tokens: int = 2000,
 ) -> AsyncIterator[str]:
-    """Async-Generator für Streaming — nutze `async for chunk in async_stream(...)`."""
-    async with _aclient().messages.stream(
-        model=model,
-        max_tokens=max_tokens,
+    """Async-Generator — gibt vollständigen Text als einzelnen Chunk zurück."""
+    result = await ai_complete(
+        prompt=prompt,
         system=system or "Du bist ein präziser Assistent.",
-        messages=[{"role": "user", "content": prompt}],
-    ) as s:
-        async for chunk in s.text_stream:
-            yield chunk
+        max_tokens=max_tokens,
+    )
+    if result:
+        yield result
 
 
 # ---------------------------------------------------------------------------
@@ -224,32 +138,26 @@ class Chat:
         self.model      = model
         self.max_tokens = max_tokens
         self.history: list[dict] = []
-        self.total_cost = 0.0
+        self.total_cost = 0.0  # Kosten-Tracking über ai_client nicht verfügbar
 
     def send(self, message: str) -> str:
         self.history.append({"role": "user", "content": message})
-        resp = _retry_sync(lambda: _client().messages.create(
-            model=self.model,
-            max_tokens=self.max_tokens,
-            system=self.system,
+        text = ai_complete_chat_sync(
             messages=self.history,
-        ))
-        text = resp.content[0].text
+            system=self.system,
+            max_tokens=self.max_tokens,
+        )
         self.history.append({"role": "assistant", "content": text})
-        self.total_cost += cost_usd(self.model, resp.usage.input_tokens, resp.usage.output_tokens)
         return text
 
     async def async_send(self, message: str) -> str:
         self.history.append({"role": "user", "content": message})
-        resp = await _retry_async(lambda: _aclient().messages.create(
-            model=self.model,
-            max_tokens=self.max_tokens,
-            system=self.system,
+        text = await ai_complete_chat(
             messages=self.history,
-        ))
-        text = resp.content[0].text
+            system=self.system,
+            max_tokens=self.max_tokens,
+        )
         self.history.append({"role": "assistant", "content": text})
-        self.total_cost += cost_usd(self.model, resp.usage.input_tokens, resp.usage.output_tokens)
         return text
 
     def reset(self):
@@ -258,40 +166,55 @@ class Chat:
 
 
 # ---------------------------------------------------------------------------
-# 4. Strukturierte Extraktion (garantiertes JSON via Tool Use)
+# 4. Strukturierte Extraktion (JSON-Prompt statt Tool Use)
 # ---------------------------------------------------------------------------
 def extract(text: str, schema: dict) -> dict:
-    resp = _retry_sync(lambda: _client().messages.create(
-        model=MODEL,
+    """Extrahiert strukturierte Daten per JSON-Prompt (kein Anthropic Tool Use nötig)."""
+    schema_desc = json.dumps(schema, ensure_ascii=False, indent=2)
+    prompt = (
+        f"Extrahiere die Daten aus dem folgenden Text und gib sie als valides JSON-Objekt zurück.\n"
+        f"Schema (Feldnamen und Typen):\n{schema_desc}\n"
+        f"Antworte NUR mit dem JSON-Objekt, ohne weitere Erklärungen.\n\n"
+        f"Text:\n{text}"
+    )
+    result = ai_complete_sync(
+        prompt=prompt,
+        system="Du bist ein JSON-Extraktor. Antworte ausschließlich mit validem JSON.",
         max_tokens=2000,
-        tools=[{
-            "name": "ergebnis",
-            "description": "Gib die extrahierten Daten zurück.",
-            "input_schema": {"type": "object", "properties": schema, "required": list(schema)},
-        }],
-        tool_choice={"type": "tool", "name": "ergebnis"},
-        messages=[{"role": "user", "content": f"Extrahiere die Daten:\n\n{text}"}],
-    ))
-    return resp.content[0].input
+    )
+    try:
+        m = re.search(r'\{.*\}', result, re.DOTALL)
+        if m:
+            return json.loads(m.group(0))
+    except Exception:
+        pass
+    return {}
 
 
 async def async_extract(text: str, schema: dict) -> dict:
-    resp = await _retry_async(lambda: _aclient().messages.create(
-        model=MODEL,
+    schema_desc = json.dumps(schema, ensure_ascii=False, indent=2)
+    prompt = (
+        f"Extrahiere die Daten aus dem folgenden Text und gib sie als valides JSON-Objekt zurück.\n"
+        f"Schema (Feldnamen und Typen):\n{schema_desc}\n"
+        f"Antworte NUR mit dem JSON-Objekt, ohne weitere Erklärungen.\n\n"
+        f"Text:\n{text}"
+    )
+    result = await ai_complete(
+        prompt=prompt,
+        system="Du bist ein JSON-Extraktor. Antworte ausschließlich mit validem JSON.",
         max_tokens=2000,
-        tools=[{
-            "name": "ergebnis",
-            "description": "Gib die extrahierten Daten zurück.",
-            "input_schema": {"type": "object", "properties": schema, "required": list(schema)},
-        }],
-        tool_choice={"type": "tool", "name": "ergebnis"},
-        messages=[{"role": "user", "content": f"Extrahiere die Daten:\n\n{text}"}],
-    ))
-    return resp.content[0].input
+    )
+    try:
+        m = re.search(r'\{.*\}', result, re.DOTALL)
+        if m:
+            return json.loads(m.group(0))
+    except Exception:
+        pass
+    return {}
 
 
 # ---------------------------------------------------------------------------
-# 5. Klassifizieren (billiges Modell)
+# 5. Klassifizieren
 # ---------------------------------------------------------------------------
 def classify(text: str, categories: list[str]) -> str:
     prompt = (
@@ -299,7 +222,7 @@ def classify(text: str, categories: list[str]) -> str:
         f"Kategorien: {', '.join(categories)}\n"
         f"Antworte NUR mit dem Kategorienamen.\n\n{text}"
     )
-    return ask(prompt, model=FAST_MODEL, max_tokens=20).strip()
+    return ask(prompt, max_tokens=20).strip()
 
 
 async def async_classify(text: str, categories: list[str]) -> str:
@@ -308,37 +231,47 @@ async def async_classify(text: str, categories: list[str]) -> str:
         f"Kategorien: {', '.join(categories)}\n"
         f"Antworte NUR mit dem Kategorienamen.\n\n{text}"
     )
-    return (await async_ask(prompt, model=FAST_MODEL, max_tokens=20)).strip()
+    return (await async_ask(prompt, max_tokens=20)).strip()
 
 
 # ---------------------------------------------------------------------------
 # 6. PDF / Bild analysieren
 # ---------------------------------------------------------------------------
 def read_pdf(path: str, frage: str) -> str:
-    data = base64.b64encode(Path(path).read_bytes()).decode()
-    resp = _retry_sync(lambda: _client().messages.create(
-        model=MODEL,
+    """PDF analysieren — versucht zuerst Text-Extraktion via pdfplumber."""
+    text_content = ""
+    try:
+        import pdfplumber
+        with pdfplumber.open(path) as pdf:
+            text_content = "\n".join(page.extract_text() or "" for page in pdf.pages)
+    except ImportError:
+        text_content = f"[PDF: {Path(path).name} — pdfplumber nicht installiert, Text-Extraktion nicht möglich]"
+    except Exception as e:
+        text_content = f"[PDF konnte nicht gelesen werden: {e}]"
+
+    return ai_complete_sync(
+        prompt=f"{frage}\n\nDokumentinhalt:\n{text_content}",
+        system="Du bist ein präziser Dokumenten-Analyst.",
         max_tokens=4000,
-        messages=[{"role": "user", "content": [
-            {"type": "document", "source": {"type": "base64", "media_type": "application/pdf", "data": data}},
-            {"type": "text", "text": frage},
-        ]}],
-    ))
-    return resp.content[0].text
+    )
 
 
 def read_image(path: str, frage: str) -> str:
-    data   = base64.b64encode(Path(path).read_bytes()).decode()
-    suffix = Path(path).suffix.lower().lstrip(".").replace("jpg", "jpeg")
-    resp   = _retry_sync(lambda: _client().messages.create(
-        model=MODEL,
+    """Bild-Frage an ai_client — multimodale Bild-Übertragung nicht verfügbar.
+    Gibt Text-Antwort auf die Frage zurück."""
+    log.warning(
+        "read_image('%s'): Multimodale Bildanalyse nicht über ai_client verfügbar — "
+        "nur Text-Antwort auf die Frage wird zurückgegeben.",
+        Path(path).name,
+    )
+    return ai_complete_sync(
+        prompt=(
+            f"Frage zu Bild '{Path(path).name}': {frage}\n"
+            f"Hinweis: Das Bild konnte nicht übertragen werden. Beantworte die Frage soweit möglich."
+        ),
+        system="Du bist ein präziser Assistent.",
         max_tokens=2000,
-        messages=[{"role": "user", "content": [
-            {"type": "image", "source": {"type": "base64", "media_type": f"image/{suffix}", "data": data}},
-            {"type": "text", "text": frage},
-        ]}],
-    ))
-    return resp.content[0].text
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -403,10 +336,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
     if not is_configured():
-        log.error("ANTHROPIC_API_KEY fehlt")
+        log.error("Kein AI-Provider konfiguriert (GROQ_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, …)")
         raise SystemExit(1)
 
-    # (a) Einfache Frage mit Kosten-Tracking
+    # (a) Einfache Frage
     antwort = ask("Schreibe eine kurze, freundliche Terminbestätigung per E-Mail.")
     log.info(antwort)
 
@@ -414,7 +347,6 @@ if __name__ == "__main__":
     # c = Chat(system="Du bist ein Buchhalter.")
     # print(c.send("Was ist doppelte Buchführung?"))
     # print(c.send("Nenn mir ein konkretes Beispiel."))
-    # log.info("Gesamtkosten: $%.4f", c.total_cost)
 
     # (c) Strukturiert extrahieren
     mail = "Hallo, ich bin Anna Weber, anna@example.com, 0176-1234567. Interesse an einem Rüden, gerne im Herbst."

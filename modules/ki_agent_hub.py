@@ -33,8 +33,6 @@ import aiohttp
 log = logging.getLogger("KIAgentHub")
 
 # ─── Credentials ──────────────────────────────────────────────────────────────
-ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY", "")
-GROQ_KEY         = os.getenv("GROQ_API_KEY", "")
 TELEGRAM_BOT     = os.getenv("TELEGRAM_BOT_TOKEN", "") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 TELEGRAM_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOMAIN   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
@@ -120,52 +118,18 @@ async def _telegram(text: str) -> None:
 
 
 async def _ai(prompt: str, system: str = "", max_tokens: int = 512) -> str:
-    if GROQ_KEY:
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                resp = await s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {GROQ_KEY}"},
-                    json={
-                        "model": "llama-3.1-8b-instant",
-                        "messages": [
-                            {"role": "system", "content": system or "Du bist ein Geschäftsassistent."},
-                            {"role": "user", "content": prompt},
-                        ],
-                        "max_tokens": max_tokens,
-                        "temperature": 0.4,
-                    },
-                )
-                if resp.status == 200:
-                    data = await resp.json()
-                    return data["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            log.warning("Groq error: %s", e)
-
-    if ANTHROPIC_KEY:
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                resp = await s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": ANTHROPIC_KEY,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json",
-                    },
-                    json={
-                        "model": "claude-haiku-4-5-20251001",
-                        "max_tokens": max_tokens,
-                        "system": system or "Du bist ein Geschäftsassistent.",
-                        "messages": [{"role": "user", "content": prompt}],
-                    },
-                )
-                if resp.status == 200:
-                    data = await resp.json()
-                    return data["content"][0]["text"].strip()
-        except Exception as e:
-            log.warning("Claude error: %s", e)
-
-    return ""
+    """KI-Aufruf über ai_client mit automatischem Fallback (Groq → DeepSeek → OpenRouter → Anthropic)."""
+    try:
+        from modules.ai_client import ai_complete
+        result = await ai_complete(
+            prompt=prompt,
+            system=system or "Du bist ein Geschäftsassistent.",
+            max_tokens=max_tokens,
+        )
+        return result or ""
+    except Exception as e:
+        log.warning("ai_complete error: %s", e)
+        return ""
 
 
 async def _shopify_get(endpoint: str) -> Optional[Dict]:

@@ -32,6 +32,8 @@ from typing import Any, Dict, List, Optional
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("RudiAgent")
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -115,36 +117,14 @@ async def _tg_typing() -> None:
         pass
 
 
-# ── Claude API ────────────────────────────────────────────────────────────────
+# ── AI API (via ai_client — automatischer Fallback: Groq → DeepSeek → OpenRouter → Anthropic) ──
 async def ask_claude(task: str, context: str = "", model: str = "claude-sonnet-5") -> str:
-    """Sendet Aufgabe an Claude API und gibt Antwort zurück."""
-    if not ANTHROPIC_KEY:
-        return "❌ ANTHROPIC_API_KEY nicht konfiguriert"
-
-    messages = [{"role": "user", "content": f"{context}\n\nAufgabe: {task}" if context else f"Aufgabe: {task}"}]
-
+    """Sendet Aufgabe an ai_complete (automatischer Provider-Fallback) und gibt Antwort zurück."""
+    prompt = f"{context}\n\nAufgabe: {task}" if context else f"Aufgabe: {task}"
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": model,
-                    "max_tokens": 4096,
-                    "system": SYSTEM_PROMPT,
-                    "messages": messages,
-                },
-            ) as r:
-                data = await r.json(content_type=None)
-                if r.status == 200:
-                    return data.get("content", [{}])[0].get("text", "Keine Antwort")
-                return f"❌ Claude API Fehler {r.status}: {data.get('error', {}).get('message', '')}"
+        return await ai_complete(prompt=prompt, system=SYSTEM_PROMPT, max_tokens=4096)
     except Exception as e:
-        log.error("Claude API: %s", e)
+        log.error("ai_complete: %s", e)
         return f"❌ Fehler: {e}"
 
 
