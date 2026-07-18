@@ -40,6 +40,18 @@ _SHOPIFY_SUITE_URL = os.getenv("SHOPIFY_SUITE_URL",
 def _tg(method: str, payload: dict) -> dict:
     if not TELEGRAM_TOKEN:
         return {}
+    if method == "sendMessage":
+        try:
+            from modules.smart_poster import send_telegram_guarded_sync
+            return send_telegram_guarded_sync(
+                TELEGRAM_TOKEN,
+                str(payload.get("chat_id", "")),
+                str(payload.get("text", "")),
+                reply_markup=payload.get("reply_markup"),
+                parse_mode=str(payload.get("parse_mode", "HTML")),
+            )
+        except Exception:
+            return {}
     try:
         data = json.dumps(payload).encode()
         req = urllib.request.Request(

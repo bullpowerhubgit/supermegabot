@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Dict
 
@@ -26,7 +27,16 @@ except ImportError:
 
 log = logging.getLogger("TrustConversion")
 
-SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+def _admin_domain() -> str:
+    domain = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN", "") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    if domain and ".myshopify.com" in domain:
+        return domain
+    store_url = os.getenv("SHOPIFY_STORE_URL", "")
+    match = re.search(r"([\w-]+\.myshopify\.com)", store_url)
+    return match.group(1) if match else domain
+
+
+SHOPIFY_DOMAIN  = _admin_domain()
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-04")
 
@@ -181,10 +191,72 @@ TRUST_JS = r"""
   }
 
   // ── Exit Intent Popup ───────────────────────────────────────────────────────
+  var DISMISS_KEY = 'bp_discount_dismissed';
+  function isDiscountDismissed() {
+    if (document.cookie.indexOf('bp_discount_dismissed=1') > -1) return true;
+    try {
+      return window.localStorage && localStorage.getItem(DISMISS_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+  function dismissDiscountPopup(days) {
+    var maxAge = (days || 30) * 86400;
+    document.cookie = 'bp_discount_dismissed=1;max-age=' + maxAge + ';path=/;SameSite=Lax';
+    try {
+      if (window.localStorage) localStorage.setItem(DISMISS_KEY, '1');
+    } catch (e) {}
+  }
+  function bindDiscountDismissWatchers() {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      if (!target || !target.closest) return;
+      var closeTrigger = target.closest('[aria-label="Close"], [aria-label="close"], .klaviyo-close-form, .needsclick.klaviyo-close-form, button[data-testid="close-form-button"]');
+      if (closeTrigger) dismissDiscountPopup(30);
+    }, true);
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      if (!form || !form.matches) return;
+      if (form.matches('form.klaviyo-form, form[action*="manage.kmail-lists.com"], form[action*="klaviyo"]')) {
+        dismissDiscountPopup(30);
+      }
+    }, true);
+  }
+  function hideDismissedDiscountForms() {
+    if (!isDiscountDismissed()) return;
+    [
+      '.klaviyo-form',
+      '[class*="klaviyo-form"]',
+      'form[action*="manage.kmail-lists.com"]'
+    ].forEach(function(selector) {
+      document.querySelectorAll(selector).forEach(function(node) {
+        var popup = node.closest('[style*="position: fixed"], [class*="modal"], [class*="popup"]') || node;
+        if (popup && popup.style) popup.style.display = 'none';
+      });
+    });
+  }
+  function suppressLegacyKlaviyoPopup() {
+    try {
+      localStorage.setItem('kl_popup_shown', JSON.stringify({ts: Date.now(), subscribed: true}));
+    } catch (e) {}
+    ['kl-popup-overlay', 'kl-popup'].forEach(function(id) {
+      var node = document.getElementById(id);
+      if (node && node.parentNode) node.parentNode.removeChild(node);
+    });
+  }
+  function startLegacyKlaviyoPopupSuppression() {
+    suppressLegacyKlaviyoPopup();
+    var observer = new MutationObserver(function() {
+      suppressLegacyKlaviyoPopup();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(function() { observer.disconnect(); }, 30000);
+    window.addEventListener('pageshow', suppressLegacyKlaviyoPopup);
+  }
   var exitShown = false;
   document.addEventListener('mouseleave', function(e) {
     if (e.clientY > 5 || exitShown) return;
-    if (document.cookie.indexOf('bp_exit=1') > -1) return;
+    if (document.cookie.indexOf('bp_exit=1') > -1 || isDiscountDismissed()) return;
     exitShown = true;
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;display:flex;align-items:center;justify-content:center';
@@ -194,11 +266,11 @@ TRUST_JS = r"""
       '<h2 style="margin:0 0 8px;color:#1a1a2e;font-size:22px">Warte! 10% Rabatt für dich</h2>',
       '<p style="color:#6b7280;margin:0 0 20px;font-size:14px">',
       'Nur heute: 10% auf deine erste Bestellung.<br>Code wird automatisch angewendet.</p>',
-      '<a href="/collections/all?discount=WELCOME10" onclick="document.cookie=\'bp_exit=1;max-age=86400;path=/\'" ',
+      '<a href="/collections/all?discount=WELCOME10" onclick="document.cookie=\'bp_exit=1;max-age=86400;path=/\';window.bpDismissDiscountPopup&&window.bpDismissDiscountPopup()" ',
       'style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;',
       'text-decoration:none;font-weight:700;font-size:15px;display:inline-block;margin-bottom:12px">',
       '10% sparen — Jetzt shoppen →</a>',
-      '<br><button onclick="this.closest(\'div[style*=fixed]\').remove();document.cookie=\'bp_exit=1;max-age=86400;path=\/\'" ',
+      '<br><button onclick="this.closest(\'div[style*=fixed]\').remove();document.cookie=\'bp_exit=1;max-age=86400;path=\/\';window.bpDismissDiscountPopup&&window.bpDismissDiscountPopup()" ',
       'style="background:none;border:none;color:#9ca3af;font-size:12px;cursor:pointer;margin-top:8px">',
       'Nein danke, kein Rabatt</button></div>',
     ].join('');
@@ -207,9 +279,15 @@ TRUST_JS = r"""
       if (ev.target === overlay) {
         overlay.remove();
         document.cookie = 'bp_exit=1;max-age=86400;path=/';
+        dismissDiscountPopup(30);
       }
     });
   });
+
+  window.bpDismissDiscountPopup = function() { dismissDiscountPopup(30); };
+  bindDiscountDismissWatchers();
+  hideDismissedDiscountForms();
+  startLegacyKlaviyoPopupSuppression();
 
 })();
 """
@@ -231,23 +309,36 @@ async def inject_trust_script(session: aiohttp.ClientSession) -> Dict:
     # The ScriptTag points to our Railway trust-badge endpoint
     trust_url = f"https://supermegabot-production.up.railway.app/trust-badge.js?v=2"
 
-    for tag in existing.get("script_tags", []):
-        if "trust" in tag.get("src", "").lower() or "bp-conversion" in tag.get("src", "").lower():
-            # Update existing
+    tags = existing.get("script_tags", [])
+    trust_tags = [tag for tag in tags if "trust-badge.js" in tag.get("src", "")]
+    legacy_tags = [tag for tag in tags if "trust-conversion.js" in tag.get("src", "")]
+
+    for tag in trust_tags[1:] + legacy_tags:
+        async with session.delete(
+            f"{base_url}/script_tags/{tag['id']}.json",
+            headers=headers,
+            timeout=aiohttp.ClientTimeout(total=10),
+        ):
+            pass
+
+    if trust_tags:
+        primary = trust_tags[0]
+        if primary.get("src") != trust_url:
             async with session.put(
-                f"{base_url}/script_tags/{tag['id']}.json",
+                f"{base_url}/script_tags/{primary['id']}.json",
                 headers=headers,
-                json={"script_tag": {"src": trust_url}},
+                json={"script_tag": {"id": primary["id"], "src": trust_url, "event": "onload", "display_scope": "online_store"}},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 result = await r.json(content_type=None)
-            return {"action": "updated", "tag_id": tag["id"], "result": result}
+            return {"action": "updated", "tag_id": primary["id"], "result": result}
+        return {"action": "already_exists", "tag_id": primary["id"], "src": trust_url}
 
     # Create new
     async with session.post(
         f"{base_url}/script_tags.json",
         headers=headers,
-        json={"script_tag": {"event": "onload", "src": trust_url}},
+        json={"script_tag": {"event": "onload", "src": trust_url, "display_scope": "online_store"}},
         timeout=aiohttp.ClientTimeout(total=10),
     ) as r:
         result = await r.json(content_type=None)

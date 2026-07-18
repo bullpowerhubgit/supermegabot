@@ -1,8 +1,7 @@
 """
-DS24 Income Blaster — maximaler Affiliate-Traffic auf allen Kanälen
+DS24 Income Blaster — kontrollierte DS24-Kommunikation auf freigegebenen Kanälen
 ====================================================================
-4× täglich: Telegram + Facebook + LinkedIn → DS24 Provision
-Affiliate-Link: https://www.checkout-ds24.com/product/669750?affiliate=user37405262
+Postet nur freigegebene, valide DS24-Angebote.
 """
 from __future__ import annotations
 
@@ -23,18 +22,22 @@ load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 log = logging.getLogger("DS24Blaster")
 
-AFFILIATE_LINK = "https://www.checkout-ds24.com/product/669750?affiliate=user37405262"
 FB_PAGE_ID     = "1016738738178786"
 _DB = Path(__file__).parent.parent / "data" / "ds24_blaster.db"
 
 TEMPLATES = [
-    "🤑 Passives Einkommen mit KI-Automatisierung — komplett automatisiert!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ 30 Tage Geld-zurück\n\nJetzt starten: {LINK}\n\n#PassivesEinkommen #KI #Digistore24 #OnlineBusiness",
-    "⚡ Digistore24 Partner werden → 30% Provision auf jeden Sale!\n\n💰 Du verdienst mit, wenn andere kaufen\n🚀 Vollautomatischer Verkauf\n📈 Unbegrenzte Skalierung\n\nHier Partner werden: {LINK}\n\n#AffiliateMarketing #Digistore24 #Provision",
-    "🚀 In 30 Tagen zum automatisierten Online-Business — ohne Vorkenntnisse!\n\n✅ Schritt-für-Schritt Anleitung\n✅ KI macht 90% der Arbeit\n✅ Bereits hunderte zufriedene Kunden\n\nJetzt loslegen: {LINK}\n\n#OnlineBusiness #Automatisierung #DACH",
-    "💡 Wie ich meinen Shop vollautomatisch betreibe — 2026 Guide!\n\n🔥 Bestellungen automatisch\n🔥 Preise automatisch\n🔥 Marketing automatisch\n\nKomplette Anleitung: {LINK}\n\n#Shopify #KIBusiness #ECommerce",
-    "📊 Warum 90% der Online-Shops scheitern — und wie du es vermeidest:\n\n❌ Manueller Aufwand zu hoch\n❌ Kein automatisiertes Marketing\n❌ Keine KI-Unterstützung\n\n✅ Lösung: {LINK}\n\n#OnlineShop #ECommerce #Automatisierung",
-    "🎯 Täglich €100-500 passiv verdienen — ist das realistisch?\n\n Mit dem richtigen System: JA!\n\n✅ Vollautomatisch\n✅ Proven System\n✅ DACH-optimiert\n\nHier erfahren wie: {LINK}\n\n#PassivesEinkommen #OnlineMarketing #Deutschland",
+    "💡 KI-Workflows fuer digitale Angebote klar strukturieren.\n\n✅ Uebersichtliche Prozesse\n✅ Praxisnahe Automationen\n✅ Saubere Umsetzung statt leere Versprechen\n\nMehr erfahren: {LINK}\n\n#KI #Digistore24 #DigitalBusiness",
+    "⚡ Digitale Produkt-Workflows besser aufsetzen.\n\n📦 Klarer Aufbau\n🛠️ Konkrete Umsetzungsschritte\n📈 Fokus auf Struktur und Nachvollziehbarkeit\n\nDetails: {LINK}\n\n#Automation #Digistore24 #Workflow",
+    "🚀 E-Commerce- und Funnel-Ablaufe systematisch verbessern.\n\n✅ Schritt-fuer-Schritt\n✅ Weniger manueller Aufwand\n✅ Realistische Prozessoptimierung\n\nAnsehen: {LINK}\n\n#ECommerce #Automatisierung #DACH",
 ]
+
+
+def _approved_link() -> str:
+    try:
+        from modules.ds24_link_guardian import get_ds24_link
+        return get_ds24_link("social")
+    except Exception:
+        return os.getenv("DS24_AFFILIATE_LINK", "")
 
 
 # ── DB ─────────────────────────────────────────────────────────────────────────
@@ -81,25 +84,29 @@ def _posts_today(platform: str) -> int:
 
 async def generate_promo_content() -> str:
     """KI Content via ai_complete oder hardcoded Template."""
+    link = _approved_link()
+    if not link:
+        log.warning("DS24 Blaster: kein freigegebener DS24-Link verfügbar")
+        return ""
     from modules.ai_client import ai_complete
     prompt = (
-        "Schreibe einen viralen deutschen Social-Media-Post über KI-Automatisierung "
-        "und passives Einkommen. Max 180 Wörter. Nutze Emojis. Füge am Ende ein "
+        "Schreibe einen kurzen deutschen Social-Media-Post über KI-Automatisierung "
+        "und digitale Produkt-Workflows. Max 180 Wörter. Nutze Emojis sparsam. Füge am Ende ein "
         f"Platzhalter {{LINK}} für den Affiliate-Link ein. Hashtags hinzufügen."
     )
     try:
         text = await ai_complete(prompt, max_tokens=200)
         if text:
             if "{LINK}" not in text:
-                text += f"\n\n👉 {AFFILIATE_LINK}"
+                text += f"\n\n👉 {link}"
             else:
-                text = text.replace("{LINK}", AFFILIATE_LINK)
+                text = text.replace("{LINK}", link)
             return text
     except Exception as e:
         log.warning("ai_complete Fehler: %s — nutze Template", e)
 
     tpl = random.choice(TEMPLATES)
-    return tpl.replace("{LINK}", AFFILIATE_LINK)
+    return tpl.replace("{LINK}", link)
 
 
 # ── Plattformen ────────────────────────────────────────────────────────────────
@@ -238,6 +245,13 @@ async def run_ds24_blast() -> dict:
 
 async def _blast_inner() -> dict:
     content = await generate_promo_content()
+    if not content:
+        return {"status": "skipped", "reason": "no_approved_link"}
+    from modules.post_validator import validate_post
+    ok, _layer, reason = await validate_post(content, platform="telegram", content_type="social")
+    if not ok:
+        log.warning("DS24 Blast blocked by validator: %s", reason)
+        return {"status": "blocked", "reason": reason}
     results: dict[str, bool] = {}
 
     # Max 4 Posts/Tag pro Plattform
@@ -265,6 +279,13 @@ async def _blast_inner() -> dict:
 async def run_affiliate_blast_now() -> dict:
     """Sofort-Blast (ignoriert Coordinator-Cache)."""
     content = await generate_promo_content()
+    if not content:
+        return {"blocked": True, "reason": "no_approved_link"}
+    from modules.post_validator import validate_post
+    ok, _layer, reason = await validate_post(content, platform="telegram", content_type="social")
+    if not ok:
+        log.warning("DS24 immediate blast blocked by validator: %s", reason)
+        return {"blocked": True, "reason": reason}
     tg = await post_to_telegram(content)
     fb = await post_to_facebook(content)
     li = await post_to_linkedin(content)
@@ -279,7 +300,7 @@ def get_stats() -> dict:
             (time.time() - 86400,)
         ).fetchall()
     today = {r["platform"]: {"total": r["cnt"], "ok": r["ok"]} for r in rows}
-    return {"posts_today": today, "affiliate_link": AFFILIATE_LINK}
+    return {"posts_today": today, "affiliate_link": _approved_link()}
 
 
 if __name__ == "__main__":

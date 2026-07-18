@@ -417,7 +417,16 @@ async def fire(
     Returns:
         dict mit Ergebnissen pro Kanal
     """
-    # Quality gate: validate before posting
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception:
+        pause_reason = ""
+    if pause_reason:
+        logger.warning("BrutusCore: posting paused (%s): '%s'", pause_reason, title[:60])
+        return {"ok": False, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+
+    # Basic quality gate before channel-specific validation
     valid, reason = _validate_post(title, body, link)
     if not valid:
         logger.warning("BrutusCore: post BLOCKED (%s): '%s'", reason, title[:60])
@@ -434,6 +443,19 @@ async def fire(
     results["title"] = title
 
     async def _run(sess: aiohttp.ClientSession):
+        from modules.post_validator import validate_post
+
+        async def _allow_channel_post(text: str, platform: str, content_type: str = "social") -> bool:
+            ok, _layer, reason = await validate_post(
+                text=text,
+                platform=platform,
+                content_type=content_type,
+            )
+            if not ok:
+                results[f"{platform}_blocked"] = reason
+                logger.warning("BrutusCore %s blocked: %s", platform, reason)
+            return ok
+
         # AI Content generieren
         content = await _ai_generate(title, body, link, niche, sess)
 
@@ -447,33 +469,47 @@ async def fire(
         # Alle aktiven Kanäle parallel
         tasks = {}
         if "telegram" in channels:
-            tasks["telegram"] = _telegram(tg_text, sess)
+            if await _allow_channel_post(tg_text, "telegram", "social"):
+                tasks["telegram"] = _telegram(tg_text, sess)
         if "shopify_blog" in channels:
-            tasks["shopify_blog"] = _shopify_blog(blog_title, blog_body, tags, sess)
+            if await _allow_channel_post(f"{blog_title}\n\n{blog_body}", "shopify_blog", "shopify"):
+                tasks["shopify_blog"] = _shopify_blog(blog_title, blog_body, tags, sess)
         if "linkedin" in channels:
-            tasks["linkedin"] = _linkedin(li_text, sess)
+            if await _allow_channel_post(li_text, "linkedin", "social"):
+                tasks["linkedin"] = _linkedin(li_text, sess)
         if "mailchimp" in channels:
-            tasks["mailchimp"] = _mailchimp(email_subj, email_html, sess)
+            if await _allow_channel_post(f"{email_subj}\n\n{content.get('email_body', body)}\n\n{link}", "mailchimp", "email"):
+                tasks["mailchimp"] = _mailchimp(email_subj, email_html, sess)
         if "klaviyo" in channels:
             tasks["klaviyo"] = _klaviyo_event(title, link, sess)
         if "indexnow" in channels and link:
             tasks["indexnow"] = _indexnow(link, sess)
         if "twitter" in channels:
             tw_text = content.get("twitter") or f"{title[:200]}\n{link}"
-            tasks["twitter"] = _twitter(tw_text, sess)
+            if await _allow_channel_post(tw_text, "twitter", "social"):
+                tasks["twitter"] = _twitter(tw_text, sess)
         if "discord" in channels:
             dc_text = content.get("telegram") or f"🔥 **{title}**\n\n{body[:300]}\n\n👉 {link}"
-            tasks["discord"] = _discord(dc_text, sess)
+            if await _allow_channel_post(dc_text, "discord", "social"):
+                tasks["discord"] = _discord(dc_text, sess)
         if "whatsapp" in channels:
             wa_text = content.get("telegram") or f"🔥 {title}\n\n{body[:300]}\n\n👉 {link}"
-            tasks["whatsapp"] = _whatsapp(wa_text, sess)
+            if await _allow_channel_post(wa_text, "whatsapp", "social"):
+                tasks["whatsapp"] = _whatsapp(wa_text, sess)
         if "amazon" in channels:
             tasks["amazon"] = _amazon_affiliate(title, link, sess)
         if "ebay" in channels:
             tasks["ebay"] = _ebay_affiliate(title, link, sess)
         if "slack" in channels:
             sl_text = content.get("telegram") or f"🔥 {title}\n\n{body[:300]}\n\n👉 {link}"
-            tasks["slack"] = _slack(sl_text, sess)
+            if await _allow_channel_post(sl_text, "slack", "social"):
+                tasks["slack"] = _slack(sl_text, sess)
+
+        if not tasks:
+            results["blocked"] = True
+            results["reason"] = "all_channels_blocked_by_validator"
+            logger.warning("BrutusCore: all channels blocked for '%s'", title[:60])
+            return
 
         done = await asyncio.gather(*tasks.values(), return_exceptions=True)
         for key, result in zip(tasks.keys(), done):

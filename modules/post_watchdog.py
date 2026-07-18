@@ -224,6 +224,9 @@ async def validate_post(
                 pass
             return False, nt_errs
     except Exception as e:
+        err = str(e).lower()
+        if "locked" in err or "unable to open database file" in err or "busy" in err:
+            return True, []
         return False, [f"NeverTwice fail-closed: {e}"]
 
     # 1. Längen-Check
