@@ -307,6 +307,43 @@ async def handle_chat(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_assistant_ask(req):
+    """POST /api/assistant/ask — Rudolf's persönlicher KI-Assistent.
+    Body: {"message": "...", "session_id": "optional", "context": "optional"}
+    Returns: {"ok": true, "answer": "...", "session_id": "..."}
+    """
+    try:
+        data = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "Invalid JSON"}, status=400)
+
+    message = (data.get("message") or data.get("text") or "").strip()
+    if not message:
+        return web.json_response({"ok": False, "error": "message required"}, status=400)
+
+    session_id = data.get("session_id", "dashboard")
+    context = data.get("context", "")
+
+    try:
+        from modules.rudolf_assistant import ask
+        answer = await ask(message, session_id=session_id, context=context)
+        return web.json_response({"ok": True, "answer": answer, "session_id": session_id})
+    except Exception as e:
+        log.error("assistant/ask error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_assistant_clear(req):
+    """DELETE /api/assistant/history?session_id=xxx — Verlauf löschen."""
+    session_id = req.rel_url.query.get("session_id", "dashboard")
+    try:
+        from modules.rudolf_assistant import clear_history
+        clear_history(session_id)
+        return web.json_response({"ok": True, "cleared": session_id})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_bot_execute(req):
     """Telegram Hub Bridge → Dashboard CommandRouter.
     Called by telegram_hub_bridge.py for every incoming Telegram message.
@@ -4504,26 +4541,43 @@ async def handle_telegram_webhook(req):
             return web.Response(status=200)
 
         # --- AI Antwort ---
-        try:
+        # Rudolf (TELEGRAM_CHAT_ID) bekommt persönlichen Assistenten mit Memory + Sonnet
+        # Kunden bekommen den Standard-Customer-Bot
+        rudolf_chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        is_rudolf = rudolf_chat_id and str(chat_id) == str(rudolf_chat_id)
+
+        if is_rudolf:
             try:
-                import modules.anthropic_compat as anthropic
-            except ImportError:
-                import anthropic
-            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
-            reply_msg = client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=500,
-                system=(
-                    "Du bist RudiBot, ein KI-Assistent für E-Commerce und Business Automation. "
-                    "Antworte auf Deutsch, kurz und hilfreich. "
-                    "Wenn jemand nach Preisen, Abo oder Kauf fragt, sage: 'Tippe /premium für unsere High-Ticket Pläne ab €497/Monat — mit 14-Tage Demo und 90-Tage ROI-Garantie.'"
-                ),
-                messages=[{"role": "user", "content": text or "(leere Nachricht)"}]
-            )
-            reply_text = reply_msg.content[0].text if reply_msg.content else "Entschuldigung, keine Antwort verfügbar."
-        except Exception as ai_err:
-            log.error("AI error in telegram webhook: %s", ai_err)
-            reply_text = "Hallo! Ich bin RudiBot. Tippe /premium für unsere Pläne. (KI momentan nicht verfügbar)"
+                from modules.rudolf_assistant import ask
+                reply_text = await ask(
+                    text or "(leere Nachricht)",
+                    session_id=f"tg_{chat_id}",
+                )
+            except Exception as ai_err:
+                log.error("Rudolf-Assistent Telegram-Fehler: %s", ai_err)
+                reply_text = f"❌ Assistent nicht verfügbar: {ai_err}"
+        else:
+            try:
+                try:
+                    import modules.anthropic_compat as anthropic
+                except ImportError:
+                    import anthropic
+                client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
+                reply_msg = client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=500,
+                    system=(
+                        "Du bist RudiBot, ein KI-Assistent für E-Commerce und Business Automation. "
+                        "Antworte auf Deutsch, kurz und hilfreich. "
+                        "Wenn jemand nach Preisen, Abo oder Kauf fragt, sage: "
+                        "'Tippe /premium für unsere High-Ticket Pläne ab €497/Monat — mit 14-Tage Demo und 90-Tage ROI-Garantie.'"
+                    ),
+                    messages=[{"role": "user", "content": text or "(leere Nachricht)"}]
+                )
+                reply_text = reply_msg.content[0].text if reply_msg.content else "Entschuldigung, keine Antwort verfügbar."
+            except Exception as ai_err:
+                log.error("AI error in telegram webhook: %s", ai_err)
+                reply_text = "Hallo! Ich bin RudiBot. Tippe /premium für unsere Pläne. (KI momentan nicht verfügbar)"
 
         await _tg_send(bot_token, chat_id, reply_text)
         return web.Response(status=200)
@@ -5397,9 +5451,57 @@ async def handle_stripe_webhook(req):
         except Exception as _se:
             log.debug("Sofia Stripe hook: %s", _se)
 
+        # Claude-Analyse bei neuer Zahlung → Telegram an Rudolf
+        try:
+            event_type = event.get("type", "")
+            if event_type in ("payment_intent.succeeded", "checkout.session.completed", "charge.succeeded"):
+                asyncio.create_task(_claude_stripe_analysis(event))
+        except Exception as _ca:
+            log.debug("Claude Stripe analysis hook: %s", _ca)
+
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+async def _claude_stripe_analysis(event: dict) -> None:
+    """Neue Stripe-Zahlung → Claude analysiert + sendet Kurz-Report an Rudolf via Telegram."""
+    try:
+        obj = event.get("data", {}).get("object", {})
+        amount = (obj.get("amount_total") or obj.get("amount", 0)) / 100
+        currency = (obj.get("currency") or "eur").upper()
+        customer_email = (obj.get("customer_details") or {}).get("email", "") or obj.get("receipt_email", "")
+        metadata = obj.get("metadata") or {}
+        product = metadata.get("product") or metadata.get("product_id") or "?"
+        event_type = event.get("type", "")
+
+        from modules.rudolf_assistant import quick
+        analysis = quick(
+            f"Neue Stripe-Zahlung eingegangen!\n"
+            f"Event: {event_type}\n"
+            f"Betrag: {amount:.2f} {currency}\n"
+            f"Produkt: {product}\n"
+            f"Kunde: {customer_email}\n\n"
+            f"Gib eine kurze Glückwunsch-Nachricht (2-3 Sätze) + 1 konkreten Upsell-Hinweis für Rudolf."
+        )
+        if analysis:
+            token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+            if token and chat_id:
+                msg = (
+                    f"💰 <b>Neue Zahlung: {amount:.2f} {currency}!</b>\n"
+                    f"📦 Produkt: {product}\n"
+                    f"👤 Kunde: {customer_email or '–'}\n\n"
+                    f"🤖 <i>{analysis}</i>"
+                )
+                async with aiohttp.ClientSession() as s:
+                    await s.post(
+                        f"https://api.telegram.org/bot{token}/sendMessage",
+                        json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML"},
+                        timeout=aiohttp.ClientTimeout(total=8),
+                    )
+    except Exception as e:
+        log.debug("_claude_stripe_analysis: %s", e)
 
 
 async def _stripe_onboarding_hook(event: dict) -> None:
@@ -11845,6 +11947,8 @@ async def create_app():
     app.router.add_get("/api/ht/onboarding", handle_ht_onboarding)
     app.router.add_get("/api/ht/stats", handle_ht_stats)
     app.router.add_post("/api/chat", handle_chat)
+    app.router.add_post("/api/assistant/ask", handle_assistant_ask)
+    app.router.add_delete("/api/assistant/history", handle_assistant_clear)
     # Telegram Hub Bridge endpoints
     app.router.add_post("/api/bot/execute", handle_bot_execute)
     app.router.add_get("/api/bot/commands", handle_bot_commands)
