@@ -149,7 +149,16 @@ async def _tg(msg: str):
 
 async def _tg_marketing(msg: str) -> bool:
     """Marketing-Posts → NUR an öffentlichen Kanal (TELEGRAM_CHANNEL_ID).
-    Sendet NIE an Rudolf's privaten Chat. Gibt True zurück wenn gesendet."""
+    Sendet NIE an Rudolf's privaten Chat. Gibt True zurück wenn gesendet.
+
+    KERN-SCHUTZ 2026-07-18: Alle Marketing-Posts DEAKTIVIERT bis
+    MARKETING_POSTING_ENABLED=true in Railway Env gesetzt wird.
+    Verhindert fehlerhafte Posts mit unpublished Produkten / bad content.
+    """
+    # KERN-SCHUTZ: Marketing-Posts permanent deaktiviert bis explizit freigegeben
+    if os.getenv("MARKETING_POSTING_ENABLED", "").lower() != "true":
+        log.debug("_tg_marketing DEAKTIVIERT — MARKETING_POSTING_ENABLED nicht gesetzt")
+        return False
     try:
         from modules.smart_poster import get_posting_pause_reason
         pause_reason = get_posting_pause_reason()
@@ -9104,6 +9113,16 @@ class AutomationScheduler:
         "mega_command_center",   # "MEGA Geldmaschine alle Systeme"
         "reddit_monetized",      # Reddit-Posts (Contributor Program)
         "reply_monitor",         # "Social Mentions auto-beantworten" — postet Antworten
+        # Gumroad/DS24 Promo-Poster (posten unpublished/nicht-genehmigte Produkte!)
+        "gumroad_cycle",         # "Gumroad Produkte + Promos" — postet unpublished Produkte!
+        "digistore_autonomy",    # "DS24 Produkte+Funnels+Traffic" — schließt Posting ein
+        "ds24_funnel_auto",      # "DS24 Sales-Funnels auto" — postet Funnel-Links
+        "money_cycle",           # 30min Loop — ruft intern Promo-Posts auf
+        "revenue_engine",        # "DS24+Flash+AIITEC" — ruft Traffic/Posting auf
+        "revenue_engine_evening",# Abend-Slot
+        "priority_cluster",      # "Kanzlei+Shop+Mandate" — inkl. Posting
+        "geldmaschine_skalierung", # Revenue Engine mit Posting-Anteil
+        "saas_factory_cycle",    # "1 MVP: Stripe+Landing+Gumroad" — postet Launches
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
