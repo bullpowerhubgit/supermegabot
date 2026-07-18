@@ -10,6 +10,8 @@ logs/
 *.sqlite
 nohup.out
 data/
+!data/downloads/
+!data/downloads/*.zip
 rudibot-army/shared/army_state.json
 
 # GCP / Google Cloud — niemals einchecken
