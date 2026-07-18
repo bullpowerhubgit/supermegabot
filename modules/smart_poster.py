@@ -53,6 +53,24 @@ _TELEGRAM_MIN_INTERVAL_S = 4.0
 _TELEGRAM_NETWORK_BACKOFF_S = 90
 _TELEGRAM_PATCH_BYPASS: ContextVar[bool] = ContextVar("telegram_patch_bypass", default=False)
 _GLOBAL_TELEGRAM_GUARD_INSTALLED = False
+_TELEGRAM_TEXT_METHODS = {
+    "sendMessage",
+    "editMessageText",
+    "editMessageCaption",
+    "copyMessage",
+    "forwardMessage",
+}
+_TELEGRAM_MEDIA_METHODS = {
+    "sendPhoto",
+    "sendDocument",
+    "sendMediaGroup",
+    "sendVideo",
+    "sendAudio",
+    "sendVoice",
+    "sendAnimation",
+    "sendLocation",
+    "sendVenue",
+}
 
 # Verbotene Keywords — wird auf generierten Content angewendet
 _BANNED_PATTERNS = [
@@ -350,15 +368,59 @@ def _extract_telegram_payload(raw_json=None, raw_data=None) -> dict:
 
 def _intercept_telegram_send_payload(url: str, payload: dict) -> tuple[bool, str, dict]:
     bot_token, method = _parse_telegram_send_target(url)
-    if method != "sendMessage" or not bot_token:
+    if method not in (_TELEGRAM_TEXT_METHODS | _TELEGRAM_MEDIA_METHODS) or not bot_token:
         return False, "", {}
     data = payload or {}
     return True, bot_token, {
+        "method": method,
         "chat_id": str(data.get("chat_id", "")),
         "text": str(data.get("text", "")),
+        "caption": str(data.get("caption", "")),
         "reply_markup": data.get("reply_markup"),
         "parse_mode": str(data.get("parse_mode", "HTML")),
+        "payload": data,
     }
+
+
+def _telegram_guard_for_method(bot_token: str, intercepted: dict) -> dict:
+    method = intercepted.get("method", "")
+    chat_id = str(intercepted.get("chat_id", ""))
+    text = str(intercepted.get("text") or intercepted.get("caption") or "")
+
+    if method in _TELEGRAM_TEXT_METHODS:
+        return _telegram_guard_decision(
+            bot_token,
+            chat_id,
+            text,
+            reply_markup=intercepted.get("reply_markup"),
+            parse_mode=intercepted.get("parse_mode", "HTML"),
+        )
+
+    pause_reason = get_posting_pause_reason()
+    if pause_reason:
+        return {"ok": False, "skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+
+    if text:
+        hard_block_reason = block_reason_for_telegram_text(text)
+        if hard_block_reason:
+            return {"ok": False, "blocked": True, "reason": hard_block_reason}
+
+        if should_validate_telegram_text(text):
+            valid, checks = validate_post(text, "telegram")
+            if not valid:
+                failed = [c.reason for c in checks if not c.passed]
+                return {
+                    "ok": False,
+                    "blocked": True,
+                    "reason": "telegram_validation_failed",
+                    "details": failed,
+                }
+
+    allowed, reason = _telegram_guard_precheck(bot_token, chat_id)
+    if not allowed:
+        return {"ok": False, "skipped": True, "reason": reason}
+
+    return {"ok": True, "payload": intercepted.get("payload") or {}}
 
 
 class _GuardedAioHTTPResponse:
@@ -427,14 +489,26 @@ def install_global_telegram_send_guard() -> None:
             _extract_telegram_payload(kwargs.get("json"), kwargs.get("data")),
         )
         if should_intercept:
-            result = await send_telegram_guarded(
-                bot_token,
-                tg["chat_id"],
-                tg["text"],
-                reply_markup=tg.get("reply_markup"),
-                parse_mode=tg.get("parse_mode", "HTML"),
-            )
-            return _GuardedAioHTTPResponse(result)
+            decision = _telegram_guard_for_method(bot_token, tg)
+            if not decision.get("ok"):
+                return _GuardedAioHTTPResponse(decision)
+            if tg.get("method") == "sendMessage":
+                result = await send_telegram_guarded(
+                    bot_token,
+                    tg["chat_id"],
+                    tg["text"],
+                    reply_markup=tg.get("reply_markup"),
+                    parse_mode=tg.get("parse_mode", "HTML"),
+                )
+                return _GuardedAioHTTPResponse(result)
+            else:
+                bypass_token = _TELEGRAM_PATCH_BYPASS.set(True)
+                try:
+                    result = await orig_aiohttp_request(self, method, url, *args, **kwargs)
+                finally:
+                    _TELEGRAM_PATCH_BYPASS.reset(bypass_token)
+                _telegram_guard_mark_sent(bot_token, str(tg.get("chat_id", "")))
+                return result
         return await orig_aiohttp_request(self, method, url, *args, **kwargs)
 
     aiohttp.ClientSession._request = _guarded_aiohttp_request
@@ -448,13 +522,25 @@ def install_global_telegram_send_guard() -> None:
         payload = _extract_telegram_payload(raw_data=getattr(req, "data", None))
         should_intercept, bot_token, tg = _intercept_telegram_send_payload(url, payload)
         if should_intercept:
-            result = send_telegram_guarded_sync(
-                bot_token,
-                tg["chat_id"],
-                tg["text"],
-                reply_markup=tg.get("reply_markup"),
-                parse_mode=tg.get("parse_mode", "HTML"),
-            )
+            decision = _telegram_guard_for_method(bot_token, tg)
+            if not decision.get("ok"):
+                return _GuardedSyncHTTPResponse(decision)
+            if tg.get("method") == "sendMessage":
+                result = send_telegram_guarded_sync(
+                    bot_token,
+                    tg["chat_id"],
+                    tg["text"],
+                    reply_markup=tg.get("reply_markup"),
+                    parse_mode=tg.get("parse_mode", "HTML"),
+                )
+            else:
+                bypass_token = _TELEGRAM_PATCH_BYPASS.set(True)
+                try:
+                    result = orig_urlopen(req, *args, **kwargs)
+                finally:
+                    _TELEGRAM_PATCH_BYPASS.reset(bypass_token)
+                _telegram_guard_mark_sent(bot_token, str(tg.get("chat_id", "")))
+                return result
             return _GuardedSyncHTTPResponse(result)
         return orig_urlopen(req, *args, **kwargs)
 
