@@ -114,6 +114,20 @@ async def _send_summary(results: Dict):
     if not token or not chat:
         return
 
+    # Nur senden wenn echte Aktivität vorhanden
+    has_results = any(
+        r.get("ok") and (
+            r.get("alerts_sent", 0) > 0 or
+            r.get("shopify_imported", 0) > 0 or
+            r.get("oos_events", 0) > 0 or
+            r.get("imported", 0) > 0
+        )
+        for r in results.values()
+    )
+    if not has_results:
+        log.debug("Money Machine: 0 Aktivität in allen Engines — kein Telegram")
+        return
+
     lines = ["🤖 <b>Money Machine — Run Complete</b>\n"]
     icons = {"viral": "🔥", "oos": "🎯", "ebay": "📦"}
     for name, r in results.items():

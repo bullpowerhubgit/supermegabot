@@ -58,6 +58,8 @@ def _price_agency() -> str: return os.getenv("VIRAL_PRICE_AGENCY", "")
 WINDOW_HOURS = 48  # Durchschnittliches Trend-Fenster
 MIN_SCORE_SHOPIFY_IMPORT = 72  # Ab diesem Score: Auto-Import in Shopify
 MIN_SCORE_ALERT = 55  # Ab diesem Score: Telegram-Alert
+MAX_ALERTS_PER_RUN = 2
+ADMIN_ALERT_COOLDOWN_S = 1800
 
 # ── Datenbank ─────────────────────────────────────────────────────────────────
 
@@ -794,7 +796,7 @@ async def run_scan() -> Dict:
     # 4b. FB Ad Copy + Alerts + Shopify-Import (pro Produkt EINMALIG generieren)
     imported_count = 0
     alerted_count  = 0
-    for item in sorted(high_score_items, key=lambda x: x["score"], reverse=True)[:10]:
+    for item in sorted(high_score_items, key=lambda x: x["score"], reverse=True)[:MAX_ALERTS_PER_RUN]:
         kw = item["keyword"]
         sc = item["score"]
 
@@ -1015,9 +1017,7 @@ async def _send_alert(item: Dict, shopify_id: Optional[str] = None):
 
     shopify_line = ""
     if shopify_id:
-        domain = _shopify_dom()
-        if domain:
-            shopify_line = f"\n🛍️ <b>Auto-Import:</b> <a href='https://{domain}/admin/products/{shopify_id}'>Shopify ✅</a>"
+        shopify_line = "\n🛍️ <b>Auto-Import:</b> Shopify ✅"
 
     # Margin-Daten aus item holen
     mg = item.get("margin_data", {})
@@ -1054,8 +1054,9 @@ async def _send_alert(item: Dict, shopify_id: Optional[str] = None):
 🤖 Viral Window Scanner by AiiteC
 💎 Pro-Tier für Auto-Import: /subscribe"""
 
-    # An Rudolf's Chat senden
-    await _tg_send(msg)
+    # Rudolf-Chat nur gedrosselt informieren — keine Alert-Flut mehr.
+    if _should_send_admin_alert():
+        await _tg_send(msg)
 
     # Pro/Agency Subscriber bekommen zusätzlich FB Ad Copy
     fb_ad = item.get("fb_ad")
@@ -1081,6 +1082,25 @@ async def _send_alert(item: Dict, shopify_id: Optional[str] = None):
                VALUES (?,?,?,?,?,?,?,?,?)""",
             (kw, score, srcs, window, supplier, margin, shopify_id, msg, int(time.time()))
         )
+
+
+def _should_send_admin_alert() -> bool:
+    # Admin-Alerts nur wenn explizit aktiviert (VIRAL_ADMIN_ALERTS=true in Railway).
+    # Default: deaktiviert — zu viel Rauschen im Owner-Chat.
+    import os as _os
+    if _os.getenv("VIRAL_ADMIN_ALERTS", "false").lower() != "true":
+        return False
+    cutoff = int(time.time()) - ADMIN_ALERT_COOLDOWN_S
+    try:
+        with _db() as conn:
+            row = conn.execute(
+                "SELECT sent_at FROM viral_alerts ORDER BY sent_at DESC LIMIT 1"
+            ).fetchone()
+        if not row:
+            return True
+        return int(row["sent_at"] or 0) < cutoff
+    except Exception:
+        return True
 
 
 async def _notify_subscribers(msg: str, fb_msg: str = None, min_tier_score: float = 0):
