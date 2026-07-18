@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-18 v39 — Telegram-Spam-Session: 30+ Quellen dauerhaft geblockt**
+**Stand: 2026-07-18 v40 — BullPower-Konto-Umstellung komplett**
 
 ## System
 | Check | Status |
@@ -24,6 +24,24 @@
 | modules/shopify_price_optimizer.py | deployed | Preis-Analyse täglich |
 | modules/affiliate_tracker.py | deployed | Klick-Tracking in Supabase |
 | modules/buyer_intent_router.py | deployed | Hot-Lead Priorisierung |
+
+## Session v40 — BullPower-Vollumstellung (2026-07-18)
+| Was | Status |
+|-----|--------|
+| `.env`: EMAIL_FROM / FROM_EMAIL / BREVO_FROM_EMAIL | ✅ bullpowersrtkennels |
+| Railway: SMTP_USER / EMAIL_FROM / BREVO vars | ✅ bullpowersrtkennels |
+| Railway: ANTHROPIC_API_KEY | ✅ neuer bullpowersrtkennels Key |
+| Railway: BREVO_FROM_NAME | ✅ Rudolf Sarkany \| BullPower |
+| 11 Module: Signaturen + Gmail-Defaults | ✅ lokal geändert — **git push ausstehend** |
+| Claude Desktop | ✅ bullpowersrtkennels@gmail.com eingeloggt |
+| Stripe | ✅ immer acct_1Tg1U0 (bullpowersrtkennels) |
+
+**GIT PUSH AUSSTEHEND** — Rudolf manuell ausführen:
+```bash
+cd ~/supermegabot && git add modules/ && git commit -m "fix: aiitec auf BullPower" && git push origin main
+```
+
+**Credits fehlen** → console.anthropic.com aufladen (dann AI-Features live)
 
 ## Session v38 Fixes (2026-07-18 — PR #50 + #51 + #52 — warten auf Rudolf-OK für main-Merge)
 | Fix | Status | Details |
