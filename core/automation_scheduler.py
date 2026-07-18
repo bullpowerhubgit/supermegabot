@@ -6508,17 +6508,16 @@ async def task_klaviyo_flows() -> str:
 
 
 async def task_free_ads_cycle() -> str:
-    """FreeAdsEngine: Meta-Ads-Ersatz — 5 Slots tägl. kostenlos auf 6 Plattformen."""
+    """BrutalAdsEngine: Hybrid aus FreeAds + BrutusCore — 12 Kanäle, 5 Slots, Pre-Flight URL-Check."""
     try:
-        from modules.free_ads_engine import run_free_ads_cycle
-        r = await run_free_ads_cycle()
-        if r.get("skipped"):
-            return f"FreeAds: Slot bereits heute gepostet"
-        return (f"FreeAds [{r.get('slot')}]: {r.get('product')} | "
-                f"{r.get('platforms_run', 0)} Plattformen | "
-                f"OK: {', '.join(r.get('platforms_ok', []))}")
+        from modules.brutal_ads_engine import run_brutal_cycle
+        r = await run_brutal_cycle()
+        return (f"BrutalAds [{r.get('slot')}]: {r.get('product')} | "
+                f"{r.get('platforms_ok_count', 0)} Plattformen OK | "
+                f"{', '.join(r.get('platforms_ok', []))}"
+                if r.get("ok") else f"BrutalAds: {r.get('reason', 'no_posts')}")
     except Exception as e:
-        return f"FreeAds Fehler: {e}"
+        return f"BrutalAds Fehler: {e}"
 
 
 async def task_sendgrid_daily() -> str:

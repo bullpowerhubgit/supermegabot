@@ -11819,22 +11819,34 @@ async def _auto_register_brevo_ip() -> None:
 
 
 async def handle_free_ads_status(request):
-    """GET /api/free-ads/status — FreeAdsEngine Status und heutige Posts."""
+    """GET /api/free-ads/status — BrutalAdsEngine Status (12 Kanäle, Pre-Flight)."""
     try:
-        from modules.free_ads_engine import get_status
+        from modules.brutal_ads_engine import get_status
         return web.json_response(get_status())
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_free_ads_run(request):
-    """POST /api/free-ads/run — Manuell einen Slot sofort auslösen."""
+    """POST /api/free-ads/run — Manuell einen Slot sofort starten."""
     try:
         data = await request.json() if request.content_length else {}
         slot = data.get("slot", "")
-        from modules.free_ads_engine import run_campaign_slot
-        result = await run_campaign_slot(slot)
+        from modules.brutal_ads_engine import run_brutal_cycle
+        result = await run_brutal_cycle(slot)
         return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_brutal_ads_preflight(request):
+    """POST /api/brutal-ads/preflight — URL-Erreichbarkeit testen bevor man postet."""
+    try:
+        data = await request.json()
+        url = data.get("url", "")
+        from modules.brutal_ads_engine import _check_url_live
+        ok, status = await _check_url_live(url)
+        return web.json_response({"url": url, "reachable": ok, "http_status": status})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
@@ -12159,8 +12171,9 @@ async def create_app():
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/api/tg-gate/stats",         handle_tg_gate_stats)
-    app.router.add_get("/api/free-ads/status",       handle_free_ads_status)
-    app.router.add_post("/api/free-ads/run",         handle_free_ads_run)
+    app.router.add_get("/api/free-ads/status",           handle_free_ads_status)
+    app.router.add_post("/api/free-ads/run",             handle_free_ads_run)
+    app.router.add_post("/api/brutal-ads/preflight",     handle_brutal_ads_preflight)
     app.router.add_get("/api/never-again/status",     handle_never_again_status)
     app.router.add_post("/api/never-again/add",       handle_never_again_add)
     app.router.add_post("/api/never-again/report",    handle_never_again_report)
