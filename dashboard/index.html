@@ -942,6 +942,107 @@ addLog('⚡ BullPower MEGA v6 — Quantum Dashboard geladen','i');
 refreshAll();
 setInterval(refreshAll,60000);
 setInterval(loadTasks,120000);
+
+// ─── RUDOLF ASSISTENT CHAT WIDGET ───────────────────────────────────────────
+(function(){
+  const SESSION = 'dashboard_' + Date.now();
+  let open = false;
+
+  // Styles
+  const style = document.createElement('style');
+  style.textContent = `
+    #ra-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;cursor:pointer;z-index:9999;box-shadow:0 4px 20px rgba(168,85,247,.5);font-size:26px;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
+    #ra-btn:hover{transform:scale(1.1);}
+    #ra-box{position:fixed;bottom:92px;right:24px;width:380px;max-height:520px;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9998;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);overflow:hidden;}
+    #ra-box.open{display:flex;}
+    #ra-head{background:linear-gradient(135deg,#a855f7,#6366f1);padding:12px 16px;font-weight:700;font-size:14px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
+    #ra-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px;}
+    #ra-msgs .ra-msg{padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;max-width:90%;white-space:pre-wrap;}
+    #ra-msgs .ra-user{background:#6366f1;color:#fff;align-self:flex-end;}
+    #ra-msgs .ra-bot{background:#252540;color:#e0e0e0;align-self:flex-start;}
+    #ra-msgs .ra-loading{color:#888;font-style:italic;font-size:12px;}
+    #ra-foot{display:flex;padding:10px;gap:8px;border-top:1px solid #333;}
+    #ra-inp{flex:1;background:#252540;border:1px solid #444;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;outline:none;resize:none;height:40px;}
+    #ra-send{background:#a855f7;border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+    #ra-send:hover{background:#9333ea;}
+    #ra-clear{background:none;border:1px solid #555;color:#888;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;}
+    #ra-clear:hover{color:#ccc;border-color:#888;}
+  `;
+  document.head.appendChild(style);
+
+  // Button
+  const btn = document.createElement('button');
+  btn.id = 'ra-btn';
+  btn.innerHTML = '🤖';
+  btn.title = 'Rudolf Assistent';
+  document.body.appendChild(btn);
+
+  // Box
+  const box = document.createElement('div');
+  box.id = 'ra-box';
+  box.innerHTML = `
+    <div id="ra-head">
+      🤖 Rudolf Assistent — Claude
+      <button id="ra-clear">Verlauf löschen</button>
+    </div>
+    <div id="ra-msgs">
+      <div class="ra-msg ra-bot">Hallo Rudolf! 👋 Ich bin dein persönlicher KI-Assistent. Wie kann ich helfen?</div>
+    </div>
+    <div id="ra-foot">
+      <textarea id="ra-inp" placeholder="Frag mich alles…" rows="1"></textarea>
+      <button id="ra-send">Senden</button>
+    </div>
+  `;
+  document.body.appendChild(box);
+
+  btn.addEventListener('click', () => {
+    open = !open;
+    box.classList.toggle('open', open);
+    if(open) document.getElementById('ra-inp').focus();
+  });
+
+  document.getElementById('ra-clear').addEventListener('click', async () => {
+    await fetch('/api/assistant/history?session_id=' + SESSION, {method:'DELETE'});
+    const msgs = document.getElementById('ra-msgs');
+    msgs.innerHTML = '<div class="ra-msg ra-bot">Verlauf gelöscht. Neues Gespräch!</div>';
+  });
+
+  async function sendMsg() {
+    const inp = document.getElementById('ra-inp');
+    const text = inp.value.trim();
+    if(!text) return;
+    inp.value = '';
+
+    const msgs = document.getElementById('ra-msgs');
+    msgs.innerHTML += `<div class="ra-msg ra-user">${text.replace(/</g,'&lt;')}</div>`;
+    const loader = document.createElement('div');
+    loader.className = 'ra-msg ra-loading';
+    loader.textContent = '⏳ Denkt nach…';
+    msgs.appendChild(loader);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    try {
+      const r = await fetch('/api/assistant/ask', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({message: text, session_id: SESSION})
+      });
+      const d = await r.json();
+      loader.remove();
+      const ans = d.ok ? d.answer : ('❌ ' + (d.error || 'Fehler'));
+      msgs.innerHTML += `<div class="ra-msg ra-bot">${ans.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+    } catch(e) {
+      loader.remove();
+      msgs.innerHTML += `<div class="ra-msg ra-bot">❌ Netzwerkfehler: ${e.message}</div>`;
+    }
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  document.getElementById('ra-send').addEventListener('click', sendMsg);
+  document.getElementById('ra-inp').addEventListener('keydown', e => {
+    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); }
+  });
+})();
 </script>
 </body>
 </html>
