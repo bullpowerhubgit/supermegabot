@@ -33,6 +33,7 @@ import sqlite3
 import time
 import urllib.error
 import urllib.request
+from contextvars import ContextVar
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -50,6 +51,8 @@ _TELEGRAM_GUARD_STATE = Path(__file__).parent.parent / "data" / "telegram_send_g
 _POSTING_EMERGENCY_STATE = Path(__file__).parent.parent / "data" / "posting_emergency_stop.json"
 _TELEGRAM_MIN_INTERVAL_S = 4.0
 _TELEGRAM_NETWORK_BACKOFF_S = 90
+_TELEGRAM_PATCH_BYPASS: ContextVar[bool] = ContextVar("telegram_patch_bypass", default=False)
+_GLOBAL_TELEGRAM_GUARD_INSTALLED = False
 
 # Verbotene Keywords — wird auf generierten Content angewendet
 _BANNED_PATTERNS = [
@@ -278,14 +281,13 @@ def _telegram_guard_mark_backoff(bot_token: str, chat_id: str, seconds: int, rea
     _save_telegram_guard_state(state)
 
 
-async def send_telegram_guarded(
+def _telegram_guard_decision(
     bot_token: str,
     chat_id: str,
     text: str,
     reply_markup: dict | None = None,
     parse_mode: str = "HTML",
 ) -> dict:
-    """Rate-limited Telegram sender with backoff on 429/network failures."""
     if not bot_token or not chat_id:
         return {"ok": False, "reason": "telegram_credentials_missing"}
 
@@ -312,24 +314,185 @@ async def send_telegram_guarded(
     if not allowed:
         return {"ok": False, "skipped": True, "reason": reason}
 
-    payload = {"chat_id": chat_id, "text": text[:4096], "parse_mode": parse_mode}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
+    return {
+        "ok": True,
+        "payload": {
+            "chat_id": chat_id,
+            "text": text[:4096],
+            "parse_mode": parse_mode,
+            **({"reply_markup": reply_markup} if reply_markup else {}),
+        },
+    }
+
+
+def _parse_telegram_send_target(url: str) -> tuple[str, str] | tuple[None, None]:
+    match = re.search(r"api\.telegram\.org/bot([^/]+)/([^/?#]+)", str(url))
+    if not match:
+        return None, None
+    return match.group(1), match.group(2)
+
+
+def _extract_telegram_payload(raw_json=None, raw_data=None) -> dict:
+    if isinstance(raw_json, dict):
+        return dict(raw_json)
+    if isinstance(raw_data, (bytes, bytearray)):
+        try:
+            return json.loads(raw_data.decode())
+        except Exception:
+            return {}
+    if isinstance(raw_data, str):
+        try:
+            return json.loads(raw_data)
+        except Exception:
+            return {}
+    return {}
+
+
+def _intercept_telegram_send_payload(url: str, payload: dict) -> tuple[bool, str, dict]:
+    bot_token, method = _parse_telegram_send_target(url)
+    if method != "sendMessage" or not bot_token:
+        return False, "", {}
+    data = payload or {}
+    return True, bot_token, {
+        "chat_id": str(data.get("chat_id", "")),
+        "text": str(data.get("text", "")),
+        "reply_markup": data.get("reply_markup"),
+        "parse_mode": str(data.get("parse_mode", "HTML")),
+    }
+
+
+class _GuardedAioHTTPResponse:
+    def __init__(self, payload: dict):
+        self._payload = payload
+        reason = str(payload.get("reason", ""))
+        if payload.get("ok"):
+            self.status = 200
+        elif "429" in reason or "rate_limit" in reason or "backoff" in reason:
+            self.status = 429
+        else:
+            self.status = 400
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        return False
+
+    async def json(self, content_type=None):
+        return self._payload
+
+    async def text(self):
+        return json.dumps(self._payload, ensure_ascii=False)
+
+    async def read(self):
+        return (await self.text()).encode()
+
+
+class _GuardedSyncHTTPResponse:
+    def __init__(self, payload: dict):
+        self._payload = payload
+        reason = str(payload.get("reason", ""))
+        if payload.get("ok"):
+            self.status = 200
+        elif "429" in reason or "rate_limit" in reason or "backoff" in reason:
+            self.status = 429
+        else:
+            self.status = 400
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, tb):
+        return False
+
+    def getcode(self):
+        return self.status
+
+    def read(self):
+        return json.dumps(self._payload, ensure_ascii=False).encode()
+
+
+def install_global_telegram_send_guard() -> None:
+    global _GLOBAL_TELEGRAM_GUARD_INSTALLED
+    if _GLOBAL_TELEGRAM_GUARD_INSTALLED:
+        return
+
+    orig_aiohttp_request = aiohttp.ClientSession._request
+
+    async def _guarded_aiohttp_request(self, method, url, *args, **kwargs):
+        if _TELEGRAM_PATCH_BYPASS.get():
+            return await orig_aiohttp_request(self, method, url, *args, **kwargs)
+        should_intercept, bot_token, tg = _intercept_telegram_send_payload(
+            str(url),
+            _extract_telegram_payload(kwargs.get("json"), kwargs.get("data")),
+        )
+        if should_intercept:
+            result = await send_telegram_guarded(
+                bot_token,
+                tg["chat_id"],
+                tg["text"],
+                reply_markup=tg.get("reply_markup"),
+                parse_mode=tg.get("parse_mode", "HTML"),
+            )
+            return _GuardedAioHTTPResponse(result)
+        return await orig_aiohttp_request(self, method, url, *args, **kwargs)
+
+    aiohttp.ClientSession._request = _guarded_aiohttp_request
+
+    orig_urlopen = urllib.request.urlopen
+
+    def _guarded_urlopen(req, *args, **kwargs):
+        if _TELEGRAM_PATCH_BYPASS.get():
+            return orig_urlopen(req, *args, **kwargs)
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        payload = _extract_telegram_payload(raw_data=getattr(req, "data", None))
+        should_intercept, bot_token, tg = _intercept_telegram_send_payload(url, payload)
+        if should_intercept:
+            result = send_telegram_guarded_sync(
+                bot_token,
+                tg["chat_id"],
+                tg["text"],
+                reply_markup=tg.get("reply_markup"),
+                parse_mode=tg.get("parse_mode", "HTML"),
+            )
+            return _GuardedSyncHTTPResponse(result)
+        return orig_urlopen(req, *args, **kwargs)
+
+    urllib.request.urlopen = _guarded_urlopen
+    _GLOBAL_TELEGRAM_GUARD_INSTALLED = True
+
+
+async def send_telegram_guarded(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+    reply_markup: dict | None = None,
+    parse_mode: str = "HTML",
+) -> dict:
+    """Rate-limited Telegram sender with backoff on 429/network failures."""
+    decision = _telegram_guard_decision(bot_token, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
+    if not decision.get("ok"):
+        return decision
+    payload = decision["payload"]
 
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
-            async with s.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json=payload,
-            ) as r:
-                data = await r.json(content_type=None)
-                if r.status == 429:
-                    retry_after = int(((data.get("parameters") or {}).get("retry_after")) or 120)
-                    _telegram_guard_mark_backoff(bot_token, str(chat_id), retry_after, "telegram_http_429")
-                    return {"ok": False, "skipped": True, "reason": f"telegram_http_429_retry_after_{retry_after}"}
-                if r.status >= 400:
-                    _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, f"telegram_http_{r.status}")
-                    return {"ok": False, "reason": f"telegram_http_{r.status}"}
+        bypass_token = _TELEGRAM_PATCH_BYPASS.set(True)
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
+                async with s.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json=payload,
+                ) as r:
+                    data = await r.json(content_type=None)
+                    if r.status == 429:
+                        retry_after = int(((data.get("parameters") or {}).get("retry_after")) or 120)
+                        _telegram_guard_mark_backoff(bot_token, str(chat_id), retry_after, "telegram_http_429")
+                        return {"ok": False, "skipped": True, "reason": f"telegram_http_429_retry_after_{retry_after}"}
+                    if r.status >= 400:
+                        _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, f"telegram_http_{r.status}")
+                        return {"ok": False, "reason": f"telegram_http_{r.status}"}
+        finally:
+            _TELEGRAM_PATCH_BYPASS.reset(bypass_token)
         if data.get("ok"):
             _telegram_guard_mark_sent(bot_token, str(chat_id))
         return data
@@ -346,44 +509,23 @@ def send_telegram_guarded_sync(
     parse_mode: str = "HTML",
 ) -> dict:
     """Sync variant for legacy urllib-based Telegram senders."""
-    if not bot_token or not chat_id:
-        return {"ok": False, "reason": "telegram_credentials_missing"}
-
-    pause_reason = get_posting_pause_reason()
-    if pause_reason:
-        return {"ok": False, "skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
-
-    hard_block_reason = block_reason_for_telegram_text(text)
-    if hard_block_reason:
-        return {"ok": False, "blocked": True, "reason": hard_block_reason}
-
-    if should_validate_telegram_text(text):
-        valid, checks = validate_post(text, "telegram")
-        if not valid:
-            failed = [c.reason for c in checks if not c.passed]
-            return {
-                "ok": False,
-                "blocked": True,
-                "reason": "telegram_validation_failed",
-                "details": failed,
-            }
-
-    allowed, reason = _telegram_guard_precheck(bot_token, str(chat_id))
-    if not allowed:
-        return {"ok": False, "skipped": True, "reason": reason}
-
-    payload = {"chat_id": chat_id, "text": text[:4096], "parse_mode": parse_mode}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
+    decision = _telegram_guard_decision(bot_token, chat_id, text, reply_markup=reply_markup, parse_mode=parse_mode)
+    if not decision.get("ok"):
+        return decision
+    payload = decision["payload"]
 
     try:
-        req = urllib.request.Request(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
-            data=json.dumps(payload).encode(),
-            headers={"Content-Type": "application/json"},
-        )
-        with urllib.request.urlopen(req, timeout=12) as r:
-            data = json.loads(r.read().decode())
+        bypass_token = _TELEGRAM_PATCH_BYPASS.set(True)
+        try:
+            req = urllib.request.Request(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                data=json.dumps(payload).encode(),
+                headers={"Content-Type": "application/json"},
+            )
+            with urllib.request.urlopen(req, timeout=12) as r:
+                data = json.loads(r.read().decode())
+        finally:
+            _TELEGRAM_PATCH_BYPASS.reset(bypass_token)
         if data.get("ok"):
             _telegram_guard_mark_sent(bot_token, str(chat_id))
             return data
