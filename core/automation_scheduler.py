@@ -9079,6 +9079,8 @@ class AutomationScheduler:
         # Affiliate-Blast (schleuste bad content durch)
         "affiliate_blast", "affiliate_mega", "ds24_affiliate_blast",
         "ds24_traffic",
+        # eBay-Autoposter/BRUTUS (heute noch echte Telegram-/Social-Sends gesehen)
+        "ebay_cycle", "ebay_blast", "ebay_brutus_blast",
         # Autopost-Varianten (diverse Module ohne zentralen Validator)
         "insolvenz_autopost",
         "marketplace_poster",
@@ -9100,15 +9102,14 @@ class AutomationScheduler:
         "shopify_sync", "shopify_orders_alert", "email_check",
         "ds24_funnel_sync", "digistore_sync", "ds24_affiliate_blast",
         "ds24_affiliate_hourly", "ds24_affiliate_daily", "ds24_traffic",
-        "ds24_funnel_auto", "geldmaschine_skalierung", "revenue_engine",
+        "geldmaschine_skalierung", "revenue_engine",
         "abandoned_cart_recovery", "revenue_fast_track", "revenue_maximizer",
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
-        "buyer_traffic_engine", "email_blast", "ads_monitor", "ads_optimize",
-        "stripe_monitor", "digistore_sync", "digistore_autonomy",
-        "umsatzmaschine_daily", "mega_command_center", "buyer_pipeline",
-        "revenue_agent_sync", "revenue_blitz", "upsell_sequence_run",
-        "upsell_cycle", "klaviyo_flows", "b2b_prospecting",
-        "shopify_blog_auto", "social_autoposter", "money_machine_run",
+        "email_blast", "ads_monitor", "ads_optimize",
+        "stripe_monitor", "digistore_sync",
+        "buyer_pipeline", "revenue_agent_sync", "revenue_blitz",
+        "upsell_sequence_run", "upsell_cycle", "klaviyo_flows",
+        "b2b_prospecting", "money_machine_run",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
