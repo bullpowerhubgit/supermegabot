@@ -116,11 +116,11 @@ async def _haiku(prompt: str, max_tokens: int = 500) -> str:
         logger.warning("ai_complete error: %s", e)
     _ds24 = os.getenv("DS24_AFFILIATE_LINK", "")
     _templates = [
-        f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
-        f"💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. {_ds24}",
-        f"🤖 Shopify + DS24 + KI = passives Einkommen 24/7! {_ds24}",
-        f"📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: {_ds24}",
-        f"🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! {_ds24}",
+        f"🚀 E-Commerce-Automation mit klaren Workflows. DS24-Funnel aktiv. 👉 {_ds24}",
+        f"📈 KI-Tools fuer Shop, Content und Follow-up im Ueberblick. {_ds24}",
+        f"🤖 Shopify + DS24 + KI fuer strukturierte Prozesse und bessere Conversion. {_ds24}",
+        f"📊 Content- und Funnel-Automation mit Guardrails. Jetzt ansehen: {_ds24}",
+        f"🎯 DS24-Funnel + KI-Workflows fuer digitale Angebote. {_ds24}",
     ]
     return random.choice(_templates)
 

@@ -150,19 +150,27 @@ async def _tg(msg: str):
 async def _tg_marketing(msg: str) -> bool:
     """Marketing-Posts → NUR an öffentlichen Kanal (TELEGRAM_CHANNEL_ID).
     Sendet NIE an Rudolf's privaten Chat. Gibt True zurück wenn gesendet."""
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+        if pause_reason:
+            log.warning("_tg_marketing skipped — posting paused (%s)", pause_reason)
+            return False
+    except Exception:
+        pass
     token   = os.getenv("TELEGRAM_BOT_TOKEN", "")
     channel = os.getenv("TELEGRAM_CHANNEL_ID", "")
     if not token or not channel:
         return False
     try:
-        import aiohttp
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-            r = await s.post(
-                f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": channel, "text": msg, "parse_mode": "HTML",
-                      "disable_web_page_preview": True}
-            )
-            return (await r.json(content_type=None)).get("ok", False)
+        from modules.smart_poster import send_telegram_guarded
+        data = await send_telegram_guarded(
+            token,
+            str(channel),
+            msg,
+            parse_mode="HTML",
+        )
+        return bool(data.get("ok"))
     except Exception:
         return False
 

@@ -233,12 +233,12 @@ def suggest_fix(error_msg: str) -> str:
 
 _CONTENT_TEMPLATES: dict[str, list[str]] = {
     "brutus_post": [
-        "🚀 Shopify-Automation 2026: So läuft dein Shop vollautomatisch. Starte jetzt → {link}",
-        "💰 Passives Einkommen mit KI: Dropshipping + DS24 + Shopify = Einnahmen 24/7 → {link}",
-        "🤖 KI macht Geld während du schläfst. Vollautomatisches System → {link}",
-        "📈 Affiliate-Marketing Blueprint: Von 0 auf €1000/Monat. Jetzt kostenlos → {link}",
-        "🔥 HEUTE STARTEN: Shopify + KI-Tools + Automatisierung = Dein Online-Business → {link}",
-        "💡 Digitale Produkte verkaufen ohne Lager. Vollautomatisch über Digistore24 → {link}",
+        "🚀 Shopify-Automation 2026: So laeuft dein Shop strukturierter. Starte jetzt → {link}",
+        "💼 KI-Workflows fuer Dropshipping + DS24 + Shopify im Ueberblick → {link}",
+        "🤖 KI hilft Teams, Content und Funnel-Prozesse klarer zu steuern → {link}",
+        "📈 Affiliate-Marketing Blueprint mit nachvollziehbarem Funnel-Fokus → {link}",
+        "🔥 HEUTE STARTEN: Shopify + KI-Tools + saubere Automatisierung → {link}",
+        "💡 Digitale Produkte verkaufen ohne Lager. Klar strukturiert ueber Digistore24 → {link}",
         "⚡ Email-Marketing ROI 3600%: So baust du eine profitable Liste auf → {link}",
         "🎯 TikTok + Shopify = Viral-Traffic zu deinem Shop. Strategie → {link}",
     ],

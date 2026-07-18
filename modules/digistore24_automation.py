@@ -267,7 +267,7 @@ async def run_with_brutus_traffic() -> dict:
     try:
         from modules.brutus_traffic_engine import run_brutus_swarm
         result["brutus"] = await run_brutus_swarm(
-            keywords=["Digistore24 Affiliate 2026", "digitale Produkte verkaufen online", "AI Income Machine AIITEC"],
+            keywords=["Digistore24 Funnel Operations", "digitale Produkt-Workflows", "Checkout Follow-up Automation"],
             max_keywords=3,
         )
     except Exception as e:
