@@ -308,9 +308,10 @@ async def handle_chat(req):
 
 
 async def handle_assistant_ask(req):
-    """POST /api/assistant/ask — Rudolf's persönlicher KI-Assistent.
-    Body: {"message": "...", "session_id": "optional", "context": "optional"}
-    Returns: {"ok": true, "answer": "...", "session_id": "..."}
+    """POST /api/assistant/ask — Rudolf's persönlicher KI-Assistent (alle Modi).
+    Body: {"message": "...", "session_id": "optional", "context": "optional",
+           "mode": "general|shop|mail|post|revenue|expansion|browser"}
+    Returns: {"ok": true, "answer": "...", "session_id": "...", "mode": "..."}
     """
     try:
         data = await req.json()
@@ -323,11 +324,12 @@ async def handle_assistant_ask(req):
 
     session_id = data.get("session_id", "dashboard")
     context = data.get("context", "")
+    mode = data.get("mode", "general")
 
     try:
         from modules.rudolf_assistant import ask
-        answer = await ask(message, session_id=session_id, context=context)
-        return web.json_response({"ok": True, "answer": answer, "session_id": session_id})
+        answer = await ask(message, session_id=session_id, context=context, mode=mode)
+        return web.json_response({"ok": True, "answer": answer, "session_id": session_id, "mode": mode})
     except Exception as e:
         log.error("assistant/ask error: %s", e)
         return web.json_response({"ok": False, "error": str(e)}, status=500)

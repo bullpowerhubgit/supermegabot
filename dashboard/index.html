@@ -953,22 +953,38 @@ setInterval(loadTasks,120000);
   style.textContent = `
     #ra-btn{position:fixed;bottom:24px;right:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#a855f7,#6366f1);border:none;cursor:pointer;z-index:9999;box-shadow:0 4px 20px rgba(168,85,247,.5);font-size:26px;display:flex;align-items:center;justify-content:center;transition:transform .2s;}
     #ra-btn:hover{transform:scale(1.1);}
-    #ra-box{position:fixed;bottom:92px;right:24px;width:380px;max-height:520px;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9998;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);overflow:hidden;}
+    #ra-box{position:fixed;bottom:92px;right:24px;width:400px;max-height:580px;background:#1a1a2e;border:1px solid #333;border-radius:16px;z-index:9998;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.6);overflow:hidden;}
     #ra-box.open{display:flex;}
-    #ra-head{background:linear-gradient(135deg,#a855f7,#6366f1);padding:12px 16px;font-weight:700;font-size:14px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
-    #ra-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;min-height:200px;}
-    #ra-msgs .ra-msg{padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;max-width:90%;white-space:pre-wrap;}
+    #ra-head{background:linear-gradient(135deg,#a855f7,#6366f1);padding:10px 14px;font-weight:700;font-size:13px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
+    #ra-modes{display:flex;gap:4px;padding:8px 10px;background:#12122a;border-bottom:1px solid #2a2a4a;flex-wrap:wrap;}
+    #ra-modes button{font-size:11px;padding:4px 8px;border-radius:6px;border:1px solid #444;background:#1e1e3a;color:#aaa;cursor:pointer;transition:all .15s;}
+    #ra-modes button.active{background:#a855f7;color:#fff;border-color:#a855f7;}
+    #ra-modes button:hover{border-color:#a855f7;color:#fff;}
+    #ra-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;min-height:180px;}
+    #ra-msgs .ra-msg{padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5;max-width:92%;white-space:pre-wrap;}
     #ra-msgs .ra-user{background:#6366f1;color:#fff;align-self:flex-end;}
     #ra-msgs .ra-bot{background:#252540;color:#e0e0e0;align-self:flex-start;}
-    #ra-msgs .ra-loading{color:#888;font-style:italic;font-size:12px;}
-    #ra-foot{display:flex;padding:10px;gap:8px;border-top:1px solid #333;}
-    #ra-inp{flex:1;background:#252540;border:1px solid #444;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;outline:none;resize:none;height:40px;}
-    #ra-send{background:#a855f7;border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
+    #ra-msgs .ra-loading{color:#888;font-style:italic;font-size:12px;align-self:flex-start;}
+    #ra-foot{display:flex;padding:8px 10px;gap:6px;border-top:1px solid #333;}
+    #ra-inp{flex:1;background:#252540;border:1px solid #444;border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;outline:none;resize:none;height:38px;}
+    #ra-send{background:#a855f7;border:none;color:#fff;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;}
     #ra-send:hover{background:#9333ea;}
-    #ra-clear{background:none;border:1px solid #555;color:#888;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px;}
+    #ra-clear{background:none;border:1px solid #555;color:#888;padding:3px 8px;border-radius:6px;cursor:pointer;font-size:11px;}
     #ra-clear:hover{color:#ccc;border-color:#888;}
+    #ra-mode-label{font-size:11px;opacity:.8;}
   `;
   document.head.appendChild(style);
+
+  const MODES = [
+    {id:'general',  label:'🤖 Allgemein'},
+    {id:'shop',     label:'🛒 Shop'},
+    {id:'mail',     label:'📧 Mail'},
+    {id:'post',     label:'📱 Posts'},
+    {id:'revenue',  label:'💰 Revenue'},
+    {id:'expansion',label:'🚀 Expansion'},
+    {id:'browser',  label:'🔍 Recherche'},
+  ];
+  let currentMode = 'general';
 
   // Button
   const btn = document.createElement('button');
@@ -980,17 +996,22 @@ setInterval(loadTasks,120000);
   // Box
   const box = document.createElement('div');
   box.id = 'ra-box';
+  const modeBtns = MODES.map(m =>
+    `<button data-mode="${m.id}" class="${m.id==='general'?'active':''}">${m.label}</button>`
+  ).join('');
   box.innerHTML = `
     <div id="ra-head">
-      🤖 Rudolf Assistent — Claude
-      <button id="ra-clear">Verlauf löschen</button>
+      🤖 Rudolf Assistent
+      <span id="ra-mode-label">Allgemein</span>
+      <button id="ra-clear">🗑 Löschen</button>
     </div>
+    <div id="ra-modes">${modeBtns}</div>
     <div id="ra-msgs">
-      <div class="ra-msg ra-bot">Hallo Rudolf! 👋 Ich bin dein persönlicher KI-Assistent. Wie kann ich helfen?</div>
+      <div class="ra-msg ra-bot">Hallo Rudolf! 👋 Wähle einen Modus und frag mich alles.</div>
     </div>
     <div id="ra-foot">
-      <textarea id="ra-inp" placeholder="Frag mich alles…" rows="1"></textarea>
-      <button id="ra-send">Senden</button>
+      <textarea id="ra-inp" placeholder="Nachricht eingeben… (Enter = Senden)" rows="1"></textarea>
+      <button id="ra-send">➤</button>
     </div>
   `;
   document.body.appendChild(box);
@@ -1001,8 +1022,19 @@ setInterval(loadTasks,120000);
     if(open) document.getElementById('ra-inp').focus();
   });
 
+  // Modus-Wechsel
+  document.getElementById('ra-modes').addEventListener('click', e => {
+    const mb = e.target.closest('[data-mode]');
+    if(!mb) return;
+    currentMode = mb.dataset.mode;
+    document.querySelectorAll('#ra-modes button').forEach(b => b.classList.toggle('active', b===mb));
+    document.getElementById('ra-mode-label').textContent = mb.textContent;
+    const msgs = document.getElementById('ra-msgs');
+    msgs.innerHTML = `<div class="ra-msg ra-bot">Modus gewechselt: ${mb.textContent} — Wie kann ich helfen?</div>`;
+  });
+
   document.getElementById('ra-clear').addEventListener('click', async () => {
-    await fetch('/api/assistant/history?session_id=' + SESSION, {method:'DELETE'});
+    await fetch('/api/assistant/history?session_id=' + SESSION + '_' + currentMode, {method:'DELETE'});
     const msgs = document.getElementById('ra-msgs');
     msgs.innerHTML = '<div class="ra-msg ra-bot">Verlauf gelöscht. Neues Gespräch!</div>';
   });
@@ -1012,9 +1044,10 @@ setInterval(loadTasks,120000);
     const text = inp.value.trim();
     if(!text) return;
     inp.value = '';
+    inp.style.height = '38px';
 
     const msgs = document.getElementById('ra-msgs');
-    msgs.innerHTML += `<div class="ra-msg ra-user">${text.replace(/</g,'&lt;')}</div>`;
+    msgs.innerHTML += `<div class="ra-msg ra-user">${text.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</div>`;
     const loader = document.createElement('div');
     loader.className = 'ra-msg ra-loading';
     loader.textContent = '⏳ Denkt nach…';
@@ -1025,12 +1058,12 @@ setInterval(loadTasks,120000);
       const r = await fetch('/api/assistant/ask', {
         method: 'POST',
         headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({message: text, session_id: SESSION})
+        body: JSON.stringify({message: text, session_id: SESSION + '_' + currentMode, mode: currentMode})
       });
       const d = await r.json();
       loader.remove();
       const ans = d.ok ? d.answer : ('❌ ' + (d.error || 'Fehler'));
-      msgs.innerHTML += `<div class="ra-msg ra-bot">${ans.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
+      msgs.innerHTML += `<div class="ra-msg ra-bot">${ans.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
     } catch(e) {
       loader.remove();
       msgs.innerHTML += `<div class="ra-msg ra-bot">❌ Netzwerkfehler: ${e.message}</div>`;
