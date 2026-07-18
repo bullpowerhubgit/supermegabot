@@ -12,7 +12,7 @@ from typing import Any, Optional
 
 log = logging.getLogger("shopify_automation")
 
-TELEGRAM_TOKEN = lambda: os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_TOKEN = lambda: os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_2", "")
 TELEGRAM_CHAT_ID = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOMAIN = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
