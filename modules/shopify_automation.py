@@ -92,13 +92,25 @@ def format_orders_message(orders: list[dict]) -> str:
     return "\n".join(lines)
 
 
+_TEST_EMAIL_MARKERS = ("test@supermegabot", "example.com", "@test.", "test@test")
+_TEST_PRODUCT_MARKERS = ("TEST PRODUKT", "BITTE IGNORIEREN", "test product", "test order")
+
 def notify_new_order(order: dict) -> None:
-    total = order.get("total_price", "0")
-    currency = order.get("currency", "EUR")
-    name = order.get("name", "#?")
     email = order.get("email", "anonym")
     items = order.get("line_items", [])
     item_names = ", ".join(i.get("name", "?") for i in items[:3])
+
+    # Test-Bestellungen NIEMALS an Telegram senden
+    if any(m in email.lower() for m in _TEST_EMAIL_MARKERS):
+        log.debug("notify_new_order: Test-Email ignoriert (%s)", email)
+        return
+    if any(m.lower() in item_names.lower() for m in _TEST_PRODUCT_MARKERS):
+        log.debug("notify_new_order: Test-Produkt ignoriert (%s)", item_names[:60])
+        return
+
+    total = order.get("total_price", "0")
+    currency = order.get("currency", "EUR")
+    name = order.get("name", "#?")
     msg = (
         f"🛒 *NEUE BESTELLUNG!*\n\n"
         f"Bestellung: {name}\n"
