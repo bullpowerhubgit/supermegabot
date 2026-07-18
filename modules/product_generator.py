@@ -379,7 +379,11 @@ async def _blast(product: dict, product_data: dict):
         from modules.brutus_core import fire
         title = product.get("title", "Neues Produkt")
         handle = product.get("handle", "")
-        shop_url = f"https://{SHOP.replace('.myshopify.com', '')}.myshopify.com" if SHOP else ""
+        shop_url = (
+            os.getenv("SHOPIFY_STORE_URL", "").strip()
+            or os.getenv("PUBLIC_SHOP_URL", "").strip()
+            or "https://ineedit.com.co"
+        ).rstrip("/")
         link = f"{shop_url}/products/{handle}" if handle else shop_url
         price = product_data.get("price", "?")
         tags = product_data.get("tags", "")

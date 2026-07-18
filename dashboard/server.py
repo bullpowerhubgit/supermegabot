@@ -7118,6 +7118,9 @@ _AUTH_EXEMPT_EXACT = {
     "/api/case-studies",
     "/api/demos",
     "/api/social-proof",
+    "/api/google/auth",        # public OAuth entrypoint
+    "/api/google/callback",    # public OAuth callback
+    "/api/gmc/feed.xml",       # public scheduled-fetch feed for Google Merchant
 }
 
 if not os.getenv("DASHBOARD_SECRET"):
@@ -7140,6 +7143,8 @@ async def auth_middleware(request, handler):
             or path.startswith("/feed/")
             or path.endswith("/webhook")
             or path.endswith("/ipn")
+            or (request.method == "GET" and (path == "/api/google" or path.startswith("/api/google/")))
+            or (request.method == "GET" and (path == "/api/gmc" or path.startswith("/api/gmc/")))
             or path.startswith("/api/digistore24/")
             or path.startswith("/api/webhooks/")
             or path.startswith("/api/shopify/order-webhook")
