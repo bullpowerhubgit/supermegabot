@@ -8,12 +8,15 @@ import logging
 import os
 import json
 from datetime import datetime
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN', '').strip()
 CHAT_ID   = os.getenv('TELEGRAM_CHAT_ID', '').strip()
 BASE_URL  = f'https://api.telegram.org/bot{BOT_TOKEN}'
+_STARTUP_STATE = Path(__file__).parent.parent / "data" / "telegram_startup_state.json"
+_STARTUP_COOLDOWN_S = 900
 
 # Alle 19 Railway-Services
 SERVICES = {
@@ -81,10 +84,14 @@ async def tg_api(method: str, data: dict) -> dict:
 
 
 async def send_message(chat_id: str, text: str, reply_markup=None, parse_mode='HTML'):
-    payload = {'chat_id': chat_id, 'text': text[:4096], 'parse_mode': parse_mode}
-    if reply_markup:
-        payload['reply_markup'] = reply_markup
-    return await tg_api('sendMessage', payload)
+    from modules.smart_poster import send_telegram_guarded
+    return await send_telegram_guarded(
+        BOT_TOKEN,
+        str(chat_id),
+        text,
+        reply_markup=reply_markup,
+        parse_mode=parse_mode,
+    )
 
 
 async def edit_message(chat_id, message_id, text: str, reply_markup=None):
@@ -413,11 +420,25 @@ async def run_polling():
 async def send_startup_notification():
     """Einmalige Startup-Benachrichtigung (ohne Polling)."""
     try:
+        now = datetime.now().timestamp()
+        try:
+            state = json.loads(_STARTUP_STATE.read_text()) if _STARTUP_STATE.exists() else {}
+        except Exception:
+            state = {}
+        last_sent = float(state.get("last_sent", 0) or 0)
+        if now - last_sent < _STARTUP_COOLDOWN_S:
+            logger.info("Startup notification skipped due to cooldown")
+            return
         await send_message(CHAT_ID,
             '🚀 <b>SuperMegaBot Dashboard gestartet!</b>\n'
             f'🕐 {datetime.now().strftime("%H:%M:%S")}\n'
             'Tippe /menu für das Dashboard.',
             reply_markup=main_menu_keyboard())
+        try:
+            _STARTUP_STATE.parent.mkdir(parents=True, exist_ok=True)
+            _STARTUP_STATE.write_text(json.dumps({"last_sent": now}))
+        except Exception:
+            pass
     except Exception as e:
         logger.error(f'send_startup_notification failed: {e}')
 

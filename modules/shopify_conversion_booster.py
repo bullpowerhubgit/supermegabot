@@ -20,6 +20,7 @@ import json
 import logging
 import os
 import random
+import re
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -34,7 +35,16 @@ except ImportError:
 log = logging.getLogger("ConversionBooster")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
-DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+def _admin_domain() -> str:
+    domain = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN", "") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    if domain and ".myshopify.com" in domain:
+        return domain
+    store_url = os.getenv("SHOPIFY_STORE_URL", "")
+    match = re.search(r"([\w-]+\.myshopify\.com)", store_url)
+    return match.group(1) if match else domain
+
+
+DOMAIN  = _admin_domain()
 TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 BASE    = f"https://{DOMAIN}/admin/api/{VERSION}"
@@ -211,24 +221,90 @@ CONVERSION_SCRIPT = """
   }
 
   // ─── Exit Intent Popup ──────────────────────────────────────────────────────
-  var exitShown = sessionStorage.getItem('bp-exit-shown');
+  var DISMISS_KEY = 'bp_discount_dismissed';
+  function isDiscountDismissed() {
+    if (document.cookie.indexOf('bp_discount_dismissed=1') > -1) return true;
+    try {
+      return window.localStorage && localStorage.getItem(DISMISS_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+  function dismissDiscountPopup(days) {
+    var maxAge = (days || 30) * 86400;
+    document.cookie = 'bp_discount_dismissed=1;max-age=' + maxAge + ';path=/;SameSite=Lax';
+    try {
+      if (window.localStorage) localStorage.setItem(DISMISS_KEY, '1');
+    } catch (e) {}
+  }
+  function bindDiscountDismissWatchers() {
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      if (!target || !target.closest) return;
+      var closeTrigger = target.closest('[aria-label="Close"], [aria-label="close"], .klaviyo-close-form, .needsclick.klaviyo-close-form, button[data-testid="close-form-button"]');
+      if (closeTrigger) dismissDiscountPopup(30);
+    }, true);
+    document.addEventListener('submit', function(e) {
+      var form = e.target;
+      if (!form || !form.matches) return;
+      if (form.matches('form.klaviyo-form, form[action*="manage.kmail-lists.com"], form[action*="klaviyo"]')) {
+        dismissDiscountPopup(30);
+      }
+    }, true);
+  }
+  function hideDismissedDiscountForms() {
+    if (!isDiscountDismissed()) return;
+    [
+      '.klaviyo-form',
+      '[class*="klaviyo-form"]',
+      'form[action*="manage.kmail-lists.com"]'
+    ].forEach(function(selector) {
+      document.querySelectorAll(selector).forEach(function(node) {
+        var popup = node.closest('[style*="position: fixed"], [class*="modal"], [class*="popup"]') || node;
+        if (popup && popup.style) popup.style.display = 'none';
+      });
+    });
+  }
+  function suppressLegacyKlaviyoPopup() {
+    try {
+      localStorage.setItem('kl_popup_shown', JSON.stringify({ts: Date.now(), subscribed: true}));
+    } catch (e) {}
+    ['kl-popup-overlay', 'kl-popup'].forEach(function(id) {
+      var node = document.getElementById(id);
+      if (node && node.parentNode) node.parentNode.removeChild(node);
+    });
+  }
+  function startLegacyKlaviyoPopupSuppression() {
+    suppressLegacyKlaviyoPopup();
+    var observer = new MutationObserver(function() {
+      suppressLegacyKlaviyoPopup();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    setTimeout(function() { observer.disconnect(); }, 30000);
+    window.addEventListener('pageshow', suppressLegacyKlaviyoPopup);
+  }
+  var exitShown = isDiscountDismissed();
   function showExitIntent() {
-    if (exitShown) return;
+    if (exitShown || isDiscountDismissed()) return;
     exitShown = true;
-    sessionStorage.setItem('bp-exit-shown', '1');
     var overlay = document.createElement('div');
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px';
     overlay.innerHTML = '<div style="background:#fff;border-radius:16px;padding:32px;max-width:400px;text-align:center;position:relative">' +
-      '<button onclick="this.closest(\'div\').parentNode.remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af">✕</button>' +
+      '<button onclick="window.bpDismissDiscountPopup && window.bpDismissDiscountPopup(); this.closest(\'div\').parentNode.remove()" style="position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#9ca3af">✕</button>' +
       '<div style="font-size:40px;margin-bottom:12px">🎁</div>' +
       '<h2 style="font-size:20px;font-weight:800;margin-bottom:8px">Warte! Hier ist dein Geschenk</h2>' +
       '<p style="color:#6b7280;margin-bottom:16px">Erhalte <strong style="color:#dc2626">10% Rabatt</strong> auf deine erste Bestellung</p>' +
       '<div style="background:#f3f4f6;border-radius:8px;padding:12px;font-size:18px;font-weight:900;letter-spacing:.1em;margin-bottom:16px">' + CONFIG.exitDiscount + '</div>' +
-      '<button onclick="navigator.clipboard && navigator.clipboard.writeText(\'' + CONFIG.exitDiscount + '\');this.textContent=\'✓ Kopiert!\'" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">Code kopieren</button>' +
+      '<button onclick="navigator.clipboard && navigator.clipboard.writeText(\'' + CONFIG.exitDiscount + '\'); window.bpDismissDiscountPopup && window.bpDismissDiscountPopup(); this.textContent=\'✓ Kopiert!\'" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%">Code kopieren</button>' +
       '<p style="font-size:11px;color:#9ca3af;margin-top:12px">Gilt für alle Produkte · 30-Tage Rückgabe</p>' +
       '</div>';
     document.body.appendChild(overlay);
-    overlay.addEventListener('click', function(e) { if(e.target===overlay) overlay.remove(); });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        dismissDiscountPopup(30);
+        overlay.remove();
+      }
+    });
   }
 
   // ─── Sticky Add-to-Cart (Mobile) ───────────────────────────────────────────
@@ -252,6 +328,10 @@ CONVERSION_SCRIPT = """
 
   // ─── Init ────────────────────────────────────────────────────────────────────
   function init() {
+    window.bpDismissDiscountPopup = function() { dismissDiscountPopup(30); };
+    bindDiscountDismissWatchers();
+    hideDismissedDiscountForms();
+    startLegacyKlaviyoPopupSuppression();
     addFreeShippingBar();
     addTrustBadges();
     addUrgencyCounter();
@@ -324,8 +404,20 @@ async def inject_via_theme_asset(session: aiohttp.ClientSession) -> Dict:
     existing = await _get(session, "/script_tags.json?limit=250")
     for st in existing.get("script_tags", []):
         if "bp-conversion-booster" in st.get("src", ""):
-            log.info("ScriptTag bereits vorhanden — Update")
-            return {"ok": True, "action": "already_exists", "theme": theme_name}
+            tag_id = st["id"]
+            if st.get("src") != asset_url:
+                tag_r = await _put(session, f"/script_tags/{tag_id}.json", {
+                    "script_tag": {
+                        "id": tag_id,
+                        "src": asset_url,
+                        "event": "onload",
+                        "display_scope": "online_store",
+                    }
+                })
+                log.info("ScriptTag aktualisiert: ID %s", tag_id)
+                return {"ok": True, "action": "updated", "theme": theme_name, "tag_id": tag_id, "src": asset_url, "result": tag_r}
+            log.info("ScriptTag bereits vorhanden — aktuell")
+            return {"ok": True, "action": "already_exists", "theme": theme_name, "tag_id": tag_id, "src": asset_url}
 
     # ScriptTag registrieren
     tag_r = await _post(session, "/script_tags.json", {

@@ -24,11 +24,11 @@ _cache_ts: float = 0
 _cache_ttl: int = 3600  # 1 Stunde
 
 # Bekannte sichere Fallback-Produkte (in Prioritätsreihenfolge)
-SAFE_FALLBACK_IDS = ["669750", "704330", "704370", "704372", "704392"]
+SAFE_FALLBACK_IDS = ["704330", "704370", "704372", "704392"]
 CHECKOUT_BASE = "https://www.checkout-ds24.com/product/"
 
 # Produkte die NIEMALS verwendet werden dürfen
-BLACKLISTED_IDS = {"668035"}  # rejected, fehlende Garantie/Impressum
+BLACKLISTED_IDS = {"668035", "669750", "704677"}  # rejected/unapproved/unavailable
 
 
 def _fetch_products() -> list:
@@ -85,7 +85,7 @@ def _best_available_product() -> str:
         return str(sorted_prods[0]["id"])
 
     log.error("[DS24Guardian] KRITISCH: Keine aktiven DS24-Produkte gefunden!")
-    return "669750"  # absoluter Notfall-Fallback
+    return ""
 
 
 def validate_and_heal() -> str:
@@ -116,6 +116,10 @@ def validate_and_heal() -> str:
 
     if needs_heal:
         best_id = _best_available_product()
+        if not best_id:
+            os.environ["DS24_AFFILIATE_LINK"] = ""
+            log.error("[DS24Guardian] Kein freigegebenes DS24-Produkt verfügbar — Link geleert")
+            return ""
         new_link = f"{CHECKOUT_BASE}{best_id}"
         os.environ["DS24_AFFILIATE_LINK"] = new_link
         log.warning(
@@ -191,7 +195,7 @@ def get_ds24_product_id() -> str:
     link = get_ds24_link()
     if "/product/" in link:
         return link.split("/product/")[-1].strip("/")
-    return "669750"
+    return ""
 
 
 def get_all_active_links(limit: int = 10) -> list[dict]:

@@ -283,6 +283,14 @@ async def _check_urls_in_text(text: str) -> str | None:
 
 async def post_daily_content(force_template_index: int = None) -> dict:
     """Hauptfunktion: postet auf Twitter, fällt auf Telegram zurück."""
+    try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+    except Exception:
+        pause_reason = ""
+    if pause_reason:
+        log.warning("social_scheduler: posting paused (%s) — übersprungen", pause_reason)
+        return {"ok": False, "skipped": True, "reason": f"posting_paused:{pause_reason}"}
     if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
         log.warning("social_scheduler: SOCIAL_POSTING_PAUSED=true — übersprungen")
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}

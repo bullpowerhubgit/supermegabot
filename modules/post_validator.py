@@ -116,6 +116,13 @@ _L1_BLOCKED = [
     r"__MISSING__",
     r"N/A\s+N/A\s+N/A",
     r"None None None",
+    r"nicht\s+im\s+handel\s+erh[aä]ltlich",
+    r"derzeit\s+nicht\s+im\s+handel\s+erh[aä]ltlich",
+    r"zur\s+wunschliste\s+hinzuf[uü]gen",
+    r"produkt\s+wurde\s+noch\s+nicht\s+genehmigt",
+    r"not\s+approved",
+    r"currently\s+unavailable",
+    r"not\s+available\s+for\s+sale",
 ]
 _L1_RE = [re.compile(p, re.IGNORECASE | re.DOTALL) for p in _L1_BLOCKED]
 
@@ -140,6 +147,21 @@ _QUIET_NOTIFY_REASONS = (
     "rate_limit",
     "429",
     "daily_cap",
+    # DB-Lock ist transient — nie als Telegram-Spam senden
+    "database is locked",
+    "database locked",
+    "never_twice_error",
+    "never_twice: bereits_blockiert",
+    "unable to open database",
+    "nicht im handel erhältlich",
+    "zur wunschliste hinzufügen",
+    "nicht genehmigt",
+    "not approved",
+    "currently unavailable",
+    "not available for sale",
+    # Off-topic Nische nicht spammen — zu häufig
+    "off_topic_nische",
+    "kein nischen-keyword",
 )
 _TRANSIENT_BLOCK_REASONS = _QUIET_NOTIFY_REASONS + ("token",)
 

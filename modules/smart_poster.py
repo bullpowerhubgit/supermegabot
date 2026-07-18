@@ -31,6 +31,8 @@ import random
 import re
 import sqlite3
 import time
+import urllib.error
+import urllib.request
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
@@ -44,6 +46,10 @@ log = logging.getLogger("SmartPoster")
 _DB_PATH = Path(__file__).parent.parent / "data" / "smart_poster.db"
 _MAX_POSTS_PER_PLATFORM_PER_DAY = 3
 _DEDUP_WINDOW_HOURS = 48
+_TELEGRAM_GUARD_STATE = Path(__file__).parent.parent / "data" / "telegram_send_guard.json"
+_POSTING_EMERGENCY_STATE = Path(__file__).parent.parent / "data" / "posting_emergency_stop.json"
+_TELEGRAM_MIN_INTERVAL_S = 4.0
+_TELEGRAM_NETWORK_BACKOFF_S = 90
 
 # Verbotene Keywords — wird auf generierten Content angewendet
 _BANNED_PATTERNS = [
@@ -171,6 +177,234 @@ def _posts_today(platform: str) -> int:
         return 0
 
 
+def _load_telegram_guard_state() -> dict:
+    try:
+        if _TELEGRAM_GUARD_STATE.exists():
+            return json.loads(_TELEGRAM_GUARD_STATE.read_text())
+    except Exception:
+        pass
+    return {}
+
+
+def _save_telegram_guard_state(state: dict) -> None:
+    try:
+        _TELEGRAM_GUARD_STATE.parent.mkdir(parents=True, exist_ok=True)
+        _TELEGRAM_GUARD_STATE.write_text(json.dumps(state))
+    except Exception as e:
+        log.debug("telegram guard state save: %s", e)
+
+
+def _env_truthy(name: str) -> bool:
+    return os.getenv(name, "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _load_posting_emergency_state() -> dict:
+    try:
+        if _POSTING_EMERGENCY_STATE.exists():
+            return json.loads(_POSTING_EMERGENCY_STATE.read_text())
+    except Exception as e:
+        log.debug("posting emergency state load: %s", e)
+    return {}
+
+
+def _save_posting_emergency_state(state: dict) -> None:
+    try:
+        _POSTING_EMERGENCY_STATE.parent.mkdir(parents=True, exist_ok=True)
+        _POSTING_EMERGENCY_STATE.write_text(json.dumps(state))
+    except Exception as e:
+        log.debug("posting emergency state save: %s", e)
+
+
+def get_posting_pause_reason() -> str:
+    if _env_truthy("PAUSE_ALL_POSTING"):
+        return "PAUSE_ALL_POSTING"
+    if _env_truthy("SOCIAL_POSTING_PAUSED"):
+        return "SOCIAL_POSTING_PAUSED"
+    state = _load_posting_emergency_state()
+    if state.get("active"):
+        return str(state.get("reason") or "posting_emergency_stop")
+    return ""
+
+
+def activate_posting_pause(reason: str = "manual_emergency_stop") -> dict:
+    os.environ["PAUSE_ALL_POSTING"] = "1"
+    os.environ["SOCIAL_POSTING_PAUSED"] = "1"
+    state = {
+        "active": True,
+        "reason": reason,
+        "updated_at": datetime.utcnow().isoformat() + "Z",
+    }
+    _save_posting_emergency_state(state)
+    return state
+
+
+def _telegram_guard_key(bot_token: str, chat_id: str) -> str:
+    token_hash = hashlib.sha256((bot_token or "").encode()).hexdigest()[:12]
+    return f"{token_hash}:{chat_id}"
+
+
+def _telegram_guard_precheck(bot_token: str, chat_id: str) -> tuple[bool, str]:
+    now = time.time()
+    state = _load_telegram_guard_state()
+    key = _telegram_guard_key(bot_token, chat_id)
+    info = state.get(key, {})
+    cooldown_until = float(info.get("cooldown_until", 0) or 0)
+    last_sent = float(info.get("last_sent", 0) or 0)
+    if cooldown_until > now:
+        return False, f"telegram_backoff_active_until_{int(cooldown_until)}"
+    if now - last_sent < _TELEGRAM_MIN_INTERVAL_S:
+        return False, "telegram_local_rate_limit"
+    return True, ""
+
+
+def _telegram_guard_mark_sent(bot_token: str, chat_id: str) -> None:
+    state = _load_telegram_guard_state()
+    key = _telegram_guard_key(bot_token, chat_id)
+    info = state.get(key, {})
+    info["last_sent"] = time.time()
+    info["cooldown_until"] = 0
+    info["last_error"] = ""
+    state[key] = info
+    _save_telegram_guard_state(state)
+
+
+def _telegram_guard_mark_backoff(bot_token: str, chat_id: str, seconds: int, reason: str) -> None:
+    state = _load_telegram_guard_state()
+    key = _telegram_guard_key(bot_token, chat_id)
+    info = state.get(key, {})
+    info["cooldown_until"] = time.time() + max(1, seconds)
+    info["last_error"] = reason[:200]
+    state[key] = info
+    _save_telegram_guard_state(state)
+
+
+async def send_telegram_guarded(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+    reply_markup: dict | None = None,
+    parse_mode: str = "HTML",
+) -> dict:
+    """Rate-limited Telegram sender with backoff on 429/network failures."""
+    if not bot_token or not chat_id:
+        return {"ok": False, "reason": "telegram_credentials_missing"}
+
+    pause_reason = get_posting_pause_reason()
+    if pause_reason:
+        return {"ok": False, "skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+
+    hard_block_reason = block_reason_for_telegram_text(text)
+    if hard_block_reason:
+        return {"ok": False, "blocked": True, "reason": hard_block_reason}
+
+    if should_validate_telegram_text(text):
+        valid, checks = validate_post(text, "telegram")
+        if not valid:
+            failed = [c.reason for c in checks if not c.passed]
+            return {
+                "ok": False,
+                "blocked": True,
+                "reason": "telegram_validation_failed",
+                "details": failed,
+            }
+
+    allowed, reason = _telegram_guard_precheck(bot_token, str(chat_id))
+    if not allowed:
+        return {"ok": False, "skipped": True, "reason": reason}
+
+    payload = {"chat_id": chat_id, "text": text[:4096], "parse_mode": parse_mode}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
+            async with s.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json=payload,
+            ) as r:
+                data = await r.json(content_type=None)
+                if r.status == 429:
+                    retry_after = int(((data.get("parameters") or {}).get("retry_after")) or 120)
+                    _telegram_guard_mark_backoff(bot_token, str(chat_id), retry_after, "telegram_http_429")
+                    return {"ok": False, "skipped": True, "reason": f"telegram_http_429_retry_after_{retry_after}"}
+                if r.status >= 400:
+                    _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, f"telegram_http_{r.status}")
+                    return {"ok": False, "reason": f"telegram_http_{r.status}"}
+        if data.get("ok"):
+            _telegram_guard_mark_sent(bot_token, str(chat_id))
+        return data
+    except Exception as e:
+        _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, str(e))
+        return {"ok": False, "reason": f"telegram_exception: {str(e)[:120]}"}
+
+
+def send_telegram_guarded_sync(
+    bot_token: str,
+    chat_id: str,
+    text: str,
+    reply_markup: dict | None = None,
+    parse_mode: str = "HTML",
+) -> dict:
+    """Sync variant for legacy urllib-based Telegram senders."""
+    if not bot_token or not chat_id:
+        return {"ok": False, "reason": "telegram_credentials_missing"}
+
+    pause_reason = get_posting_pause_reason()
+    if pause_reason:
+        return {"ok": False, "skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
+
+    hard_block_reason = block_reason_for_telegram_text(text)
+    if hard_block_reason:
+        return {"ok": False, "blocked": True, "reason": hard_block_reason}
+
+    if should_validate_telegram_text(text):
+        valid, checks = validate_post(text, "telegram")
+        if not valid:
+            failed = [c.reason for c in checks if not c.passed]
+            return {
+                "ok": False,
+                "blocked": True,
+                "reason": "telegram_validation_failed",
+                "details": failed,
+            }
+
+    allowed, reason = _telegram_guard_precheck(bot_token, str(chat_id))
+    if not allowed:
+        return {"ok": False, "skipped": True, "reason": reason}
+
+    payload = {"chat_id": chat_id, "text": text[:4096], "parse_mode": parse_mode}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+
+    try:
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            data=json.dumps(payload).encode(),
+            headers={"Content-Type": "application/json"},
+        )
+        with urllib.request.urlopen(req, timeout=12) as r:
+            data = json.loads(r.read().decode())
+        if data.get("ok"):
+            _telegram_guard_mark_sent(bot_token, str(chat_id))
+            return data
+        _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, "telegram_sync_not_ok")
+        return data
+    except urllib.error.HTTPError as e:
+        retry_after = _TELEGRAM_NETWORK_BACKOFF_S
+        try:
+            body = e.read().decode()
+            parsed = json.loads(body)
+            if e.code == 429:
+                retry_after = int(((parsed.get("parameters") or {}).get("retry_after")) or 120)
+        except Exception:
+            pass
+        _telegram_guard_mark_backoff(bot_token, str(chat_id), retry_after, f"telegram_sync_http_{e.code}")
+        return {"ok": False, "reason": f"telegram_sync_http_{e.code}", "skipped": e.code == 429}
+    except Exception as e:
+        _telegram_guard_mark_backoff(bot_token, str(chat_id), _TELEGRAM_NETWORK_BACKOFF_S, str(e))
+        return {"ok": False, "reason": f"telegram_sync_exception: {str(e)[:120]}"}
+
+
 # ── Pre-Post Validator ────────────────────────────────────────────────────────
 #
 # Jeder Post durchläuft ALLE Checks bevor er gepostet wird.
@@ -209,6 +443,21 @@ _ERROR_PHRASES = [
     "leider kann ich",
     "das kann ich nicht",
     "unfortunately",
+]
+
+_PROMO_HINTS = [
+    "€", "eur", "produkt", "angebot", "deal", "jetzt", "shop",
+    "gumroad", "digistore", "ds24", "affiliate", "checkout",
+    "wunschliste", "features", "marken", "macobd", "diagnose-tool",
+]
+
+_HARD_BLOCK_PATTERNS = [
+    r"nicht\s+im\s+handel\s+erh[aä]ltlich",
+    r"zur\s+wunschliste\s+hinzuf[uü]gen",
+    r"produkt\s+wurde\s+noch\s+nicht\s+genehmigt",
+    r"not\s+approved",
+    r"currently\s+unavailable",
+    r"not\s+available\s+for\s+sale",
 ]
 
 
@@ -319,6 +568,24 @@ def validate_post(text: str, platform: str) -> tuple[bool, list[ValidationResult
 
     all_passed = all(c.passed for c in checks)
     return all_passed, checks
+
+
+def should_validate_telegram_text(text: str) -> bool:
+    stripped = (text or "").strip()
+    lower = stripped.lower()
+    if any(re.search(pattern, lower) for pattern in _HARD_BLOCK_PATTERNS):
+        return True
+    if "http://" in lower or "https://" in lower or "#" in stripped:
+        return True
+    return any(hint in lower for hint in _PROMO_HINTS)
+
+
+def block_reason_for_telegram_text(text: str) -> str:
+    lower = (text or "").strip().lower()
+    for pattern in _HARD_BLOCK_PATTERNS:
+        if re.search(pattern, lower):
+            return f"hard_block:{pattern}"
+    return ""
 
 
 def _is_clean(text: str) -> tuple[bool, str]:
@@ -696,6 +963,12 @@ async def run_posting_cycle() -> dict:
         "errors": [],
         "cycle_ts": datetime.now().isoformat(),
     }
+
+    pause_reason = get_posting_pause_reason()
+    if pause_reason:
+        result["ok"] = False
+        result["skipped"].append(f"global posting pause active: {pause_reason}")
+        return result
 
     topic_cfg = random.choice(_CONTENT_TOPICS)
     log.info("SmartPoster: Thema = %s", topic_cfg["topic"])

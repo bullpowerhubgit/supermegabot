@@ -189,11 +189,14 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
             log.info("twikit tweet gesendet: %s", tweet_id)
             # Telegram Notification
             if TWITTER_TELEGRAM_NOTIFICATIONS and TELEGRAM_TOKEN and TELEGRAM_CHAT:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as sess:
-                    await sess.post(
-                        f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                        json={"chat_id": TELEGRAM_CHAT, "text": f"🐦 Tweet live!\nhttps://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}\n\n{text[:100]}..."},
-                    )
+                try:
+                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as sess:
+                        await sess.post(
+                            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+                            json={"chat_id": TELEGRAM_CHAT, "text": f"🐦 Tweet live!\nhttps://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}\n\n{text[:100]}..."},
+                        )
+                except Exception as notify_err:
+                    log.debug("tweet telegram notify suppressed: %s", notify_err)
             return {"ok": True, "id": tweet_id, "via": "twikit", "url": f"https://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}"}
         except Exception as e:
             log.warning("twikit fehler: %s — versuche Fallback", e)
@@ -403,7 +406,7 @@ async def post_seo_thread() -> dict:
         log.warning("twitter_autoposter seo_thread: SOCIAL_POSTING_PAUSED=true — übersprungen")
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     prompt = """Erstelle einen Twitter-Thread auf DEUTSCH (3 Tweets) zum Thema:
-"Wie man Shopify 2026 vollautomatisiert mit KI"
+"Wie man Shopify 2026 mit KI-Workflows strukturierter betreibt"
 
 Format:
 TWEET 1: Hook (max 250 Zeichen)

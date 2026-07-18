@@ -55,14 +55,14 @@ def _ig_mark_posted() -> None:
     _IG_STATE_FILE.write_text(json.dumps({"last_date": datetime.now().strftime("%Y-%m-%d")}))
 
 CONTENT_POOL = [
-    ("🔥 KI-Business auf Autopilot!", "Stell dir vor: dein Online-Business läuft 24/7 — ohne dass du dabei sein musst. Mit KI-Automatisierung wird das Realität. Produkte, Marketing, Emails — alles automatisch. 💡 Link in Bio!"),
-    ("💰 Passives Einkommen 2026", "Mehr als 500 Unternehmer nutzen bereits KI-Tools um monatlich 4-stellige Einnahmen zu generieren — vollautomatisch. Starte noch heute! 🚀"),
-    ("🛍️ Shopify ohne manuellen Aufwand", "Trending-Produkte werden automatisch importiert, Preise optimiert, Beschreibungen mit KI geschrieben. Dein Shop verdient Geld während du schläfst. ✅"),
-    ("⚡ Der schnellste Weg zum Online-Business", "Schritt 1: KI-Tool einrichten (1x)\nSchritt 2: Alles läuft automatisch\nSchritt 3: Einnahmen checken 😎\nSo einfach kann es sein!"),
+    ("🔥 KI-Workflows fuer Online-Shops", "Produkte, Marketing und Follow-up lassen sich mit klaren Automationen deutlich strukturierter steuern. 💡 Link in Bio!"),
+    ("💼 Digitale Prozesse 2026", "Immer mehr Teams nutzen KI-Tools, um Content, CRM und Shop-Ablaeufe sauberer zu organisieren. Starte mit klaren Workflows. 🚀"),
+    ("🛍️ Shopify ohne manuellen Aufwand", "Trending-Produkte werden sauberer geprueft, Preise optimiert und Beschreibungen mit KI vorbereitet. Mehr Struktur fuer deinen Shop. ✅"),
+    ("⚡ Smartere Shop-Prozesse", "Schritt 1: Workflow aufsetzen\nSchritt 2: Inhalte und Follow-ups strukturieren\nSchritt 3: Ergebnisse messen 😎\nSo bleibt Automation kontrollierbar."),
     ("📈 +187% Umsatz in 90 Tagen", "Das ist kein Märchen — das sind echte Ergebnisse mit KI-E-Commerce-Automatisierung. Willst du wissen wie? Kommentiere 'INFO' oder klick auf Link in Bio!"),
-    ("🤖 KI macht deinen Shop profitabel", "Amazon-Bestseller erkennen ✅\nPreise automatisch optimieren ✅\nEmails automatisch senden ✅\nSocial Media automatisch bespielen ✅\nDu: Ergebnisse genießen 😊"),
-    ("💡 Geheimtipp für Online-Seller", "Die erfolgreichsten Shopify-Stores nutzen KI für alles — Produktrecherche, Texte, Marketing. Anfänger machen das manuell und verlieren. Klug sein = automatisieren!"),
-    ("🎯 Digistore24 Affiliate — so geht's", "Über 400 Produkte, sofortige Auszahlung, bis zu 75% Provision. Mit dem richtigen Traffic-System läuft das vollautomatisch. 🔥 Details → Link in Bio"),
+    ("🤖 KI macht deinen Shop strukturierter", "Amazon-Bestseller erkennen ✅\nPreise gezielt optimieren ✅\nEmails sinnvoll senden ✅\nSocial Media sauber planen ✅\nDu: mehr Klarheit im Alltag 😊"),
+    ("💡 Praxis-Tipp fuer Online-Seller", "Starke Shopify-Stores nutzen KI fuer Recherche, Texte und Marketingprozesse — aber mit klaren Regeln statt blindem Automatismus."),
+    ("🎯 Digistore24 Affiliate — so geht's", "Ueber 400 Produkte, schnelle Abrechnung und klare Funnel-Moeglichkeiten. Mit sauberem Traffic-Setup laesst sich das sinnvoll skalieren. 🔥 Details → Link in Bio"),
 ]
 
 

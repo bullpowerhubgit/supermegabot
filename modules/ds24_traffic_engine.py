@@ -29,7 +29,7 @@ MAILCHIMP_SERVER = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 # Fest definierte Top-Nischen für DS24 DE Markt
 DS24_NICHES = [
     {"keyword": "ki", "label": "KI & ChatGPT", "emoji": "🤖"},
-    {"keyword": "geld verdienen", "label": "Geld verdienen", "emoji": "💰"},
+    {"keyword": "digitale produkte", "label": "Digitale Produkte", "emoji": "💰"},
     {"keyword": "affiliate", "label": "Affiliate Marketing", "emoji": "🔗"},
     {"keyword": "shopify", "label": "E-Commerce", "emoji": "🛒"},
     {"keyword": "krypto", "label": "Krypto", "emoji": "₿"},
@@ -375,7 +375,7 @@ JSON Format:
             # 3. Auch den vollen Brutus feuern (Keywords aus Nischen)
             try:
                 from modules.brutus_traffic_engine import brutus_run
-                br = await brutus_run(niche="ds24 affiliate ki geld verdienen shopify")
+                br = await brutus_run(niche="ds24 digitale produkte funnel automation")
                 results["brutus_channels"] = br.get("channels_hit", 0)
             except Exception as e:
                 logger.warning(f"Full Brutus run: {e}")

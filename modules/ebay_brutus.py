@@ -29,8 +29,8 @@ TRENDING_NICHES = [
     "Dropshipping tool",
     "Print on demand",
     "affiliate marketing kurs",
-    "online geld verdienen",
-    "passive income tool",
+    "shopify workflow tools",
+    "digital product operations",
 ]
 
 
@@ -89,6 +89,7 @@ async def _brutus_blast(keyword: str, content: str, link: str) -> dict:
 async def run_ebay_brutus_cycle() -> dict:
     """Full cycle: pick niche → generate content → blast via BRUTUS."""
     import random
+    from modules.post_validator import validate_post
     niche = random.choice(TRENDING_NICHES)
     link  = build_ebay_link(niche, EBAY_CAMPAIGN)
 
@@ -104,6 +105,21 @@ async def run_ebay_brutus_cycle() -> dict:
         f"{content}\n\n"
         f"👉 [Jetzt ansehen]({link})"
     )
+
+    ok, _layer, reason = await validate_post(tg_msg, platform="telegram", content_type="social")
+    if not ok:
+        result = {
+            "niche": niche,
+            "link": link,
+            "telegram_ok": False,
+            "channels_hit": 0,
+            "content_pieces": 0,
+            "blocked": True,
+            "reason": reason,
+            "ts": datetime.now(timezone.utc).isoformat(),
+        }
+        log.warning("eBay BRUTUS blocked: %s", result)
+        return result
 
     tg_ok = await _telegram(tg_msg)
     brutus_r = await _brutus_blast(niche, tg_msg, link)
