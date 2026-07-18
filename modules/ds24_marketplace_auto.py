@@ -294,19 +294,22 @@ async def run_full_marketplace_cycle() -> dict:
     # 3. Blast
     blast_result = await blast_approved_marketplace_products()
 
-    # 4. Telegram-Report
-    try:
-        from modules.brutus_core import fire
-        await fire(
-            "📊 DS24 Marktplatz-Report",
-            f"Gescannt: {len(products)} Produkte\n"
-            f"Bewerbungen: {apply_result['applied']} neu, "
-            f"{apply_result['already_applied']} schon beworben\n"
-            f"Geblastet: {blast_result['blasted']} genehmigte Produkte",
-            channels=["telegram"],
-        )
-    except Exception:
-        pass
+    # 4. Telegram-Report — NUR senden wenn Ergebnisse vorhanden
+    if len(products) > 0 or apply_result.get("applied", 0) > 0 or blast_result.get("blasted", 0) > 0:
+        try:
+            from modules.brutus_core import fire
+            await fire(
+                "📊 DS24 Marktplatz-Report",
+                f"Gescannt: {len(products)} Produkte\n"
+                f"Bewerbungen: {apply_result['applied']} neu, "
+                f"{apply_result['already_applied']} schon beworben\n"
+                f"Geblastet: {blast_result['blasted']} genehmigte Produkte",
+                channels=["telegram"],
+            )
+        except Exception:
+            pass
+    else:
+        log.debug("DS24 Marktplatz-Report: 0 Ergebnisse — kein Telegram")
 
     return {
         "ok":         True,

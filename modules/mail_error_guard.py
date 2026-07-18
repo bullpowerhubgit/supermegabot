@@ -294,6 +294,11 @@ async def _tg_alert(session: aiohttp.ClientSession, event: dict, fix_result: str
     category = event["category"]
     subject  = event["subject"]
 
+    # smtp_bounce: NUR beim ersten Mal alertieren (zu viele Bounces = normaler Email-Betrieb)
+    if category == "smtp_bounce" and count > 1:
+        log.debug("smtp_bounce %d× — kein weiteres Telegram", count)
+        return
+
     if count == 1:
         icon = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}.get(severity, "⚪")
         msg  = (
@@ -302,23 +307,20 @@ async def _tg_alert(session: aiohttp.ClientSession, event: dict, fix_result: str
             f"Betreff: {subject[:80]}\n"
             f"Auto-Fix: {fix_result}"
         )
-    elif count <= 3:
+    elif count in (5, 10, 25, 50):
+        # Nur bei runden Zahlen erinnern — nicht bei 2, 3, 4...
         msg = (
             f"⚠️ <b>Fehler wiederholt ({count}×)</b>\n"
             f"Kategorie: <code>{category}</code>\n"
             f"{subject[:80]}\n"
-            f"Auto-Fix: {fix_result}\n"
-            f"<i>Bitte manuell prüfen wenn weiterhin!</i>"
+            f"Auto-Fix: {fix_result}"
         )
     else:
-        msg = (
-            f"🚨 <b>WIEDERHOLUNGSFEHLER ({count}×) — Sofortmassnahme!</b>\n"
-            f"Kategorie: <code>{category}</code>\n"
-            f"{subject[:80]}\n"
-            f"Dieser Fehler tritt seit {event['first_seen'][:10]} auf.\n"
-            f"Auto-Fix: {fix_result}\n"
-            f"<b>Manuelle Intervention erforderlich!</b>"
-        )
+        log.debug("Fehler %s wiederholt (%d×) — kein Telegram", category, count)
+        return
+
+    if count > 10:
+        msg += f"\n<b>Tritt seit {event.get('first_seen', '?')[:10]} auf — Manuelle Prüfung!</b>"
 
     try:
         async with session.post(

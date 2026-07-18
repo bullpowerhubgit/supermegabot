@@ -198,28 +198,8 @@ async def _ai_score_email(subject: str, body: str) -> int:
 
 
 def _notify_telegram_sync(subject: str, recipient: str, layer: int, reason: str, score: int = 0):
-    """Synchrone Telegram-Benachrichtigung über blockierte Email."""
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-    chat  = os.getenv("TELEGRAM_CHAT_ID", "")
-    if not token or not chat:
-        return
-    msg = (
-        f"🚫 <b>EmailValidator BLOCKIERT</b>\n"
-        f"Layer {layer} | An: {recipient[:50]}\n"
-        f"Betreff: {subject[:80]}\n"
-        f"Grund: <code>{reason}</code>\n"
-        f"KI-Score: {score}/10"
-    )
-    try:
-        payload = json.dumps({"chat_id": chat, "text": msg, "parse_mode": "HTML"}).encode()
-        req = urllib.request.Request(
-            f"https://api.telegram.org/bot{token}/sendMessage",
-            data=payload,
-            headers={"Content-Type": "application/json"},
-        )
-        urllib.request.urlopen(req, timeout=4)
-    except Exception:
-        pass
+    """Blockierte Emails NUR ins Log — KEIN Telegram (zu viel Lärm bei Email-Blasts)."""
+    log.info("EmailValidator BLOCK | Layer %d | %s | %s | %s", layer, recipient[:50], reason, subject[:60])
 
 
 # ── Hauptfunktion ─────────────────────────────────────────────────────────────
