@@ -15109,13 +15109,9 @@ async def create_app():
     asyncio.create_task(_run_seo_loop())
     log.info("SEO blog content pipeline started")
 
-    # Organic Traffic Manager — 7 Plattformen, 4× täglich
-    try:
-        from modules.organic_traffic_manager import run_traffic_loop
-        asyncio.create_task(run_traffic_loop())
-        log.info("OrganicTrafficManager gestartet: Instagram/Facebook/TikTok/Pinterest/Twitter/Reddit/LinkedIn")
-    except Exception as _otm_err:
-        log.warning("OrganicTrafficManager start failed: %s", _otm_err)
+    # OrganicTrafficManager-Loop DEAKTIVIERT — BrutalAdsEngine (alle 2h) ist aktiv
+    # Beide gleichzeitig = Überposting = Account-Schaden. Nur ein System postet automatisch.
+    # Manuelle Posts weiter möglich via: POST /api/organic-traffic/post
 
     # Auto-configure Telegram webhook + commands on startup
     async def _setup_tg_on_start():
