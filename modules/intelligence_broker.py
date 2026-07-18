@@ -75,7 +75,7 @@ def _stripe_wh()     -> str: return os.getenv("STRIPE_WEBHOOK_SECRET", "")
 def _anthropic()     -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _tg_token()      -> str: return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat()       -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
-def _gmail_user()    -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
+def _gmail_user()    -> str: return os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
 def _gmail_pass()    -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "")
 def _dashboard_url() -> str: return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 

@@ -67,18 +67,18 @@ _load_env()
 
 # 7 Gmail-Konten rotieren — mehr Volumen, bessere Zustellrate
 _GMAIL_ACCOUNTS = [
-    {"user": os.getenv("GMAIL_USER_5", "aiitecbuuss@gmail.com"),
-     "pass": os.getenv("GMAIL_APP_PASSWORD_5", "rqcd uzim npsl odgw"),
-     "name": "Rudolf Sarkany | AIITEC"},
+    {"user": os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com"),
+     "pass": os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", ""),
+     "name": "Rudolf Sarkany | BullPower"},
     {"user": os.getenv("GMAIL_USER_1", "dragonadnp@gmail.com"),
      "pass": os.getenv("GMAIL_APP_PASSWORD_1", ""),
-     "name": "AIITEC KI-Services"},
+     "name": "BullPower Shop"},
     {"user": os.getenv("GMAIL_USER_3", "bullpowersrtkennels@gmail.com"),
      "pass": os.getenv("GMAIL_APP_PASSWORD_3", ""),
-     "name": "AIITEC Partnerservice"},
-    {"user": os.getenv("GMAIL_USER_7", "rudolf.sarkany.aiitec@gmail.com"),
-     "pass": os.getenv("GMAIL_APP_PASSWORD_7", ""),
-     "name": "Rudolf Sarkany | AIITEC"},
+     "name": "BullPower Partner"},
+    {"user": os.getenv("GMAIL_USER_5", "aiitecbuuss@gmail.com"),
+     "pass": os.getenv("GMAIL_APP_PASSWORD_5", "rqcd uzim npsl odgw"),
+     "name": "Rudolf Sarkany"},
 ]
 
 def _anthropic_key() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
@@ -349,8 +349,8 @@ Haben Sie 15 Minuten für ein kurzes Gespräch diese Woche?
 Mehr dazu: {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
-aiitecbuuss@gmail.com
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com
 
 --
 Abmeldung: Antworten Sie mit "Abmelden" — wir streichen Sie sofort aus unserem Verteiler.""",
@@ -372,7 +372,7 @@ Interesse? Oder Fragen zum Modell?
 Details: {cta_url}
 
 Beste Grüße,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Keine weiteren Emails gewünscht? Antworten Sie mit "Stop".""",
@@ -396,7 +396,7 @@ Gerne stellen wir das Modell in einem kurzen Call vor.
 {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Abmeldung jederzeit durch Antwort auf diese E-Mail.""",
@@ -415,7 +415,7 @@ Als IT-Berater können Sie diesen Service nahtlos in Ihre Projektleistungen inte
 Details zum Partner-Programm: {cta_url}
 
 Grüße,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Nicht interessiert? Einfach antworten — wir kontaktieren Sie nicht wieder.""",
@@ -435,7 +435,7 @@ Modell: Sie empfehlen uns weiter — Ihre Mandanten bekommen professionelle Rech
 Mehr Info: {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Abmeldung: Antwort mit "Abmelden" genügt.""",
@@ -456,7 +456,7 @@ Kooperationsmodell: Wir verweisen unsere Kunden bei komplexen Fragen an Partner-
 Interesse? {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Keine weiteren Emails: Kurze Antwort genügt.""",
@@ -476,7 +476,7 @@ Viele Verbände empfehlen uns ihren Mitgliedern — als kostenloser Mehrwert fü
 Mehr dazu: {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Keine weiteren Kontaktaufnahmen gewünscht? Antwort genügt.""",
@@ -496,7 +496,7 @@ Als Netzwerk können Sie diesen Service Ihren angeschlossenen Maklern empfehlen 
 Details: {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Abmeldung: Antwort auf diese E-Mail.""",
@@ -516,7 +516,7 @@ Reseller-Modell: Sie vermitteln, wir liefern, Sie erhalten 30% Provision. White-
 {cta_url}
 
 Grüße,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Keine weiteren E-Mails: kurz antworten.""",
@@ -536,7 +536,7 @@ Ihr Vorteil: 30% Provision auf jeden Auftrag — und ein konkreter Mehrwert für
 {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Nicht interessiert? Kurze Rückmeldung — wir melden uns nicht wieder.""",
@@ -555,7 +555,7 @@ Rahmenvertrag-Modell: Ein Vertrag mit uns, alle Franchisees profitieren zu Vorzu
 Gespräch diese Woche? {cta_url}
 
 Grüße,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Abmeldung per Antwort-E-Mail.""",
@@ -575,7 +575,7 @@ Kein eigener Technik-Aufwand, keine Entwicklung, keine Kundensupport-Last — da
 Mehr: {cta_url}
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
+Rudolf Sarkany | BullPower
 
 --
 Abmeldung: Antwort mit "Stop" genügt.""",

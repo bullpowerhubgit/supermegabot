@@ -890,7 +890,7 @@ async def acquire_saas_subscribers() -> Dict:
                 f"Was es bietet: Shopify-Automatisierung, AI-Content-Generierung, "
                 f"DS24-Integration und mehr — ab €{tier['price'].replace('/mo','')}/Monat.\n\n"
                 f"Testen Sie 7 Tage kostenlos: {stripe_link}\n\n"
-                f"Mit freundlichen Grüßen,\nRudolf Sarkany | AiiteC"
+                f"Mit freundlichen Grüßen,\nRudolf Sarkany | BullPower"
             )
 
         html_body = _build_saas_email_html(
@@ -963,7 +963,7 @@ def _build_saas_email_html(
 border-radius:8px;text-decoration:none;font-weight:bold;font-size:16px;">
 7 Tage kostenlos testen</a>
 <p style="color:#555;font-size:11px;margin-top:20px;">
-Rudolf Sarkany | AiiteC | <a href="https://ineedit.com.co" style="color:#555;">ineedit.com.co</a>
+Rudolf Sarkany | BullPower | <a href="https://ineedit.com.co" style="color:#555;">ineedit.com.co</a>
 </p>
 </div>
 </body></html>"""
@@ -1322,7 +1322,7 @@ async def run_b2b_pipeline() -> Dict:
         pitch_text  = await _ai_copy(body_prompt, max_tokens=250)
         html_body   = _build_b2b_email_html(company, industry, pitch_text, pitch_type)
 
-        ok = await _send_sendgrid(email, subject, html_body, from_name="Rudolf Sarkany | AiiteC")
+        ok = await _send_sendgrid(email, subject, html_body, from_name="Rudolf Sarkany | BullPower")
 
         if ok:
             leads_contacted += 1
@@ -1396,7 +1396,7 @@ border-radius:6px;text-decoration:none;font-weight:bold;">{cta_text}</a>
 </div>
 <hr style="border:none;border-top:1px solid #eee;margin:20px 0;">
 <p style="color:#666;font-size:12px;margin:0;">
-Rudolf Sarkany | AiiteC | aiitecbuuss@gmail.com<br>
+Rudolf Sarkany | BullPower | bullpowersrtkennels@gmail.com<br>
 <a href="https://ineedit.com.co" style="color:#666;">ineedit.com.co</a>
 </p>
 </div>

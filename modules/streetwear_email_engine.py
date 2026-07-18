@@ -193,8 +193,8 @@ async def send_mailchimp_campaign(subject: str, html: str, list_id: str = "") ->
                 "recipients": {"list_id": lid},
                 "settings": {
                     "subject_line": subject,
-                    "from_name": "AIITEC Streetwear",
-                    "reply_to": "aiitecbuuss@gmail.com",
+                    "from_name": "BullPower Streetwear",
+                    "reply_to": "bullpowersrtkennels@gmail.com",
                     "title": f"Streetwear {datetime.now().strftime('%Y-%m-%d')}",
                 },
             }
@@ -288,9 +288,9 @@ async def send_klaviyo_campaign(subject: str, html: str, list_id: str = "") -> D
                             "content": {
                                 "subject": subject,
                                 "preview_text": "Neue Streetwear Designs jetzt verfügbar!",
-                                "from_email": "aiitecbuuss@gmail.com",
-                                "from_label": "AIITEC Streetwear",
-                                "reply_to_email": "aiitecbuuss@gmail.com",
+                                "from_email": "bullpowersrtkennels@gmail.com",
+                                "from_label": "BullPower Streetwear",
+                                "reply_to_email": "bullpowersrtkennels@gmail.com",
                                 "html": html,
                             },
                         }

@@ -58,7 +58,7 @@ def _load_env():
 
 _load_env()
 
-GMAIL_USER = os.getenv("GMAIL_USER_5", "aiitecbuuss@gmail.com")
+GMAIL_USER = os.getenv("GMAIL_USER_BULLPOWER", "bullpowersrtkennels@gmail.com")
 GMAIL_PASS = os.getenv("GMAIL_APP_PASSWORD_5", "rqcd uzim npsl odgw")
 
 # ── DB ────────────────────────────────────────────────────────────────────────
@@ -308,8 +308,8 @@ Inhalte vor Veröffentlichung auf Ihre spezifischen Anforderungen.
 Für Anpassungen oder Fragen: Einfach antworten!
 
 Mit freundlichen Grüßen,
-Rudolf Sarkany | AIITEC
-aiitecbuuss@gmail.com
+Rudolf Sarkany | BullPower
+bullpowersrtkennels@gmail.com
 
 P.S.: Weitere Services mit 30% Partner-Provision:
 https://dist-pi-jet-78.vercel.app
