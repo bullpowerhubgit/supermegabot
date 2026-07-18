@@ -15174,6 +15174,37 @@ async def create_app():
     app.router.add_get("/api/downloads",          handle_downloads_list)
     log.info("Gumroad download endpoints registered (3 routes)")
 
+    # ── PostingCoordinator — Verhindert Doppelposts ───────────────────────────
+    try:
+        from modules.posting_coordinator import get_posting_status, get_coordinator
+        _posting_coord = get_coordinator()
+
+        async def handle_posting_status(request: web.Request) -> web.Response:
+            status = get_posting_status()
+            return web.Response(text=json.dumps(status), content_type="application/json")
+
+        async def handle_posting_log(request: web.Request) -> web.Response:
+            platform = request.query.get("platform", "all")
+            coord = get_coordinator()
+            stats = coord.get_today_stats()
+            if platform != "all":
+                stats = {k: v for k, v in stats.items() if k == platform.lower()}
+            return web.Response(text=json.dumps({"today": stats}), content_type="application/json")
+
+        async def handle_posting_can(request: web.Request) -> web.Response:
+            platform = request.query.get("platform", "instagram")
+            system = request.query.get("system", "any")
+            can, reason = get_coordinator().can_post(platform, system)
+            return web.Response(text=json.dumps({"can_post": can, "reason": reason}),
+                                content_type="application/json")
+
+        app.router.add_get("/api/posting/status", handle_posting_status)
+        app.router.add_get("/api/posting/log",    handle_posting_log)
+        app.router.add_get("/api/posting/can",    handle_posting_can)
+        log.info("PostingCoordinator routes registered (3 routes)")
+    except Exception as _pce:
+        log.warning("PostingCoordinator nicht verfügbar: %s", _pce)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

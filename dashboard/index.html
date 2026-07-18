@@ -220,6 +220,21 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- POSTING STATUS PANEL -->
+<div id="posting-status-bar" style="display:none;background:linear-gradient(90deg,#7C3AED22,#06B6D422);border:1px solid #7C3AED55;border-radius:8px;padding:8px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;font-size:12px">
+  <span style="font-size:16px">📡</span>
+  <div>
+    <span style="color:#A855F7;font-weight:700">POSTING AKTIV: </span>
+    <span id="posting-status-who" style="color:#06B6D4">—</span>
+    <span style="color:#888;margin-left:8px">|</span>
+    <span id="posting-status-platforms" style="color:#F59E0B;margin-left:8px">—</span>
+  </div>
+  <div style="margin-left:auto;font-size:11px;color:#666">Heute: <span id="posting-today-count" style="color:#fff">—</span> Posts</div>
+</div>
+<div id="posting-limit-bar" style="display:none;background:#F59E0B22;border:1px solid #F59E0B55;border-radius:8px;padding:6px 14px;margin-bottom:8px;font-size:11px;color:#F59E0B">
+  ⚠️ Plattform-Limits heute: <span id="posting-limits-text">—</span>
+</div>
+
 <!-- FIRE BUTTONS -->
 <div class="sect">🚀 REVENUE STREAMS — ALLE KANÄLE TRIGGERN <span class="badge badge-orange">ONE-CLICK</span></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
@@ -234,7 +249,7 @@ a{color:inherit;text-decoration:none}
 <div class="fire-grid">
   <div class="fire-btn" id="fb-shopify-blog" onclick="fire('shopify-blog','POST','/api/shopify/blog')"><div class="fire-icon">🛍️</div><div class="fire-name">SHOPIFY BLOG</div><div class="fire-status" id="fs-shopify-blog">bereit</div></div>
   <div class="fire-btn" id="fb-klaviyo" onclick="fire('klaviyo','POST','/api/klaviyo/run')"><div class="fire-icon">📧</div><div class="fire-name">KLAVIYO</div><div class="fire-status" id="fs-klaviyo">bereit</div></div>
-  <div class="fire-btn" id="fb-mailchimp" onclick="fire('mailchimp','POST','/api/mailchimp/run')"><div class="fire-icon">📬</div><div class="fire-name">MAILCHIMP</div><div class="fire-status" id="fs-mailchimp">bereit</div></div>
+  <div class="fire-btn" id="fb-mailchimp" onclick="toast('⛔ MAILCHIMP GESPERRT — Alle 3 Konten gebannt seit Juli 2026! Nur Klaviyo verwenden.','err')" style="opacity:0.45;cursor:not-allowed;border-color:#ef444466"><div class="fire-icon">⛔</div><div class="fire-name">MAILCHIMP</div><div class="fire-status" id="fs-mailchimp" style="color:#ef4444">GESPERRT</div></div>
   <div class="fire-btn" id="fb-ds24" onclick="fire('ds24','POST','/api/ds24/run')"><div class="fire-icon">💰</div><div class="fire-name">DS24 AFFILIATE</div><div class="fire-status" id="fs-ds24">bereit</div></div>
   <div class="fire-btn" id="fb-tiktok" onclick="fire('tiktok','POST','/api/tiktok/run')"><div class="fire-icon">🎵</div><div class="fire-name">TIKTOK BLAST</div><div class="fire-status" id="fs-tiktok">bereit</div></div>
   <div class="fire-btn" id="fb-fiverr" onclick="fire('fiverr','POST','/api/fiverr/run')"><div class="fire-icon">💚</div><div class="fire-name">FIVERR GIGS</div><div class="fire-status" id="fs-fiverr">bereit</div></div>
@@ -552,7 +567,80 @@ async function ap(path,body={}){
   }catch(e){addLog('✗ '+path+': '+e.message,'e');toast('✗ '+e.message,'err');return null;}
 }
 
+// Posting-Systeme die Konflikt-Prüfung benötigen
+const POSTING_ENDPOINTS = [
+  '/api/tiktok/run','/api/brutus/run','/api/mega/run',
+  '/api/free-ads/run','/api/organic-traffic/post',
+  '/api/social-post/run','/api/buyer-traffic/run'
+];
+// Posting-Plattformen pro System
+const POSTING_SYSTEM_NAMES = {
+  'tiktok':'TIKTOK BLAST','brutus':'BRUTUS TRAFFIC',
+  'buyer':'BUYER TRAFFIC','social':'SOCIAL POST'
+};
+
+async function checkPostingConflict(id,path){
+  if(!POSTING_ENDPOINTS.some(e=>path.startsWith(e.split('?')[0]))) return true;
+  try{
+    const s=await(await fetch(B+'/api/posting/status')).json();
+    if(s.locked&&s.active_system){
+      toast('⚠️ '+POSTING_SYSTEM_NAMES[id]||id+' wartet — '+s.active_system+' postet gerade!','err');
+      return false;
+    }
+    // Plattform-Limits prüfen
+    const stats=s.today_stats||{};
+    const blocked=Object.entries(stats).filter(([p,d])=>d.remaining===0).map(([p])=>p);
+    if(blocked.length>0){
+      const bar=document.getElementById('posting-limit-bar');
+      const txt=document.getElementById('posting-limits-text');
+      if(bar&&txt){
+        txt.textContent=blocked.map(p=>p+' (Limit)').join(', ');
+        bar.style.display='block';
+        setTimeout(()=>bar.style.display='none',8000);
+      }
+    }
+  }catch(e){/* PostingCoordinator nicht verfügbar — trotzdem erlauben */}
+  return true;
+}
+
+async function updatePostingStatus(){
+  try{
+    const s=await(await fetch(B+'/api/posting/status')).json();
+    const bar=document.getElementById('posting-status-bar');
+    const who=document.getElementById('posting-status-who');
+    const platforms=document.getElementById('posting-status-platforms');
+    const today=document.getElementById('posting-today-count');
+    if(bar){
+      if(s.locked&&s.active_system){
+        bar.style.display='flex';
+        if(who)who.textContent=s.active_system;
+        if(platforms)platforms.textContent=s.active_lock?.platform||'';
+      } else {
+        bar.style.display='none';
+      }
+    }
+    // Heute-Zähler
+    const stats=s.today_stats||{};
+    const totalToday=Object.values(stats).reduce((a,v)=>a+(v.today||0),0);
+    if(today)today.textContent=totalToday;
+    // Limit-Bar
+    const limitBar=document.getElementById('posting-limit-bar');
+    const limitTxt=document.getElementById('posting-limits-text');
+    const limitsInfo=Object.entries(stats).filter(([p,d])=>d.today>0)
+      .map(([p,d])=>`${p}: ${d.today}/${d.limit}`).join(' · ');
+    if(limitTxt)limitTxt.textContent=limitsInfo||'Keine Posts heute';
+    if(limitBar&&limitsInfo)limitBar.style.display='block';
+  }catch(e){}
+}
+
+// Posting-Status alle 30s aktualisieren
+setInterval(updatePostingStatus,30000);
+setTimeout(updatePostingStatus,3000);
+
 async function fire(id,method,path,body){
+  // Konflikt-Check für Posting-Buttons
+  if(!(await checkPostingConflict(id,path))) return null;
+
   const btn=document.getElementById('fb-'+id),st=document.getElementById('fs-'+id);
   if(btn)btn.className='fire-btn running';if(st)st.textContent='⏳ läuft...';
   addLog('▶ '+path,'i');
@@ -564,6 +652,9 @@ async function fire(id,method,path,body){
     if(btn)btn.className='fire-btn done';if(st)st.textContent=String(msg).slice(0,40);
     addLog('✓ '+path+': '+String(msg).slice(0,80),'');toast('✓ '+String(msg).slice(0,50),'ok');
     setTimeout(()=>{if(btn)btn.className='fire-btn';if(st)st.textContent='bereit';},8000);
+    // Posting-Status nach Ausführung aktualisieren
+    if(POSTING_ENDPOINTS.some(e=>path.startsWith(e.split('?')[0])))
+      setTimeout(updatePostingStatus,2000);
     return d;
   }catch(e){
     if(btn)btn.className='fire-btn fail';if(st)st.textContent='✗ '+e.message.slice(0,30);
