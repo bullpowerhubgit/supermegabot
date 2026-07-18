@@ -15307,6 +15307,40 @@ async def create_app():
     except Exception as _omega_e:
         log.warning("OMEGA Brain routes failed: %s", _omega_e)
 
+    # ── Shopify Image Optimizer ───────────────────────────────────────────────
+    try:
+        async def handle_image_scan(request: web.Request) -> web.Response:
+            limit = int(request.rel_url.query.get("limit", 250))
+            from modules.shopify_image_optimizer import scan_images
+            result = await scan_images(limit=limit)
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_image_issues(request: web.Request) -> web.Response:
+            from modules.shopify_image_optimizer import get_image_issues
+            issues = await get_image_issues()
+            return web.Response(text=json.dumps({"issues": issues, "count": len(issues)}),
+                                content_type="application/json")
+
+        async def handle_image_fix(request: web.Request) -> web.Response:
+            body = await request.json()
+            product_id = str(body.get("product_id", ""))
+            image_url = str(body.get("image_url", ""))
+            if not product_id or not image_url:
+                return web.Response(status=400,
+                                    text=json.dumps({"error": "product_id und image_url erforderlich"}),
+                                    content_type="application/json")
+            from modules.shopify_image_optimizer import _optimizer
+            ok = await _optimizer.fix_product_images(product_id, image_url)
+            return web.Response(text=json.dumps({"ok": ok, "product_id": product_id}),
+                                content_type="application/json")
+
+        app.router.add_get( "/api/shopify/images/scan",   handle_image_scan)
+        app.router.add_get( "/api/shopify/images/issues", handle_image_issues)
+        app.router.add_post("/api/shopify/images/fix",    handle_image_fix)
+        log.info("Shopify Image Optimizer routes registered (3 routes)")
+    except Exception as _img_e:
+        log.warning("Image Optimizer routes failed: %s", _img_e)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
