@@ -15098,7 +15098,9 @@ async def create_app():
     log.info("KI-Agent Hub routes registered (6 routes)")
 
     # ── Gumroad Digital Product Downloads ────────────────────────────────────
-    _DOWNLOADS_DIR = BASE_DIR / "data" / "downloads"
+    _DOWNLOADS_DIR = BASE_DIR / "downloads"
+    if not _DOWNLOADS_DIR.exists():
+        _DOWNLOADS_DIR = BASE_DIR / "data" / "downloads"
     _DOWNLOADS_DIR.mkdir(parents=True, exist_ok=True)
 
     _GUMROAD_PRODUCTS = {
