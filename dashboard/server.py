@@ -1514,7 +1514,9 @@ async def handle_guardian_status(req):
 
 async def handle_ai_status(req):
     """AI integrations status."""
-    anthropic_ok = bool(os.getenv("ANTHROPIC_API_KEY"))
+    _ant_enabled = os.getenv("ANTHROPIC_ENABLED", "true").lower() not in ("false", "0", "off")
+    _ant_keys_count = sum(1 for k in ("ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY_2", "ANTHROPIC_API_KEY_3") if os.getenv(k))
+    anthropic_ok = _ant_enabled and _ant_keys_count > 0
     deepseek_ok = bool(os.getenv("DEEPSEEK_API_KEY"))
     ollama_ok = False
     try:
@@ -1525,7 +1527,7 @@ async def handle_ai_status(req):
         pass
     return web.json_response({
         "ok": True,
-        "anthropic": {"configured": anthropic_ok, "model": os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")},
+        "anthropic": {"configured": anthropic_ok, "enabled": _ant_enabled, "keys_count": _ant_keys_count, "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")},
         "deepseek": {"configured": deepseek_ok, "model": "deepseek-chat"},
         "groq": {"configured": bool(os.getenv("GROQ_API_KEY")), "model": "llama-3.3-70b-versatile"},
         "ollama": {"online": ollama_ok, "host": os.getenv("OLLAMA_HOST", "http://localhost:11434"), "model": os.getenv("OLLAMA_MODEL", "llama3.2")},
