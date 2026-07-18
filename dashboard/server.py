@@ -15376,6 +15376,25 @@ async def create_app():
     except Exception as _klv_e:
         log.warning("Klaviyo routes failed: %s", _klv_e)
 
+    # ── Shopify Auto-Kategorisierer ───────────────────────────────────────────
+    try:
+        async def handle_categorizer_stats(request: web.Request) -> web.Response:
+            from modules.shopify_auto_categorizer import get_category_stats
+            return web.Response(text=json.dumps(await get_category_stats()),
+                                content_type="application/json")
+
+        async def handle_categorizer_run(request: web.Request) -> web.Response:
+            batch = int(request.rel_url.query.get("batch", 30))
+            from modules.shopify_auto_categorizer import categorize_uncategorized
+            result = await categorize_uncategorized(batch_size=batch)
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        app.router.add_get( "/api/shopify/categorizer/stats", handle_categorizer_stats)
+        app.router.add_post("/api/shopify/categorizer/run",   handle_categorizer_run)
+        log.info("Shopify Auto-Categorizer routes registered")
+    except Exception as _cat_e:
+        log.warning("Categorizer routes failed: %s", _cat_e)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

@@ -7954,6 +7954,19 @@ async def task_omega_revenue_brain() -> str:
         return f"OMEGA Brain Fehler: {e}"
 
 
+async def task_shopify_categorizer() -> str:
+    """Shopify Auto-Kategorisierer: Produkte ohne product_type automatisch zuordnen (alle 12h)."""
+    try:
+        from modules.shopify_auto_categorizer import run_auto_categorizer
+        result = await run_auto_categorizer()
+        processed = result.get("processed", 0)
+        coverage = result.get("coverage_pct", 0)
+        uncategorized = result.get("without_category", 0)
+        return f"Kategorisierer: {processed} neu zugeordnet | {uncategorized} ohne Kategorie | {coverage}% abgedeckt"
+    except Exception as e:
+        return f"Kategorisierer Fehler: {e}"
+
+
 async def task_klaviyo_assistant() -> str:
     """Klaviyo Assistent: neue Subscriber, Kampagnen-Check, AI-Optimierung (alle 6h)."""
     try:
@@ -9034,6 +9047,8 @@ TASKS = [
     ("api_hunt_daemon",     task_free_api_hunt_daemon,  21600,  9600), # 6h — Entdeckt neue kostenlose APIs
     # ── Klaviyo Assistent ─────────────────────────────────────────────────────
     ("klaviyo_assistant",   task_klaviyo_assistant,     21600,  7200), # 6h — Subscriber + Kampagnen + AI-Optimierung
+    # ── Shopify Auto-Kategorisierer ────────────────────────────────────────────
+    ("shopify_categorizer", task_shopify_categorizer,  43200,  5400), # 12h — Produkte ohne Kategorie automatisch zuordnen
 ]
 
 
