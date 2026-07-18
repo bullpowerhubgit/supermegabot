@@ -12,6 +12,8 @@ from typing import Optional
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 logger = logging.getLogger(__name__)
 
 REGISTRY = json.loads(
@@ -19,7 +21,6 @@ REGISTRY = json.loads(
 )
 PRODUCTS = {p["id"]: p for p in REGISTRY["products"]}
 
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 STRIPE_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
@@ -28,18 +29,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 # ─── Core AI Calls ─────────────────────────────────────────────────────────────
 
 async def ai_generate(prompt: str, max_tokens: int = 800) -> str:
-    """Single Claude Haiku call for fast generation."""
-    async with aiohttp.ClientSession() as s:
-        r = await s.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                     "Content-Type": "application/json"},
-            json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                  "messages": [{"role": "user", "content": prompt}]},
-            timeout=aiohttp.ClientTimeout(total=30),
-        )
-        data = await r.json()
-        return data["content"][0]["text"]
+    """KI-Generierung mit automatischem Fallback (Groq → DeepSeek → OpenRouter → Anthropic)."""
+    return await ai_complete(prompt=prompt, max_tokens=max_tokens)
 
 
 # ─── Product 1: ShopifyDescriber ───────────────────────────────────────────────

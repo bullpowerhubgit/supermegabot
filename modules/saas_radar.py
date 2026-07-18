@@ -14,10 +14,11 @@ import re
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
 
 import aiohttp
 from dotenv import load_dotenv
+
+from modules.ai_client import ai_complete
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 log = logging.getLogger("SaaSRadar")
@@ -25,8 +26,6 @@ log = logging.getLogger("SaaSRadar")
 REDDIT_CLIENT_ID     = os.getenv("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
 REDDIT_USER_AGENT    = os.getenv("REDDIT_USER_AGENT", "SuperMegaBot/1.0")
-ANTHROPIC_API_KEY    = os.getenv("ANTHROPIC_API_KEY", "")
-OPENROUTER_API_KEY   = os.getenv("OPENROUTER_API_KEY", "")
 
 PAIN_SUBREDDITS = [
     "entrepreneur", "SaaS", "smallbusiness", "freelance", "productivity",
@@ -199,7 +198,7 @@ async def _scan_hn_front(session: aiohttp.ClientSession) -> list[dict]:
 
 
 async def _validate_with_ai(problems: list[dict]) -> list[dict]:
-    if not problems or not (ANTHROPIC_API_KEY or OPENROUTER_API_KEY):
+    if not problems:
         return problems
 
     prompt = f"""Du bist ein SaaS-Experte. Analysiere diese {len(problems)} Probleme aus Reddit/HN.
@@ -218,48 +217,18 @@ Probleme:
 Antworte NUR als JSON-Array:
 [{{"index": 0, "saas_score": 8, "product_idea": "Name: X\\nProblem: Y\\nSolution: Z\\nPreis: €XX/Monat", "mvp_type": "webapp|chrome_ext|api|cli", "target": "Zielgruppe"}}]"""
 
-    headers = {"Content-Type": "application/json"}
-    url     = ""
-    payload: dict[str, Any] = {}
-
-    if ANTHROPIC_API_KEY:
-        url  = "https://api.anthropic.com/v1/messages"
-        headers.update({"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01"})
-        payload = {
-            "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 1500,
-            "messages": [{"role": "user", "content": prompt}],
-        }
-    elif OPENROUTER_API_KEY:
-        url  = "https://openrouter.ai/api/v1/chat/completions"
-        headers["Authorization"] = f"Bearer {OPENROUTER_API_KEY}"
-        payload = {
-            "model": "mistralai/mistral-7b-instruct:free",
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 1500,
-        }
-
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers=headers, json=payload, timeout=aiohttp.ClientTimeout(total=30)) as r:
-                if r.status == 200:
-                    resp = await r.json()
-                    text = ""
-                    if ANTHROPIC_API_KEY:
-                        text = resp.get("content", [{}])[0].get("text", "")
-                    else:
-                        text = resp.get("choices", [{}])[0].get("message", {}).get("content", "")
-
-                    m = re.search(r"\[.*?\]", text, re.DOTALL)
-                    if m:
-                        ratings = json.loads(m.group())
-                        for r_item in ratings:
-                            idx = r_item.get("index", -1)
-                            if 0 <= idx < len(problems):
-                                problems[idx]["saas_score"]   = r_item.get("saas_score", 5)
-                                problems[idx]["product_idea"] = r_item.get("product_idea", "")
-                                problems[idx]["mvp_type"]     = r_item.get("mvp_type", "webapp")
-                                problems[idx]["target"]       = r_item.get("target", "")
+        text = await ai_complete(prompt=prompt, max_tokens=1500)
+        m = re.search(r"\[.*?\]", text, re.DOTALL)
+        if m:
+            ratings = json.loads(m.group())
+            for r_item in ratings:
+                idx = r_item.get("index", -1)
+                if 0 <= idx < len(problems):
+                    problems[idx]["saas_score"]   = r_item.get("saas_score", 5)
+                    problems[idx]["product_idea"] = r_item.get("product_idea", "")
+                    problems[idx]["mvp_type"]     = r_item.get("mvp_type", "webapp")
+                    problems[idx]["target"]       = r_item.get("target", "")
     except Exception as e:
         log.warning(f"AI validate: {e}")
 

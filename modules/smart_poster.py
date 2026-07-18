@@ -1087,10 +1087,8 @@ _BENEFITS = {
 
 
 async def _generate_with_claude(topic_cfg: dict, platform: str) -> Optional[str]:
-    """Generiert Content via Anthropic Claude — gibt None zurück wenn API nicht verfügbar."""
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        return None
+    """Generiert Content via ai_client (Groq → DeepSeek → OpenRouter → Anthropic Fallback)."""
+    from modules.ai_client import ai_complete
 
     topic = topic_cfg["topic"]
     angle = topic_cfg["angle"]
@@ -1114,28 +1112,11 @@ async def _generate_with_claude(topic_cfg: dict, platform: str) -> Optional[str]
     )
 
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": api_key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 300,
-                    "system": system,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-            ) as resp:
-                if resp.status != 200:
-                    return None
-                data = await resp.json()
-                text = data["content"][0]["text"].strip()
-                return text if len(text) > 20 else None
+        text = await ai_complete(prompt=prompt, system=system, max_tokens=300)
+        text = text.strip() if text else ""
+        return text if len(text) > 20 else None
     except Exception as e:
-        log.debug("Claude API: %s", e)
+        log.debug("ai_complete: %s", e)
         return None
 
 

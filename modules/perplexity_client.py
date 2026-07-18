@@ -54,8 +54,18 @@ async def search(query: str, caller: str = "", pro: bool = False,
 
     key = PPLX_KEY()
     if not key:
-        log.warning("PERPLEXITY_API_KEY nicht gesetzt")
-        return None
+        # Fallback: ai_client nutzt Groq/DeepSeek/OpenRouter gratis
+        try:
+            from modules.ai_client import ai_complete
+            log.info("Perplexity: kein Key — Fallback auf ai_client für: %s", query[:60])
+            return await ai_complete(
+                prompt=query,
+                system="Antworte knapp und präzise auf Deutsch. Nur Fakten.",
+                max_tokens=max_tokens,
+            )
+        except Exception as fe:
+            log.warning("Perplexity Fallback fehlgeschlagen: %s", fe)
+            return None
 
     model = PPLX_MODEL_PRO if pro else PPLX_MODEL
     try:

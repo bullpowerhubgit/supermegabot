@@ -1,15 +1,16 @@
 """
-Anthropic API – Automatisierungs-Modul (SuperMegaBot)
-=====================================================
+AI Automatisierungs-Modul (SuperMegaBot)
+=========================================
+
+Alle KI-Calls laufen über modules.ai_client.ai_complete() mit automatischem Fallback:
+OpenClaw/Ollama → Groq → DeepSeek → OpenRouter → Gemini → Anthropic → OpenAI → Perplexity
 
 Setup:
-    pip install anthropic
-    export ANTHROPIC_API_KEY="sk-ant-..."      # Key von console.anthropic.com
-
-Import ist immer sicher – der Client wird lazy erzeugt. Fehlt der Key,
-schlägt erst der erste Funktionsaufruf fehl (RuntimeError), nicht der Import.
+    Mindestens einen Provider-Key setzen (GROQ_API_KEY, OPENROUTER_API_KEY, ANTHROPIC_API_KEY …)
+    Import ist immer sicher. Fehlt jeder Key, schlägt erst der erste Aufruf fehl.
 """
 
+import asyncio
 import os
 import json
 import base64
@@ -17,10 +18,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-try:
-    from modules.anthropic_compat import Anthropic
-except ImportError:
-    from anthropic import Anthropic
+from modules.ai_client import ai_complete, ai_complete_sync
 
 try:
     from modules.ai_budget_guard import is_allowed, record_usage, record_blocked
@@ -33,37 +31,27 @@ except ImportError:
 
 log = logging.getLogger(__name__)
 
-MODEL = "claude-sonnet-5"                    # schnell + stark; Alternative: "claude-opus-4-8"
-FAST_MODEL = "claude-haiku-4-5-20251001"     # billig, für Massen-Tasks
-
-_CLIENT: Optional[Anthropic] = None
+MODEL      = "claude-sonnet-5"               # Hinweis-Konstante; ai_client wählt Provider
+FAST_MODEL = "claude-haiku-4-5-20251001"     # Hinweis-Konstante für Massen-Tasks
 
 
 # ---------------------------------------------------------------------------
 # Client / Health-Check
 # ---------------------------------------------------------------------------
 def is_configured() -> bool:
-    """True, wenn ein API-Key gesetzt ist. Für den Dashboard-Health-Check."""
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
-
-
-def _client() -> Anthropic:
-    """Lazy Singleton. Erzeugt den Client erst beim ersten Aufruf."""
-    global _CLIENT
-    if _CLIENT is None:
-        key = os.environ.get("ANTHROPIC_API_KEY")
-        if not key:
-            raise RuntimeError(
-                "ANTHROPIC_API_KEY ist nicht gesetzt. "
-                "Key auf console.anthropic.com erzeugen und als Umgebungsvariable setzen."
-            )
-        log.debug("Anthropic-Client wird initialisiert (Modell: %s)", MODEL)
-        _CLIENT = Anthropic(api_key=key)
-    return _CLIENT
+    """True, wenn mindestens ein AI-Provider-Key gesetzt ist."""
+    return bool(
+        os.getenv("GROQ_API_KEY") or
+        os.getenv("OPENROUTER_API_KEY") or
+        os.getenv("ANTHROPIC_API_KEY") or
+        os.getenv("OPENAI_API_KEY") or
+        os.getenv("DEEPSEEK_API_KEY") or
+        os.getenv("GEMINI_API_KEY")
+    )
 
 
 def is_available() -> bool:
-    return bool(os.environ.get("ANTHROPIC_API_KEY"))
+    return is_configured()
 
 
 # ---------------------------------------------------------------------------
@@ -79,22 +67,22 @@ def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 100
             return fallback
         raise PermissionError(f"AI Budget Guard: {reason}")
 
-    log.debug("ask(): model=%s caller=%s", model, reason)
+    log.debug("ask(): caller=%s", reason)
     try:
-        resp = _client().messages.create(
-            model=model,
-            max_tokens=max_tokens,
+        text = ai_complete_sync(
+            prompt=prompt,
             system=system or "Du bist ein präziser Assistent. Antworte knapp.",
-            messages=[{"role": "user", "content": prompt}],
+            max_tokens=max_tokens,
         )
-        text = resp.content[0].text
-        usage = resp.usage
-        record_usage(usage.input_tokens, usage.output_tokens, reason)
+        # Approximative Usage-Erfassung (1 Token ≈ 4 Zeichen)
+        approx_in  = max(1, len(prompt) // 4)
+        approx_out = max(1, len(text) // 4)
+        record_usage(approx_in, approx_out, reason)
         return text
     except PermissionError:
         raise
     except Exception as e:
-        log.warning("Anthropic ask() Fehler (%s)", type(e).__name__)
+        log.warning("ai_complete ask() Fehler (%s)", type(e).__name__)
         if fallback:
             return fallback
         raise
@@ -106,18 +94,28 @@ def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 100
 # ---------------------------------------------------------------------------
 def extract(text: str, schema: dict) -> dict:
     log.debug("extract(): felder=%s", list(schema))
-    resp = _client().messages.create(
-        model=MODEL,
-        max_tokens=2000,
-        tools=[{
-            "name": "ergebnis",
-            "description": "Gib die extrahierten Daten zurück.",
-            "input_schema": {"type": "object", "properties": schema, "required": list(schema)},
-        }],
-        tool_choice={"type": "tool", "name": "ergebnis"},   # erzwingt strukturierte Ausgabe
-        messages=[{"role": "user", "content": f"Extrahiere die Daten aus diesem Text:\n\n{text}"}],
+    field_desc = json.dumps(schema, ensure_ascii=False, indent=2)
+    prompt = (
+        f"Extrahiere die Daten aus dem folgenden Text und gib sie als JSON-Objekt zurück.\n"
+        f"Erwartete Felder (JSON Schema):\n{field_desc}\n\n"
+        f"Antworte NUR mit dem JSON-Objekt — kein zusätzlicher Text, keine Erklärung.\n\n"
+        f"Text:\n{text}"
     )
-    return resp.content[0].input
+    raw = ai_complete_sync(
+        prompt=prompt,
+        system="Du bist ein Datenextraktor. Antworte ausschließlich mit validem JSON.",
+        max_tokens=2000,
+    )
+    raw = raw.strip()
+    # Markdown-Code-Block entfernen, falls das Modell einen erzeugt hat
+    if raw.startswith("```"):
+        parts = raw.split("```")
+        if len(parts) >= 2:
+            inner = parts[1]
+            if inner.startswith("json"):
+                inner = inner[4:]
+            raw = inner.strip()
+    return json.loads(raw)
 
 
 # ---------------------------------------------------------------------------
@@ -129,7 +127,7 @@ def classify(text: str, categories: list[str]) -> str:
         f"Kategorien: {', '.join(categories)}\n"
         f"Antworte NUR mit dem Kategorienamen.\n\n{text}"
     )
-    ergebnis = ask(prompt, model=FAST_MODEL, max_tokens=20).strip()
+    ergebnis = ask(prompt, max_tokens=20).strip()
     log.debug("classify(): -> %s", ergebnis)
     return ergebnis
 
@@ -138,40 +136,120 @@ def classify(text: str, categories: list[str]) -> str:
 # 4. PDF / Bild analysieren
 # ---------------------------------------------------------------------------
 def read_pdf(path: str, frage: str) -> str:
+    """
+    PDF auswerten. Extrahiert Text via pdfminer oder pypdf, dann ai_complete.
+    Kein direkter Anthropic-Call — läuft durch den vollständigen Fallback-Stack.
+    """
     log.info("read_pdf(): %s", path)
-    data = base64.b64encode(Path(path).read_bytes()).decode()
-    resp = _client().messages.create(
-        model=MODEL,
+    pdf_text = _extract_pdf_text(path)
+    if not pdf_text:
+        raise RuntimeError(f"PDF-Text konnte nicht extrahiert werden: {path}")
+    prompt = f"{frage}\n\nDokument-Inhalt:\n{pdf_text[:12000]}"
+    return ai_complete_sync(
+        prompt=prompt,
+        system="Du analysierst PDF-Dokumente. Antworte präzise und strukturiert.",
         max_tokens=4000,
-        messages=[{
-            "role": "user",
-            "content": [
-                {"type": "document",
-                 "source": {"type": "base64", "media_type": "application/pdf", "data": data}},
-                {"type": "text", "text": frage},
-            ],
-        }],
     )
-    return resp.content[0].text
+
+
+def _extract_pdf_text(path: str) -> str:
+    """Text aus PDF extrahieren (pdfminer → pypdf)."""
+    try:
+        from pdfminer.high_level import extract_text
+        return extract_text(path) or ""
+    except ImportError:
+        pass
+    except Exception as e:
+        log.debug("pdfminer Fehler: %s", e)
+
+    try:
+        import pypdf
+        reader = pypdf.PdfReader(path)
+        return "\n".join(page.extract_text() or "" for page in reader.pages)
+    except ImportError:
+        pass
+    except Exception as e:
+        log.debug("pypdf Fehler: %s", e)
+
+    return ""
 
 
 def read_image(path: str, frage: str) -> str:
+    """
+    Bild analysieren. Versucht zuerst OpenRouter Vision-Modell (Gemini Flash),
+    dann Text-Fallback via ai_complete.
+    """
     log.info("read_image(): %s", path)
-    data = base64.b64encode(Path(path).read_bytes()).decode()
-    suffix = Path(path).suffix.lower().lstrip(".").replace("jpg", "jpeg")
-    resp = _client().messages.create(
-        model=MODEL,
+    data      = base64.b64encode(Path(path).read_bytes()).decode()
+    suffix    = Path(path).suffix.lower().lstrip(".").replace("jpg", "jpeg")
+    media_type = f"image/{suffix}"
+
+    # OpenRouter Vision-Modell (unterstützt multimodale Eingaben)
+    openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
+    if openrouter_key:
+        result = _try_openrouter_vision(data, media_type, frage, openrouter_key)
+        if result:
+            return result
+
+    # Text-Fallback: ai_complete ohne Bilddaten
+    log.warning("read_image(): Kein Vision-Provider verfügbar — Text-Fallback für %s", path)
+    return ai_complete_sync(
+        prompt=(
+            f"Ich habe ein Bild vom Typ '{suffix}' (Dateiname: {Path(path).name}). "
+            f"Bitte beantworte folgende Frage so gut wie möglich: {frage}\n"
+            f"Hinweis: Das Bild selbst steht nicht zur Verfügung."
+        ),
+        system="Du bist ein Bildanalyst.",
         max_tokens=2000,
-        messages=[{
-            "role": "user",
-            "content": [
-                {"type": "image",
-                 "source": {"type": "base64", "media_type": f"image/{suffix}", "data": data}},
-                {"type": "text", "text": frage},
-            ],
-        }],
     )
-    return resp.content[0].text
+
+
+def _try_openrouter_vision(data: str, media_type: str, frage: str, key: str) -> str:
+    """Versucht OpenRouter mit Vision-Modell (Gemini Flash)."""
+    import aiohttp
+
+    async def _call() -> str:
+        payload = {
+            "model": "google/gemini-2.0-flash-001",
+            "max_tokens": 2000,
+            "messages": [{
+                "role": "user",
+                "content": [
+                    {"type": "image_url", "image_url": {"url": f"data:{media_type};base64,{data}"}},
+                    {"type": "text", "text": frage},
+                ],
+            }],
+        }
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {key}",
+                        "Content-Type": "application/json",
+                        "HTTP-Referer": "https://supermegabot-production.up.railway.app",
+                    },
+                    json=payload,
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        return d.get("choices", [{}])[0].get("message", {}).get("content", "")
+        except Exception as e:
+            log.debug("OpenRouter Vision Fehler: %s", e)
+        return ""
+
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            import concurrent.futures
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                future = pool.submit(asyncio.run, _call())
+                return future.result(timeout=35)
+        else:
+            return loop.run_until_complete(_call())
+    except Exception as e:
+        log.debug("_try_openrouter_vision error: %s", e)
+        return ""
 
 
 # ---------------------------------------------------------------------------
@@ -202,7 +280,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
     if not is_configured():
-        log.error("ANTHROPIC_API_KEY fehlt – bitte setzen.")
+        log.error("Kein AI-Provider konfiguriert — bitte GROQ_API_KEY, OPENROUTER_API_KEY oder ANTHROPIC_API_KEY setzen.")
         raise SystemExit(1)
 
     # (a) Einfache Frage

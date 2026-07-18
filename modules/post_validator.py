@@ -6,7 +6,7 @@ Jeder Post MUSS alle 5 Layer bestehen. Bei Fehler → IMMER blockieren.
 Layer 1  Basis-Sanity     (synchron, < 1ms)
 Layer 2  Sprache/Format   (synchron, < 1ms)
 Layer 3  Nischen-Check    (synchron, < 1ms)
-Layer 4  KI-Qualitäts-Score (async, Groq/Haiku, < 500ms) — Score ≥ 7
+Layer 4  KI-Qualitäts-Score (async, ai_client Fallback-Kette, < 500ms) — Score ≥ 7
 Layer 5  Duplikat-Schutz  (synchron, SQLite, < 5ms)
 
 Fail-Safe: Bei jedem technischen Fehler → BLOCKIEREN (nie durchlassen!)
@@ -29,8 +29,6 @@ import sqlite3
 import time
 from pathlib import Path
 from typing import Optional
-
-import aiohttp
 
 log = logging.getLogger("PostValidator")
 
@@ -270,9 +268,7 @@ def _register_hash(text: str, platform: str):
         pass
 
 
-# ── KI-Score via Groq ────────────────────────────────────────────────────────
-_GROQ_KEY = lambda: os.getenv("GROQ_API_KEY", "")
-
+# ── KI-Score via ai_client (Groq → DeepSeek → OpenRouter → Anthropic) ────────
 _SCORE_PROMPT = """Du bist ein strenger Content-Qualitätsprüfer für einen E-Commerce/Tech-Shop.
 
 Bewerte diesen Post auf einer Skala von 1-10:
@@ -299,83 +295,24 @@ def _keyword_fallback_score(text: str) -> int:
 
 
 async def _ai_score(text: str) -> int:
-    """KI-Score 1-10 via Groq. Bei Fehler: Keyword-Fallback (NIE 0 blind blocken)."""
-    key = _GROQ_KEY()
-    if not key:
-        # Kein Groq → versuche Anthropic, dann Keyword
-        sc = await _ai_score_anthropic(text)
-        return sc if sc > 0 else _keyword_fallback_score(text)
-
-    payload = {
-        "model": "llama-3.1-8b-instant",
-        "max_tokens": 5,
-        "temperature": 0,
-        "messages": [
-            {"role": "user", "content": _SCORE_PROMPT.format(text=text[:800])}
-        ],
-    }
+    """KI-Score 1-10 via ai_client (Groq → DeepSeek → OpenRouter → Anthropic).
+    Bei Fehler: Keyword-Fallback (NIE 0 blind blocken)."""
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                json=payload,
-                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                timeout=aiohttp.ClientTimeout(total=8),
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    raw = data["choices"][0]["message"]["content"].strip()
-                    # Nur erste Zahl extrahieren
-                    m = re.search(r"\d+", raw)
-                    score = int(m.group()) if m else 0
-                    if score <= 0:
-                        return _keyword_fallback_score(text)
+        from modules.ai_client import ai_complete
+        result = await ai_complete(
+            prompt=_SCORE_PROMPT.format(text=text[:800]),
+            max_tokens=5,
+        )
+        if result:
+            m = re.search(r"\d+", result.strip())
+            if m:
+                score = int(m.group())
+                if score > 0:
                     return min(10, max(0, score))
-                elif r.status == 429:
-                    # Rate limit → Anthropic fallback
-                    sc = await _ai_score_anthropic(text)
-                    return sc if sc > 0 else _keyword_fallback_score(text)
-                else:
-                    log.warning("PostValidator: Groq HTTP %s — keyword fallback", r.status)
-                    return _keyword_fallback_score(text)
-    except asyncio.TimeoutError:
-        log.warning("PostValidator: Groq Timeout — keyword fallback")
         return _keyword_fallback_score(text)
     except Exception as e:
-        log.warning("PostValidator: Groq Fehler %s — keyword fallback", e)
+        log.warning("PostValidator: ai_complete Fehler %s — keyword fallback", e)
         return _keyword_fallback_score(text)
-    return _keyword_fallback_score(text)
-
-
-async def _ai_score_anthropic(text: str) -> int:
-    """Fallback: Score via Anthropic Haiku."""
-    key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not key:
-        return 0
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 5,
-                    "messages": [{"role": "user", "content": _SCORE_PROMPT.format(text=text[:800])}],
-                },
-                headers={
-                    "x-api-key": key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                timeout=aiohttp.ClientTimeout(total=8),
-            ) as r:
-                if r.status == 200:
-                    d = await r.json()
-                    raw = d["content"][0]["text"].strip()
-                    m = re.search(r"\d+", raw)
-                    return min(10, max(0, int(m.group()))) if m else 0
-    except Exception:
-        pass
-    return 0
 
 
 # ── Telegram Alert ───────────────────────────────────────────────────────────
