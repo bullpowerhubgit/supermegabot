@@ -412,6 +412,11 @@ async def list_apis() -> None:
             print(f"       {api['notes'][:60]}")
     print()
 
+async def run_hunt_cycle() -> dict:
+    """Wrapper für AutomationScheduler — führt einen Hunt-Zyklus aus."""
+    return await hunt(report=True)
+
+
 async def daemon():
     log.info("Free API Hunt Daemon gestartet — alle %dh", HUNT_INTERVAL // 3600)
     await _tg(f"🔍 *Free API Hunt Daemon* gestartet\nSucht alle {HUNT_INTERVAL//3600}h nach neuen kostenlosen APIs")

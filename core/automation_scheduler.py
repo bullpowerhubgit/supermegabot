@@ -7941,6 +7941,31 @@ async def task_autonomous_engine() -> str:
         return f"AutonomousEngine Fehler: {e}"
 
 
+async def task_omega_revenue_brain() -> str:
+    """OMEGA Revenue Brain: analysiert alle Streams + handelt autonom (alle 15min)."""
+    try:
+        from modules.omega_revenue_brain import run_omega_cycle
+        result = await run_omega_cycle(auto_execute=True)
+        rev = result.get("total_revenue_24h", 0)
+        actions = result.get("actions_executed", 0)
+        alerts = len(result.get("alerts", []))
+        return f"OMEGA Brain: €{rev:.2f} Revenue 24h | {actions} Aktionen | {alerts} Alerts"
+    except Exception as e:
+        return f"OMEGA Brain Fehler: {e}"
+
+
+async def task_free_api_hunt_daemon() -> str:
+    """Free API Hunt Daemon: entdeckt neue kostenlose APIs aus öffentlichen Verzeichnissen (alle 6h)."""
+    try:
+        from modules.free_api_hunt_daemon import run_hunt_cycle
+        result = await run_hunt_cycle()
+        found = result.get("working_count", 0)
+        new = result.get("new_count", 0)
+        return f"APIHunt-Daemon: {found} funktionierende APIs | {new} neue entdeckt"
+    except Exception as e:
+        return f"APIHunt-Daemon Fehler: {e}"
+
+
 async def task_traffic_turbo() -> str:
     """Traffic Turbo: nur direkte Revenue-Tasks, Wave 1 (tägl. Tagesstart)."""
     try:
@@ -8989,6 +9014,9 @@ TASKS = [
     # ── DS24 + Gumroad Funnel-Automation ─────────────────────────────────────
     ("ds24_funnel",    task_ds24_funnel,    21600, 110),   # 6h  — DS24 Funnel: Verkäufe + Affiliate-Report
     ("gumroad_funnel", task_gumroad_funnel, 43200, 120),   # 12h — Gumroad Funnel: Sales + Upsell-Links
+    # ── OMEGA REVENUE BRAIN + APIHunt Daemon ──────────────────────────────────
+    ("omega_brain",         task_omega_revenue_brain,    900,    30),  # 15min — Alle Revenue-Streams + Auto-Action
+    ("api_hunt_daemon",     task_free_api_hunt_daemon,  21600,  9600), # 6h — Entdeckt neue kostenlose APIs
 ]
 
 
