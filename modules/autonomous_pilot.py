@@ -233,6 +233,10 @@ async def _trigger_research() -> str:
 
 async def _trigger_traffic_blast() -> str:
     try:
+        from modules.smart_poster import get_posting_pause_reason
+        pause_reason = get_posting_pause_reason()
+        if pause_reason:
+            return f"traffic skipped: posting_paused:{pause_reason}"
         from modules.traffic_maximizer import run_full_traffic_blast
         result = await run_full_traffic_blast()
         return f"traffic OK: {result}"
