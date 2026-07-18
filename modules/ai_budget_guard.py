@@ -13,7 +13,9 @@ import logging
 import os
 import time
 import urllib.request
+from contextvars import ContextVar
 from pathlib import Path
+from urllib.parse import urlparse
 
 log = logging.getLogger("AIBudgetGuard")
 
@@ -211,6 +213,19 @@ def _today() -> str:
 
 _FAILSAFE_FILE = Path("data/ai_budget_failsafe.json")
 _supabase_reachable = True  # globaler Health-Status, initial optimistisch
+_GLOBAL_AI_GUARD_INSTALLED = False
+_AI_TRANSPORT_BYPASS: ContextVar[bool] = ContextVar("ai_transport_bypass", default=False)
+
+_PAID_PROVIDER_HOSTS = {
+    "api.anthropic.com": "anthropic",
+    "api.openai.com": "openai",
+    "api.perplexity.ai": "perplexity",
+}
+_MAX_TOKENS_BY_PROVIDER = {
+    "anthropic": int(os.getenv("ANTHROPIC_MAX_TOKENS_PER_CALL", "400")),
+    "openai": int(os.getenv("OPENAI_MAX_TOKENS_PER_CALL", "350")),
+    "perplexity": int(os.getenv("PERPLEXITY_MAX_TOKENS_PER_CALL", "250")),
+}
 
 
 def _local_fallback_get(provider: str) -> dict | None:
@@ -374,6 +389,118 @@ def _caller_module() -> str:
                             "ai_gateway", "openrouter_client", "groq_client"):
                 return name
     return "__unknown__"
+
+
+def _provider_from_url(url: str) -> str:
+    try:
+        host = (urlparse(url).hostname or "").lower()
+    except Exception:
+        host = ""
+    return _PAID_PROVIDER_HOSTS.get(host, "")
+
+
+def _coerce_json_payload(payload) -> dict | None:
+    if payload is None:
+        return None
+    if isinstance(payload, dict):
+        return dict(payload)
+    if isinstance(payload, (bytes, bytearray)):
+        try:
+            return json.loads(payload.decode())
+        except Exception:
+            return None
+    if isinstance(payload, str):
+        try:
+            return json.loads(payload)
+        except Exception:
+            return None
+    return None
+
+
+def _provider_allowed(provider: str, caller: str = "") -> tuple[bool, str]:
+    if provider == "anthropic":
+        return is_allowed(caller)
+    if provider == "openai":
+        return is_allowed_oai(caller)
+    if provider == "perplexity":
+        return is_allowed_pplx(caller)
+    return False, f"unknown_provider:{provider}"
+
+
+def _sanitize_paid_payload(provider: str, payload: dict | None) -> dict | None:
+    if not isinstance(payload, dict):
+        return payload
+    sanitized = dict(payload)
+    max_tokens = sanitized.get("max_tokens")
+    cap = _MAX_TOKENS_BY_PROVIDER.get(provider, 0)
+    if isinstance(max_tokens, int) and cap > 0 and max_tokens > cap:
+        sanitized["max_tokens"] = cap
+        log.warning(
+            "AIBudgetGuard: %s max_tokens gekappt %s -> %s",
+            provider, max_tokens, cap,
+        )
+    return sanitized
+
+
+def install_global_ai_budget_guard() -> None:
+    global _GLOBAL_AI_GUARD_INSTALLED
+    if _GLOBAL_AI_GUARD_INSTALLED:
+        return
+
+    try:
+        import aiohttp
+    except ImportError:
+        aiohttp = None  # type: ignore
+
+    if aiohttp is not None:
+        orig_aiohttp_request = aiohttp.ClientSession._request
+
+        async def _guarded_ai_request(self, method, url, *args, **kwargs):
+            if _AI_TRANSPORT_BYPASS.get():
+                return await orig_aiohttp_request(self, method, url, *args, **kwargs)
+            provider = _provider_from_url(str(url))
+            if provider:
+                caller = _caller_module()
+                allowed, reason = _provider_allowed(provider, caller)
+                if not allowed:
+                    log.warning("AIBudgetGuard transport BLOCK [%s] caller=%s reason=%s", provider, caller, reason)
+                    raise aiohttp.ClientError(f"AIBudgetGuard blocked {provider}: {reason}")
+                if "json" in kwargs:
+                    kwargs["json"] = _sanitize_paid_payload(provider, _coerce_json_payload(kwargs.get("json")))
+                elif "data" in kwargs:
+                    body = _coerce_json_payload(kwargs.get("data"))
+                    if body is not None:
+                        kwargs["data"] = json.dumps(_sanitize_paid_payload(provider, body)).encode()
+                        headers = dict(kwargs.get("headers") or {})
+                        headers.setdefault("Content-Type", "application/json")
+                        kwargs["headers"] = headers
+            return await orig_aiohttp_request(self, method, url, *args, **kwargs)
+
+        aiohttp.ClientSession._request = _guarded_ai_request  # type: ignore[method-assign]
+
+    orig_urlopen = urllib.request.urlopen
+
+    def _guarded_urlopen(req, *args, **kwargs):
+        if _AI_TRANSPORT_BYPASS.get():
+            return orig_urlopen(req, *args, **kwargs)
+        url = req.full_url if hasattr(req, "full_url") else str(req)
+        provider = _provider_from_url(url)
+        if provider:
+            caller = _caller_module()
+            allowed, reason = _provider_allowed(provider, caller)
+            if not allowed:
+                log.warning("AIBudgetGuard transport BLOCK [%s] caller=%s reason=%s", provider, caller, reason)
+                raise urllib.error.URLError(f"AIBudgetGuard blocked {provider}: {reason}")
+            body = _coerce_json_payload(getattr(req, "data", None))
+            if body is not None:
+                sanitized = _sanitize_paid_payload(provider, body)
+                req.data = json.dumps(sanitized).encode()
+                if hasattr(req, "headers"):
+                    req.headers["Content-Type"] = "application/json"
+        return orig_urlopen(req, *args, **kwargs)
+
+    urllib.request.urlopen = _guarded_urlopen
+    _GLOBAL_AI_GUARD_INSTALLED = True
 
 
 def is_allowed(caller: str = "") -> tuple[bool, str]:

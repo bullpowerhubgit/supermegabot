@@ -55,9 +55,29 @@ def _client_secret() -> str:
     return os.getenv("GOOGLE_CLIENT_SECRET", "")
 
 
+def _public_base_url() -> str:
+    explicit = (
+        os.getenv("APP_BASE_URL", "").strip()
+        or os.getenv("DASHBOARD_URL", "").strip()
+        or os.getenv("PUBLIC_BASE_URL", "").strip()
+    )
+    if explicit:
+        return explicit.rstrip("/")
+    public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+    if public_domain:
+        return f"https://{public_domain}".rstrip("/")
+    return ""
+
+
 def _redirect_uri() -> str:
+    explicit = os.getenv("GOOGLE_REDIRECT_URI", "").strip()
+    if explicit:
+        return explicit
+    public_base = _public_base_url()
+    if public_base:
+        return f"{public_base}/api/google/callback"
     port = os.getenv("DASHBOARD_PORT", "8888")
-    return os.getenv("GOOGLE_REDIRECT_URI", f"http://localhost:{port}/api/google/callback")
+    return f"http://localhost:{port}/api/google/callback"
 
 
 # ── Token persistence ─────────────────────────────────────────────────────────

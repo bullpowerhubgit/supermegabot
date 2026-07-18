@@ -15,8 +15,24 @@ import aiohttp
 log = logging.getLogger("GMCFeedUploader")
 
 MERCHANT_ID = os.getenv("GMC_MERCHANT_ID", "5734366162")
-FEED_URL    = "https://supermegabot-production.up.railway.app/api/gmc/feed.xml"
 CONTENT_API = "https://shoppingcontent.googleapis.com/content/v2.1"
+
+
+def _feed_url() -> str:
+    explicit = os.getenv("GMC_FEED_URL", "").strip()
+    if explicit:
+        return explicit
+    base_url = (
+        os.getenv("APP_BASE_URL", "").strip()
+        or os.getenv("DASHBOARD_URL", "").strip()
+        or os.getenv("PUBLIC_BASE_URL", "").strip()
+    )
+    if base_url:
+        return f"{base_url.rstrip('/')}/api/gmc/feed.xml"
+    public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+    if public_domain:
+        return f"https://{public_domain}/api/gmc/feed.xml"
+    return "https://supermegabot-production.up.railway.app/api/gmc/feed.xml"
 
 
 async def _sa_token() -> str:
@@ -86,6 +102,7 @@ async def register_scheduled_fetch(token: Optional[str] = None) -> dict:
     token = token or await get_token()
     if not token:
         return {"ok": False, "error": "Kein Google-Token — klicke /api/google/auth"}
+    feed_url = _feed_url()
 
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
@@ -102,8 +119,8 @@ async def register_scheduled_fetch(token: Optional[str] = None) -> dict:
 
         existing = d.get("resources", [])
         for feed in existing:
-            if feed.get("fetchSchedule", {}).get("fetchUrl", "") == FEED_URL:
-                return {"ok": True, "status": "already_registered", "feed_id": feed.get("id")}
+            if feed.get("fetchSchedule", {}).get("fetchUrl", "") == feed_url:
+                return {"ok": True, "status": "already_registered", "feed_id": feed.get("id"), "feed_url": feed_url}
 
         # Register new feed
         r2 = await s.post(
@@ -119,7 +136,7 @@ async def register_scheduled_fetch(token: Optional[str] = None) -> dict:
                     "weekday":  "monday",
                     "hour":     6,
                     "timeZone": "Europe/Berlin",
-                    "fetchUrl": FEED_URL,
+                    "fetchUrl": feed_url,
                     "paused":   False,
                 },
             },
@@ -128,7 +145,7 @@ async def register_scheduled_fetch(token: Optional[str] = None) -> dict:
         if r2.status in (200, 201):
             feed_id = d2.get("id", "?")
             log.info("GMC Feed registriert: ID=%s", feed_id)
-            return {"ok": True, "status": "registered", "feed_id": feed_id, "feed_url": FEED_URL}
+            return {"ok": True, "status": "registered", "feed_id": feed_id, "feed_url": feed_url}
         return {"ok": False, "error": d2.get("error", {}).get("message", str(d2))[:100]}
 
 

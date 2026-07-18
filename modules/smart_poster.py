@@ -49,8 +49,13 @@ _MAX_POSTS_PER_PLATFORM_PER_DAY = 3
 _DEDUP_WINDOW_HOURS = 48
 _TELEGRAM_GUARD_STATE = Path(__file__).parent.parent / "data" / "telegram_send_guard.json"
 _POSTING_EMERGENCY_STATE = Path(__file__).parent.parent / "data" / "posting_emergency_stop.json"
-_TELEGRAM_MIN_INTERVAL_S = 4.0
+_TELEGRAM_MIN_INTERVAL_S = 20.0
+_TELEGRAM_BURST_WINDOW_S = 600
+_TELEGRAM_BURST_MAX = 8
+_TELEGRAM_HOURLY_WINDOW_S = 3600
+_TELEGRAM_HOURLY_MAX = 20
 _TELEGRAM_NETWORK_BACKOFF_S = 90
+_ADMIN_TOPIC_DEFAULT_COOLDOWN_S = 6 * 3600
 _TELEGRAM_PATCH_BYPASS: ContextVar[bool] = ContextVar("telegram_patch_bypass", default=False)
 _GLOBAL_TELEGRAM_GUARD_INSTALLED = False
 
@@ -68,6 +73,9 @@ _BANNED_PATTERNS = [
     r"work from home.*earn",
     r"unlimited income",
     r"financial freedom.*click",
+    r"heute\s+gratis",
+    r"t[aä]glich\s*[€$]?\d+",
+    r"\d+\+?\s*[€$]?\s*(pro\s*tag|taeglich|t[aä]glich)",
     r"casino",
     r"crypto.*pump",
     r"forex.*signal",
@@ -246,17 +254,59 @@ def _telegram_guard_key(bot_token: str, chat_id: str) -> str:
     return f"{token_hash}:{chat_id}"
 
 
-def _telegram_guard_precheck(bot_token: str, chat_id: str) -> tuple[bool, str]:
+def _is_admin_chat(chat_id: str) -> bool:
+    admin_chat = (os.getenv("TELEGRAM_CHAT_ID", "") or "").strip()
+    return bool(admin_chat) and str(chat_id).strip() == admin_chat
+
+
+def _admin_chat_topic(text: str) -> str:
+    lower = (text or "").strip().lower()
+    for topic, patterns in _ADMIN_CHAT_TOPIC_PATTERNS.items():
+        if any(re.search(pattern, lower) for pattern in patterns):
+            return topic
+    return ""
+
+
+def _admin_chat_block_reason(text: str) -> str:
+    lower = (text or "").strip().lower()
+    for pattern in _ADMIN_CHAT_BLOCK_PATTERNS:
+        if re.search(pattern, lower):
+            return f"admin_chat_block:{pattern}"
+    return ""
+
+
+def _telegram_guard_precheck(bot_token: str, chat_id: str, text: str = "") -> tuple[bool, str]:
     now = time.time()
     state = _load_telegram_guard_state()
     key = _telegram_guard_key(bot_token, chat_id)
     info = state.get(key, {})
     cooldown_until = float(info.get("cooldown_until", 0) or 0)
     last_sent = float(info.get("last_sent", 0) or 0)
+    sent_history = [float(ts) for ts in info.get("sent_history", []) if isinstance(ts, (int, float))]
+    sent_history = [ts for ts in sent_history if now - ts <= _TELEGRAM_HOURLY_WINDOW_S]
+    topic_history = info.get("topic_history", {})
     if cooldown_until > now:
         return False, f"telegram_backoff_active_until_{int(cooldown_until)}"
+    if _is_admin_chat(chat_id):
+        admin_block_reason = _admin_chat_block_reason(text)
+        if admin_block_reason:
+            return False, admin_block_reason
+        topic = _admin_chat_topic(text)
+        if topic:
+            try:
+                last_topic_ts = float(topic_history.get(topic, 0) or 0)
+            except Exception:
+                last_topic_ts = 0.0
+            cooldown = _ADMIN_CHAT_TOPIC_COOLDOWNS.get(topic, _ADMIN_TOPIC_DEFAULT_COOLDOWN_S)
+            if now - last_topic_ts < cooldown:
+                return False, f"admin_topic_cooldown:{topic}"
     if now - last_sent < _TELEGRAM_MIN_INTERVAL_S:
         return False, "telegram_local_rate_limit"
+    burst_count = sum(1 for ts in sent_history if now - ts <= _TELEGRAM_BURST_WINDOW_S)
+    if burst_count >= _TELEGRAM_BURST_MAX:
+        return False, "telegram_burst_limit"
+    if len(sent_history) >= _TELEGRAM_HOURLY_MAX:
+        return False, "telegram_hourly_limit"
     return True, ""
 
 
@@ -264,7 +314,18 @@ def _telegram_guard_mark_sent(bot_token: str, chat_id: str) -> None:
     state = _load_telegram_guard_state()
     key = _telegram_guard_key(bot_token, chat_id)
     info = state.get(key, {})
-    info["last_sent"] = time.time()
+    now = time.time()
+    sent_history = [float(ts) for ts in info.get("sent_history", []) if isinstance(ts, (int, float))]
+    sent_history = [ts for ts in sent_history if now - ts <= _TELEGRAM_HOURLY_WINDOW_S]
+    sent_history.append(now)
+    topic_history = info.get("topic_history", {})
+    info["last_sent"] = now
+    info["sent_history"] = sent_history[-_TELEGRAM_HOURLY_MAX:]
+    if _is_admin_chat(chat_id):
+        topic = _admin_chat_topic(str(info.get("last_text", "")))
+        if topic:
+            topic_history[topic] = now
+    info["topic_history"] = topic_history
     info["cooldown_until"] = 0
     info["last_error"] = ""
     state[key] = info
@@ -275,8 +336,20 @@ def _telegram_guard_mark_backoff(bot_token: str, chat_id: str, seconds: int, rea
     state = _load_telegram_guard_state()
     key = _telegram_guard_key(bot_token, chat_id)
     info = state.get(key, {})
+    now = time.time()
+    sent_history = [float(ts) for ts in info.get("sent_history", []) if isinstance(ts, (int, float))]
+    info["sent_history"] = [ts for ts in sent_history if now - ts <= _TELEGRAM_HOURLY_WINDOW_S]
     info["cooldown_until"] = time.time() + max(1, seconds)
     info["last_error"] = reason[:200]
+    state[key] = info
+    _save_telegram_guard_state(state)
+
+
+def _telegram_guard_store_text(bot_token: str, chat_id: str, text: str) -> None:
+    state = _load_telegram_guard_state()
+    key = _telegram_guard_key(bot_token, chat_id)
+    info = state.get(key, {})
+    info["last_text"] = (text or "")[:600]
     state[key] = info
     _save_telegram_guard_state(state)
 
@@ -310,9 +383,11 @@ def _telegram_guard_decision(
                 "details": failed,
             }
 
-    allowed, reason = _telegram_guard_precheck(bot_token, str(chat_id))
+    allowed, reason = _telegram_guard_precheck(bot_token, str(chat_id), text)
     if not allowed:
         return {"ok": False, "skipped": True, "reason": reason}
+
+    _telegram_guard_store_text(bot_token, str(chat_id), text)
 
     return {
         "ok": True,
@@ -616,7 +691,66 @@ _HARD_BLOCK_PATTERNS = [
     r"not\s+approved",
     r"currently\s+unavailable",
     r"not\s+available\s+for\s+sale",
+    r"myshopify\.com/(?:products|admin/products?)",
+    r"(?:https?://)?(?:localhost|127\.0\.0\.1)(?::\d+)?(?:/|$)",
+    r"translate\s+only\s+descriptive\s+parts",
+    r"keep\s+brand\s+names",
+    r"\*\s*constraints?:",
+    r"\*\s*language:",
+    r"\*\s*product:",
 ]
+
+_PROMPT_LEAK_PATTERNS = [
+    r"translate\s+only\s+descriptive\s+parts",
+    r"keep\s+brand\s+names",
+    r"\*\s*constraints?:",
+    r"\*\s*language\b:?",
+    r"\*\s*link\b:?",
+    r"\*\s*price\b:?",
+    r"\*\s*product\b:?",
+    r"\*\s*title\s*\d+:",
+    r"tone:\s*modern",
+    r"max\.?\s*2\s*s(?:e|a)ntences",
+]
+
+_ADMIN_CHAT_BLOCK_PATTERNS = [
+    r"viral window alert",
+    r"pro-tier f[uü]r auto-import",
+    r"heuristik-score",
+    r"claude collab",
+    r"strategy call",
+    r"\bdms:\s*\d+",
+    r"trending now",
+    r"buyertraffic cycle",
+    r"money machine\s+[—-]\s+run complete",
+    r"e ?bay-arbitrage-scan",
+    r"neuer sale!",
+]
+
+_ADMIN_CHAT_TOPIC_PATTERNS = {
+    "daily_status": [
+        r"t[aä]glicher status-check",
+        r"supermegabot\s+[—-]\s+t[aä]glicher status-check",
+    ],
+    "daily_summary": [
+        r"tages-zusammenfassung",
+        r"supermegabot\s+[—-]\s+tages-zusammenfassung",
+    ],
+    "autonomous_loop": [r"autonomous loop"],
+    "anthropic_credits": [
+        r"anthropic credits leer",
+        r"anthropic api: credits leer",
+    ],
+    "insolvenzradar": [r"insolvenzradar"],
+}
+
+_ADMIN_CHAT_TOPIC_COOLDOWNS = {
+    "daily_status": 12 * 3600,
+    "daily_summary": 12 * 3600,
+    "autonomous_loop": 6 * 3600,
+    "anthropic_credits": 6 * 3600,
+    "insolvenzradar": 2 * 3600,
+}
 
 
 class ValidationResult:
@@ -689,6 +823,13 @@ def validate_post(text: str, platform: str) -> tuple[bool, list[ValidationResult
         "kein_ai_fehler",
         found_err is None,
         "" if found_err is None else f"AI-Fehler-Phrase gefunden: '{found_err}'",
+    ))
+
+    prompt_leak = next((p for p in _PROMPT_LEAK_PATTERNS if re.search(p, lower)), None)
+    checks.append(ValidationResult(
+        "kein_prompt_leak",
+        prompt_leak is None,
+        "" if prompt_leak is None else f"Prompt-/Instruktions-Leak: '{prompt_leak}'",
     ))
 
     # ── Check 7: Nicht übermäßig viele Hashtags ──────────────────────────────
@@ -803,6 +944,17 @@ _LINK_SKIP_HOSTS = frozenset({
 })
 
 
+def _blocked_link_reason(url: str) -> str:
+    lower = (url or "").strip().lower()
+    if ".myshopify.com/products/" in lower or ".myshopify.com/admin/products" in lower:
+        return "Interner myshopify-Link ist in Telegram verboten"
+    if "localhost" in lower or "127.0.0.1" in lower:
+        return "Lokaler Link ist extern nicht erreichbar"
+    if "/admin/products/" in lower:
+        return "Interner Admin-Link ist für Nutzer ungeeignet"
+    return ""
+
+
 async def validate_links_async(text: str) -> tuple[bool, str]:
     """
     Öffnet JEDEN Link im Post und prüft:
@@ -824,6 +976,10 @@ async def validate_links_async(text: str) -> tuple[bool, str]:
             headers=_LINK_CHECK_HEADERS,
         ) as session:
             for url in urls_to_check:
+                blocked_reason = _blocked_link_reason(url)
+                if blocked_reason:
+                    log.warning("Link-Check: %s — %s", blocked_reason, url)
+                    return False, f"{blocked_reason}: {url}"
                 try:
                     async with session.get(url, allow_redirects=True, ssl=False) as resp:
                         if resp.status != 200:
@@ -867,6 +1023,10 @@ def _check_links_sync(text: str) -> tuple[bool, str]:
         return True, ""
 
     for url in urls_to_check:
+        blocked_reason = _blocked_link_reason(url)
+        if blocked_reason:
+            log.warning("Link-Check (sync): %s — %s", blocked_reason, url)
+            return False, f"{blocked_reason}: {url}"
         try:
             req = urllib.request.Request(url, headers=dict(_LINK_CHECK_HEADERS))
             with urllib.request.urlopen(req, timeout=5) as resp:

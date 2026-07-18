@@ -3,6 +3,7 @@ import os
 import logging
 import aiohttp
 from datetime import datetime
+from urllib.parse import quote
 
 log = logging.getLogger(__name__)
 
@@ -11,16 +12,29 @@ APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "b613acc6d413eee849cf7d4814b68376"
 TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 BASE       = "https://graph.facebook.com/v21.0"
-CALLBACK_URL = "https://supermegabot-production.up.railway.app/api/facebook/callback"
 RAILWAY_SERVICE = "dudirudibot-mega"
 SCOPES = "pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish,pages_show_list,public_profile"
 
 
+def get_callback_url() -> str:
+    explicit = os.getenv("FACEBOOK_REDIRECT_URI", "").strip()
+    if explicit:
+        return explicit
+    base_url = (
+        os.getenv("APP_BASE_URL", "").strip()
+        or os.getenv("DASHBOARD_URL", "").strip()
+        or os.getenv("PUBLIC_BASE_URL", "").strip()
+        or "https://supermegabot-production.up.railway.app"
+    ).rstrip("/")
+    return f"{base_url}/api/facebook/callback"
+
+
 def get_oauth_url() -> str:
+    callback_url = quote(get_callback_url(), safe=":/?&=%")
     return (
         f"https://www.facebook.com/v21.0/dialog/oauth?"
         f"client_id={APP_ID}"
-        f"&redirect_uri={CALLBACK_URL}"
+        f"&redirect_uri={callback_url}"
         f"&scope={SCOPES}"
         f"&response_type=code"
     )
