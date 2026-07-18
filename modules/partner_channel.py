@@ -185,6 +185,13 @@ def _generate_partner_code(company_name: str) -> str:
     return f"AIITEC-{h}"
 
 def _send_onboarding_email(to_email: str, partner_code: str) -> bool:
+    # Cold-Outreach-Mails dauerhaft deaktiviert (2026-07-18).
+    # Grund: Bounce-Klassifizierungs-Bug → Mails an Bonprix, Spiegel, HWK etc.
+    # Nur reaktivieren wenn PARTNER_ONBOARDING_ENABLED=true in Railway Env gesetzt.
+    import os as _os
+    if _os.getenv("PARTNER_ONBOARDING_ENABLED", "false").lower() != "true":
+        log.debug("partner_channel: Onboarding-Mails deaktiviert (PARTNER_ONBOARDING_ENABLED nicht gesetzt)")
+        return False
     try:
         from modules.gmail_accounts import _is_valid_recipient
         if not _is_valid_recipient(to_email):
