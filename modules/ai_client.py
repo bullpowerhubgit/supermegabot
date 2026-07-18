@@ -22,7 +22,24 @@ def _groq():        return os.getenv("GROQ_API_KEY", "")
 def _deepseek():    return os.getenv("DEEPSEEK_API_KEY", "")
 def _openrouter():  return os.getenv("OPENROUTER_API_KEY", "")
 def _gemini():      return os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
-def _anthropic():   return os.getenv("ANTHROPIC_API_KEY", "")
+def _anthropic_enabled() -> bool:
+    return os.getenv("ANTHROPIC_ENABLED", "true").lower() not in ("false", "0", "off")
+
+def _anthropic():
+    if not _anthropic_enabled():
+        return ""
+    return os.getenv("ANTHROPIC_API_KEY", "")
+
+def _anthropic_all_keys() -> list:
+    """Alle konfigurierten Anthropic-Keys (Key-Rotation bei Credit-Erschöpfung)."""
+    if not _anthropic_enabled():
+        return []
+    keys = []
+    for env in ("ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY_2", "ANTHROPIC_API_KEY_3"):
+        k = os.getenv(env, "")
+        if k and k not in keys:
+            keys.append(k)
+    return keys
 def _openai():      return os.getenv("OPENAI_API_KEY", "")
 def _perplexity():  return os.getenv("PERPLEXITY_API_KEY", "")
 def _tg_bot():      return os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -720,7 +737,7 @@ async def _ai_complete_inner(
         if not gemini_hard_fail and not _cb_ok("Gemini"):
             pass  # bereits gesetzt
 
-    # ── 5. Anthropic Claude Haiku ─────────────────────────────────────────────
+    # ── 5. Anthropic Claude Haiku (Multi-Key-Rotation) ────────────────────────
     try:
         from modules.ai_budget_guard import is_allowed as _guard_ant, record_usage as _record_ant
         _ant_ok, _ant_reason = _guard_ant()
@@ -728,61 +745,75 @@ async def _ai_complete_inner(
         _ant_ok, _ant_reason = False, f"guard_import_failed:{_ge}"  # FAIL-CLOSED
     if not _ant_ok:
         log.debug("AIBudgetGuard: Anthropic blockiert — %s", _ant_reason)
-    elif _anthropic() and _cb_ok("Anthropic"):
-        try:
-            msg_list = [m for m in messages if m.get("role") != "system"]
-            sys_text = system or next((m["content"] for m in messages if m.get("role") == "system"), "")
-            payload = {
-                "model": "claude-haiku-4-5-20251001",
-                "max_tokens": max_tokens,
-                "messages": msg_list or [{"role": "user", "content": prompt}],
-            }
-            if sys_text:
-                payload["system"] = sys_text
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json=payload,
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        text = (d.get("content") or [{"text": ""}])[0].get("text", "")
-                        if text:
-                            _cb_success("Anthropic")
-                            try:
-                                usage = d.get("usage", {})
-                                _record_ant(usage.get("input_tokens", 0), usage.get("output_tokens", 0))
-                            except Exception:
-                                pass
-                            return text
-                    if r.status in (400, 402, 529):
-                        body = await r.json(content_type=None)
-                        is_credit = "credit balance" in str(body).lower() or "too low" in str(body).lower()
-                        if is_credit:
-                            log.warning("Anthropic: CREDITS LEER — 24h deaktiviert. Bitte auf console.anthropic.com aufladen!")
-                            asyncio.ensure_future(_tg_send(
-                                "🚨 ANTHROPIC CREDITS LEER!\n"
-                                "Alle AI-Anfragen laufen über Groq/OpenRouter/OpenAI.\n"
-                                "Bitte auf console.anthropic.com Guthaben aufladen."
-                            ))
-                            if "Anthropic" not in _CB:
-                                _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
-                            _CB["Anthropic"]["until"] = time.time() + 86400  # 24h statt 1h
+    elif _cb_ok("Anthropic"):
+        _ant_keys = _anthropic_all_keys()
+        _ant_all_empty = True
+        for _ant_key in _ant_keys:
+            if not _ant_key:
+                continue
+            _ant_all_empty = False
+            try:
+                msg_list = [m for m in messages if m.get("role") != "system"]
+                sys_text = system or next((m["content"] for m in messages if m.get("role") == "system"), "")
+                payload = {
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": max_tokens,
+                    "messages": msg_list or [{"role": "user", "content": prompt}],
+                }
+                if sys_text:
+                    payload["system"] = sys_text
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                    async with s.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={"x-api-key": _ant_key, "anthropic-version": "2023-06-01",
+                                 "content-type": "application/json"},
+                        json=payload,
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("content") or [{"text": ""}])[0].get("text", "")
+                            if text:
+                                _cb_success("Anthropic")
+                                try:
+                                    usage = d.get("usage", {})
+                                    _record_ant(usage.get("input_tokens", 0), usage.get("output_tokens", 0))
+                                except Exception:
+                                    pass
+                                return text
+                            break  # 200 aber kein Text → nächsten Key versuchen
+                        if r.status in (400, 402, 529):
+                            body = await r.json(content_type=None)
+                            is_credit = "credit balance" in str(body).lower() or "too low" in str(body).lower()
+                            if is_credit:
+                                log.debug("Anthropic Key (…%s): Credits leer — nächsten Key versuchen", _ant_key[-6:])
+                                continue  # nächsten Key versuchen
+                            else:
+                                log.warning("Anthropic: Fehler %s — 1h deaktiviert", r.status)
+                                if "Anthropic" not in _CB:
+                                    _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                                _CB["Anthropic"]["until"] = time.time() + 3600
+                                break
+                        elif r.status in (401, 403):
+                            log.debug("Anthropic Key (…%s): ungültig — nächsten Key versuchen", _ant_key[-6:])
+                            continue
                         else:
-                            log.warning("Anthropic: Fehler %s — 1h deaktiviert", r.status)
-                            if "Anthropic" not in _CB:
-                                _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
-                            _CB["Anthropic"]["until"] = time.time() + 3600
-                    elif r.status in (401, 403):
-                        log.warning("Anthropic: Key ungültig (%s)", r.status)
-                        _cb_fail("Anthropic")
-                    else:
-                        _cb_fail("Anthropic")
-        except Exception as e:
-            log.debug("Anthropic error: %s", e)
-            _cb_fail("Anthropic")
+                            _cb_fail("Anthropic")
+                            break
+            except Exception as e:
+                log.debug("Anthropic Key error: %s", e)
+                continue
+        else:
+            # Alle Keys erschöpft (for-loop lief durch ohne break)
+            if not _ant_all_empty:
+                log.warning("Anthropic: ALLE %d KEYS OHNE CREDITS — 24h deaktiviert. console.anthropic.com aufladen!", len(_ant_keys))
+                asyncio.ensure_future(_tg_send(
+                    "🚨 ANTHROPIC CREDITS LEER (alle Keys)!\n"
+                    "Alle AI-Anfragen laufen über Groq/OpenRouter/OpenAI.\n"
+                    "Bitte auf console.anthropic.com Guthaben aufladen."
+                ))
+                if "Anthropic" not in _CB:
+                    _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                _CB["Anthropic"]["until"] = time.time() + 86400  # 24h
 
     # ── 6. OpenAI GPT-4o-mini ─────────────────────────────────────────────────
     try:
@@ -1027,7 +1058,7 @@ def _log_startup_status() -> None:
         ("DeepSeek",   _deepseek()),
         ("OpenRouter",  _openrouter()),
         ("Gemini",     _gemini()),
-        ("Anthropic",  _anthropic()),
+        ("Anthropic",  str(len(_anthropic_all_keys())) + " keys" if _anthropic_all_keys() else ""),
         ("OpenAI",     _openai()),
         ("Perplexity", _perplexity()),
     ]
