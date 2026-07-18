@@ -19,73 +19,31 @@ from urllib.parse import urlparse
 
 log = logging.getLogger("AIBudgetGuard")
 
-# ── Whitelist — NUR diese Module dürfen Anthropic nutzen ──────────────────────
+# ── Whitelist — NUR direkt umsatz-generierende Module dürfen AI nutzen ─────────
+# STRIKT: Keine Analyse-Calls, kein Content für nicht-produzierte Posts.
+# Stand 2026-07-18: Bereinigte Liste — Spam-/Bloat-Module entfernt.
 REVENUE_MODULES = frozenset({
-    # Core Revenue
-    "revenue_engine",
-    "bullpower_revenue_engine",
-    "megabot_umsatzmaschine",
+    # Shop & Produkte (direkt Umsatz)
+    "smart_product_finder",       # KI-geprüfte Produktrecherche → Shopify
+    "shopify_ab_tester",          # Conversion-Tests
+    "service_delivery",           # Lieferung bezahlter Services
+    "product_generator",          # echte Produktbeschreibungen
+    # DS24 & Affiliate (direkt Umsatz)
     "ds24_funnel_automation",
     "ds24_affiliate_blaster",
-    # Shop & Conversion
-    "smart_product_finder",
-    "shopify_ab_tester",
-    "service_delivery",
-    # Marketing & Email
-    "klaviyo_automation",
-    "email_outreach_bulk",
-    "sys18_newsletter_ki",
-    # Content & Outreach
-    "sys23_expose_ki",
-    "sys37_mieterbrief_ki",
-    "partner_channel",
-    "compliance_outreach_all",
-    # Social Media Posting — DARF AI für Content-Generierung nutzen
-    "social_autoposter",
-    "autonomous_social_proof",
-    "post_content_generator",
-    "rudibot_post_ai",
-    "post_guard",              # Post-Quality-AI-Score
-    # Traffic & SEO
-    "brutus_traffic_engine",
-    "brutus_core",
-    "mega_seo_engine",
-    "seo_content_engine",
-    "full_seo_blast",
-    # Shop & Produkt-Automatisierung
-    "shopify_full_autonomy",
-    "product_generator",
-    "revenue_maximizer",
-    # B2B Lead Gen → Revenue (Intent Radar + Outreach)
-    "b2b_intent_radar",
-    "mass_outreach_1000",
-    "rotating_buyer_prospector",
-    "insolvenz_radar",
-    "handelsregister_radar",
-    # System (darf AI für Health/Strategy nutzen)
-    "daily_system_check",
-    "rudiclone",
-    "geheimwaffe",
-    # Email & Reply-Klassifikation → Revenue
-    "reply_monitor",
-    "agent_teams",
-    "claude_agent",
-    "claude_agent_collab",
-    "autonomous_loop",
-    "analytics_feedback",
-    "telegram_dm_sheet",
-    # Traffic & Conversion
-    "traffic_maximizer",
-    "full_revenue_expansion",
-    "traffic_accelerator",
-    "seo_mega_engine",
-    # DS24 & Content Publishing
     "ds24_income_blaster",
-    "github_blog_publisher",
-    # Email Marketing
-    "email_blast_engine",
+    # Klaviyo Email-Marketing (direkt Umsatz)
+    "klaviyo_automation",
     "klaviyo_blast",
     "newsletter_engine",
+    "sys18_newsletter_ki",
+    "abandoned_cart_recovery",
+    # Revenue Engine (direkt Umsatz)
+    "revenue_maximizer",
+    "revenue_intelligence",
+    # System-Health (Minimal-AI für Status)
+    "daily_system_check",
+    "rudiclone",                  # Strategy-Agent für Rudolf direkt
 })
 
 # ── Tagesbudget + Stundenlimit — DAUERHAFTER KERN-SCHUTZ 2026-07-18 ───────────
@@ -95,17 +53,19 @@ REVENUE_MODULES = frozenset({
 #  - seo_content_factory lief stündlich mit vielen Calls
 #  - Jetzt: alle diese Tasks in POSTING_BLOCKLIST → laufen gar nicht mehr
 
-# Tages-Limits (niedrig halten!)
-DAILY_USD_LIMIT       = float(os.getenv("ANTHROPIC_DAILY_USD_LIMIT",   "1.00"))  # €0.92/Tag max
-DAILY_OAI_USD_LIMIT   = float(os.getenv("OPENAI_DAILY_USD_LIMIT",      "1.00"))  # €0.92/Tag max
-DAILY_PPLX_USD_LIMIT  = float(os.getenv("PERPLEXITY_DAILY_USD_LIMIT",  "0.50"))  # €0.46/Tag max
+# Tages-Limits — KONSERVATIV (2026-07-18 nach Credit-Drain-Session)
+# Ändern via Railway Env Vars (nicht hier!), damit kein Redeploy nötig.
+DAILY_USD_LIMIT       = float(os.getenv("ANTHROPIC_DAILY_USD_LIMIT",   "0.30"))  # max $0.30/Tag ≈ €0.28
+DAILY_OAI_USD_LIMIT   = float(os.getenv("OPENAI_DAILY_USD_LIMIT",      "0.30"))  # max $0.30/Tag
+DAILY_PPLX_USD_LIMIT  = float(os.getenv("PERPLEXITY_DAILY_USD_LIMIT",  "0.10"))  # max $0.10/Tag ≈ €0.09
 
 # Stunden-Limits (verhindert 30min-Drain!)
-HOURLY_USD_LIMIT      = float(os.getenv("ANTHROPIC_HOURLY_USD_LIMIT",  "0.20"))  # max $0.20/h
-HOURLY_OAI_USD_LIMIT  = float(os.getenv("OPENAI_HOURLY_USD_LIMIT",     "0.15"))  # max $0.15/h
+HOURLY_USD_LIMIT      = float(os.getenv("ANTHROPIC_HOURLY_USD_LIMIT",  "0.05"))  # max $0.05/h (war $0.20!)
+HOURLY_OAI_USD_LIMIT  = float(os.getenv("OPENAI_HOURLY_USD_LIMIT",     "0.05"))  # max $0.05/h
+HOURLY_PPLX_USD_LIMIT = float(os.getenv("PERPLEXITY_HOURLY_USD_LIMIT", "0.03"))  # max $0.03/h (NEU!)
 
-# Gesamt-Cap über alle Provider (€ equivalent, ~$2.75 total = €2.53/Tag)
-GLOBAL_DAILY_USD_CAP  = float(os.getenv("GLOBAL_AI_DAILY_USD_CAP",     "2.50"))
+# Gesamt-Cap über alle Provider
+GLOBAL_DAILY_USD_CAP  = float(os.getenv("GLOBAL_AI_DAILY_USD_CAP",     "0.70"))  # max $0.70/Tag gesamt (war $2.50!)
 
 # Token-Kosten
 COST_PER_1K_IN        = 0.00080
@@ -155,6 +115,8 @@ def _mem_check(provider: str) -> tuple[bool, str]:
         return False, f"Anthropic Stundenlimit ${HOURLY_USD_LIMIT:.2f} erreicht (spent ${spent_hourly:.3f})"
     if provider == "openai" and spent_hourly >= HOURLY_OAI_USD_LIMIT:
         return False, f"OpenAI Stundenlimit ${HOURLY_OAI_USD_LIMIT:.2f} erreicht (spent ${spent_hourly:.3f})"
+    if provider == "perplexity" and spent_hourly >= HOURLY_PPLX_USD_LIMIT:
+        return False, f"Perplexity Stundenlimit ${HOURLY_PPLX_USD_LIMIT:.2f} erreicht (spent ${spent_hourly:.3f})"
 
     # Tages-Check pro Provider
     daily_limit = {"anthropic": DAILY_USD_LIMIT, "openai": DAILY_OAI_USD_LIMIT, "perplexity": DAILY_PPLX_USD_LIMIT}.get(provider, 1.0)
