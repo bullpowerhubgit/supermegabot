@@ -8,6 +8,12 @@ try:
 except Exception as _e:
     import logging; logging.getLogger(__name__).warning(f"DS24Guardian import failed: {_e}")
 
+try:
+    from modules.smart_poster import install_global_telegram_send_guard
+    install_global_telegram_send_guard()
+except Exception as _e:
+    import logging; logging.getLogger(__name__).warning(f"Global Telegram guard install failed: {_e}")
+
 import asyncio
 import hashlib
 import json
