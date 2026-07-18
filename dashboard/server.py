@@ -15207,6 +15207,106 @@ async def create_app():
     except Exception as _pce:
         log.warning("PostingCoordinator nicht verfügbar: %s", _pce)
 
+    # ── OMEGA Revenue Brain ───────────────────────────────────────────────────
+    try:
+        async def handle_omega_status(request: web.Request) -> web.Response:
+            from modules.omega_revenue_brain import get_status
+            result = await get_status()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_omega_run(request: web.Request) -> web.Response:
+            from modules.omega_revenue_brain import run_omega_cycle
+            result = await run_omega_cycle(auto_execute=True)
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_revenue_live(request: web.Request) -> web.Response:
+            """Echtzeit-Revenue-Dashboard — ALLE echten Daten aus APIs."""
+            results: dict = {}
+            async with aiohttp.ClientSession() as session:
+                # Shopify
+                token = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+                store = os.getenv("SHOPIFY_STORE_URL", "ineedit.com.co")
+                if token:
+                    try:
+                        from datetime import datetime, timezone, timedelta
+                        since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+                        async with session.get(
+                            f"https://{store}/admin/api/2024-01/orders.json",
+                            headers={"X-Shopify-Access-Token": token},
+                            params={"status": "paid", "created_at_min": since, "limit": 250, "fields": "id,total_price"},
+                            timeout=aiohttp.ClientTimeout(total=10)
+                        ) as r:
+                            if r.status == 200:
+                                data = await r.json()
+                                orders = data.get("orders", [])
+                                results["shopify"] = {
+                                    "ok": True,
+                                    "orders_24h": len(orders),
+                                    "revenue_24h": round(sum(float(o.get("total_price", 0)) for o in orders), 2)
+                                }
+                    except Exception as e:
+                        results["shopify"] = {"ok": False, "error": str(e)[:60]}
+
+                # Stripe
+                stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
+                if stripe_key:
+                    try:
+                        import time as _time
+                        async with session.get(
+                            "https://api.stripe.com/v1/charges",
+                            auth=aiohttp.BasicAuth(stripe_key, ""),
+                            params={"created[gte]": str(int(_time.time()) - 86400), "limit": "100"},
+                            timeout=aiohttp.ClientTimeout(total=10)
+                        ) as r:
+                            if r.status == 200:
+                                data = await r.json()
+                                charges = [c for c in data.get("data", []) if c.get("paid")]
+                                results["stripe"] = {
+                                    "ok": True,
+                                    "charges_24h": len(charges),
+                                    "revenue_24h": round(sum(c.get("amount", 0) for c in charges) / 100, 2)
+                                }
+                    except Exception as e:
+                        results["stripe"] = {"ok": False, "error": str(e)[:60]}
+
+                # Meta Ads
+                meta_token = os.getenv("META_ACCESS_TOKEN", os.getenv("FACEBOOK_ACCESS_TOKEN", ""))
+                meta_act = os.getenv("META_AD_ACCOUNT_ID", "act_878505274898620")
+                if meta_token:
+                    try:
+                        async with session.get(
+                            f"https://graph.facebook.com/v21.0/{meta_act}/insights",
+                            params={"access_token": meta_token, "date_preset": "today",
+                                    "fields": "spend,purchase_roas,impressions,clicks", "level": "account"},
+                            timeout=aiohttp.ClientTimeout(total=10)
+                        ) as r:
+                            if r.status == 200:
+                                data = await r.json()
+                                ins = data.get("data", [{}])[0] if data.get("data") else {}
+                                roas_val = ins.get("purchase_roas", [{}])
+                                roas = float(roas_val[0].get("value", 0)) if roas_val else 0.0
+                                results["meta"] = {
+                                    "ok": True,
+                                    "spend_today": float(ins.get("spend", 0)),
+                                    "roas_today": round(roas, 2),
+                                    "impressions": int(ins.get("impressions", 0)),
+                                    "clicks": int(ins.get("clicks", 0)),
+                                }
+                    except Exception as e:
+                        results["meta"] = {"ok": False, "error": str(e)[:60]}
+
+            results["ok"] = True
+            results["timestamp"] = datetime.now(timezone.utc).isoformat()
+            return web.Response(text=json.dumps(results), content_type="application/json")
+
+        from datetime import datetime, timezone
+        app.router.add_get("/api/omega/status", handle_omega_status)
+        app.router.add_post("/api/omega/run",   handle_omega_run)
+        app.router.add_get("/api/revenue/live", handle_revenue_live)
+        log.info("OMEGA Revenue Brain routes registered (3 routes)")
+    except Exception as _omega_e:
+        log.warning("OMEGA Brain routes failed: %s", _omega_e)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
