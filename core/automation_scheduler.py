@@ -9086,6 +9086,24 @@ class AutomationScheduler:
         "super_revenue_blitz",
         "buyer_traffic_engine",
         "monetization_launch",
+        # Traffic-Blast-Varianten mit anderem Namen (umgehen die Blocklist per task-name-variant)
+        "traffic_maximizer_am", "traffic_maximizer_pm",  # gleiche Fn, andere Namen
+        "traffic_accelerator",   # "alle Traffic-Quellen auf Maximum"
+        "traffic_turbo_daily",   # "Turbo Wave 1 zum Tagesstart"
+        "traffic_max",           # inkl. TG + Social Kanäle
+        "full_expansion",        # "alle Revenue-Kanäle autonom" — inkl. Social
+        "autonomous_pilot",      # ruft run_full_traffic_blast() auf
+        "autonomous_engine",     # "Autonome KPI-Analyse + Handlung" — triggert Posting
+        "mega_hub_autopilot",    # "MegaHub Master Autopilot" — Multi-Channel
+        "content_loop_engine",   # "SEO + IndexNow + TG + LI" — postet zu Telegram + LinkedIn
+        # DS24 Affiliate Blasts
+        "ds24_income_blast",     # "DS24 Affiliate Blast alle Kanäle"
+        "ds24_affiliate_hourly", "ds24_affiliate_daily",  # weitere DS24 Blast-Varianten
+        # Weitere erkannte Posting-Tasks
+        "umsatzmaschine_daily",  # "Vollautonomer Backup-Loop" — ruft Posting auf
+        "mega_command_center",   # "MEGA Geldmaschine alle Systeme"
+        "reddit_monetized",      # Reddit-Posts (Contributor Program)
+        "reply_monitor",         # "Social Mentions auto-beantworten" — postet Antworten
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
