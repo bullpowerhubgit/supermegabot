@@ -7954,6 +7954,19 @@ async def task_omega_revenue_brain() -> str:
         return f"OMEGA Brain Fehler: {e}"
 
 
+async def task_ebay_amazon_marketing() -> str:
+    """eBay/Amazon Marketing: Amazon-Trends + Affiliate-Links + Import-Kandidaten (alle 12h)."""
+    try:
+        from modules.ebay_amazon_marketer import run_marketing_cycle
+        result = await run_marketing_cycle()
+        products = result.get("top_products", 0)
+        candidates = result.get("import_candidates", 0)
+        trending = len(result.get("amazon_trending", []))
+        return f"eBay/Amazon: {products} Top-Produkte | {trending} Amazon-Trends | {candidates} Import-Kandidaten"
+    except Exception as e:
+        return f"eBay/Amazon Marketing Fehler: {e}"
+
+
 async def task_shopify_categorizer() -> str:
     """Shopify Auto-Kategorisierer: Produkte ohne product_type automatisch zuordnen (alle 12h)."""
     try:
@@ -9049,6 +9062,8 @@ TASKS = [
     ("klaviyo_assistant",   task_klaviyo_assistant,     21600,  7200), # 6h — Subscriber + Kampagnen + AI-Optimierung
     # ── Shopify Auto-Kategorisierer ────────────────────────────────────────────
     ("shopify_categorizer", task_shopify_categorizer,  43200,  5400), # 12h — Produkte ohne Kategorie automatisch zuordnen
+    # ── eBay / Amazon Marketing ────────────────────────────────────────────────
+    ("ebay_amazon_marketing", task_ebay_amazon_marketing, 43200, 6000), # 12h — Trends + Affiliate-Links + Import-Kandidaten
 ]
 
 

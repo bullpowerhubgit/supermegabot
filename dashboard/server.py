@@ -15395,6 +15395,30 @@ async def create_app():
     except Exception as _cat_e:
         log.warning("Categorizer routes failed: %s", _cat_e)
 
+    # ── eBay / Amazon Marketing ───────────────────────────────────────────────
+    try:
+        async def handle_amazon_run(request: web.Request) -> web.Response:
+            from modules.ebay_amazon_marketer import run_marketing_cycle
+            result = await run_marketing_cycle()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_amazon_status(request: web.Request) -> web.Response:
+            from modules.ebay_amazon_marketer import get_status
+            return web.Response(text=json.dumps(await get_status()),
+                                content_type="application/json")
+
+        async def handle_amazon_trends(request: web.Request) -> web.Response:
+            from modules.ebay_amazon_marketer import analyze_market_trends
+            result = await analyze_market_trends()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        app.router.add_get( "/api/amazon/status", handle_amazon_status)
+        app.router.add_post("/api/amazon/run",    handle_amazon_run)
+        app.router.add_get( "/api/amazon/trends", handle_amazon_trends)
+        log.info("eBay/Amazon Marketing routes registered")
+    except Exception as _amz_e:
+        log.warning("Amazon routes failed: %s", _amz_e)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
