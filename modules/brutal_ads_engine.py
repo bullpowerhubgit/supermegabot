@@ -528,22 +528,10 @@ async def _post_linkedin(content: dict) -> bool:
         return False
     try:
         text = _full_post_text(content, "linkedin")
-        ok, text = await _guardian_check_and_repair(text, "linkedin")
-        if not ok:
-            return False
-        async with aiohttp.ClientSession() as s:
-            r = await s.post(
-                "https://api.linkedin.com/v2/ugcPosts",
-                headers={"Authorization": f"Bearer {LINKEDIN_TOKEN}",
-                         "Content-Type": "application/json"},
-                json={"author": LINKEDIN_URN, "lifecycleState": "PUBLISHED",
-                      "specificContent": {"com.linkedin.ugc.ShareContent": {
-                          "shareCommentary": {"text": text},
-                          "shareMediaCategory": "NONE"
-                      }}, "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}},
-                timeout=aiohttp.ClientTimeout(total=15),
-            )
-            return r.status in (200, 201)
+        # Über post_gateway routen: Lock + Dedup-Check + API-Call (verhindert 422-Duplikat)
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="linkedin", text=text, source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("LinkedIn: %s", e)
         return False
