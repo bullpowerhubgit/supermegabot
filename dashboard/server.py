@@ -1513,27 +1513,91 @@ async def handle_guardian_status(req):
 
 
 async def handle_ai_status(req):
-    """AI integrations status."""
+    """AI integrations status — komplette Provider-Kette."""
     _ant_enabled = os.getenv("ANTHROPIC_ENABLED", "true").lower() not in ("false", "0", "off")
     _ant_keys_count = sum(1 for k in ("ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY_2", "ANTHROPIC_API_KEY_3") if os.getenv(k))
     anthropic_ok = _ant_enabled and _ant_keys_count > 0
-    deepseek_ok = bool(os.getenv("DEEPSEEK_API_KEY"))
+    _ollama_host = os.getenv("OLLAMA_BASE", os.getenv("OLLAMA_HOST", os.getenv("OLLAMA_URL", "http://localhost:11434")))
     ollama_ok = False
+    ollama_models = []
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as s:
-            async with s.get(f"{os.getenv('OLLAMA_HOST', 'http://localhost:11434')}/api/tags") as r:
-                ollama_ok = r.status == 200
+            async with s.get(f"{_ollama_host}/api/tags") as r:
+                if r.status == 200:
+                    ollama_ok = True
+                    d = await r.json(content_type=None)
+                    ollama_models = [m["name"] for m in d.get("models", [])]
     except Exception:
         pass
+    _ollama_default = os.getenv("OLLAMA_CLAW_MODEL", os.getenv("OLLAMA_DEFAULT_MODEL", os.getenv("OLLAMA_MODEL", "llama3.2:latest")))
+    _ollama_fast    = os.getenv("OLLAMA_FAST_MODEL", _ollama_default)
+    _ollama_smart   = os.getenv("OLLAMA_SMART_MODEL", _ollama_default)
     return web.json_response({
         "ok": True,
-        "anthropic": {"configured": anthropic_ok, "enabled": _ant_enabled, "keys_count": _ant_keys_count, "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")},
-        "deepseek": {"configured": deepseek_ok, "model": "deepseek-chat"},
-        "groq": {"configured": bool(os.getenv("GROQ_API_KEY")), "model": "llama-3.3-70b-versatile"},
-        "ollama": {"online": ollama_ok, "host": os.getenv("OLLAMA_HOST", "http://localhost:11434"), "model": os.getenv("OLLAMA_MODEL", "llama3.2")},
-        "gemini": {"configured": bool(os.getenv("GEMINI_API_KEY"))},
-        "perplexity": {"configured": bool(os.getenv("PERPLEXITY_API_KEY"))},
+        "provider_chain": [
+            "Ollama/OpenClaw (local, free)",
+            "Groq (free tier)",
+            "Cerebras (free)",
+            "SambaNova (free)",
+            "Mistral (free tier)",
+            "DeepSeek",
+            "OpenRouter :free (13 models)",
+            "Gemini",
+            "OpenAI",
+            "Perplexity",
+            "APIHunt Bridge (Anthropic key-rotation, Pollinations)",
+        ],
+        "ollama": {
+            "online": ollama_ok,
+            "host": _ollama_host,
+            "default_model": _ollama_default,
+            "fast_model": _ollama_fast,
+            "smart_model": _ollama_smart,
+            "installed_models": ollama_models,
+            "slot": 0,
+        },
+        "groq":        {"configured": bool(os.getenv("GROQ_API_KEY")),        "slot": 1, "model": "llama-3.3-70b-versatile"},
+        "cerebras":    {"configured": bool(os.getenv("CEREBRAS_API_KEY")),    "slot": 2},
+        "sambanova":   {"configured": bool(os.getenv("SAMBANOVA_API_KEY")),   "slot": 3},
+        "mistral":     {"configured": bool(os.getenv("MISTRAL_API_KEY")),     "slot": 4},
+        "deepseek":    {"configured": bool(os.getenv("DEEPSEEK_API_KEY")),    "slot": 5, "model": "deepseek-chat"},
+        "openrouter":  {"configured": bool(os.getenv("OPENROUTER_API_KEY")), "slot": 6, "free_models": 13},
+        "gemini":      {"configured": bool(os.getenv("GEMINI_API_KEY")),      "slot": 7},
+        "openai":      {"configured": bool(os.getenv("OPENAI_API_KEY")),      "slot": 8},
+        "perplexity":  {"configured": bool(os.getenv("PERPLEXITY_API_KEY")), "slot": 9},
+        "anthropic": {
+            "configured": anthropic_ok, "enabled": _ant_enabled,
+            "keys_count": _ant_keys_count, "slot": 10,
+            "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
+            "location": "APIHunt Bridge (key rotation)",
+        },
     })
+
+
+async def handle_ai_complete(req):
+    """POST /api/ai/complete — testet die komplette AI-Kette.
+    Body: {"prompt": "...", "model_hint": "fast|smart|code", "max_tokens": 100}
+    """
+    try:
+        body = await req.json()
+        prompt = body.get("prompt", "").strip()
+        if not prompt:
+            return web.json_response({"ok": False, "error": "prompt required"}, status=400)
+        model_hint = body.get("model_hint", "fast")
+        max_tokens = int(body.get("max_tokens", 200))
+        from modules.ai_client import ai_complete
+        import time as _time
+        t0 = _time.time()
+        text = await ai_complete(prompt, max_tokens=max_tokens, model_hint=model_hint)
+        elapsed = round(_time.time() - t0, 2)
+        return web.json_response({
+            "ok": bool(text),
+            "response": text,
+            "elapsed_s": elapsed,
+            "model_hint": model_hint,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_system_status(req):
@@ -12151,6 +12215,7 @@ async def create_app():
     app.router.add_get("/api/autopilot/logs", handle_autopilot_logs)
     app.router.add_get("/api/guardian/status", handle_guardian_status)
     app.router.add_get("/api/ai/status", handle_ai_status)
+    app.router.add_post("/api/ai/complete", handle_ai_complete)
     app.router.add_get("/api/system/status", handle_system_status)
     app.router.add_get("/api/env/check",     handle_env_check)
     app.router.add_get("/api/supabase/status", handle_supabase_status)
@@ -12292,7 +12357,6 @@ async def create_app():
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
     app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
     app.router.add_get("/api/gumroad/callback",       handle_gumroad_callback)
-    app.router.add_post("/api/gumroad/webhook",       handle_gumroad_webhook)
     app.router.add_get("/api/gumroad/products",       handle_gumroad_products)
     app.router.add_get("/api/gumroad/sales",          handle_gumroad_sales)
     app.router.add_post("/api/gumroad/product/create", handle_gumroad_create)
@@ -12343,7 +12407,6 @@ async def create_app():
     app.router.add_get("/api/pod/status",             handle_pod_status)
 
     # ── Klaviyo ───────────────────────────────────────────────────────────────
-    app.router.add_get("/api/klaviyo/status",              handle_klaviyo_status)
     app.router.add_get("/api/klaviyo/lists",               handle_klaviyo_lists)
     app.router.add_post("/api/klaviyo/sync",               handle_klaviyo_sync)
     app.router.add_post("/api/klaviyo/campaign",           handle_klaviyo_campaign)
@@ -12713,8 +12776,7 @@ async def create_app():
     app.router.add_get( "/api/circuits/status",          handle_circuit_status)  # alias
     app.router.add_post("/api/circuit/reset",            handle_circuit_reset)
 
-    # Amazon routes
-    app.router.add_get("/api/amazon/status",  handle_amazon_status)
+    # Amazon routes (status/trends via späte lokale Handler unten)
     app.router.add_get("/api/amazon/blast",   handle_amazon_blast)
     app.router.add_get("/api/amazon/search",  handle_amazon_search)
 
@@ -12886,7 +12948,6 @@ async def create_app():
     # ── Missing Platform Routes — alle Revenue-Streams ─────────────────────────
     app.router.add_post("/api/traffic/run",              handle_traffic_run)
     app.router.add_post("/api/affiliate/run",            handle_affiliate_run)
-    app.router.add_post("/api/klaviyo/run",              handle_klaviyo_run)
     app.router.add_post("/api/mailchimp/run",            handle_mailchimp_run)
     app.router.add_post("/api/ds24/run",                 handle_ds24_run)
     app.router.add_post("/api/tiktok/run",               handle_tiktok_run)
