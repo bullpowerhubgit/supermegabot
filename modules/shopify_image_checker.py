@@ -77,6 +77,55 @@ def _image_is_bad(image_url: str, product_title: str) -> tuple[bool, str]:
     return False, ""
 
 
+# Verifizierte Fallback-Bilder pro Kategorie (getestet, kein API-Key nötig)
+# Format: (keyword_list, pexels_photo_id, description)
+_VERIFIED_IMAGES: list[tuple[list[str], str, str]] = [
+    (["lampe", "lamp", "licht", "light", "birne", "bulb", "led", "wärme", "thermostat"],
+     "20943579", "Smart RGB LED E27 Bulb WiFi"),
+    (["kamera", "camera", "überwachung", "security", "webcam"],
+     "430208", "Security Camera"),
+    (["steckdose", "plug", "socket", "outlet", "schalter", "switch"],
+     "1444416", "Smart Home Plug"),
+    (["lautsprecher", "speaker", "echo", "alexa", "google home"],
+     "3761971", "Smart Speaker"),
+    (["sensor", "detektor", "detector", "alarm", "rauch"],
+     "257736", "Smart Home Sensor"),
+    (["solar", "panel"],
+     "356036", "Solar Panel"),
+    (["powerstation", "akku", "batterie", "power bank", "portable power"],
+     "3685271", "Portable Power Station Battery"),
+    (["display", "bildschirm", "monitor", "tablet"],
+     "1334598", "Smart Display Tablet"),
+    (["drohne", "drone"],
+     "1087180", "Drone Flying"),
+    (["roboter", "robot", "sauger", "vacuum"],
+     "3846571", "Robot Vacuum Cleaner"),
+    (["lock", "schloss", "türschloss"],
+     "279810", "Smart Door Lock"),
+    (["smartwatch", "uhr", "watch", "fitness"],
+     "437037", "Smartwatch Fitness"),
+    (["hub", "gateway", "bridge", "zentrale", "controller"],
+     "3184465", "Smart Home Hub"),
+    (["luftreiniger", "air purifier", "humidifier", "luftbefeuchter"],
+     "3765134", "Air Purifier Smart"),
+    (["heizung", "heater", "wärme"],
+     "3817908", "Smart Home Heater"),
+    (["kühlschrank", "fridge", "refrigerator"],
+     "2343468", "Smart Refrigerator"),
+]
+
+_PEXELS_IMG_BASE = "https://images.pexels.com/photos/{id}/pexels-photo-{id}.jpeg"
+
+
+def _find_fallback_image(product_title: str, product_type: str = "") -> Optional[str]:
+    """Gibt eine verifizierte Pexels-URL ohne API-Key zurück."""
+    text = (product_title + " " + product_type).lower()
+    for keywords, photo_id, _desc in _VERIFIED_IMAGES:
+        if any(kw in text for kw in keywords):
+            return _PEXELS_IMG_BASE.format(id=photo_id)
+    return None
+
+
 def _find_search_query(product_title: str, product_type: str = "") -> str:
     """Findet den besten Pexels-Suchbegriff basierend auf Produkttitel."""
     text = (product_title + " " + product_type).lower()
@@ -91,7 +140,7 @@ def _find_search_query(product_title: str, product_type: str = "") -> str:
 async def _pexels_search(query: str) -> Optional[str]:
     """Sucht ein passendes Bild auf Pexels und gibt die URL zurück."""
     if not PEXELS_API_KEY:
-        log.warning("PEXELS_API_KEY nicht gesetzt — kein automatischer Bild-Ersatz")
+        log.debug("PEXELS_API_KEY nicht gesetzt — nur Fallback-Bilder verfügbar")
         return None
 
     url = "https://api.pexels.com/v1/search"
@@ -253,12 +302,14 @@ async def check_and_repair_product_images(product: dict) -> dict:
     log.warning("IMAGE-CHECKER: %s — %d fehlerhafte Bilder: %s",
                 title, len(bad_media_ids), "; ".join(bad_reasons))
 
-    # Suche passendes Ersatzbild
-    search_query = _find_search_query(title, ptype)
-    new_url = await _pexels_search(search_query)
+    # Ersatzbild: erst verifizierter Fallback, dann Pexels-API
+    new_url = _find_fallback_image(title, ptype)
+    if not new_url:
+        search_query = _find_search_query(title, ptype)
+        new_url = await _pexels_search(search_query)
 
     if not new_url:
-        log.warning("Kein Ersatzbild gefunden für '%s' (query: %s)", title, search_query)
+        log.warning("Kein Ersatzbild gefunden für '%s'", title)
         return {"ok": False, "repaired": False,
                 "reason": f"Falsches Bild erkannt, kein Ersatz: {bad_reasons[0]}"}
 
