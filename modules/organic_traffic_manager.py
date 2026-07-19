@@ -585,7 +585,7 @@ async def run_posting_session(slot: int = None) -> dict:
         await asyncio.sleep(5)
 
     if posted or blocked:
-        await _notify(posted, blocked, results, slot)
+        await _notify(posted, results, slot)
 
     return {
         "slot":    slot,
