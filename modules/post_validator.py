@@ -1,13 +1,15 @@
 """
-PostValidator — 5-Layer Universalprüfer für ALLE ausgehenden Posts
+PostValidator — 6-Layer Universalprüfer für ALLE ausgehenden Posts
 ==================================================================
-Jeder Post MUSS alle 5 Layer bestehen. Bei Fehler → IMMER blockieren.
+Jeder Post MUSS alle 6 Layer bestehen. Bei Fehler → IMMER blockieren.
 
+Layer 0  NEVER-TWICE + Off-Topic (synchron, < 1ms)
 Layer 1  Basis-Sanity     (synchron, < 1ms)
-Layer 2  Sprache/Format   (synchron, < 1ms)
+Layer 2  Spam-Phrasen     (synchron, < 1ms)
 Layer 3  Nischen-Check    (synchron, < 1ms)
-Layer 4  KI-Qualitäts-Score (async, ai_client Fallback-Kette, < 500ms) — Score ≥ 7
+Layer 4  KI-Qualitäts-Score (async, ai_client Fallback-Kette, < 500ms) — Score ≥ 4
 Layer 5  Duplikat-Schutz  (synchron, SQLite, < 5ms)
+Layer 6  URL-Live-Check   (async, HTTP, < 10s) — alle Links öffnen + Fehlerseiten erkennen
 
 Fail-Safe: Bei jedem technischen Fehler → BLOCKIEREN (nie durchlassen!)
 
@@ -27,6 +29,7 @@ import os
 import re
 import sqlite3
 import time
+import urllib.request
 from pathlib import Path
 from typing import Optional
 
@@ -458,6 +461,28 @@ async def validate_post(
         _remember(reason)
         await _notify_telegram(text_clean, platform, 5, reason, score)
         return False, 5, reason
+
+    # ── Layer 6: URL Live-Check ──────────────────────────────────────────────
+    # Alle Links im Post öffnen und auf Fehlerseiten (404, 500, etc.) prüfen
+    try:
+        from modules.post_guardian import _check_url_live
+        urls_found = re.findall(r'https?://[^\s<>"\']+', text_clean)
+        for _url in list(dict.fromkeys(urls_found))[:5]:  # max 5 URLs
+            _url = _url.rstrip(".,;)!?")
+            # Interne/Telegram URLs überspringen
+            if any(skip in _url for skip in ("localhost", "127.0.0.1", "telegram.org/bot", "api.telegram")):
+                continue
+            _url_ok, _url_err = await _check_url_live(_url)
+            if not _url_ok:
+                reason = f"link_fehler: {_url_err}"
+                _remember(reason)
+                await _notify_telegram(text_clean, platform, 6, reason, score)
+                return False, 6, reason
+    except ImportError:
+        pass  # post_guardian nicht verfügbar → überspringen
+    except Exception as _e:
+        log.warning("PostValidator Layer 6 URL-Check Fehler: %s", _e)
+        # Bei technischem Fehler NICHT blockieren — Inhalt war sonst OK
 
     # Alle Layer bestanden → Hash registrieren
     _register_hash(text_clean, platform)

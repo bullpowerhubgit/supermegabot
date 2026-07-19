@@ -206,11 +206,11 @@ async def _ai_caption(topic: str = "", lang: str = "de") -> str:
 # ── Facebook Page Poster ─────────────────────────────────────────────────────
 async def post_to_facebook(message: str, image_url: str = "", link: str = "") -> dict:
     """Postet auf die Aiitec Facebook Page."""
-    from modules.post_guardian import validate_post, register_posted
-    ok, errors = validate_post(message, "facebook", image_url)
-    if not ok:
-        log.warning("Post Guardian blockiert FB-Post: %s", errors)
-        return {"ok": False, "platform": "facebook", "blocked": True, "errors": errors}
+    from modules.post_guardian import check_post, register_posted
+    _guard = await check_post("facebook", message, image_url or None)
+    if not _guard["ok"]:
+        log.warning("Post Guardian blockiert FB-Post: %s", _guard["errors"])
+        return {"ok": False, "platform": "facebook", "blocked": True, "errors": _guard["errors"]}
     if not FB_TOKEN:
         return {"ok": False, "platform": "facebook", "error": "FACEBOOK_PAGE_TOKEN_AIITEC nicht gesetzt — Post abgebrochen"}
     url = f"{GRAPH}/{FB_PAGE_ID}/feed"
@@ -258,11 +258,11 @@ async def post_to_instagram(caption: str, image_url: str) -> dict:
     Post Guardian prüft vor dem Posten.
     image_url muss öffentlich erreichbar sein (JPG/PNG, min 320px).
     """
-    from modules.post_guardian import validate_post, register_posted
-    ok, errors = validate_post(caption, "instagram", image_url)
-    if not ok:
-        log.warning("Post Guardian blockiert IG-Post: %s", errors)
-        return {"ok": False, "platform": "instagram", "blocked": True, "errors": errors}
+    from modules.post_guardian import check_post, register_posted
+    _guard = await check_post("instagram", caption, image_url or None)
+    if not _guard["ok"]:
+        log.warning("Post Guardian blockiert IG-Post: %s", _guard["errors"])
+        return {"ok": False, "platform": "instagram", "blocked": True, "errors": _guard["errors"]}
     if not FB_TOKEN or not IG_ID:
         return {"ok": False, "platform": "instagram", "error": "INSTAGRAM_ACCOUNT_ID oder FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
     if not image_url:
@@ -307,11 +307,11 @@ async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
     video_url muss öffentlich erreichbar sein (MP4, min 720p empfohlen).
     Post Guardian prüft vor dem Posten.
     """
-    from modules.post_guardian import validate_post, register_posted
-    ok_guard, errors = validate_post(caption, "instagram", video_url)
-    if not ok_guard:
-        log.warning("Post Guardian blockiert IG-Reel: %s", errors)
-        return {"ok": False, "platform": "instagram_reel", "blocked": True, "errors": errors}
+    from modules.post_guardian import check_post, register_posted
+    _guard = await check_post("instagram", caption, video_url or None)
+    if not _guard["ok"]:
+        log.warning("Post Guardian blockiert IG-Reel: %s", _guard["errors"])
+        return {"ok": False, "platform": "instagram_reel", "blocked": True, "errors": _guard["errors"]}
     if not FB_TOKEN or not IG_ID:
         return {"ok": False, "platform": "instagram_reel", "error": "INSTAGRAM_ACCOUNT_ID oder FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
     if not video_url:
@@ -382,11 +382,11 @@ async def post_to_linkedin(text: str, link: str = "") -> dict:
     Postet auf Rudolf Sarkanys LinkedIn-Profil.
     Benötigt Scope: w_member_social (✅ bestätigt via 429 Rate Limit Test).
     """
-    from modules.post_guardian import validate_post, register_posted
-    ok_check, errors = validate_post(text, "linkedin")
-    if not ok_check:
-        log.warning("Post Guardian blockiert LI-Post: %s", errors)
-        return {"ok": False, "platform": "linkedin", "blocked": True, "errors": errors}
+    from modules.post_guardian import check_post, register_posted
+    _guard = await check_post("linkedin", text)
+    if not _guard["ok"]:
+        log.warning("Post Guardian blockiert LI-Post: %s", _guard["errors"])
+        return {"ok": False, "platform": "linkedin", "blocked": True, "errors": _guard["errors"]}
     if not LI_TOKEN:
         return {"ok": False, "platform": "linkedin", "error": "LINKEDIN_ACCESS_TOKEN nicht gesetzt"}
     person_urn = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
