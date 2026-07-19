@@ -81,20 +81,25 @@ _PLATFORM_PAUSED_UNTIL: dict = {}
 _SHOP_LIVE_CACHE: dict = {"ok": None, "ts": 0.0}
 
 def _shop_is_live() -> bool:
-    """Prüft ob ineedit.com.co erreichbar ist. Cached 10 Minuten."""
+    """Prüft ob ineedit.com.co erreichbar ist. Cached 10 Minuten.
+    Shopify blockiert HEAD → GET mit Range-Header (minimaler Download).
+    """
     now = time.time()
     if now - _SHOP_LIVE_CACHE["ts"] < 600 and _SHOP_LIVE_CACHE["ok"] is not None:
         return _SHOP_LIVE_CACHE["ok"]
-    try:
-        req = urllib.request.Request(
-            SHOP_URL, method="HEAD",
-            headers={"User-Agent": "Mozilla/5.0 OrganicTrafficBot/1.0"}
-        )
-        with urllib.request.urlopen(req, timeout=8) as r:
-            ok = r.status < 400
-    except Exception as e:
-        log.warning("Shop-URL Check fehlgeschlagen: %s — Posts pausiert", e)
-        ok = False
+    ok = False
+    for method in ("GET", "HEAD"):
+        try:
+            req = urllib.request.Request(
+                SHOP_URL, method=method,
+                headers={"User-Agent": "Mozilla/5.0 OrganicTrafficBot/1.0",
+                         "Range": "bytes=0-0"}
+            )
+            with urllib.request.urlopen(req, timeout=8) as r:
+                ok = r.status < 500
+            break
+        except Exception as e:
+            log.debug("Shop-URL %s Check: %s", method, e)
     _SHOP_LIVE_CACHE["ok"] = ok
     _SHOP_LIVE_CACHE["ts"] = now
     if not ok:
@@ -594,6 +599,23 @@ async def run_posting_session(slot: int = None) -> dict:
         "skipped": skipped,
         "results": {k: {"ok": v["ok"], "error": v.get("error", "")} for k, v in results.items()},
     }
+
+
+async def _notify_error(msg: str):
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not token or not chat:
+        return
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat, "text": f"⚠️ {msg}", "parse_mode": "HTML"},
+                timeout=aiohttp.ClientTimeout(total=8),
+            )
+    except Exception as e:
+        log.debug("Telegram notify_error: %s", e)
 
 
 async def _notify(posted: list, results: dict, slot: int):
