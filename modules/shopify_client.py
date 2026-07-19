@@ -157,13 +157,22 @@ _token_cache: Dict[str, Any] = {
     "bearer_token": None,    # atkn_ bearer
     "bearer_expires": 0,
     "refresh_token": "",     # atkn_ refresh (legacy)
+    # Fail-fast: nach invalid_grant NICHT jede Sekunde erneut versuchen
+    "cc_failed_until": 0,    # client-credentials: nicht vor diesem Timestamp retrien
+    "atkn_failed_until": 0,  # atkn_ refresh: nicht vor diesem Timestamp retrien
 }
+
+
+_CC_BACKOFF_SECS   = 1800   # 30 min Pause nach client_credentials Fehler
+_ATKN_BACKOFF_SECS = 3600   # 60 min Pause nach invalid_grant (permanent bis Neustart)
 
 
 async def _refresh_client_credentials() -> Optional[str]:
     """Holt frischen shpat_ via Client Credentials Grant (auto-refresh, 24h gültig)"""
     if not HAS_AIOHTTP:
         return None
+    if time.time() < _token_cache["cc_failed_until"]:
+        return None  # Backoff aktiv — nicht retrien
     try:
         payload = {
             "grant_type": "client_credentials",
@@ -185,18 +194,24 @@ async def _refresh_client_credentials() -> Optional[str]:
                     if token:
                         _token_cache["access_token"] = token
                         _token_cache["expires_at"] = time.time() + expires_in - 300
+                        _token_cache["cc_failed_until"] = 0
                         logger.info("Shopify client-credentials token refreshed, expires in %ds", expires_in)
                         return token
                 else:
                     body = await resp.text()
-                    logger.warning("Client credentials refresh failed %d: %s", resp.status, body[:200])
+                    _token_cache["cc_failed_until"] = time.time() + _CC_BACKOFF_SECS
+                    logger.warning("Client credentials refresh failed %d (Backoff %ds): %s",
+                                   resp.status, _CC_BACKOFF_SECS, body[:100])
     except Exception as e:
-        logger.warning("Client credentials refresh error: %s", e)
+        _token_cache["cc_failed_until"] = time.time() + _CC_BACKOFF_SECS
+        logger.warning("Client credentials refresh error (Backoff): %s", e)
     return None
 
 
 async def _refresh_atkn_token() -> Optional[str]:
     """Refreshed den Shopify CLI identity token via accounts.shopify.com"""
+    if time.time() < _token_cache["atkn_failed_until"]:
+        return None  # Backoff aktiv — nicht retrien
     refresh_tok = _token_cache["refresh_token"] or _cli_refresh_token()
     if not refresh_tok:
         return None
@@ -222,15 +237,19 @@ async def _refresh_atkn_token() -> Optional[str]:
                     if new_token:
                         _token_cache["bearer_token"] = new_token
                         _token_cache["bearer_expires"] = time.time() + expires_in - 60
+                        _token_cache["atkn_failed_until"] = 0
                         if new_refresh:
                             _token_cache["refresh_token"] = new_refresh
                         logger.info("Shopify CLI bearer token refreshed, expires in %ds", expires_in)
                         return new_token
                 else:
                     body = await resp.text()
-                    logger.warning("atkn_ refresh failed %d: %s", resp.status, body[:200])
+                    _token_cache["atkn_failed_until"] = time.time() + _ATKN_BACKOFF_SECS
+                    logger.warning("atkn_ refresh failed %d (Backoff %dmin): %s",
+                                   resp.status, _ATKN_BACKOFF_SECS // 60, body[:100])
     except Exception as e:
-        logger.warning("atkn_ refresh error: %s", e)
+        _token_cache["atkn_failed_until"] = time.time() + _ATKN_BACKOFF_SECS
+        logger.warning("atkn_ refresh error (Backoff): %s", e)
     return None
 
 
