@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-19 v41 — Server läuft lokal, Ollama integriert, AI-Kette fast-kostenlos**
+**Stand: 2026-07-19 v42 — Post-Prüfsystem + Auto-Repair + Shopify Manager + Organic Traffic**
 
 ## System
 | Check | Status |
@@ -11,6 +11,21 @@
 | Scheduler | **253/400 Tasks aktiv** — dict-Bug behoben, 147 warten auf erstes Intervall |
 | PR #48 | gemergt (fix/session-2026-07-17-v2) — Railway auto-deployed |
 | GitHub Pages vsl-pages | 11/11 VSL-Seiten live |
+
+## Session v42 — Post-Prüfsystem + Auto-Repair + Shopify Manager (2026-07-19)
+| Was | Status | Details |
+|-----|--------|---------|
+| URL-Live-Check in PostGuardian | ✅ deployed | Alle Links öffnen + Fehlerseiten (8KB Inhalt, 30+ Marker) |
+| auto_repair_post() | ✅ deployed | Defekte URLs → Homepage, Platzhalter raus, kürzen, Variation |
+| /api/post-guardian/check | ✅ erweitert | check_urls=True Standard, checks_performed Liste |
+| /api/post-guardian/repair | ✅ NEU | Automatische Reparatur fehlerhafter Posts |
+| brutal_ads_engine.py | ✅ guardiert | Alle 6 Platform-Poster via _guardian_check_and_repair() |
+| twitter_autoposter.py | ✅ guardiert | async check_post() + auto_repair vor jedem Tweet |
+| social_autoposter.py | ✅ guardiert | FB/IG/IG-Reel/LinkedIn via async check_post() |
+| modules/shopify_manager.py | ✅ NEU | AB-Tests + SEO + Preise + Qualitäts-Audit + Duplikat-Schutz |
+| /api/shopify/manager/* | ✅ NEU | 7 Routen: status, cycle, ab-tests, seo, prices, quality, check-dup |
+| Scheduler: organic_traffic_post | ✅ NEU | 6h — 7 Plattformen, PostGuard-geprüft |
+| Scheduler: shopify_manager_cycle | ✅ NEU | täglich — vollständiger Shopify-Zyklus |
 
 ## Session v41 — AI-Kette + Ollama/OpenClaw (2026-07-19)
 | Was | Status | Details |
