@@ -9419,6 +9419,15 @@ class AutomationScheduler:
 
         # Push-Notify Broadcast (sendet an fremde Adressen)
         "push_notify_broadcast",
+
+        # ── META ADS / TIKTOK ADS — KEIN BUDGET! (2026-07-19) ────────────────
+        # Rudolf hat kein Werbebudget — alle bezahlten Ad-Tasks dauerhaft sperren!
+        # meta_ads_cycle lief alle 4h und könnte Kampagnen erstellen/Budget ändern.
+        "meta_ads", "meta_ads_cycle", "meta_ads_launch", "meta_ads_optimize",
+        "meta_ads_retargeting", "meta_campaign", "facebook_ads", "instagram_ads",
+        "tiktok_ads_engine", "tiktok_ads_cycle", "tiktok_campaign",
+        "google_ads", "google_ads_cycle", "google_campaign",
+        "paid_ads", "ads_engine", "ads_cycle",
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
