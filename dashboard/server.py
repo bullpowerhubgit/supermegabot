@@ -7382,6 +7382,7 @@ async def auth_middleware(request, handler):
             or path.startswith("/api/voice/respond")
             or path.startswith("/api/voice/status")
             or path.startswith("/api/voice/outbound-twiml")
+            or path.startswith("/api/voice/tts")
             or path.startswith("/api/voice/sms")
             or path.startswith("/api/voice/amd")
             or path.startswith("/api/phone/incoming")
@@ -7405,8 +7406,11 @@ async def auth_middleware(request, handler):
             # 3. API-Key prüfen
             api_key = request.headers.get("X-API-Key", "")
             if api_key != secret:
-                _check_brute_force(ip, failed=True)
-                log.warning("Auth FAIL [%s] %s", ip, path)
+                # Nur aktiv FALSCHER Key (nicht fehlender Key) zählt als Brute-Force.
+                # Fehlender Header = Dashboard/Browser ohne Auth → 401 ohne Ban-Zähler.
+                if api_key:
+                    _check_brute_force(ip, failed=True)
+                    log.warning("Auth FAIL (wrong key) [%s] %s", ip, path)
                 return web.json_response(
                     {"ok": False, "error": "Unauthorized — X-API-Key header required"},
                     status=401,
@@ -13887,6 +13891,41 @@ async def create_app():
             log.debug("Sofia AMD: %s", e)
         return web.Response(text="OK")
 
+    # ── TTS Audio Endpoint — liefert geklonte Stimme als MP3 ──────────────────
+    async def handle_voice_tts(req: web.Request) -> web.Response:
+        """GET /api/voice/tts?text=... — generiert Audio mit geklonter Stimme.
+        Twilio ruft diese URL über <Play> ab. Öffentlich (kein Auth — Twilio braucht Zugang).
+        Cacht Ergebnisse in data/tts_cache/."""
+        text = req.rel_url.query.get("text", "").strip()
+        if not text:
+            return web.Response(status=400, text="Missing text")
+        if len(text) > 800:
+            text = text[:800]
+
+        from modules.sofia_voice_agent import generate_tts_audio, _tts_cache_path, TTS_CACHE_DIR
+        cache = _tts_cache_path(text)
+
+        # Cache-Hit: direkt senden
+        if cache.exists() and cache.stat().st_size > 0:
+            return web.Response(
+                body=cache.read_bytes(),
+                content_type="audio/mpeg",
+                headers={"Cache-Control": "public, max-age=86400"},
+            )
+
+        # Generieren
+        audio = await generate_tts_audio(text)
+        if audio:
+            return web.Response(
+                body=audio,
+                content_type="audio/mpeg",
+                headers={"Cache-Control": "public, max-age=86400"},
+            )
+
+        # Kein Audio → TwiML-Fehler-Redirect auf Polly (Twilio fallback)
+        return web.Response(status=503, text="TTS unavailable")
+
+    app.router.add_get( "/api/voice/tts",             handle_voice_tts)
     app.router.add_get( "/api/voice/outbound-twiml", handle_voice_outbound_twiml)
     app.router.add_post("/api/voice/outbound",        handle_voice_outbound)
     app.router.add_get( "/api/voice/queue",           handle_voice_queue_get)
@@ -13895,7 +13934,7 @@ async def create_app():
     app.router.add_post("/api/voice/campaign",        handle_voice_campaign)
     app.router.add_post("/api/voice/sms",             handle_voice_sms)
     app.router.add_post("/api/voice/amd",             handle_voice_amd)
-    log.info("Sofia Voice Agent registriert (/api/voice/*)")
+    log.info("Sofia Voice Agent registriert (/api/voice/* + /api/voice/tts)")
 
     # Email Conversation AI — beantwortet alle Inbox-Emails automatisch
     async def handle_email_ai_stats(req):
