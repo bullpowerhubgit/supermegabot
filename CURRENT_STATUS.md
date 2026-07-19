@@ -1,16 +1,32 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-18 v40 — BullPower-Konto-Umstellung komplett**
+**Stand: 2026-07-19 v41 — Server läuft lokal, Ollama integriert, AI-Kette fast-kostenlos**
 
 ## System
 | Check | Status |
 |-------|--------|
 | Production Health | ok — Railway live |
+| Lokaler Server | ✅ **Port 8888 läuft** — PID aktiv |
 | Stripe | **ineedit.com.co only** — acct_1Tg1U0 (bullpowersrtkennels) |
 | AIITEC Stripe | PERMANENT FORBIDDEN |
 | Scheduler | **253/400 Tasks aktiv** — dict-Bug behoben, 147 warten auf erstes Intervall |
 | PR #48 | gemergt (fix/session-2026-07-17-v2) — Railway auto-deployed |
 | GitHub Pages vsl-pages | 11/11 VSL-Seiten live |
-| Bridge Server | scripts/bridge_server.py auf Port 8890 aktiv |
+
+## Session v41 — AI-Kette + Ollama/OpenClaw (2026-07-19)
+| Was | Status | Details |
+|-----|--------|---------|
+| Anthropic → APIHunt Bridge | ✅ deployed | 3-Key-Rotation, slot 10, kostenlos wenn leer |
+| Free-first Kette (11 Slots) | ✅ deployed | Ollama→Groq→Cerebras→SambaNova→Mistral→DS→OR→Gemini→OAI→Perplex→Bridge |
+| Ollama als Slot 0 | ✅ lokal aktiv | llama3.1:8b (smart) + llama3.2:latest (fast), 1.84s |
+| UnboundLocalError Fixes | ✅ deployed | 4 doppelte Route-Registrierungen entfernt |
+| POST /api/ai/complete | ✅ live | Test-Endpoint für gesamte AI-Kette |
+| GET /api/ai/status | ✅ erweitert | 11 Provider + installierte Ollama-Modelle |
+| git push main | ✅ done | Commit 29a11e03 — Railway auto-deploy läuft |
+
+## Offen
+- Meta Ads Budget setzen (manuell via Meta Business)
+- Gumroad 9 Produkte: Dateien hochladen (manuell)
+- Anthropic Credits aufladen (console.anthropic.com)
 
 ## Session v37 Neue Module (2026-07-18)
 | Modul | Status | Beschreibung |
