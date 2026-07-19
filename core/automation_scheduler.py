@@ -8668,6 +8668,7 @@ TASKS = [
     ("ebay_blast",            task_ebay_blast,          10800, 490),  # 3h — eBay multi blast
     ("shopify_fix_tags",      task_shopify_fix_tags,     3600,  530),  # 1h — T-Shirt SEO tags
     ("shopify_cleanup_cols",  task_shopify_cleanup_collections, 86400, 570),  # 24h — leere Collections
+    ("shopify_image_scan",    task_shopify_image_fix,           43200, 565),  # 12h — Bilder-Validator: falsche/fehlende Bilder auto-reparieren
     ("shopify_gmc_meta",      task_shopify_gmc_metafields, 3600, 610),  # 1h — Google Shopping metafelder
     # ── Facebook/Instagram Token Auto-Refresh ────────────────────────────────
     ("fb_token_refresh",      task_fb_token_refresh,       86400, 3600),  # täglich — Token auto-erneuern vor Ablauf
