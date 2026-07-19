@@ -2,10 +2,12 @@
 """
 Sofia — KI-Verkaufsagentin für AIITEC
 Vollautomatischer Sprachagent: Anruf → Bedarfsanalyse → Empfehlung → Abschluss → SMS + Telegram
+Voice: ElevenLabs (geklonte Stimme) → OpenAI TTS → Polly.Vicki Fallback
 """
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -29,6 +31,30 @@ TELEGRAM_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")
 STRIPE_KEY           = os.getenv("STRIPE_SECRET_KEY", "")
 SHOP_URL             = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 BASE_URL             = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN', 'supermegabot-production.up.railway.app')}"
+
+# ── Voice Clone Konfiguration ─────────────────────────────────────────────────
+ELEVENLABS_KEY    = os.getenv("ELEVENLABS_API_KEY", "")
+# Voice-ID nach Upload von Rudolf's Sprachprobe auf elevenlabs.io eintragen:
+SOFIA_VOICE_ID    = os.getenv("SOFIA_VOICE_ID", "")
+# Fallback: ElevenLabs natürliche deutsche Männerstimme (Daniel) wenn keine Klonstimme
+ELEVENLABS_FALLBACK_VOICE = os.getenv("SOFIA_FALLBACK_VOICE_ID", "onwK4e9ZLuTAKqWW03F9")  # Adam (EN) als Fallback
+OPENAI_KEY        = os.getenv("OPENAI_API_KEY", "")
+TTS_CACHE_DIR     = Path(__file__).parent.parent / "data" / "tts_cache"
+
+# Human-like filler words — werden zufällig vor Antworten eingefügt
+import random
+_FILLER_PHRASES = [
+    "", "", "",  # meist kein Filler (60%)
+    "Also...", "Mmh...", "Ja...", "Gerne...", "Schauen Sie...",
+    "Wissen Sie was...", "Ich sage Ihnen...", "Sehr gerne...",
+]
+
+_THINKING_PHRASES = [
+    "Einen Moment bitte...",
+    "Ja, lassen Sie mich kurz nachschauen...",
+    "Mmh, gute Frage...",
+    "Das schaue ich gerade für Sie nach...",
+]
 
 # In-memory Gesprächsspeicher (Call-SID → Verlauf)
 # Primär In-Memory für niedrige Latenz; SQLite als Persistenz-Backup bei Server-Restart.
@@ -239,11 +265,108 @@ async def _ai_response(call_sid: str, user_text: str) -> str:
     return fallback
 
 
+# ── TTS Audio-Generierung ─────────────────────────────────────────────────────
+
+def _tts_cache_path(text: str) -> Path:
+    """Gibt den Cache-Pfad für einen Text zurück (MD5-Hash)."""
+    h = hashlib.md5(f"{SOFIA_VOICE_ID}:{text}".encode()).hexdigest()[:12]
+    TTS_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    return TTS_CACHE_DIR / f"{h}.mp3"
+
+
+async def generate_tts_audio(text: str) -> Optional[bytes]:
+    """
+    Generiert Audio via ElevenLabs (Rudolf's Stimme) → OpenAI TTS → None (Polly-Fallback).
+    Cacht das Ergebnis als MP3-Datei.
+    """
+    cache_path = _tts_cache_path(text)
+    if cache_path.exists() and cache_path.stat().st_size > 0:
+        return cache_path.read_bytes()
+
+    audio: Optional[bytes] = None
+
+    # 1. Versuch: ElevenLabs (geklonte Stimme)
+    voice_id = SOFIA_VOICE_ID or ELEVENLABS_FALLBACK_VOICE
+    if ELEVENLABS_KEY and voice_id:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+                async with s.post(
+                    f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}",
+                    headers={"xi-api-key": ELEVENLABS_KEY, "Content-Type": "application/json"},
+                    json={
+                        "text": text,
+                        "model_id": "eleven_multilingual_v2",
+                        "voice_settings": {
+                            "stability": 0.45,
+                            "similarity_boost": 0.82,
+                            "style": 0.25,
+                            "use_speaker_boost": True,
+                        },
+                    },
+                ) as r:
+                    if r.status == 200:
+                        audio = await r.read()
+                        log.debug("TTS ElevenLabs OK: %d bytes", len(audio))
+                    else:
+                        log.warning("TTS ElevenLabs %s: %s", r.status, await r.text())
+        except Exception as e:
+            log.warning("TTS ElevenLabs error: %s", e)
+
+    # 2. Fallback: OpenAI TTS (sehr natürlich)
+    if not audio and OPENAI_KEY:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+                async with s.post(
+                    "https://api.openai.com/v1/audio/speech",
+                    headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
+                    json={
+                        "model": "tts-1-hd",
+                        "input": text,
+                        "voice": "onyx",  # tiefer, professioneller Männerstimme
+                        "response_format": "mp3",
+                        "speed": 0.95,
+                    },
+                ) as r:
+                    if r.status == 200:
+                        audio = await r.read()
+                        log.debug("TTS OpenAI OK: %d bytes", len(audio))
+                    else:
+                        log.warning("TTS OpenAI %s", r.status)
+        except Exception as e:
+            log.warning("TTS OpenAI error: %s", e)
+
+    if audio:
+        try:
+            cache_path.write_bytes(audio)
+        except Exception:
+            pass
+
+    return audio
+
+
+def _tts_url(text: str) -> str:
+    """Gibt die URL zurück über die Twilio die Audio-Datei abruft."""
+    import urllib.parse
+    encoded = urllib.parse.quote(text, safe="")
+    return f"{BASE_URL}/api/voice/tts?text={encoded}"
+
+
+def _add_filler(text: str) -> str:
+    """Fügt gelegentlich natürliche Füllwörter am Anfang ein."""
+    filler = random.choice(_FILLER_PHRASES)
+    if filler:
+        return f"{filler} {text}"
+    return text
+
+
 def _twiml_gather(say_text: str, call_sid: str, timeout: int = 5) -> str:
-    """Erstellt TwiML mit <Say> + <Gather speech>."""
+    """TwiML mit geklonter Stimme via <Play> + <Gather speech>."""
     action_url = f"{BASE_URL}/api/voice/respond?call_sid={call_sid}"
-    # Polly.Vicki = AWS Polly deutsche Frauenstimme via Twilio
-    return f"""<?xml version="1.0" encoding="UTF-8"?>
+    tts = _tts_url(say_text)
+
+    # Wenn kein ElevenLabs/OpenAI → Polly-Fallback
+    if not ELEVENLABS_KEY and not OPENAI_KEY:
+        return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Gather input="speech" language="de-DE" timeout="{timeout}" action="{action_url}" method="POST">
     <Say voice="Polly.Vicki" language="de-DE">{say_text}</Say>
@@ -252,24 +375,47 @@ def _twiml_gather(say_text: str, call_sid: str, timeout: int = 5) -> str:
   <Hangup/>
 </Response>"""
 
+    sorry_tts = _tts_url("Entschuldigung, ich habe Sie leider nicht verstanden. Auf Wiederhören!")
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather input="speech" language="de-DE" timeout="{timeout}" action="{action_url}" method="POST">
+    <Play>{tts}</Play>
+  </Gather>
+  <Play>{sorry_tts}</Play>
+  <Hangup/>
+</Response>"""
+
 
 def _twiml_say_hangup(say_text: str) -> str:
     """TwiML für finale Nachricht + Auflegen."""
-    return f"""<?xml version="1.0" encoding="UTF-8"?>
+    if not ELEVENLABS_KEY and not OPENAI_KEY:
+        return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say voice="Polly.Vicki" language="de-DE">{say_text}</Say>
+  <Hangup/>
+</Response>"""
+    tts = _tts_url(say_text)
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Play>{tts}</Play>
   <Hangup/>
 </Response>"""
 
 
 async def handle_incoming_call(call_sid: str, from_number: str) -> str:
-    """Begrüßung beim eingehenden Anruf."""
+    """Begrüßung beim eingehenden Anruf — variiert damit es nicht robotisch klingt."""
     _conversations[call_sid] = {
         "history": [], "buy_signal": False, "product": None,
         "from": from_number, "start": time.time(),
     }
     _conv_save(call_sid)
-    greeting = "AIITEC, guten Tag, hier ist Sofia. Was kann ich für Sie tun?"
+    greetings = [
+        "Ja, hallo! Sie sind bei AIITEC, Rudolf Sarkany. Was kann ich für Sie tun?",
+        "AIITEC, guten Tag! Rudolf Sarkany hier. Womit kann ich helfen?",
+        "Hallo! Hier ist Rudolf Sarkany von AIITEC. Was darf's sein?",
+        "Ja, guten Tag! Rudolf Sarkany. Schön dass Sie anrufen, was kann ich für Sie tun?",
+    ]
+    greeting = random.choice(greetings)
     return _twiml_gather(greeting, call_sid, timeout=6)
 
 
@@ -649,26 +795,39 @@ def _log_call(call_sid: str, to_number: str, from_number: str, direction: str,
 # ── Outbound Calls ─────────────────────────────────────────────────────────────
 
 def _twiml_outbound_greeting(contact: str, product_id: str, call_sid: str) -> str:
-    """TwiML für ausgehenden Anruf — Sofia begrüßt den Kontakt proaktiv."""
-    name_part = f", {contact}" if contact else ""
+    """TwiML für ausgehenden Anruf — Rudolf meldet sich direkt."""
+    name_part = f" {contact}" if contact else ""
     if product_id:
-        greeting = (
-            f"Guten Tag{name_part}! Hier ist Sofia, die persönliche Assistentin von Rudolf Sarkany bei AIITEC. "
-            f"Ich rufe Sie an, weil wir ein spannendes Angebot im Bereich {product_id} für Sie haben. "
-            f"Haben Sie kurz zwei Minuten?"
-        )
+        templates = [
+            f"Ja, guten Tag{name_part}! Hier ist Rudolf Sarkany von AIITEC. Ich rufe kurz an wegen {product_id} — haben Sie zwei Minuten?",
+            f"Hallo{name_part}! Rudolf Sarkany hier von AIITEC. Ich wollte kurz wegen {product_id} mit Ihnen sprechen. Passt das gerade?",
+        ]
     else:
-        greeting = (
-            f"Guten Tag{name_part}! Hier ist Sofia, die persönliche Assistentin von Rudolf Sarkany bei AIITEC. "
-            f"Ich melde mich kurz — wir haben etwas Interessantes für Sie. Haben Sie einen Moment?"
-        )
+        templates = [
+            f"Guten Tag{name_part}! Rudolf Sarkany hier von AIITEC — ich melde mich kurz, haben Sie einen Moment?",
+            f"Ja hallo{name_part}! Rudolf Sarkany von AIITEC. Ich wollte Ihnen kurz etwas zeigen — haben Sie zwei Minuten?",
+        ]
+    greeting = random.choice(templates)
     action_url = f"{BASE_URL}/api/voice/respond?call_sid={call_sid}"
-    return f"""<?xml version="1.0" encoding="UTF-8"?>
+
+    if not ELEVENLABS_KEY and not OPENAI_KEY:
+        sorry = "Kein Problem, ich versuche es später nochmal. Auf Wiederhören!"
+        return f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Gather input="speech" language="de-DE" timeout="6" action="{action_url}" method="POST">
     <Say voice="Polly.Vicki" language="de-DE">{greeting}</Say>
   </Gather>
-  <Say voice="Polly.Vicki" language="de-DE">Kein Problem, ich versuche es später nochmal. Auf Wiederhören!</Say>
+  <Say voice="Polly.Vicki" language="de-DE">{sorry}</Say>
+  <Hangup/>
+</Response>"""
+
+    sorry_tts = _tts_url("Kein Problem, ich probiere es später nochmal. Auf Wiederhören!")
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Gather input="speech" language="de-DE" timeout="6" action="{action_url}" method="POST">
+    <Play>{_tts_url(greeting)}</Play>
+  </Gather>
+  <Play>{sorry_tts}</Play>
   <Hangup/>
 </Response>"""
 
