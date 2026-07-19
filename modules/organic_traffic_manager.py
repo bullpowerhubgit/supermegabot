@@ -258,10 +258,10 @@ def _make_title(text: str, platform: str) -> str:
 
 
 async def get_shopify_product_image() -> Optional[str]:
-    """Zufälliges echtes Produktbild aus dem Shopify-Store."""
+    """Zufälliges echtes Produktbild aus dem Shopify-Store — nur aktive Produkte."""
     try:
         from modules.shopify_client import get_products
-        products = await get_products(limit=50)
+        products = await get_products(limit=50, status="active")
         import random
         for p in random.sample(products, min(10, len(products))):
             imgs = p.get("images", [])

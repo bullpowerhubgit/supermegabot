@@ -75,25 +75,64 @@ class DS24AutonomousAgent:
                 return [{"id": k, **v} for k, v in top]
 
     async def approve_pending_products(self) -> dict:
-        """Genehmige ausstehende Produkte automatisch."""
+        """Aktiviert alle inaktiven DS24-Produkte via updateProduct-API."""
         import aiohttp
+        DS24_WWW = "https://www.digistore24.com/api/call"
+        headers = {"x-ds-api-key": self.api_key, "Content-Type": "application/json"}
+        activated = []
+        errors = []
+
+        all_products = await self.get_products()
+        inactive = [p for p in all_products if str(p.get("is_active", "1")) == "0"]
+        log.info("DS24 approve_pending: %d inaktive Produkte gefunden", len(inactive))
+
         async with aiohttp.ClientSession() as session:
-            url = f"{DS24_BASE}/{self.api_key}/products/list"
-            async with session.get(url, params={"status": "pending"}) as resp:
-                data = await resp.json()
-                pending = data.get("data", {}).get("products", [])
-                approved = []
-                for prod in pending:
-                    pid = prod.get("id")
-                    name = prod.get("name", "?")
-                    price = float(prod.get("price_net", 0))
-                    if price <= 0:
-                        log.warning("DS24 skip: %s hat €0 Preis", name)
-                        continue
-                    # Hier würde man eine Approve-API aufrufen
-                    approved.append({"id": pid, "name": name, "price": price})
-                    log.info("DS24 approved: %s (€%.2f)", name, price)
-                return {"approved": len(approved), "products": approved}
+            for prod in inactive:
+                pid = str(prod.get("id", ""))
+                name = prod.get("name", "?")
+                price = float(prod.get("price_net", 0))
+                if not pid:
+                    continue
+                if price <= 0:
+                    log.warning("DS24 skip: %s hat €0 Preis — manuelle Preisprüfung nötig", name)
+                    errors.append({"id": pid, "name": name, "reason": "kein Preis"})
+                    continue
+                payload = {
+                    "product_id": pid,
+                    "data": {
+                        "is_active": "1",
+                        "is_affiliation_auto_accepted": "1",
+                    }
+                }
+                try:
+                    async with session.post(
+                        f"{DS24_WWW}/updateProduct/JSON/",
+                        headers=headers,
+                        json=payload,
+                        timeout=aiohttp.ClientTimeout(total=20),
+                    ) as resp:
+                        result = await resp.json()
+                    if result.get("result") == "success":
+                        activated.append({"id": pid, "name": name, "price": price})
+                        log.info("DS24 aktiviert: %s (€%.2f)", name, price)
+                    else:
+                        msg = result.get("message", str(result))
+                        log.warning("DS24 Aktivierung fehlgeschlagen: %s — %s", name, msg)
+                        errors.append({"id": pid, "name": name, "reason": msg})
+                except Exception as e:
+                    log.error("DS24 API-Fehler bei %s: %s", name, e)
+                    errors.append({"id": pid, "name": name, "reason": str(e)})
+
+        if activated:
+            try:
+                from modules.telegram_notifier import send_message
+                items = "\n".join(f"✅ {p['name']} (€{p['price']:.2f})" for p in activated)
+                await send_message(f"🚀 DS24 Auto-Aktivierung: {len(activated)} Produkte live!\n{items}")
+            except Exception:
+                pass
+
+        return {"activated": len(activated), "errors": len(errors),
+                "products": activated, "failed": errors}
 
     async def run_full_audit(self) -> dict:
         """Vollständiger DS24-Audit: Produkte, Sales, Affiliates."""
@@ -126,3 +165,7 @@ async def get_ds24_stats() -> dict:
 
 async def get_ds24_top_products(limit: int = 10) -> list:
     return await _agent.get_top_performers(limit)
+
+
+async def approve_ds24_pending_products() -> dict:
+    return await _agent.approve_pending_products()
