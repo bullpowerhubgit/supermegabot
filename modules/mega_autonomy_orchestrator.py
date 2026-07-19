@@ -51,12 +51,19 @@ async def _ai(prompt: str, max_tokens: int = 400) -> str:
 async def _shopify_get(path: str, params: dict = None) -> dict:
     if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
         return {}
+    try:
+        from modules.shopify_client import rest_get
+        return await rest_get(path + ("?" + "&".join(f"{k}={v}" for k, v in (params or {}).items()) if params else ""))
+    except Exception:
+        pass
     url = f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VER}/{path}"
     headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(url, headers=headers, params=params,
                              timeout=aiohttp.ClientTimeout(total=15)) as r:
+                if r.status == 429:
+                    await asyncio.sleep(float(r.headers.get("Retry-After", 5)))
                 return await r.json() if r.status < 400 else {}
     except Exception as e:
         log.debug("Shopify GET %s error: %s", path, e)
@@ -68,14 +75,21 @@ async def _shopify_post(path: str, body: dict) -> dict:
         return {}
     url = f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VER}/{path}"
     headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(url, headers=headers, json=body,
-                              timeout=aiohttp.ClientTimeout(total=20)) as r:
-                return await r.json() if r.status < 400 else {}
-    except Exception as e:
-        log.debug("Shopify POST %s error: %s", path, e)
-        return {}
+    for _attempt in range(3):
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(url, headers=headers, json=body,
+                                  timeout=aiohttp.ClientTimeout(total=20)) as r:
+                    if r.status == 429:
+                        wait = float(r.headers.get("Retry-After", 5 * (_attempt + 1)))
+                        log.warning("Shopify POST 429 (attempt %d/3), wait %.0fs", _attempt + 1, wait)
+                        await asyncio.sleep(wait)
+                        continue
+                    return await r.json() if r.status < 400 else {}
+        except Exception as e:
+            log.debug("Shopify POST %s error: %s", path, e)
+            return {}
+    return {}
 
 
 async def _tg(msg: str):
@@ -564,8 +578,9 @@ async def run_stripe_catalog_sync() -> dict:
     try:
         import stripe
         stripe.api_key = STRIPE_KEY
-        existing = {p["name"]: p for p in
-                    stripe.Product.list(limit=100, active=True).get("data", [])}
+        _prod_list = stripe.Product.list(limit=100, active=True)
+        _prods = _prod_list.data if hasattr(_prod_list, "data") else _prod_list.get("data", [])
+        existing = {p["name"]: p for p in _prods}
         created = updated = 0
         for prod in STRIPE_PRODUCTS:
             ex = existing.get(prod["name"])
