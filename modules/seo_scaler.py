@@ -207,7 +207,7 @@ async def create_top_bundles() -> int:
         # Prüfe ob Bundle schon existiert
         try:
             from modules import shopify_client as sc
-            search = await sc.get(f"products.json?title={bundle['name']} Bundle&limit=1")
+            search = await sc.rest_get(f"products.json?title={bundle['name']} Bundle&limit=1")
             if search.get("products"):
                 continue
         except Exception:
@@ -228,7 +228,7 @@ async def run_seo_batch(limit: int = 50) -> Dict[str, int]:
     try:
         from modules import shopify_client as sc
         # Produkte ohne seo-optimized Tag holen
-        result = await sc.get(f"products.json?limit={limit}&fields=id,title,body_html,product_type,tags,vendor")
+        result = await sc.rest_get(f"products.json?limit={limit}&fields=id,title,body_html,product_type,tags,vendor")
         products = result.get("products", [])
     except Exception as e:
         log.error("Shopify products fetch: %s", e)
