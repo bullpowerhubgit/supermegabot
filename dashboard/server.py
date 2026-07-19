@@ -15715,19 +15715,12 @@ async def create_app():
             result = await run_ebay_import(count=count)
             return web.Response(text=json.dumps(result), content_type="application/json")
 
-        async def handle_aliexpress_import(request: web.Request) -> web.Response:
-            count = int(request.rel_url.query.get("count", 5))
-            from modules.mega_autonomy_orchestrator import run_aliexpress_import
-            result = await run_aliexpress_import(count=count)
-            return web.Response(text=json.dumps(result), content_type="application/json")
-
         app.router.add_get( "/api/mega-autonomy/status",     handle_mega_autonomy_status)
         app.router.add_post("/api/mega-autonomy/run",         handle_mega_autonomy_run)
         app.router.add_post("/api/gumroad/setup",             handle_gumroad_setup)
         app.router.add_post("/api/stripe/catalog-sync",       handle_stripe_sync)
         app.router.add_post("/api/ebay/import",               handle_ebay_import)
-        app.router.add_post("/api/aliexpress/import",         handle_aliexpress_import)
-        log.info("MegaAutonomy routes registered (6 routes)")
+        log.info("MegaAutonomy routes registered (5 routes)")
     except Exception as _mega_e:
         log.warning("MegaAutonomy routes failed: %s", _mega_e)
 
