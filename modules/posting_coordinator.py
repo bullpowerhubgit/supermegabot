@@ -36,10 +36,13 @@ PLATFORM_DAILY_LIMITS = {
 }
 
 MIN_GAP_SECONDS = {
-    "instagram": 3 * 3600,
+    "instagram": 4 * 3600,
+    "facebook": 8 * 3600,   # FB spamblockt bei <6h — 8h Sicherheitspuffer
     "reddit": 12 * 3600,
     "linkedin": 10 * 3600,
     "tiktok": 4 * 3600,
+    "twitter": 2 * 3600,
+    "x": 2 * 3600,
     "default": 1800,  # 30 min
 }
 

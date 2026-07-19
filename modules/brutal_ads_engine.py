@@ -72,7 +72,7 @@ DEDUP_FILE      = DATA_DIR / "dedup.json"
 # Platform-spezifische Rate-Limits (pro Tag)
 _RATE_LIMITS = {
     "instagram":    3,   # IG: 3 Posts/Tag = max ohne Shadow-Ban-Risiko
-    "facebook":     5,
+    "facebook":     1,   # 1/Tag — FB spamblockt bei >2 Posts schnell hintereinander
     "pinterest":    8,   # Pinterest: je mehr, desto besser (kein Spam-Risiko)
     "twitter":      6,
     "reddit":       2,   # Reddit: 2/Tag max, sonst Bann-Risiko
