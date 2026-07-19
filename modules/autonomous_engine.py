@@ -39,6 +39,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOP_URL       = "https://ineedit.com.co"
 LOCAL_API      = os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888")
+_DASH_SECRET   = os.getenv("DASHBOARD_SECRET", "")
 
 
 # ── State-Datenbank ───────────────────────────────────────────────────────────
@@ -108,8 +109,9 @@ def _log_decision(reason: str, action: str, result: str = "") -> None:
 async def _diagnose(session: aiohttp.ClientSession) -> Dict:
     """Prüft alle Systeme und gibt Status zurück."""
     diag: Dict[str, Any] = {}
+    _auth = {"X-API-Key": _DASH_SECRET}
 
-    # Health Check
+    # Health Check (kein Auth nötig)
     try:
         async with session.get(f"{LOCAL_API}/health", timeout=aiohttp.ClientTimeout(total=5)) as r:
             diag["health"] = await r.json(content_type=None)
@@ -118,7 +120,7 @@ async def _diagnose(session: aiohttp.ClientSession) -> Dict:
 
     # Outreach Stats
     try:
-        async with session.get(f"{LOCAL_API}/api/mass-outreach/stats", timeout=aiohttp.ClientTimeout(total=6)) as r:
+        async with session.get(f"{LOCAL_API}/api/mass-outreach/stats", headers=_auth, timeout=aiohttp.ClientTimeout(total=6)) as r:
             diag["outreach"] = await r.json(content_type=None)
     except Exception as e:
         diag["outreach"] = {"error": str(e)}
@@ -132,14 +134,14 @@ async def _diagnose(session: aiohttp.ClientSession) -> Dict:
 
     # Circuit Breaker
     try:
-        async with session.get(f"{LOCAL_API}/api/circuit-breaker/status", timeout=aiohttp.ClientTimeout(total=5)) as r:
+        async with session.get(f"{LOCAL_API}/api/circuit-breaker/status", headers=_auth, timeout=aiohttp.ClientTimeout(total=5)) as r:
             diag["circuits"] = await r.json(content_type=None)
     except Exception:
         diag["circuits"] = {}
 
     # Repair Status
     try:
-        async with session.get(f"{LOCAL_API}/api/repair/status", timeout=aiohttp.ClientTimeout(total=5)) as r:
+        async with session.get(f"{LOCAL_API}/api/repair/status", headers=_auth, timeout=aiohttp.ClientTimeout(total=5)) as r:
             diag["repair"] = await r.json(content_type=None)
     except Exception:
         diag["repair"] = {}
@@ -161,6 +163,7 @@ async def _decide_and_act(session: aiohttp.ClientSession, diag: Dict) -> List[Di
             async with session.post(
                 f"{LOCAL_API}/api/scheduler/trigger",
                 json={"task": task},
+                headers={"X-API-Key": _DASH_SECRET},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 result = await r.json(content_type=None)
@@ -174,6 +177,7 @@ async def _decide_and_act(session: aiohttp.ClientSession, diag: Dict) -> List[Di
             async with session.post(
                 f"{LOCAL_API}/api/mass-outreach/send",
                 json={"limit": limit, "smart": True},
+                headers={"X-API-Key": _DASH_SECRET},
                 timeout=aiohttp.ClientTimeout(total=12),
             ) as r:
                 result = await r.json(content_type=None)

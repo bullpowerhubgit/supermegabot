@@ -172,6 +172,7 @@ async def dispatch_job(job_name: str, data: dict | None = None) -> dict:
 
     # Fallback: call supermegabot dashboard API directly
     smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+    _dash_secret = os.getenv("DASHBOARD_SECRET", "")
     job_routes = {
         "shopify_sync": "/api/shopify/sync",
         "revenue_snapshot": "/api/revenue/summary",
@@ -191,6 +192,7 @@ async def dispatch_job(job_name: str, data: dict | None = None) -> dict:
                     method,
                     f"{smb_url}{route}",
                     json=data,
+                    headers={"X-API-Key": _dash_secret},
                     timeout=aiohttp.ClientTimeout(total=30),
                 ) as r:
                     result = await r.json()

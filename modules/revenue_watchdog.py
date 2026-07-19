@@ -27,7 +27,8 @@ _OUTREACH_DB = _BASE / "data" / "mass_outreach.db"
 _CART_DB    = _BASE / "data" / "abandoned_cart.db"
 _ROAS_DB    = _BASE / "data" / "meta_roas_max.db"
 
-_DASHBOARD  = os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888")
+_DASHBOARD   = os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888")
+_DASH_SECRET = os.getenv("DASHBOARD_SECRET", "")
 
 # ---------------------------------------------------------------------------
 # DB bootstrap
@@ -318,6 +319,7 @@ async def _post_action(
         async with session.post(
             url,
             json=payload or {},
+            headers={"X-API-Key": _DASH_SECRET},
             timeout=aiohttp.ClientTimeout(total=15),
         ) as resp:
             status = resp.status
