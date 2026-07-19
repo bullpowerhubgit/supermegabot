@@ -9401,8 +9401,8 @@ class AutomationScheduler:
         # Backlink + Linkedin + Influencer Outreach
         "backlink_outreach", "linkedin_dm", "influencer_pipeline",
 
-        # B2B Pipeline / Lead Nurture
-        "b2b_pipeline", "lead_nurture", "lead_capture", "sales_funnel",
+        # B2B Pipeline / Lead Nurture / Prospecting — Cold-Emails DSGVO-Verstoß!
+        "b2b_prospecting", "b2b_pipeline", "lead_nurture", "lead_capture", "sales_funnel",
 
         # KI Sales Outreach
         "ki_sales", "income_master",
@@ -9449,7 +9449,7 @@ class AutomationScheduler:
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
         "buyer_pipeline", "revenue_agent_sync", "revenue_blitz",
         "upsell_sequence_run", "upsell_cycle", "klaviyo_flows",
-        "b2b_prospecting", "free_ads_cycle",
+        "free_ads_cycle",
         # Neue Revenue-Tasks (2026-07-19)
         "mega_autonomy_cycle", "gumroad_full_setup", "stripe_catalog_sync",
         "ds24_auto_approve", "organic_traffic_post", "shopify_manager_cycle",
