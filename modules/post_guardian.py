@@ -428,6 +428,8 @@ _FALSE_POSITIVE_WHITELIST = [
 async def _check_url_live(url: str) -> tuple[bool, str]:
     """Öffnet URL, prüft HTTP-Status UND Seiteninhalt auf Fehlerseiten.
     Returns (ok, error_msg)."""
+    import urllib.error
+
     try:
         loop = asyncio.get_event_loop()
 
@@ -440,11 +442,18 @@ async def _check_url_live(url: str) -> tuple[bool, str]:
                     "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
                 }
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                status = resp.status
-                # 8KB lesen für gründlichen Inhalts-Check (Title, H1, Meta, erste Absätze)
-                body = resp.read(8192).decode("utf-8", errors="ignore").lower()
-                return status, body
+            try:
+                with urllib.request.urlopen(req, timeout=10) as resp:
+                    status = resp.status
+                    body = resp.read(8192).decode("utf-8", errors="ignore").lower()
+                    return status, body
+            except urllib.error.HTTPError as he:
+                # HTTPError wird für 4xx/5xx geworfen — Status direkt auslesen
+                try:
+                    body = he.read(2048).decode("utf-8", errors="ignore").lower()
+                except Exception:
+                    body = ""
+                return he.code, body
 
         status, body = await loop.run_in_executor(None, _fetch)
 
@@ -459,20 +468,19 @@ async def _check_url_live(url: str) -> tuple[bool, str]:
         check_zone = title + " " + body[:2000]
         for marker in _ERROR_PAGE_MARKERS:
             if marker in check_zone:
-                # False-Positive-Filter
                 if not any(wp in check_zone for wp in _FALSE_POSITIVE_WHITELIST):
                     return False, f"Fehlerseite erkannt ('{marker}' im Inhalt): {url[:80]}"
 
         return True, ""
     except Exception as e:
         err = str(e)
-        if "urlopen error" in err or "timed out" in err.lower():
+        if "timed out" in err.lower() or "urlopen error" in err:
             return False, f"URL nicht erreichbar (Timeout/DNS): {url[:80]}"
         if "connection refused" in err.lower():
             return False, f"URL nicht erreichbar (Connection refused): {url[:80]}"
         if "ssl" in err.lower():
             return False, f"URL SSL-Fehler: {url[:80]}"
-        return False, f"URL-Prüfung fehlgeschlagen: {url[:80]} ({err[:50]})"
+        return False, f"URL-Prüfung fehlgeschlagen: {url[:80]} ({err[:60]})"
 
 
 async def check_post(platform: str, text: str,
@@ -540,6 +548,115 @@ def get_blocked_posts() -> List[Dict]:
             "WHERE blocked_at > datetime('now', '-1 day') ORDER BY blocked_at DESC LIMIT 50"
         ).fetchall()
     return [dict(r) for r in rows]
+
+
+# ── Auto-Reparatur ─────────────────────────────────────────────────────────────
+
+_VARIATION_PREFIXES = [
+    "🔥 ", "⚡ ", "✨ ", "🚀 ", "💡 ", "🎯 ", "🛒 ",
+    "Neu: ", "Jetzt: ", "Entdecke: ", "Top: ", "Hot: ",
+]
+
+async def auto_repair_post(text: str, platform: str,
+                           image_url: Optional[str] = None) -> Dict:
+    """
+    Versucht einen fehlerhaften Post automatisch zu reparieren.
+    Gibt {ok, repaired_text, changes, final_check} zurück.
+    Wenn reparierbar → repaired_text enthält korrigierten Text.
+    Wenn nicht reparierbar → ok=False mit Fehlermeldung.
+    """
+    import random
+    original = text
+    changes: List[str] = []
+    repaired = text
+
+    # 1. Platzhalter entfernen  {name}, {{var}}, [PLATZHALTER]
+    cleaned = re.sub(r"\{[a-zA-Z_][a-zA-Z_0-9]*\}", "", repaired)
+    cleaned = re.sub(r"\{\{[^}]*\}\}", "", cleaned)
+    cleaned = re.sub(r"\[[A-ZÄÖÜ_\s]{3,30}\]", "", cleaned)
+    if cleaned != repaired:
+        changes.append("Platzhalter entfernt")
+        repaired = cleaned.strip()
+
+    # 2. Defekte URLs reparieren — ersetze durch Homepage oder entferne
+    urls_in_text = re.findall(r'https?://[^\s<>"\']+', repaired)
+    for url in urls_in_text:
+        clean_url = url.rstrip(".,;)!?")
+        if any(skip in clean_url for skip in ("localhost", "127.0.0.1", "telegram.org")):
+            continue
+        url_ok, url_err = await _check_url_live(clean_url)
+        if not url_ok:
+            # Versuche: ersetze durch Basis-Domain (Homepage)
+            try:
+                from urllib.parse import urlparse
+                parsed = urlparse(clean_url)
+                homepage = f"{parsed.scheme}://{parsed.netloc}"
+                hp_ok, _ = await _check_url_live(homepage)
+                if hp_ok and homepage != clean_url:
+                    repaired = repaired.replace(clean_url, homepage)
+                    changes.append(f"Defekte URL → Homepage ersetzt: {clean_url[:50]} → {homepage}")
+                else:
+                    # Homepage auch kaputt → URL komplett entfernen
+                    repaired = repaired.replace(clean_url, "").strip()
+                    # Doppelspaces entfernen
+                    repaired = re.sub(r" {2,}", " ", repaired)
+                    changes.append(f"URL entfernt (nicht erreichbar): {clean_url[:50]}")
+            except Exception:
+                repaired = repaired.replace(clean_url, "").strip()
+                repaired = re.sub(r" {2,}", " ", repaired)
+                changes.append(f"URL entfernt: {clean_url[:50]}")
+
+    # 3. Zu langer Text → kürzen auf Plattform-Limit (−10 Puffer)
+    limits = PLATFORM_LIMITS.get(platform.lower(), PLATFORM_LIMITS["default"])
+    max_chars = limits["max_chars"]
+    if len(repaired) > max_chars:
+        # Kürze bei letztem Satzende vor dem Limit
+        cutoff = repaired[:max_chars - 10]
+        last_end = max(cutoff.rfind(". "), cutoff.rfind("! "), cutoff.rfind("? "), cutoff.rfind("\n"))
+        if last_end > max_chars // 2:
+            repaired = repaired[:last_end + 1].strip()
+        else:
+            repaired = cutoff.strip() + "…"
+        changes.append(f"Text auf {max_chars} Zeichen gekürzt")
+
+    # 4. Duplikat → leichte Variation (anderer Einstieg)
+    content_hash = hashlib.md5(repaired.lower().strip().encode()).hexdigest()
+    cutoff_dup = (datetime.now() - timedelta(days=7)).isoformat()
+    with _db() as conn:
+        dup_row = conn.execute(
+            "SELECT posted_at FROM posted WHERE content_hash=? AND platform=? AND posted_at>?",
+            (content_hash, platform.lower(), cutoff_dup)
+        ).fetchone()
+    if dup_row:
+        prefix = random.choice(_VARIATION_PREFIXES)
+        if not any(repaired.startswith(p.strip()) for p in _VARIATION_PREFIXES):
+            repaired = prefix + repaired
+            changes.append(f"Duplikat-Variation: Prefix '{prefix.strip()}' hinzugefügt")
+
+    # 5. Leerraum bereinigen
+    repaired = re.sub(r"\n{3,}", "\n\n", repaired).strip()
+
+    if not changes:
+        return {
+            "ok": False,
+            "repaired": False,
+            "repaired_text": original,
+            "changes": [],
+            "message": "Keine automatische Reparatur möglich — Post muss manuell korrigiert werden",
+        }
+
+    # Erneute Prüfung nach Reparatur
+    final = await check_post(platform, repaired, image_url)
+    return {
+        "ok": final["ok"],
+        "repaired": True,
+        "original_text": original,
+        "repaired_text": repaired,
+        "changes": changes,
+        "final_check": final,
+        "message": "Reparatur erfolgreich — Post kann gepostet werden" if final["ok"]
+                   else f"Reparatur teilweise — verbleibende Fehler: {final['errors']}",
+    }
 
 
 # ── CLI / Test ────────────────────────────────────────────────────────────────

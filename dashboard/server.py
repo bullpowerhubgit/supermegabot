@@ -14535,7 +14535,26 @@ async def create_app():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
+    async def handle_post_guardian_repair(request):
+        """POST /api/post-guardian/repair — Fehlerhaften Post automatisch reparieren.
+        Erkennt und behebt: defekte URLs (→ Homepage), Platzhalter, Zeichenlimit, Duplikate.
+        Body: {platform, text, image_url?}
+        Returns: {ok, repaired, repaired_text, original_text, changes, final_check}
+        """
+        try:
+            body = await request.json()
+            from modules.post_guardian import auto_repair_post
+            result = await auto_repair_post(
+                text      = body.get("text", ""),
+                platform  = body.get("platform", "instagram"),
+                image_url = body.get("image_url"),
+            )
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
     app.router.add_post("/api/post-guardian/check",   handle_post_guardian_check)
+    app.router.add_post("/api/post-guardian/repair",  handle_post_guardian_repair)
     app.router.add_get( "/api/post-guardian/stats",   handle_post_guardian_stats)
     app.router.add_get( "/api/post-guardian/blocked", handle_post_guardian_blocked)
     log.info("Post-Guardian routes registered (/api/post-guardian/*)")
