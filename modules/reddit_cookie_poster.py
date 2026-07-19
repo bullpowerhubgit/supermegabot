@@ -210,6 +210,30 @@ async def submit_post(
     if not token:
         return {"ok": False, "error": "token_v2 not found in cookies"}
 
+    # ── PostValidator: Inhalt + Duplikat + Nische + KI-Score prüfen ──────────
+    post_content = f"{title}\n\n{text or url}".strip()
+    try:
+        from modules.post_validator import validate_post, repair_post
+        ok, layer, reason = await validate_post(
+            text=post_content, platform="reddit", content_type="social"
+        )
+        if not ok:
+            rep = await repair_post(post_content, "reddit", reason)
+            if rep.get("ok"):
+                repaired = rep["repaired_text"]
+                lines = repaired.split("\n\n", 1)
+                if len(lines) == 2:
+                    title, text = lines[0][:300], lines[1]
+                else:
+                    text = repaired
+                log.info("Reddit: Post repariert (Layer %d: %s)", layer, reason)
+            else:
+                log.warning("Reddit: Post blockiert nach Reparatur (Layer %d: %s)", layer, reason)
+                return {"ok": False, "blocked": True, "layer": layer, "reason": reason}
+    except Exception as _e:
+        log.error("PostValidator Reddit fail-closed: %s — blockiert", _e)
+        return {"ok": False, "error": f"PostValidator fail-closed: {_e}"}
+
     post_type = "link" if url else "self"
     payload: dict = {
         "sr":       subreddit,

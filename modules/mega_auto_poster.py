@@ -584,8 +584,18 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
             post_text = f"{post_text} {product_url}".strip()
         ok, reason = await guard.check("social", text=post_text)
         if not ok:
-            log.warning("PostGuard BLOCKIERT: %s", reason)
-            return {"skipped": True, "reason": f"post_guard: {reason}"}
+            try:
+                from modules.post_validator import repair_post
+                rep = await repair_post(post_text, "social", reason)
+                if rep.get("ok"):
+                    content["body"] = rep["repaired_text"]
+                    log.info("MegaPoster: Post repariert nach PostGuard-Block: %s", reason)
+                else:
+                    log.warning("PostGuard BLOCKIERT (Reparatur fehlgeschlagen): %s", reason)
+                    return {"skipped": True, "reason": f"post_guard: {reason}"}
+            except Exception:
+                log.warning("PostGuard BLOCKIERT: %s", reason)
+                return {"skipped": True, "reason": f"post_guard: {reason}"}
     except ImportError:
         pass
     # ─────────────────────────────────────────────────────────────────────────

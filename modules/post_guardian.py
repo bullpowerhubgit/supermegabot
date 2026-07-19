@@ -333,6 +333,12 @@ def register_posted(content: str, platform: str) -> None:
             "INSERT INTO posted (platform, content_hash, content_preview) VALUES (?,?,?)",
             (platform.lower(), content_hash, content[:200])
         )
+    # Auch in post_validator DB registrieren (globaler Duplikat-Schutz)
+    try:
+        from modules.post_validator import register_posted as _pv_register
+        _pv_register(content, platform)
+    except Exception:
+        pass
 
 def get_stats() -> Dict:
     """Statistiken über blockierte und genehmigte Posts."""
@@ -476,7 +482,7 @@ async def _check_url_live(url: str) -> tuple[bool, str]:
             try:
                 with urllib.request.urlopen(req, timeout=10) as resp:
                     status = resp.status
-                    body = resp.read(8192).decode("utf-8", errors="ignore").lower()
+                    body = resp.read(65536).decode("utf-8", errors="ignore").lower()
                     return status, body
             except urllib.error.HTTPError as he:
                 # HTTPError wird für 4xx/5xx geworfen — Status direkt auslesen
@@ -495,8 +501,8 @@ async def _check_url_live(url: str) -> tuple[bool, str]:
         title_match = re.search(r"<title[^>]*>(.*?)</title>", body, re.DOTALL)
         title = title_match.group(1).strip() if title_match else ""
 
-        # Im Titel und ersten 2KB auf Fehlermarker prüfen
-        check_zone = title + " " + body[:2000]
+        # Im Titel und vollständigem Body auf Fehlermarker prüfen
+        check_zone = title + " " + body
         for marker in _ERROR_PAGE_MARKERS:
             if marker in check_zone:
                 if not any(wp in check_zone for wp in _FALSE_POSITIVE_WHITELIST):

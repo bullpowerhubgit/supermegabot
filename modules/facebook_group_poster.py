@@ -331,6 +331,22 @@ async def post_to_group(group_id: str, text: str) -> dict:
     if not _cooldown_ok(group_id):
         return {"ok": False, "group": group_id, "error": f"Cooldown aktiv ({GROUP_COOLDOWN_SEC//3600}h)"}
 
+    # ── PostValidator: Inhalt + Duplikat + Nische prüfen ──────────────────────
+    try:
+        from modules.post_validator import validate_post, repair_post
+        ok, layer, reason = await validate_post(text=text, platform="facebook", content_type="social")
+        if not ok:
+            rep = await repair_post(text, "facebook", reason)
+            if rep.get("ok"):
+                text = rep["repaired_text"]
+                log.info("FB Group: Post repariert (Layer %d: %s)", layer, reason)
+            else:
+                log.warning("FB Group: Post blockiert nach Reparatur (Layer %d: %s)", layer, reason)
+                return {"ok": False, "group": group_id, "blocked": True, "layer": layer, "reason": reason}
+    except Exception as _e:
+        log.error("PostValidator FB Group fail-closed: %s — blockiert", _e)
+        return {"ok": False, "group": group_id, "error": f"PostValidator fail-closed: {_e}"}
+
     loop = asyncio.get_event_loop()
     result = await loop.run_in_executor(None, _post_to_group_sync, group_id, text)
     _record_post(group_id, text, result.get("ok", False))
