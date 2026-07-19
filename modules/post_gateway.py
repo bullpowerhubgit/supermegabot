@@ -34,6 +34,16 @@ log = logging.getLogger("PostGateway")
 _ROOT = Path(__file__).parent.parent
 _DB = _ROOT / "data" / "post_gateway.db"
 
+# Per-Platform-Lock: verhindert gleichzeitige Duplikat-Prüfung + API-Call
+# (Race Condition: LinkedIn HTTP 422 wenn 2 Caller gleichzeitig posten)
+_PLATFORM_LOCKS: dict[str, asyncio.Lock] = {}
+
+def _get_platform_lock(platform: str) -> asyncio.Lock:
+    p = platform.lower()
+    if p not in _PLATFORM_LOCKS:
+        _PLATFORM_LOCKS[p] = asyncio.Lock()
+    return _PLATFORM_LOCKS[p]
+
 # ── Credentials ───────────────────────────────────────────────────────────────
 def _cred(key: str, *fallbacks: str) -> str:
     for k in (key, *fallbacks):
@@ -447,72 +457,77 @@ async def safe_post(
         log.warning("Post blockiert [%s] von %s: %s", platform, source_module, content_errors)
         return result
 
-    # Schicht 2: Duplikat-Check
-    if not skip_duplicate_check and _is_duplicate(text, platform):
-        result["errors"] = ["Duplikat: gleicher Content bereits in letzten 7 Tagen gepostet"]
-        result["blocked"] = True
-        _log_blocked(platform, "duplikat_innerhalb_7d", text)
-        log.info("Post übersprungen [%s] — Duplikat", platform)
-        return result
+    # Schicht 2–5: Duplikat-Check + API-Call unter Platform-Lock serialisieren.
+    # Verhindert LinkedIn HTTP 422 "Content is a duplicate" bei gleichzeitigen Callers:
+    # Ohne Lock prüfen beide _is_duplicate() bevor einer in die DB geschrieben hat.
+    async with _get_platform_lock(platform):
 
-    daily_cap = _PLATFORM_DAILY_CAPS.get(platform.lower())
-    if daily_cap and _sent_today(platform) >= daily_cap:
-        result["errors"] = [f"daily_cap_reached: {platform} {daily_cap}/Tag"]
-        result["blocked"] = True
-        _log_blocked(platform, "daily_cap_reached", text)
-        log.warning("Post übersprungen [%s] von %s — Tageslimit %d erreicht", platform, source_module, daily_cap)
-        return result
+        # Schicht 2: Duplikat-Check
+        if not skip_duplicate_check and _is_duplicate(text, platform):
+            result["errors"] = ["Duplikat: gleicher Content bereits in letzten 7 Tagen gepostet"]
+            result["blocked"] = True
+            _log_blocked(platform, "duplikat_innerhalb_7d", text)
+            log.info("Post übersprungen [%s] — Duplikat", platform)
+            return result
 
-    # Schicht 3: Credential-Check
-    cred_ok, cred_err = _check_credential(platform)
-    if not cred_ok:
-        result["errors"] = [cred_err]
-        result["blocked"] = True
-        _log_blocked(platform, cred_err, text)
-        if _should_alert(platform, cred_err, text):
-            await _alert(f"⚠️ <b>Post blockiert</b> [{platform}]: {cred_err}")
-        log.error("Credential fehlt [%s]: %s", platform, cred_err)
-        return result
+        daily_cap = _PLATFORM_DAILY_CAPS.get(platform.lower())
+        if daily_cap and _sent_today(platform) >= daily_cap:
+            result["errors"] = [f"daily_cap_reached: {platform} {daily_cap}/Tag"]
+            result["blocked"] = True
+            _log_blocked(platform, "daily_cap_reached", text)
+            log.warning("Post übersprungen [%s] von %s — Tageslimit %d erreicht", platform, source_module, daily_cap)
+            return result
 
-    # Schicht 4+5: API-Call
-    p = platform.lower()
-    try:
-        if p == "facebook":
-            api_result = await _post_facebook(text, image_url)
-        elif p == "instagram":
-            api_result = await _post_instagram(text, image_url)
-        elif p in ("linkedin",):
-            api_result = await _post_linkedin(text)
-        elif p == "telegram":
-            api_result = await _post_telegram(text, chat_id)
-        else:
-            api_result = {"ok": False, "error": f"Unbekannte Plattform: {platform}"}
-    except Exception as e:
-        api_result = {"ok": False, "error": str(e)}
+        # Schicht 3: Credential-Check
+        cred_ok, cred_err = _check_credential(platform)
+        if not cred_ok:
+            result["errors"] = [cred_err]
+            result["blocked"] = True
+            _log_blocked(platform, cred_err, text)
+            if _should_alert(platform, cred_err, text):
+                await _alert(f"⚠️ <b>Post blockiert</b> [{platform}]: {cred_err}")
+            log.error("Credential fehlt [%s]: %s", platform, cred_err)
+            return result
 
-    if api_result.get("ok"):
-        _log_post(platform, "sent", text, [])
-        result["ok"] = True
-        result["post_id"] = api_result.get("post_id")
+        # Schicht 4+5: API-Call
+        p = platform.lower()
         try:
-            from modules.post_never_twice import remember_sent
-            remember_sent(text, platform, source_module=source_module)
-        except Exception:
-            pass
-        log.info("✅ Post gesendet [%s] von %s: %s", platform, source_module, result["post_id"])
-    else:
-        err = api_result.get("error", "Unbekannter API-Fehler")
-        result["errors"] = [err]
-        _log_post(platform, "failed", text, [err])
-        # KEIN remember_block bei API-Fehlern (falscher Token, Netzwerk, Rate-Limit)!
-        # Nur Content-Violations werden dauerhaft geblockt — nicht technische API-Fehler.
-        # Sonst: korrigierter Token → gleicher Content bleibt für immer gesperrt.
-        if _should_alert(platform, err, text):
-            await _alert(
-                f"❌ <b>Post FEHLGESCHLAGEN</b> [{platform}] von {source_module}\n"
-                f"Fehler: {err}\nPreview: {text[:100]!r}"
-            )
-        log.error("Post fehlgeschlagen [%s]: %s", platform, err)
+            if p == "facebook":
+                api_result = await _post_facebook(text, image_url)
+            elif p == "instagram":
+                api_result = await _post_instagram(text, image_url)
+            elif p in ("linkedin",):
+                api_result = await _post_linkedin(text)
+            elif p == "telegram":
+                api_result = await _post_telegram(text, chat_id)
+            else:
+                api_result = {"ok": False, "error": f"Unbekannte Plattform: {platform}"}
+        except Exception as e:
+            api_result = {"ok": False, "error": str(e)}
+
+        if api_result.get("ok"):
+            _log_post(platform, "sent", text, [])
+            result["ok"] = True
+            result["post_id"] = api_result.get("post_id")
+            try:
+                from modules.post_never_twice import remember_sent
+                remember_sent(text, platform, source_module=source_module)
+            except Exception:
+                pass
+            log.info("✅ Post gesendet [%s] von %s: %s", platform, source_module, result["post_id"])
+        else:
+            err = api_result.get("error", "Unbekannter API-Fehler")
+            result["errors"] = [err]
+            _log_post(platform, "failed", text, [err])
+            # KEIN remember_block bei API-Fehlern (falscher Token, Netzwerk, Rate-Limit)!
+            # Nur Content-Violations werden dauerhaft geblockt — nicht technische API-Fehler.
+            # Sonst: korrigierter Token → gleicher Content bleibt für immer gesperrt.
+            if _should_alert(platform, err, text):
+                await _alert(
+                    f"❌ <b>Post FEHLGESCHLAGEN</b> [{platform}] von {source_module}\n"
+                    f"Fehler: {err}\nPreview: {text[:100]!r}"
+                )
+            log.error("Post fehlgeschlagen [%s]: %s", platform, err)
 
     return result
 

@@ -15544,10 +15544,18 @@ async def create_app():
             return web.Response(text=json.dumps({"ok": ok, "product_id": product_id}),
                                 content_type="application/json")
 
+        async def handle_image_bad_scan(request: web.Request) -> web.Response:
+            """Scannt auf falsche/mismatched Bilder (Black Friday, Placeholder, etc.)"""
+            dry = request.rel_url.query.get("dry", "false").lower() == "true"
+            from modules.shopify_image_manager import scan_and_fix_images
+            result = await scan_and_fix_images(dry_run=dry)
+            return web.Response(text=json.dumps(result, ensure_ascii=False), content_type="application/json")
+
         app.router.add_get( "/api/shopify/images/scan",   handle_image_scan)
         app.router.add_get( "/api/shopify/images/issues", handle_image_issues)
+        app.router.add_get( "/api/shopify/images/bad",    handle_image_bad_scan)
         app.router.add_post("/api/shopify/images/fix",    handle_image_fix)
-        log.info("Shopify Image Optimizer routes registered (3 routes)")
+        log.info("Shopify Image Optimizer routes registered (4 routes)")
     except Exception as _img_e:
         log.warning("Image Optimizer routes failed: %s", _img_e)
 
