@@ -218,45 +218,96 @@ _BAD_HOSTS = ["localhost", "127.0.0.1", "example.com", "yoursite",
               "autopilot-store-suite-fmbka.myshopify.com"]  # myshopify nie in Posts
 
 
-def _check_url_live(url: str) -> Tuple[bool, int]:
-    """HEAD-Request — gibt (ok, status_code) zurück. Max 5s Timeout."""
+# ── Shopify & E-Commerce Fehlerseiten (HTTP 200 aber Inhalt = Fehler) ─────────
+_UNAVAIL_MARKERS = [
+    # KRITISCH: Shopify "nicht genehmigt" / "nicht verfügbar" (HTTP 200!)
+    "produkt wurde noch nicht genehmigt",
+    "das produkt wurde noch nicht genehmigt",
+    "nicht genehmigt",
+    "produkt ist nicht verfügbar",
+    "das produkt ist nicht verfügbar",
+    "produkt ist aus folgendem grund nicht verfügbar",
+    "nicht verfügbar",
+    "derzeit nicht verfügbar",
+    "nicht im handel erhältlich",
+    "derzeit nicht im handel erhältlich",
+    "zur wunschliste hinzufügen",   # Shopify Draft-Pattern
+    # Englisch
+    "product is not available", "this product is unavailable",
+    "product has been removed", "product is no longer available",
+    "not approved", "product not approved", "currently unavailable",
+    "not available for sale",
+    # Allgemein
+    "404 not found", "404 error", "page not found",
+    "seite nicht gefunden", "diese seite existiert nicht",
+    "sorry, this page is not available",
+    "the page you were looking for does not exist",
+    "link you followed may be broken",
+    "bad gateway", "service unavailable", "internal server error",
+    "coming soon", "under construction",
+]
+
+
+def _check_url_live(url: str) -> Tuple[bool, str]:
+    """GET-Request — prüft HTTP-Status UND Seiteninhalt auf Fehler/Unavailability.
+    Gibt (ok, error_msg) zurück. Shopify Produkte mit HTTP 200 aber Fehlerinhalt → BLOCK."""
     import urllib.request
     import urllib.error
-    clean = re.sub(r'[)\]>.,!?]+$', '', url)  # Trailing-Interpunktion entfernen
+    clean = re.sub(r'[)\]>.,!?]+$', '', url)
     try:
-        req = urllib.request.Request(clean, method="HEAD",
-                                     headers={"User-Agent": "Mozilla/5.0"})
-        with urllib.request.urlopen(req, timeout=5) as r:
-            return r.status < 400, r.status
+        req = urllib.request.Request(
+            clean, method="GET",
+            headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            status = r.status
+            body   = r.read(8192).decode("utf-8", errors="ignore").lower()
     except urllib.error.HTTPError as e:
-        return e.code < 400, e.code
-    except urllib.error.URLError:
-        return False, 0  # DNS/Verbindungsfehler → blockieren (ineedit.com.co muss erreichbar sein)
-    except Exception:
-        return True, 0  # Sonstige Fehler (SSL etc.) → nicht blockieren
+        return e.code < 400, f"HTTP {e.code}"
+    except urllib.error.URLError as e:
+        return False, f"URL nicht erreichbar: {e.reason}"
+    except Exception as e:
+        return True, ""  # SSL etc. → nicht blockieren
+
+    if status >= 400:
+        return False, f"HTTP {status}"
+
+    # Titel extrahieren für genaueren Check
+    title_m = re.search(r"<title[^>]*>(.*?)</title>", body, re.DOTALL)
+    title   = title_m.group(1).strip() if title_m else ""
+    check   = title + " " + body[:3000]
+
+    for marker in _UNAVAIL_MARKERS:
+        if marker in check:
+            return False, f"Fehlerseite/Produkt nicht verfügbar: '{marker}'"
+
+    return True, ""
 
 
 def check_urls(text: str) -> Tuple[bool, str]:
-    """Prüft URLs: Format + echte HTTP-Verifikation (HEAD). 404 → BLOCK."""
+    """Prüft URLs: Format + GET-Request + Inhaltsprüfung auf Fehler/Unavailability."""
     urls = re.findall(r'https?://\S+', text)
     for url in urls:
         clean = re.sub(r'[)\]>.,!?]+$', '', url)
         # Schlechte Hosts (Format-Check)
         if any(bad in clean for bad in _BAD_HOSTS):
             return False, f"Ungültige/Interne URL: {clean[:80]}"
+        # Interne APIs überspringen
+        if any(skip in clean for skip in ("localhost", "127.0.0.1", "telegram.org/bot", "api.telegram")):
+            continue
         # Live-Check mit Cache
         now = time.time()
         if clean in _URL_CACHE:
             ok, ts = _URL_CACHE[clean]
             if now - ts < _URL_CACHE_TTL:
                 if not ok:
-                    return False, f"URL nicht erreichbar (cached): {clean[:80]}"
+                    return False, f"URL blockiert (cached): {clean[:80]}"
                 continue
-        ok, code = _check_url_live(clean)
+        ok, err = _check_url_live(clean)
         _URL_CACHE[clean] = (ok, now)
         if not ok:
-            log.warning("PostGuard URL-Check FAIL: %s → HTTP %d", clean[:80], code)
-            return False, f"URL liefert Fehler HTTP {code}: {clean[:80]}"
+            log.warning("PostGuard URL-Check FAIL: %s → %s", clean[:80], err)
+            return False, f"{err}: {clean[:80]}"
     return True, ""
 
 
