@@ -132,6 +132,17 @@ _GUMROAD_PRODUCTS = [
     ("KI-Starter Bundle", "€97",       "ki-starter"),
 ]
 
+# Fallback-Bilder für Gumroad-Produkte (kein eigenes Bild) — verifizierte Pexels-URLs
+_GUMROAD_NICHE_IMAGES: dict[str, str] = {
+    "ki-automatisierung": "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",   # Code/Laptop
+    "ki-business":        "https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg",   # Business-Dashboard
+    "ki-marketing":       "https://images.pexels.com/photos/265087/pexels-photo-265087.jpeg",     # Marketing Analytics
+    "ecommerce":          "https://images.pexels.com/photos/230544/pexels-photo-230544.jpeg",     # E-Commerce Shopping
+    "social-media":       "https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg",     # Social Media Phone
+    "ki-starter":         "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",   # Code/Laptop
+}
+_GUMROAD_DEFAULT_IMAGE = "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg"
+
 
 # ── State Management ──────────────────────────────────────────────────────────
 
@@ -687,7 +698,7 @@ async def run_brutal_cycle(slot: str = "") -> dict:
         gp = random.choice(_GUMROAD_PRODUCTS)
         product_name, price, product_niche = gp
         base_url = GUMROAD_URL
-        image_url = ""
+        image_url = _GUMROAD_NICHE_IMAGES.get(product_niche, _GUMROAD_DEFAULT_IMAGE)
         source = "gumroad"
     else:
         p = await _get_shopify_product()
@@ -695,7 +706,7 @@ async def run_brutal_cycle(slot: str = "") -> dict:
             gp = random.choice(_GUMROAD_PRODUCTS)
             product_name, price, product_niche = gp
             base_url = GUMROAD_URL
-            image_url = ""
+            image_url = _GUMROAD_NICHE_IMAGES.get(product_niche, _GUMROAD_DEFAULT_IMAGE)
             source = "gumroad"
         else:
             product_name = p["title"]
@@ -876,6 +887,7 @@ async def fire(title: str, body: str = "", link: str = "",
                                  "social_proof", "instagram", niche)
     content["caption"] = body or content.get("caption", title)
     content["url"] = link or GUMROAD_URL
+    content.setdefault("image_url", _GUMROAD_NICHE_IMAGES.get(niche, _GUMROAD_DEFAULT_IMAGE))
 
     results = {}
     platforms_ok = []
