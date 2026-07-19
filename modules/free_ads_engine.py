@@ -190,12 +190,36 @@ Antworte NUR mit JSON (kein Markdown):
     }
 
 
+# ── PostGuard — Prüfung + Reparatur vor jedem Post ───────────────────────────
+
+async def _guard(text: str, platform: str, image_url: str = "") -> tuple:
+    """PostGuardian check + auto-repair. Returns (ok, final_text).
+    Bei ok=False: NICHT posten. Teilt die Logik mit brutal_ads_engine, keine Duplikate."""
+    try:
+        from modules.post_guardian import check_post, auto_repair_post
+        result = await check_post(platform, text, image_url or None)
+        if result["ok"]:
+            return True, text
+        repair = await auto_repair_post(text, platform, image_url or None)
+        if repair.get("ok"):
+            log.info("FreeAds: Post repariert [%s]: %s", platform, repair.get("changes"))
+            return True, repair["repaired_text"]
+        log.warning("FreeAds: Post BLOCKIERT [%s]: %s", platform, result.get("errors"))
+        return False, text
+    except Exception as e:
+        log.debug("FreeAds: Guardian-Fehler %s — allow", e)
+        return True, text  # Guardian selbst defekt → durchlassen
+
+
 # ── Platform Posters ──────────────────────────────────────────────────────────
 
 async def _post_instagram(content: dict) -> dict:
     try:
         from modules.social_autoposter import post_to_instagram
         caption = f"{content['caption']}\n\n{content['hashtags']}\n\n{content['url']}"
+        ok, caption = await _guard(caption, "instagram")
+        if not ok:
+            return {"ok": False, "reason": "content_blocked_by_guard"}
         result = await post_to_instagram(caption=caption, image_url="")
         return result or {"ok": False, "reason": "no_result"}
     except Exception as e:
@@ -206,6 +230,9 @@ async def _post_facebook(content: dict) -> dict:
     try:
         from modules.social_autoposter import post_to_facebook
         msg = f"{content['caption']}\n\n{content['cta']}: {content['url']}"
+        ok, msg = await _guard(msg, "facebook")
+        if not ok:
+            return {"ok": False, "reason": "content_blocked_by_guard"}
         result = await post_to_facebook(message=msg, link=content["url"])
         return result or {"ok": False, "reason": "no_result"}
     except Exception as e:
@@ -225,10 +252,14 @@ async def _post_pinterest(content: dict, niche: str) -> dict:
         board = board_map.get(niche) or board_map["default"]
         if not board:
             return {"ok": False, "reason": "PINTEREST_BOARD_ID not set"}
+        desc = f"{content['caption']} {content['hashtags']}"
+        ok, desc = await _guard(desc, "pinterest")
+        if not ok:
+            return {"ok": False, "reason": "content_blocked_by_guard"}
         result = await pc.create_pin(
             board_id=board,
             title=content["hook"],
-            description=f"{content['caption']} {content['hashtags']}",
+            description=desc,
             link=content["url"],
             image_url="",
         )
@@ -241,6 +272,9 @@ async def _post_twitter(content: dict) -> dict:
     try:
         from modules.twitter_auto_poster import run_auto_tweet
         tweet = f"{content['hook']} — {content['caption'][:120]}\n{content['url']}"
+        ok, tweet = await _guard(tweet, "twitter")
+        if not ok:
+            return {"ok": False, "reason": "content_blocked_by_guard"}
         result = await run_auto_tweet(custom_text=tweet)
         return result or {"ok": False, "reason": "no_result"}
     except Exception as e:
@@ -253,6 +287,9 @@ async def _post_reddit(content: dict, subreddit: str, product_name: str) -> dict
         rc = RedditConnector()
         title = f"{content['hook']}: {product_name}"
         text  = f"{content['caption']}\n\nMehr Infos: {content['url']}"
+        ok, text = await _guard(text, "reddit")
+        if not ok:
+            return {"ok": False, "reason": "content_blocked_by_guard"}
         result = await rc.submit_post(
             subreddit=subreddit.lstrip("r/"),
             title=title,
