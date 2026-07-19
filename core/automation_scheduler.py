@@ -7964,6 +7964,20 @@ async def task_shopify_manager_cycle() -> str:
         return f"ShopifyManager Fehler: {e}"
 
 
+async def task_ds24_auto_approve() -> str:
+    """DS24 Auto-Approve: Inaktive Produkte automatisch aktivieren (alle 6h)."""
+    try:
+        from modules.ds24_autonomous_agent import approve_ds24_pending_products
+        result = await approve_ds24_pending_products()
+        activated = result.get("activated", 0)
+        errors = result.get("errors", 0)
+        if activated:
+            return f"DS24 Auto-Approve: {activated} Produkte aktiviert, {errors} Fehler"
+        return f"DS24 Auto-Approve: keine inaktiven Produkte gefunden"
+    except Exception as e:
+        return f"DS24 Auto-Approve Fehler: {e}"
+
+
 async def task_organic_traffic_post() -> str:
     """Organischer Traffic: PostGuard-geprüfte Posts auf 7 Plattformen (alle 6h, 4x täglich)."""
     try:
@@ -9092,6 +9106,8 @@ TASKS = [
     ("organic_traffic_post",   task_organic_traffic_post,   21600, 6100), # 6h — 4x täglich organische Posts (IG, FB, TW, LI, PN, Reddit, TT)
     # ── Shopify Manager Assistant — AB-Tests + SEO + Preise + Qualität ───────
     ("shopify_manager_cycle",  task_shopify_manager_cycle,  86400, 6200), # täglich — vollständiger Shopify-Manager-Zyklus
+    # ── DS24 Auto-Approve — Inaktive Produkte automatisch aktivieren ──────────
+    ("ds24_auto_approve",      task_ds24_auto_approve,      21600, 6300), # 6h — DS24 inaktive Produkte aktivieren
 ]
 
 
