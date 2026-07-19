@@ -111,8 +111,7 @@ async def _tg(msg: str):
 # ─── 1. eBay: Trending Smart Home Products → Shopify Import ─────────────────
 
 async def run_ebay_import(count: int = 5) -> dict:
-    """eBay Finding API → Shopify import (kein BrutusCore/Spam)."""
-    FINDING_URL = "https://svcs.ebay.com/services/search/FindingService/v1"
+    """eBay Browse API → Shopify import (via ebay_client.search_items)."""
     KEYWORDS = [
         "smart home steckdose wlan", "wifi smart plug energy monitor",
         "zigbee gateway tuya", "smarthome beleuchtung set",
@@ -121,48 +120,24 @@ async def run_ebay_import(count: int = 5) -> dict:
     ]
     kw = random.choice(KEYWORDS)
     items = []
+
     try:
-        params = {
-            "OPERATION-NAME": "findItemsByKeywords",
-            "SERVICE-VERSION": "1.0.0",
-            "SECURITY-APPNAME": EBAY_APP_ID,
-            "RESPONSE-DATA-FORMAT": "JSON",
-            "keywords": kw,
-            "paginationInput.entriesPerPage": str(count),
-            "itemFilter(0).name": "ListingType",
-            "itemFilter(0).value": "FixedPrice",
-            "itemFilter(1).name": "Condition",
-            "itemFilter(1).value": "New",
-            "itemFilter(2).name": "MinPrice",
-            "itemFilter(2).value": "8",
-            "sortOrder": "BestMatch",
-            "outputSelector": "PictureURLSuperSize",
-            "GLOBAL-ID": "EBAY-DE",
-        }
-        async with aiohttp.ClientSession() as s:
-            async with s.get(FINDING_URL, params=params,
-                             timeout=aiohttp.ClientTimeout(total=15)) as r:
-                data = await r.json()
-        results = (data.get("findItemsByKeywordsResponse", [{}])[0]
-                      .get("searchResult", [{}])[0]
-                      .get("item", []))
-        for item in results[:count]:
-            title = item.get("title", [""])[0]
-            url = item.get("viewItemURL", [""])[0]
-            price_info = (item.get("sellingStatus", [{}])[0]
-                             .get("currentPrice", [{}])[0])
-            price = price_info.get("__value__", "")
-            image = ""
-            for img_key in ("pictureURLSuperSize", "galleryURL"):
-                img_list = item.get(img_key, [])
-                if img_list:
-                    image = img_list[0]
-                    break
-            if title and float(price or 0) >= 8:
-                items.append({"title": title[:120], "url": url,
-                              "price": price, "image": image, "keyword": kw})
+        from modules.ebay_client import search_items
+        result = await search_items(keywords=kw, limit=count)
+        if not result.get("ok", True):
+            log.warning("eBay: %s", result.get("error", "API-Fehler"))
+            return {"platform": "ebay", "found": 0, "imported": 0, "keyword": kw,
+                    "error": result.get("error", "api_failed")}
+        for it in result.get("items", [])[:count]:
+            price = it.get("price", "0")
+            if it.get("title") and float(price or 0) >= 8:
+                items.append({"title": it["title"][:120],
+                              "url": it.get("affiliate_link", ""),
+                              "price": price,
+                              "image": it.get("image", ""),
+                              "keyword": kw})
     except Exception as e:
-        log.warning("eBay API: %s", e)
+        log.warning("eBay Browse API: %s", e)
 
     imported = 0
     for item in items:
