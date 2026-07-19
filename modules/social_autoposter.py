@@ -206,11 +206,16 @@ async def _ai_caption(topic: str = "", lang: str = "de") -> str:
 # ── Facebook Page Poster ─────────────────────────────────────────────────────
 async def post_to_facebook(message: str, image_url: str = "", link: str = "") -> dict:
     """Postet auf die Aiitec Facebook Page."""
-    from modules.post_guardian import check_post, register_posted
+    from modules.post_guardian import check_post, register_posted, auto_repair_post
     _guard = await check_post("facebook", message, image_url or None)
     if not _guard["ok"]:
-        log.warning("Post Guardian blockiert FB-Post: %s", _guard["errors"])
-        return {"ok": False, "platform": "facebook", "blocked": True, "errors": _guard["errors"]}
+        _rep = await auto_repair_post(message, "facebook", image_url or None)
+        if _rep.get("ok"):
+            message = _rep["repaired_text"]
+            log.info("FB: Post auto-repariert: %s", _rep.get("changes"))
+        else:
+            log.warning("Post Guardian blockiert FB-Post: %s", _guard["errors"])
+            return {"ok": False, "platform": "facebook", "blocked": True, "errors": _guard["errors"]}
     if not FB_TOKEN:
         return {"ok": False, "platform": "facebook", "error": "FACEBOOK_PAGE_TOKEN_AIITEC nicht gesetzt — Post abgebrochen"}
     url = f"{GRAPH}/{FB_PAGE_ID}/feed"
@@ -258,11 +263,16 @@ async def post_to_instagram(caption: str, image_url: str) -> dict:
     Post Guardian prüft vor dem Posten.
     image_url muss öffentlich erreichbar sein (JPG/PNG, min 320px).
     """
-    from modules.post_guardian import check_post, register_posted
+    from modules.post_guardian import check_post, register_posted, auto_repair_post
     _guard = await check_post("instagram", caption, image_url or None)
     if not _guard["ok"]:
-        log.warning("Post Guardian blockiert IG-Post: %s", _guard["errors"])
-        return {"ok": False, "platform": "instagram", "blocked": True, "errors": _guard["errors"]}
+        _rep = await auto_repair_post(caption, "instagram", image_url or None)
+        if _rep.get("ok"):
+            caption = _rep["repaired_text"]
+            log.info("IG: Post auto-repariert: %s", _rep.get("changes"))
+        else:
+            log.warning("Post Guardian blockiert IG-Post: %s", _guard["errors"])
+            return {"ok": False, "platform": "instagram", "blocked": True, "errors": _guard["errors"]}
     if not FB_TOKEN or not IG_ID:
         return {"ok": False, "platform": "instagram", "error": "INSTAGRAM_ACCOUNT_ID oder FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
     if not image_url:
@@ -307,11 +317,16 @@ async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
     video_url muss öffentlich erreichbar sein (MP4, min 720p empfohlen).
     Post Guardian prüft vor dem Posten.
     """
-    from modules.post_guardian import check_post, register_posted
+    from modules.post_guardian import check_post, register_posted, auto_repair_post
     _guard = await check_post("instagram", caption, video_url or None)
     if not _guard["ok"]:
-        log.warning("Post Guardian blockiert IG-Reel: %s", _guard["errors"])
-        return {"ok": False, "platform": "instagram_reel", "blocked": True, "errors": _guard["errors"]}
+        _rep = await auto_repair_post(caption, "instagram", video_url or None)
+        if _rep.get("ok"):
+            caption = _rep["repaired_text"]
+            log.info("IG-Reel: Post auto-repariert: %s", _rep.get("changes"))
+        else:
+            log.warning("PostGuardian blockiert IG-Reel: %s", _guard["errors"])
+            return {"ok": False, "platform": "instagram_reel", "blocked": True, "errors": _guard["errors"]}
     if not FB_TOKEN or not IG_ID:
         return {"ok": False, "platform": "instagram_reel", "error": "INSTAGRAM_ACCOUNT_ID oder FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
     if not video_url:
@@ -382,11 +397,16 @@ async def post_to_linkedin(text: str, link: str = "") -> dict:
     Postet auf Rudolf Sarkanys LinkedIn-Profil.
     Benötigt Scope: w_member_social (✅ bestätigt via 429 Rate Limit Test).
     """
-    from modules.post_guardian import check_post, register_posted
+    from modules.post_guardian import check_post, register_posted, auto_repair_post
     _guard = await check_post("linkedin", text)
     if not _guard["ok"]:
-        log.warning("Post Guardian blockiert LI-Post: %s", _guard["errors"])
-        return {"ok": False, "platform": "linkedin", "blocked": True, "errors": _guard["errors"]}
+        _rep = await auto_repair_post(text, "linkedin")
+        if _rep.get("ok"):
+            text = _rep["repaired_text"]
+            log.info("LI: Post auto-repariert: %s", _rep.get("changes"))
+        else:
+            log.warning("Post Guardian blockiert LI-Post: %s", _guard["errors"])
+            return {"ok": False, "platform": "linkedin", "blocked": True, "errors": _guard["errors"]}
     if not LI_TOKEN:
         return {"ok": False, "platform": "linkedin", "error": "LINKEDIN_ACCESS_TOKEN nicht gesetzt"}
     person_urn = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")

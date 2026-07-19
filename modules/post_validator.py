@@ -498,3 +498,73 @@ async def validate_post(
 def register_posted(text: str, platform: str = "unknown"):
     """Nach manuellem/externem Post aufrufen um Duplikat-DB zu aktualisieren."""
     _register_hash(text, platform)
+
+
+# ── Post-Reparatur via KI ─────────────────────────────────────────────────────
+
+_REPAIR_PROMPT = """Du bist ein professioneller Content-Reparatur-Assistent für einen Smart-Home/Tech/Solar E-Commerce Shop.
+
+Der folgende Social-Media-Post wurde BLOCKIERT. Repariere ihn so, dass er:
+1. Den Blockierungsgrund behebt: {reason}
+2. In der Nische Smart Home / Tech / Solar / E-Commerce bleibt
+3. Professionell und überzeugend klingt
+4. Die Länge ungefähr beibehält (±20%)
+5. KEIN Placeholder-Text, keine KI-Offenbarungen, kein Spam enthält
+
+Plattform: {platform}
+
+ORIGINALER POST:
+{text}
+
+Antworte NUR mit dem reparierten Post-Text. Keine Erklärungen, keine Kommentare."""
+
+
+async def repair_post(
+    text: str,
+    platform: str = "unknown",
+    reason: str = "",
+    max_attempts: int = 2,
+) -> dict:
+    """
+    Repariert einen blockierten Post via KI und re-validiert ihn.
+
+    Returns:
+        {"ok": True, "repaired_text": "...", "attempts": 1}
+        {"ok": False, "error": "...", "attempts": N}
+    """
+    try:
+        from modules.ai_client import ai_complete
+    except ImportError:
+        return {"ok": False, "error": "ai_client nicht verfügbar", "attempts": 0}
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            repaired = await ai_complete(
+                prompt=_REPAIR_PROMPT.format(
+                    reason=reason[:200],
+                    platform=platform,
+                    text=text[:1000],
+                ),
+                max_tokens=500,
+            )
+            if not repaired or len(repaired.strip()) < 20:
+                log.warning("repair_post: KI-Antwort zu kurz (Versuch %d)", attempt)
+                continue
+
+            repaired = repaired.strip()
+            ok, layer, rep_reason = await validate_post(
+                text=repaired,
+                platform=platform,
+                content_type="social",
+                skip_dedup=True,
+            )
+            if ok:
+                log.info("repair_post ✅ nach %d Versuch(en): %s…", attempt, repaired[:60])
+                return {"ok": True, "repaired_text": repaired, "attempts": attempt}
+
+            log.warning("repair_post: reparierter Text wieder blockiert (Layer %d: %s)", layer, rep_reason)
+            reason = rep_reason
+        except Exception as e:
+            log.error("repair_post Fehler (Versuch %d): %s", attempt, e)
+
+    return {"ok": False, "error": f"Reparatur nach {max_attempts} Versuchen gescheitert", "attempts": max_attempts}
