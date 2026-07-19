@@ -20,23 +20,44 @@ def _clean_response(text: str) -> str:
     """Strip model reasoning/thinking chains — returns only the final answer."""
     if not text:
         return text
+
     # 1. <think>...</think> blocks (DeepSeek-R1, QwQ standard format)
     cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
     if cleaned and cleaned != text:
         return cleaned
 
-    # 2. Reasoning chain with system-prompt echo (Ollama reasoning models like QwQ-32B)
-    # Pattern: starts with bullet "* User Role:" which is a sign the model echoed the system prompt
-    if not re.search(r'(^|\n)\s*\*\s+User Role:', text):
+    # 2. Detect reasoning chain by system-prompt echo patterns
+    has_chain = bool(
+        re.search(r'(^|\n)\s*\*\s+(User Role|User Persona|Owner|Context|Core Rules|Input):', text)
+    )
+    if not has_chain:
         return text
 
-    # Find position of the LAST bullet-point line and take everything after it
     lines = text.split('\n')
+
+    # 3a. Self-check bullets like "* German? Yes." signal end of reasoning
+    last_check_idx = -1
+    for i, line in enumerate(lines):
+        if re.match(r'\s*\*\s+\w[^:]+\?\s+(Yes|No|Ja|Nein)\.?\s*$', line):
+            last_check_idx = i
+
+    if last_check_idx >= 0 and last_check_idx < len(lines) - 1:
+        after = '\n'.join(lines[last_check_idx + 1:]).strip().strip('"').strip()
+        if after and len(after) > 10:
+            return after
+
+    # 3b. Fallback: last non-bullet paragraph
+    paragraphs = re.split(r'\n\s*\n', text)
+    for para in reversed(paragraphs):
+        para = para.strip()
+        if para and not re.match(r'\s*[\*\-]', para) and len(para) > 20:
+            return para.strip('"').strip()
+
+    # 3c. Last bullet fallback
     last_bullet_idx = -1
     for i, line in enumerate(lines):
         if re.match(r'\s*\*', line):
             last_bullet_idx = i
-
     if last_bullet_idx >= 0 and last_bullet_idx < len(lines) - 1:
         after = '\n'.join(lines[last_bullet_idx + 1:]).strip().strip('"').strip()
         if after:
