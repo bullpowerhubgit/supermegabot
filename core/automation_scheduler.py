@@ -4813,13 +4813,23 @@ async def task_shopify_restock() -> str:
 
 
 async def task_shopify_image_fix() -> str:
-    """Shopify Image-Fix: Produkte ohne Bild bekommen Bilder von Pexels — alle 4h."""
+    """Shopify Image-Fix: Falsche/fehlende Bilder erkennen und auto-reparieren — alle 12h."""
+    results = []
+    # 1. Falsche/mismatched Bilder reparieren (Black Friday, Geschenke, etc.)
+    try:
+        from modules.shopify_image_checker import scan_and_repair_all
+        r = await scan_and_repair_all(limit=100, send_telegram=False)
+        results.append(f"Mismatch-Check: {r.get('checked',0)} geprüft, {r.get('repaired',0)} repariert")
+    except Exception as e:
+        results.append(f"Mismatch-Check error: {e}")
+    # 2. Produkte ohne Bild mit Pexels-Bild versorgen
     try:
         from modules.shopify_full_autonomy import fix_missing_images
-        r = await fix_missing_images(limit=30)
-        return f"Shopify ImageFix: {r.get('fixed',0)} Produkte mit Bild | no_image_total={r.get('no_image_total',0)}"
+        r2 = await fix_missing_images(limit=30)
+        results.append(f"Missing-Fix: {r2.get('fixed',0)} Bilder ergänzt")
     except Exception as e:
-        return f"Shopify ImageFix error: {e}"
+        results.append(f"Missing-Fix error: {e}")
+    return " | ".join(results)
 
 
 async def task_shopify_title_fix() -> str:
@@ -8668,6 +8678,7 @@ TASKS = [
     ("ebay_blast",            task_ebay_blast,          10800, 490),  # 3h — eBay multi blast
     ("shopify_fix_tags",      task_shopify_fix_tags,     3600,  530),  # 1h — T-Shirt SEO tags
     ("shopify_cleanup_cols",  task_shopify_cleanup_collections, 86400, 570),  # 24h — leere Collections
+    ("shopify_image_scan",    task_shopify_image_fix,           43200, 565),  # 12h — Bilder-Validator: falsche/fehlende Bilder auto-reparieren
     ("shopify_gmc_meta",      task_shopify_gmc_metafields, 3600, 610),  # 1h — Google Shopping metafelder
     # ── Facebook/Instagram Token Auto-Refresh ────────────────────────────────
     ("fb_token_refresh",      task_fb_token_refresh,       86400, 3600),  # täglich — Token auto-erneuern vor Ablauf
@@ -9336,6 +9347,9 @@ class AutomationScheduler:
         "mass_outreach_research", "mass_outreach_morning", "mass_outreach_batch",
         "mass_outreach_evening", "mass_outreach_night", "mass_outreach",
         "email_outreach_bulk", "email_outreach", "outreach_bulk",
+        # Outreach Blast Morgen/Abend — UMGEHT Blocklist via outreach_blast_* Namen!
+        "outreach_blast_morning", "outreach_blast_evening", "outreach_blast",
+        "rotating_buyer_prospector",  # sucht Firmen + sendet Kalt-Emails
 
         # Affiliate-Recruiter (30% Provision Cold Emails)
         "affiliate_recruiter", "affiliate_recruiter_run", "affiliate_recruit",

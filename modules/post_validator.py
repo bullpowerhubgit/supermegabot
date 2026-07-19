@@ -124,6 +124,22 @@ _L1_BLOCKED = [
     r"not\s+approved",
     r"currently\s+unavailable",
     r"not\s+available\s+for\s+sale",
+    # DS24 / Shop Fehlerseiten — nie als Post veröffentlichen
+    r"wir\s+bitten\s+um\s+ihr\s+verst[aä]ndnis",
+    r"das\s+produkt\s+ist\s+aus\s+folgendem\s+grund\s+nicht\s+verf[uü]gbar",
+    r"produkt\s+(ist\s+)?nicht\s+verf[uü]gbar",
+    r"artikel\s+nicht\s+verf[uü]gbar",
+    r"diese\s+seite\s+existiert\s+nicht",
+    r"404\s*(not\s+found|fehler|seite)",
+    r"403\s*(forbidden|verboten)",
+    r"500\s*(internal\s+server|fehler)",
+    r"access\s+denied",
+    r"zugriff\s+verweigert",
+    r"ihre\s+sitzung\s+ist\s+abgelaufen",
+    r"session\s+expired",
+    r"bitte\s+melden\s+sie\s+sich\s+an",
+    r"please\s+log\s+in",
+    r"shop\s+ist\s+(vor[uü]bergehend\s+)?geschlossen",
 ]
 _L1_RE = [re.compile(p, re.IGNORECASE | re.DOTALL) for p in _L1_BLOCKED]
 
