@@ -259,9 +259,9 @@ def _check_url_live(url: str) -> Tuple[bool, str]:
             clean, method="GET",
             headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
         )
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=10) as r:
             status = r.status
-            body   = r.read(8192).decode("utf-8", errors="ignore").lower()
+            body   = r.read(65536).decode("utf-8", errors="ignore").lower()
     except urllib.error.HTTPError as e:
         return e.code < 400, f"HTTP {e.code}"
     except urllib.error.URLError as e:
@@ -272,10 +272,10 @@ def _check_url_live(url: str) -> Tuple[bool, str]:
     if status >= 400:
         return False, f"HTTP {status}"
 
-    # Titel extrahieren für genaueren Check
+    # Titel extrahieren + vollständigen Body prüfen (nicht nur erste 3000 Zeichen!)
     title_m = re.search(r"<title[^>]*>(.*?)</title>", body, re.DOTALL)
     title   = title_m.group(1).strip() if title_m else ""
-    check   = title + " " + body[:3000]
+    check   = title + " " + body  # KRITISCH: vollständiger Body, nicht body[:3000]!
 
     for marker in _UNAVAIL_MARKERS:
         if marker in check:
