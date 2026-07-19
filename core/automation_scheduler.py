@@ -7954,6 +7954,16 @@ async def task_omega_revenue_brain() -> str:
         return f"OMEGA Brain Fehler: {e}"
 
 
+async def task_shopify_manager_cycle() -> str:
+    """Shopify Manager: AB-Tests + SEO + Preise + Qualitäts-Audit (täglich)."""
+    try:
+        from modules.shopify_manager import run_manager_cycle
+        result = await run_manager_cycle()
+        return result.get("summary", "ShopifyManager: Zyklus abgeschlossen")
+    except Exception as e:
+        return f"ShopifyManager Fehler: {e}"
+
+
 async def task_organic_traffic_post() -> str:
     """Organischer Traffic: PostGuard-geprüfte Posts auf 7 Plattformen (alle 6h, 4x täglich)."""
     try:
@@ -9079,7 +9089,9 @@ TASKS = [
     # ── eBay / Amazon Marketing ────────────────────────────────────────────────
     ("ebay_amazon_marketing", task_ebay_amazon_marketing, 43200, 6000), # 12h — Trends + Affiliate-Links + Import-Kandidaten
     # ── Organischer Traffic Manager — 7 Plattformen, PostGuard-geprüft ────────
-    ("organic_traffic_post",  task_organic_traffic_post,  21600, 6100), # 6h — 4x täglich organische Posts (IG, FB, TW, LI, PN, Reddit, TT)
+    ("organic_traffic_post",   task_organic_traffic_post,   21600, 6100), # 6h — 4x täglich organische Posts (IG, FB, TW, LI, PN, Reddit, TT)
+    # ── Shopify Manager Assistant — AB-Tests + SEO + Preise + Qualität ───────
+    ("shopify_manager_cycle",  task_shopify_manager_cycle,  86400, 6200), # täglich — vollständiger Shopify-Manager-Zyklus
 ]
 
 

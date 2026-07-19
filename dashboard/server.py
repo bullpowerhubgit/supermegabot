@@ -14559,6 +14559,81 @@ async def create_app():
     app.router.add_get( "/api/post-guardian/blocked", handle_post_guardian_blocked)
     log.info("Post-Guardian routes registered (/api/post-guardian/*)")
 
+    # ── Shopify Manager Assistant routes ─────────────────────────────────────
+    async def handle_shopify_manager_status(request):
+        """GET /api/shopify/manager/status — ShopifyManager Status + letzte Aktionen."""
+        try:
+            from modules.shopify_manager import get_manager_status
+            return web.json_response(await get_manager_status())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_shopify_manager_cycle(request):
+        """POST /api/shopify/manager/cycle — Vollständigen Manager-Zyklus starten.
+        AB-Tests + Gewinner + SEO + Preise + Qualitäts-Audit."""
+        try:
+            from modules.shopify_manager import run_manager_cycle
+            return web.json_response(await run_manager_cycle())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_shopify_manager_ab(request):
+        """POST /api/shopify/manager/ab-tests — A/B Tests starten."""
+        try:
+            from modules.shopify_manager import run_ab_tests
+            return web.json_response(await run_ab_tests())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_shopify_manager_seo(request):
+        """POST /api/shopify/manager/seo — SEO-Optimierung (Titel, Meta, Beschreibungen)."""
+        try:
+            body = await request.json() if request.content_length else {}
+            limit = int(body.get("limit", 20))
+            from modules.shopify_manager import run_seo_optimization
+            return web.json_response(await run_seo_optimization(limit))
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_shopify_manager_prices(request):
+        """POST /api/shopify/manager/prices — Preis-Optimierung (.99 Psychologie)."""
+        try:
+            from modules.shopify_manager import run_price_optimization
+            return web.json_response(await run_price_optimization())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_shopify_manager_quality(request):
+        """GET /api/shopify/manager/quality — Qualitäts-Audit (fehlende Bilder, Beschreibungen, etc.)."""
+        try:
+            from modules.shopify_manager import run_quality_audit
+            return web.json_response(await run_quality_audit())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_shopify_check_duplicate(request):
+        """POST /api/shopify/manager/check-duplicate — Prüfe ob Produkt bereits importiert.
+        Body: {product_id?, title?}"""
+        try:
+            body = await request.json()
+            from modules.shopify_manager import is_duplicate_product
+            is_dup = is_duplicate_product(
+                product_id=body.get("product_id"),
+                title=body.get("title"),
+            )
+            return web.json_response({"is_duplicate": is_dup})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/shopify/manager/status",           handle_shopify_manager_status)
+    app.router.add_post("/api/shopify/manager/cycle",            handle_shopify_manager_cycle)
+    app.router.add_post("/api/shopify/manager/ab-tests",         handle_shopify_manager_ab)
+    app.router.add_post("/api/shopify/manager/seo",              handle_shopify_manager_seo)
+    app.router.add_post("/api/shopify/manager/prices",           handle_shopify_manager_prices)
+    app.router.add_get( "/api/shopify/manager/quality",          handle_shopify_manager_quality)
+    app.router.add_post("/api/shopify/manager/check-duplicate",  handle_shopify_check_duplicate)
+    log.info("Shopify Manager routes registered (/api/shopify/manager/*)")
+
     # ── Bounce Auto-Fixer routes ──────────────────────────────────────────────
     async def handle_bounce_fix_run(request):
         """POST /api/email/bounce-fix — Sofort Bounce-Scan + Auto-Fix ausführen."""
