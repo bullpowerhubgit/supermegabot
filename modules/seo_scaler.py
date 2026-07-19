@@ -47,7 +47,7 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
 async def _shopify_get(path: str) -> Any:
     try:
         from modules import shopify_client as sc
-        return await sc.get(path)
+        return await sc.rest_get(path)
     except Exception as e:
         log.warning("Shopify GET %s: %s", path, e)
         return {}
@@ -56,8 +56,8 @@ async def _shopify_get(path: str) -> Any:
 async def _shopify_put(path: str, data: dict) -> bool:
     try:
         from modules import shopify_client as sc
-        r = await sc.put(path, data)
-        return bool(r)
+        r = await sc.rest_put(path, data)
+        return bool(r and not r.get("error"))
     except Exception as e:
         log.warning("Shopify PUT %s: %s", path, e)
         return False
@@ -163,7 +163,7 @@ async def create_bundle(name: str, product_ids: List[int], price: float, descrip
                 "variants": [{"price": str(price), "inventory_management": "shopify", "inventory_quantity": 50}],
             }
         }
-        result = await sc.post("products.json", product_data)
+        result = await sc.rest_post("products.json", product_data)
         if result and result.get("product", {}).get("id"):
             log.info("Bundle erstellt: %s (€%.0f)", title, price)
             return True
