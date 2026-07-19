@@ -244,19 +244,24 @@ class PostingCoordinator:
         if dup:
             return {"ok": False, "reason": "Duplikat-Content (bereits heute gepostet)"}
 
-        # 3. PostGuard
+        # 3. PostGuard — Inhaltsprüfung + Auto-Reparatur
         guard_score = 0
         if guard_check:
             try:
-                from modules.post_guard import check_post
-                guard_result = await check_post(platform=platform, content=content)
-                guard_score = guard_result.get("score", 0)
-                if not guard_result.get("approved", True):
-                    reason = guard_result.get("reason", "PostGuard abgelehnt")
-                    log.warning("[%s] PostGuard ABGELEHNT: %s", system, reason)
-                    return {"ok": False, "reason": f"PostGuard: {reason}"}
+                from modules.post_guardian import check_post, auto_repair_post
+                guard_result = await check_post(platform, content)
+                if not guard_result.get("ok", True):
+                    rep = await auto_repair_post(content, platform)
+                    if rep.get("ok"):
+                        content = rep["repaired_text"]
+                        log.info("[%s] PostGuardian Auto-Reparatur: %s", system, rep.get("changes", []))
+                        guard_result = await check_post(platform, content)
+                    if not guard_result.get("ok", True):
+                        reason = "; ".join(guard_result.get("errors", ["unbekannt"])[:2])
+                        log.warning("[%s] PostGuardian BLOCKIERT [%s]: %s", system, platform, reason)
+                        return {"ok": False, "reason": f"PostGuard: {reason}"}
             except Exception as e:
-                log.warning("PostGuard nicht verfügbar: %s", e)
+                log.warning("PostGuardian nicht verfügbar: %s", e)
 
         # 4. Lock erwerben
         if not self.acquire_lock(system, platform):
