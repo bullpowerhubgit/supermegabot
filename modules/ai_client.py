@@ -1,11 +1,23 @@
 #!/usr/bin/env python3
 """
-API Hunt — Autonomes KI-Fallback-System (IMMER AN)
-Kette: OpenClaw/Ollama (lokal) → Groq → DeepSeek → OpenRouter (5 Modelle) → Gemini → Anthropic → OpenAI → Perplexity → Ollama
-Circuit Breaker: nach 3 Fehlern 10 min deaktiviert, dann auto-re-enable
-Background Health Monitor: alle 5 min alle Provider testen
-Telegram-Alert bei Provider-Wechsel und Ausfällen
-OpenClaw ist IMMER Schritt 0 — kostenlos, kein Rate-Limit, kein Datenschutzproblem
+API Hunt — Autonomes KI-Fallback-System (IMMER AN) — Fast kostenlos!
+
+Kette (KOSTENLOSE Provider ZUERST):
+  0. OpenClaw/Ollama (lokal, gratis)
+  1. Groq            (gratis-Tier: llama/gemma/mixtral)
+  2. Cerebras        (gratis, sehr schnell)
+  3. SambaNova       (gratis, bis 405B)
+  4. Mistral         (gratis-Tier)
+  5. DeepSeek        (günstig)
+  6. OpenRouter      (13 :free Modelle — kein Cent!)
+  7. Gemini          (15 RPM gratis)
+  8. OpenAI          (paid, nur Notfall)
+  9. Perplexity      (paid, nur Notfall)
+ 12. APIHunt Bridge  (Together, Fireworks, Cohere, AI21, Lepton, Cloudflare,
+                      Anthropic [3 Key-Rotation], Pollinations [kein Key!])
+
+Anthropic wird NUR in der Bridge versucht (Key-Rotation: KEY/KEY_2/KEY_3).
+Circuit-Breaker: nach 3 Fehlern 10 min pausiert, dann auto-re-enable.
 """
 from __future__ import annotations
 
@@ -63,16 +75,23 @@ _OPENCLAW_CHECK_INTERVAL = 60  # Sekunden zwischen Checks
 
 _OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
 
-# ── Kostenlose OpenRouter-Modelle (Fallback-Rotation) ──────────────────────────
+# ── Kostenlose OpenRouter-Modelle (alle :free — kein Cent Kosten) ──────────────
 _OR_FREE_MODELS = [
-    "google/gemma-4-31b-it:free",
-    "openai/gpt-oss-20b:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "deepseek/deepseek-r1-0528:free",
-    "tngtech/deepseek-r1t-chimera:free",
+    # Sehr schnell
+    "meta-llama/llama-3.1-8b-instruct:free",
+    "google/gemma-2-9b-it:free",
     "qwen/qwen3-0.6b:free",
+    # Mittlere Größe
+    "mistralai/mistral-7b-instruct:free",
+    "meta-llama/llama-3.2-3b-instruct:free",
+    "deepseek/deepseek-r1-0528:free",
+    # Große Modelle (wenn verfügbar)
+    "google/gemma-4-31b-it:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen/qwen3-next-80b-a3b-instruct:free",
+    "nvidia/nemotron-3-super-120b-a12b:free",
+    "tngtech/deepseek-r1t-chimera:free",
+    "nousresearch/hermes-3-llama-3.1-405b:free",
 ]
 
 # ── Cerebras Modelle (kostenlos, sehr schnell) ─────────────────────────────────
@@ -619,7 +638,67 @@ async def _ai_complete_inner(
                 log.debug("Groq/%s error: %s", _gm, e)
                 _cb_fail(_gm_cb)
 
-    # ── 2. DeepSeek (günstig, gut) ─────────────────────────────────────────────
+    # ── 2. Cerebras (kostenlos, sehr schnell) ──────────────────────────────────
+    if _cerebras() and _cb_ok("Cerebras"):
+        for model in _CEREBRAS_MODELS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(_CEREBRAS_BASE,
+                        headers={"Authorization": f"Bearer {_cerebras()}", "Content-Type": "application/json"},
+                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("Cerebras")
+                                log.debug("Cerebras OK model=%s", model)
+                                return text
+            except Exception as e:
+                log.debug("Cerebras %s: %s", model, e)
+        _cb_fail("Cerebras")
+
+    # ── 3. SambaNova (kostenlos, 405B verfügbar) ────────────────────────────────
+    if _sambanova() and _cb_ok("SambaNova"):
+        for model in _SAMBANOVA_MODELS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                    async with s.post(_SAMBANOVA_BASE,
+                        headers={"Authorization": f"Bearer {_sambanova()}", "Content-Type": "application/json"},
+                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("SambaNova")
+                                log.debug("SambaNova OK model=%s", model)
+                                return text
+            except Exception as e:
+                log.debug("SambaNova %s: %s", model, e)
+        _cb_fail("SambaNova")
+
+    # ── 4. Mistral API (kostenlos Tier) ─────────────────────────────────────────
+    if _mistral() and _cb_ok("Mistral"):
+        for model in _MISTRAL_MODELS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(_MISTRAL_BASE,
+                        headers={"Authorization": f"Bearer {_mistral()}", "Content-Type": "application/json"},
+                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
+                            if text:
+                                _cb_success("Mistral")
+                                log.debug("Mistral OK model=%s", model)
+                                return text
+            except Exception as e:
+                log.debug("Mistral %s: %s", model, e)
+        _cb_fail("Mistral")
+
+    # ── 5. DeepSeek (günstig, gut) ─────────────────────────────────────────────
     if _deepseek() and _cb_ok("DeepSeek"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
@@ -648,7 +727,7 @@ async def _ai_complete_inner(
             log.debug("DeepSeek error: %s", e)
             _cb_fail("DeepSeek")
 
-    # ── 3. OpenRouter — 5 kostenlose Modelle rotation ──────────────────────────
+    # ── 6. OpenRouter — freie Modelle Rotation ─────────────────────────────────
     if _openrouter() and _cb_ok("OpenRouter"):
         or_fail_count = 0
         for model in _OR_FREE_MODELS:
@@ -687,7 +766,7 @@ async def _ai_complete_inner(
         if or_fail_count >= len(_OR_FREE_MODELS):
             _cb_fail("OpenRouter")
 
-    # ── 4. Gemini (3 kostenlose Modelle) ──────────────────────────────────────
+    # ── 7. Gemini (3 kostenlose Modelle) ──────────────────────────────────────
     if _gemini() and _cb_ok("Gemini"):
         if _messages is not None:
             parts = []
@@ -737,85 +816,9 @@ async def _ai_complete_inner(
         if not gemini_hard_fail and not _cb_ok("Gemini"):
             pass  # bereits gesetzt
 
-    # ── 5. Anthropic Claude Haiku (Multi-Key-Rotation) ────────────────────────
-    try:
-        from modules.ai_budget_guard import is_allowed as _guard_ant, record_usage as _record_ant
-        _ant_ok, _ant_reason = _guard_ant()
-    except Exception as _ge:
-        _ant_ok, _ant_reason = False, f"guard_import_failed:{_ge}"  # FAIL-CLOSED
-    if not _ant_ok:
-        log.debug("AIBudgetGuard: Anthropic blockiert — %s", _ant_reason)
-    elif _cb_ok("Anthropic"):
-        _ant_keys = _anthropic_all_keys()
-        _ant_all_empty = True
-        for _ant_key in _ant_keys:
-            if not _ant_key:
-                continue
-            _ant_all_empty = False
-            try:
-                msg_list = [m for m in messages if m.get("role") != "system"]
-                sys_text = system or next((m["content"] for m in messages if m.get("role") == "system"), "")
-                payload = {
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": max_tokens,
-                    "messages": msg_list or [{"role": "user", "content": prompt}],
-                }
-                if sys_text:
-                    payload["system"] = sys_text
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                    async with s.post(
-                        "https://api.anthropic.com/v1/messages",
-                        headers={"x-api-key": _ant_key, "anthropic-version": "2023-06-01",
-                                 "content-type": "application/json"},
-                        json=payload,
-                    ) as r:
-                        if r.status == 200:
-                            d = await r.json(content_type=None)
-                            text = (d.get("content") or [{"text": ""}])[0].get("text", "")
-                            if text:
-                                _cb_success("Anthropic")
-                                try:
-                                    usage = d.get("usage", {})
-                                    _record_ant(usage.get("input_tokens", 0), usage.get("output_tokens", 0))
-                                except Exception:
-                                    pass
-                                return text
-                            break  # 200 aber kein Text → nächsten Key versuchen
-                        if r.status in (400, 402, 529):
-                            body = await r.json(content_type=None)
-                            is_credit = "credit balance" in str(body).lower() or "too low" in str(body).lower()
-                            if is_credit:
-                                log.debug("Anthropic Key (…%s): Credits leer — nächsten Key versuchen", _ant_key[-6:])
-                                continue  # nächsten Key versuchen
-                            else:
-                                log.warning("Anthropic: Fehler %s — 1h deaktiviert", r.status)
-                                if "Anthropic" not in _CB:
-                                    _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
-                                _CB["Anthropic"]["until"] = time.time() + 3600
-                                break
-                        elif r.status in (401, 403):
-                            log.debug("Anthropic Key (…%s): ungültig — nächsten Key versuchen", _ant_key[-6:])
-                            continue
-                        else:
-                            _cb_fail("Anthropic")
-                            break
-            except Exception as e:
-                log.debug("Anthropic Key error: %s", e)
-                continue
-        else:
-            # Alle Keys erschöpft (for-loop lief durch ohne break)
-            if not _ant_all_empty:
-                log.warning("Anthropic: ALLE %d KEYS OHNE CREDITS — 24h deaktiviert. console.anthropic.com aufladen!", len(_ant_keys))
-                asyncio.ensure_future(_tg_send(
-                    "🚨 ANTHROPIC CREDITS LEER (alle Keys)!\n"
-                    "Alle AI-Anfragen laufen über Groq/OpenRouter/OpenAI.\n"
-                    "Bitte auf console.anthropic.com Guthaben aufladen."
-                ))
-                if "Anthropic" not in _CB:
-                    _CB["Anthropic"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
-                _CB["Anthropic"]["until"] = time.time() + 86400  # 24h
+    # ── Anthropic → wird in der APIHunt Bridge (Slot 12) mit Multi-Key-Rotation behandelt ──
 
-    # ── 6. OpenAI GPT-4o-mini ─────────────────────────────────────────────────
+    # ── 8. OpenAI GPT-4o-mini ─────────────────────────────────────────────────
     try:
         from modules.ai_budget_guard import is_allowed_oai as _guard_oai
         _oai_ok, _oai_reason = _guard_oai()
@@ -855,7 +858,7 @@ async def _ai_complete_inner(
             log.debug("OpenAI error: %s", e)
             _cb_fail("OpenAI")
 
-    # ── 7. Perplexity ─────────────────────────────────────────────────────────
+    # ── 9. Perplexity ─────────────────────────────────────────────────────────
     try:
         from modules.ai_budget_guard import is_allowed_pplx as _guard_pplx
         _pplx_ok, _pplx_reason = _guard_pplx()
@@ -899,70 +902,9 @@ async def _ai_complete_inner(
                 log.debug("Perplexity error: %s", e)
                 _cb_fail("Perplexity")
 
-    # ── 8. Cerebras (kostenlos, sehr schnell) ──────────────────────────────────
-    if _cerebras() and _cb_ok("Cerebras"):
-        for model in _CEREBRAS_MODELS:
-            try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                    async with s.post(_CEREBRAS_BASE,
-                        headers={"Authorization": f"Bearer {_cerebras()}", "Content-Type": "application/json"},
-                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
-                    ) as r:
-                        if r.status == 200:
-                            d = await r.json(content_type=None)
-                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
-                            if text:
-                                _cb_success("Cerebras")
-                                log.info("APIHunt: Cerebras OK model=%s", model)
-                                return text
-            except Exception as e:
-                log.debug("Cerebras %s: %s", model, e)
-        _cb_fail("Cerebras")
-
-    # ── 9. SambaNova (kostenlos) ────────────────────────────────────────────────
-    if _sambanova() and _cb_ok("SambaNova"):
-        for model in _SAMBANOVA_MODELS:
-            try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                    async with s.post(_SAMBANOVA_BASE,
-                        headers={"Authorization": f"Bearer {_sambanova()}", "Content-Type": "application/json"},
-                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
-                    ) as r:
-                        if r.status == 200:
-                            d = await r.json(content_type=None)
-                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
-                            if text:
-                                _cb_success("SambaNova")
-                                log.info("APIHunt: SambaNova OK model=%s", model)
-                                return text
-            except Exception as e:
-                log.debug("SambaNova %s: %s", model, e)
-        _cb_fail("SambaNova")
-
-    # ── 10. Mistral API ─────────────────────────────────────────────────────────
-    if _mistral() and _cb_ok("Mistral"):
-        for model in _MISTRAL_MODELS:
-            try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                    async with s.post(_MISTRAL_BASE,
-                        headers={"Authorization": f"Bearer {_mistral()}", "Content-Type": "application/json"},
-                        json={"model": model, "messages": messages, "max_tokens": max_tokens, "temperature": 0.7},
-                    ) as r:
-                        if r.status == 200:
-                            d = await r.json(content_type=None)
-                            text = (d.get("choices") or [{}])[0].get("message", {}).get("content", "")
-                            if text:
-                                _cb_success("Mistral")
-                                log.info("APIHunt: Mistral OK model=%s", model)
-                                return text
-            except Exception as e:
-                log.debug("Mistral %s: %s", model, e)
-        _cb_fail("Mistral")
-
-    # ── 12. APIHunt Bridge — OpenAI, Together, Fireworks, Gemini, Cohere, AI21,
-    #        Lepton, Cloudflare, Pollinations (kein Key) ────────────────────────
-    # Autonomer Wechsel: Circuit-Breaker in api_hunt_ai_bridge.py skippt ausgefallene
-    # Provider automatisch und versucht den nächsten.
+    # ── 12. APIHunt Bridge — Together, Fireworks, Cohere, AI21, Lepton,
+    #        Cloudflare, Anthropic (Key-Rotation), Pollinations (kein Key) ───────
+    # Autonomer Wechsel: Circuit-Breaker skippt ausgefallene Provider automatisch.
     try:
         from modules.api_hunt_ai_bridge import try_bridge_providers
         _bridge_result = await try_bridge_providers(messages, max_tokens=max_tokens)

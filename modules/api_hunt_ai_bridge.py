@@ -1,23 +1,24 @@
 """
-APIHunt AI Bridge — Nil wieder ohne API.
+APIHunt AI Bridge — Nie wieder ohne API.
 
-Verwaltet ALLE kostenlosen AI-Provider automatisch.
+Verwaltet ALLE AI-Provider automatisch (kostenlos bis paid-Fallback).
 Wenn ein Key fehlt, wird der Anbieter übersprungen.
-Wenn alle bezahlten Provider leer sind → Pollinations.ai (kein Key nötig).
+Wenn alle bezahlten Provider leer/erschöpft sind → Pollinations.ai (kein Key nötig).
 
 Neue Provider werden vom free_api_hunt_daemon.py in discovered_apis gespeichert
 und hier automatisch als Fallback eingebunden.
 
-Provider-Übersicht (alle kostenlos / free-tier):
+Provider-Übersicht:
   0. OpenAI (OPENAI_API_KEY)
-  1. Together AI (TOGETHER_API_KEY)   — $25 Gratis-Credit beim Signup
-  2. Fireworks AI (FIREWORKS_API_KEY) — $1/Monat free
-  3. Google Gemini (GOOGLE_API_KEY)   — 15 RPM free
-  4. Cohere (COHERE_API_KEY)          — 1000 req/Monat free
-  5. AI21 Labs (AI21_API_KEY)         — free tier
-  6. Lepton AI (LEPTON_API_KEY)       — kostenlose Modelle
-  7. Cloudflare AI (CF_API_TOKEN + CF_ACCOUNT_ID)  — Workers AI gratis
-  8. Pollinations.ai                  — KEIN KEY NÖTIG (absoluter Notfall)
+  1. Together AI (TOGETHER_API_KEY)         — $25 Gratis-Credit beim Signup
+  2. Fireworks AI (FIREWORKS_API_KEY)       — $1/Monat free
+  3. Google Gemini (GOOGLE_API_KEY)         — 15 RPM free
+  4. Cohere (COHERE_API_KEY)               — 1000 req/Monat free
+  5. AI21 Labs (AI21_API_KEY)              — free tier
+  6. Lepton AI (LEPTON_API_KEY)            — kostenlose Modelle
+  7. Cloudflare AI (CF_API_TOKEN + CF_ACCOUNT_ID) — Workers AI gratis
+  8. Anthropic Claude (ANTHROPIC_API_KEY/_2/_3) — Key-Rotation, sobald Credits da
+  9. Pollinations.ai                        — KEIN KEY NÖTIG (absoluter Notfall)
 """
 
 from __future__ import annotations
@@ -42,6 +43,15 @@ def _ai21()        -> str: return os.getenv("AI21_API_KEY", "")
 def _lepton()      -> str: return os.getenv("LEPTON_API_KEY", "")
 def _cf_token()    -> str: return os.getenv("CF_API_TOKEN", os.getenv("CLOUDFLARE_API_TOKEN", ""))
 def _cf_account()  -> str: return os.getenv("CF_ACCOUNT_ID", os.getenv("CLOUDFLARE_ACCOUNT_ID", ""))
+
+def _anthropic_bridge_keys() -> list:
+    """Alle Anthropic-Keys für Bridge-Rotation (unabhängig von ANTHROPIC_ENABLED)."""
+    keys = []
+    for env in ("ANTHROPIC_API_KEY", "ANTHROPIC_API_KEY_2", "ANTHROPIC_API_KEY_3"):
+        k = os.getenv(env, "")
+        if k and k not in keys:
+            keys.append(k)
+    return keys
 
 # ── Modell-Listen ──────────────────────────────────────────────────────────────
 _OPENAI_MODELS = ["gpt-4o-mini", "gpt-3.5-turbo"]
@@ -288,7 +298,57 @@ async def try_bridge_providers(messages: list, max_tokens: int = 800) -> str:
         except Exception as e:
             log.debug("Bridge Cloudflare: %s", e)
 
-    # ── 8. Pollinations.ai — KEIN KEY, absoluter Notfall ──────────────────────
+    # ── 8. Anthropic Claude (Key-Rotation: KEY / KEY_2 / KEY_3) ──────────────
+    _ant_keys = _anthropic_bridge_keys()
+    if _ant_keys and _cb_ok_shared("Anthropic"):
+        _ant_hit = False
+        for _ant_key in _ant_keys:
+            try:
+                _msg_list = [m for m in messages if m.get("role") != "system"]
+                _sys_text = next((m.get("content", "") for m in messages if m.get("role") == "system"), "")
+                _ant_payload = {
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": max_tokens,
+                    "messages": _msg_list or messages,
+                }
+                if _sys_text:
+                    _ant_payload["system"] = _sys_text
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                    async with s.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={"x-api-key": _ant_key, "anthropic-version": "2023-06-01",
+                                 "content-type": "application/json"},
+                        json=_ant_payload,
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = (d.get("content") or [{"text": ""}])[0].get("text", "")
+                            if text:
+                                log.info("Bridge: Anthropic OK (key …%s)", _ant_key[-6:])
+                                _ant_hit = True
+                                return text
+                        elif r.status in (400, 402, 529):
+                            _body = await r.json(content_type=None)
+                            if "credit balance" in str(_body).lower():
+                                log.debug("Bridge: Anthropic key …%s: Credits leer — nächster Key", _ant_key[-6:])
+                                continue  # nächsten Key versuchen
+                            _cb_fail("Anthropic", 3600)
+                            break
+                        elif r.status in (401, 403):
+                            log.debug("Bridge: Anthropic key …%s: ungültig", _ant_key[-6:])
+                            continue
+                        else:
+                            _cb_fail("Anthropic", 300)
+                            break
+            except Exception as e:
+                log.debug("Bridge Anthropic key …%s: %s", _ant_key[-6:], e)
+                continue
+        if not _ant_hit:
+            # Alle Keys erschöpft → 24h sperren
+            _LOCAL_CB["Anthropic"] = {"until": time.time() + 86400}
+            log.warning("Bridge: Alle Anthropic-Keys ohne Credits → 24h gesperrt")
+
+    # ── 9. Pollinations.ai — KEIN KEY, absoluter Notfall ──────────────────────
     if _cb_ok("Pollinations"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
@@ -319,6 +379,7 @@ async def try_bridge_providers(messages: list, max_tokens: int = 800) -> str:
 
 def get_bridge_status() -> dict:
     """Zeigt welche Bridge-Provider verfügbar sind (Keys vorhanden)."""
+    _ant_k = _anthropic_bridge_keys()
     providers = {
         "OpenAI":      bool(_openai()),
         "Together":    bool(_together()),
@@ -328,7 +389,8 @@ def get_bridge_status() -> dict:
         "AI21":        bool(_ai21()),
         "Lepton":      bool(_lepton()),
         "Cloudflare":  bool(_cf_token() and _cf_account()),
-        "Pollinations": True,  # kein Key nötig
+        "Anthropic":   bool(_ant_k),  # alle 3 Keys werden rotiert
+        "Pollinations": True,          # kein Key nötig
     }
     active = [p for p, ok in providers.items() if ok]
     blocked = [p for p, v in _LOCAL_CB.items() if v.get("until", 0) > time.time()]
@@ -336,5 +398,6 @@ def get_bridge_status() -> dict:
         "available": active,
         "blocked_until": blocked,
         "total_active": len(active),
+        "anthropic_keys": len(_ant_k),
         "no_auth_fallback": "Pollinations.ai",
     }
