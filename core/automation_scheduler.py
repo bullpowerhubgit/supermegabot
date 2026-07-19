@@ -9434,6 +9434,10 @@ class AutomationScheduler:
     _ALWAYS_RUN = frozenset({
         "health", "system_health", "github_backup",
         "shopify_sync", "email_check", "email_daily_summary",
+        # Direkte Einnahmen-Tasks nie durch Posting-Pause blockieren
+        "mega_autonomy_cycle", "gumroad_full_setup", "stripe_catalog_sync",
+        "ds24_auto_approve", "shopify_manager_cycle", "shopify_image_scan",
+        "ebay_import_cycle", "amazon_affiliate_sync", "aliexpress_import_cycle",
     })
 
     # Revenue-First: nur Tasks die direkt Umsatz bringen
@@ -9446,6 +9450,10 @@ class AutomationScheduler:
         "buyer_pipeline", "revenue_agent_sync", "revenue_blitz",
         "upsell_sequence_run", "upsell_cycle", "klaviyo_flows",
         "b2b_prospecting", "free_ads_cycle",
+        # Neue Revenue-Tasks (2026-07-19)
+        "mega_autonomy_cycle", "gumroad_full_setup", "stripe_catalog_sync",
+        "ds24_auto_approve", "organic_traffic_post", "shopify_manager_cycle",
+        "ebay_import_cycle", "amazon_affiliate_sync", "aliexpress_import_cycle",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:

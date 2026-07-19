@@ -352,12 +352,8 @@ async def run_social_posts() -> dict:
 # ── 5. Email Revenue Blast ─────────────────────────────────────────────────────
 
 async def run_email_blast() -> dict:
-    try:
-        from modules.email_revenue_engine import lead_email_blaster
-        return await lead_email_blaster(max_per_run=50)
-    except Exception as exc:
-        log.warning("Email blast: %s", exc)
-        return {"ok": False, "error": str(exc)}
+    # DSGVO-Sperre 2026-07-19: Cold-Outreach an externe Firmen verboten
+    return {"ok": True, "sent": 0, "disabled": True, "reason": "cold_outreach_dsgvo_disabled"}
 
 
 # ── 6. Affiliate Mega Engine ───────────────────────────────────────────────────
