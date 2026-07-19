@@ -83,7 +83,13 @@ async def _shopify_auth() -> dict:
 
 
 def _shop_domain() -> str:
-    return os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
+    try:
+        from modules.shopify_client import _store_domain
+        return _store_domain() or "ineedit.com.co"
+    except Exception:
+        import re as _re
+        d = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
+        return _re.sub(r'^https?://', '', d).rstrip('/')
 
 
 def _api_version() -> str:
@@ -105,7 +111,7 @@ async def _gql(query: str, variables: dict = None) -> dict:
                     timeout=aiohttp.ClientTimeout(total=20),
                 ) as r:
                     if r.status == 429:
-                        wait = int(r.headers.get("Retry-After", backoff[attempt]))
+                        wait = int(float(r.headers.get("Retry-After", backoff[attempt])))
                         log.warning("Shopify rate-limited, warte %ds", wait)
                         await asyncio.sleep(wait)
                         continue
