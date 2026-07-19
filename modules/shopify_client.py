@@ -357,6 +357,38 @@ async def rest_get(endpoint: str) -> Dict:
     return {"error": "Shopify rate limit: max retries exceeded"}
 
 
+async def rest_post(endpoint: str, data: Dict) -> Dict:
+    """REST POST — Ressource erstellen (z.B. products.json)"""
+    if not HAS_AIOHTTP:
+        return {"error": "aiohttp not installed"}
+    await _shopify_throttle()
+    auth = await _get_best_token()
+    url = f"{_store_url()}/admin/api/{_api_version()}/{endpoint}"
+    try:
+        async with _client_session(20) as session:
+            async with session.post(url, headers=auth, json=data) as resp:
+                return await resp.json()
+    except Exception as e:
+        logger.warning("Shopify REST POST %s: %s", endpoint, e)
+        return {"error": str(e)}
+
+
+async def rest_put(endpoint: str, data: Dict) -> Dict:
+    """REST PUT — Ressource aktualisieren (z.B. products/123.json)"""
+    if not HAS_AIOHTTP:
+        return {"error": "aiohttp not installed"}
+    await _shopify_throttle()
+    auth = await _get_best_token()
+    url = f"{_store_url()}/admin/api/{_api_version()}/{endpoint}"
+    try:
+        async with _client_session(20) as session:
+            async with session.put(url, headers=auth, json=data) as resp:
+                return await resp.json()
+    except Exception as e:
+        logger.warning("Shopify REST PUT %s: %s", endpoint, e)
+        return {"error": str(e)}
+
+
 # ─── Convenience Functions ────────────────────────────────────────────────────
 
 async def get_products(limit: int = 20, status: str = "any") -> list:
