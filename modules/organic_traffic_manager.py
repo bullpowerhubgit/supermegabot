@@ -230,7 +230,11 @@ async def generate_content(platform: str, content_type: str = None, topic: str =
         max_chars=spec["max_chars"],
     )
 
-    text = await _ai(prompt, max_tokens=800)
+    text = await _ai(prompt, max_tokens=800) or ""
+
+    # Fallback wenn AI None/leer zurückgibt
+    if not text.strip():
+        text = f"🔥 {topic} — jetzt entdecken bei {SHOP_NAME}! {SHOP_URL} #SmartHome #Tech #Gadgets"
 
     # Reddit: split Titel / Text
     if platform == "reddit" and "|" in text:
@@ -434,7 +438,7 @@ def _log_post(platform: str, content: dict, result: dict, guard_errors: list = N
             content.get("text", "")[:150],
             str(result.get("result", {}).get("id", "")),
             time.time(),
-            int(result.get("ok", False)),
+            int(bool(result.get("ok", False))),
             result.get("error", "") or ("; ".join(guard_errors) if guard_errors else ""),
         ))
 
