@@ -15462,6 +15462,49 @@ async def create_app():
                     except Exception as e:
                         results["meta"] = {"ok": False, "error": str(e)[:60]}
 
+                # DS24 (Digistore24) — last 24h transactions
+                ds24_key = (
+                    os.getenv("DIGISTORE24_API_KEY_FULL") or
+                    os.getenv("DS24_API_KEY_FULL") or
+                    os.getenv("DIGISTORE24_API_KEY") or
+                    os.getenv("DS24_API_KEY", "")
+                )
+                if ds24_key and "-" in ds24_key:
+                    try:
+                        from datetime import datetime as _dt, timezone as _tz, timedelta as _td
+                        _now = _dt.now(_tz.utc)
+                        _since = (_now - _td(hours=24)).strftime("%Y-%m-%d")
+                        _today = _now.strftime("%Y-%m-%d")
+                        async with session.get(
+                            "https://www.digistore24.com/api/call/listTransactions/JSON/",
+                            headers={"X-DS-API-KEY": ds24_key},
+                            params={"from": _since, "to": _today, "page_no": 1, "page_size": 100},
+                            timeout=aiohttp.ClientTimeout(total=12)
+                        ) as r:
+                            if r.status == 200:
+                                d = await r.json(content_type=None)
+                                if d.get("result") == "success":
+                                    txns = d.get("data", {}).get("transaction_list", [])
+                                    rev = 0.0
+                                    for t in txns:
+                                        for f in ("amount", "transaction_amount", "earned_amount"):
+                                            try:
+                                                v = float(t.get(f, 0) or 0)
+                                                if v:
+                                                    rev += v
+                                                    break
+                                            except (TypeError, ValueError):
+                                                pass
+                                    results["ds24"] = {
+                                        "ok": True,
+                                        "orders_24h": len(txns),
+                                        "revenue_24h": round(rev, 2),
+                                    }
+                                else:
+                                    results["ds24"] = {"ok": False, "error": d.get("message", "API error")[:50]}
+                    except Exception as e:
+                        results["ds24"] = {"ok": False, "error": str(e)[:60]}
+
             results["ok"] = True
             results["timestamp"] = datetime.now(timezone.utc).isoformat()
             return web.Response(text=json.dumps(results), content_type="application/json")

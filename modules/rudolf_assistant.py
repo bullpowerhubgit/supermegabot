@@ -9,10 +9,40 @@ Import:
     from modules.rudolf_assistant import ask, ask_sync, clear_history
 """
 
+import re
 import logging
 from collections import deque
 
 log = logging.getLogger(__name__)
+
+
+def _clean_response(text: str) -> str:
+    """Strip model reasoning/thinking chains — returns only the final answer."""
+    if not text:
+        return text
+    # 1. <think>...</think> blocks (DeepSeek-R1, QwQ standard format)
+    cleaned = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+    if cleaned and cleaned != text:
+        return cleaned
+
+    # 2. Reasoning chain with system-prompt echo (Ollama reasoning models like QwQ-32B)
+    # Pattern: starts with bullet "* User Role:" which is a sign the model echoed the system prompt
+    if not re.search(r'(^|\n)\s*\*\s+User Role:', text):
+        return text
+
+    # Find position of the LAST bullet-point line and take everything after it
+    lines = text.split('\n')
+    last_bullet_idx = -1
+    for i, line in enumerate(lines):
+        if re.match(r'\s*\*', line):
+            last_bullet_idx = i
+
+    if last_bullet_idx >= 0 and last_bullet_idx < len(lines) - 1:
+        after = '\n'.join(lines[last_bullet_idx + 1:]).strip().strip('"').strip()
+        if after:
+            return after
+
+    return text
 
 _BASE = """Du bist Rudolfs persönliche Rechte Hand — KI-Assistent von Rudolf Sarkany.
 
@@ -397,6 +427,7 @@ async def ask(message: str, session_id: str = "default", context: str = "", mode
         answer = await ai_complete_chat(list(hist), system=_get_system(mode, context), max_tokens=2048)
         if not answer:
             answer = "⚠️ Alle AI-Provider gerade nicht erreichbar — bitte kurz warten."
+        answer = _clean_response(answer)
         hist.append({"role": "assistant", "content": answer})
         return answer
     except Exception as e:
@@ -415,6 +446,7 @@ def ask_sync(message: str, session_id: str = "default", context: str = "", mode:
         answer = ai_complete_chat_sync(list(hist), system=_get_system(mode, context), max_tokens=2048)
         if not answer:
             answer = "⚠️ Alle AI-Provider gerade nicht erreichbar — bitte kurz warten."
+        answer = _clean_response(answer)
         hist.append({"role": "assistant", "content": answer})
         return answer
     except Exception as e:
