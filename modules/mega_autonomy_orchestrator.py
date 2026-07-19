@@ -22,7 +22,9 @@ log = logging.getLogger("MegaAutonomy")
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
 
-SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+_raw_shopify = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+import re as _re_init
+SHOPIFY_DOMAIN  = _re_init.sub(r'^https?://', '', _raw_shopify).rstrip('/')
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOP_URL        = os.getenv("SHOPIFY_STORE_URL", "https://ineedit.com.co")

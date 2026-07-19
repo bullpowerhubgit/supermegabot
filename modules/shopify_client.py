@@ -18,10 +18,11 @@ logger = logging.getLogger(__name__)
 def _store_domain() -> str:
     # SHOPIFY_MYSHOPIFY_DOMAIN bevorzugen (Admin API braucht .myshopify.com)
     # SHOPIFY_SHOP_DOMAIN kann Custom Domain sein (z.B. ineedit.com.co) — nicht für API nutzbar
+    import re as _re
     d = os.getenv("SHOPIFY_MYSHOPIFY_DOMAIN") or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    d = _re.sub(r'^https?://', '', d).rstrip('/')  # Strip protocol if accidentally included
     if d and ".myshopify.com" not in d:
         # Custom Domain — aus SHOPIFY_STORE_URL extrahieren
-        import re as _re
         store_url = os.getenv("SHOPIFY_STORE_URL", "")
         m = _re.search(r'([\w-]+\.myshopify\.com)', store_url)
         if m:
@@ -284,7 +285,7 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
             async with _client_session(15) as session:
                 async with session.post(url, json=payload, headers=headers) as resp:
                     if resp.status == 429:
-                        wait = int(resp.headers.get("Retry-After", _backoff[attempt]))
+                        wait = int(float(resp.headers.get("Retry-After", _backoff[attempt])))
                         logger.warning(
                             "Shopify GraphQL 429, Versuch %d/3, warte %ds", attempt + 1, wait,
                         )
@@ -318,7 +319,7 @@ async def rest_get(endpoint: str) -> Dict:
             async with _client_session(15) as session:
                 async with session.get(url, headers=auth) as resp:
                     if resp.status == 429:
-                        wait = int(resp.headers.get("Retry-After", _backoff[attempt]))
+                        wait = int(float(resp.headers.get("Retry-After", _backoff[attempt])))
                         logger.warning(
                             "Shopify REST 429, Versuch %d/3, warte %ds", attempt + 1, wait,
                         )
