@@ -7964,6 +7964,38 @@ async def task_shopify_manager_cycle() -> str:
         return f"ShopifyManager Fehler: {e}"
 
 
+async def task_mega_autonomy_cycle() -> str:
+    """MegaAutonomy: Alle Plattformen parallel — eBay, Amazon, AliExpress, Klaviyo, DS24, Shopify (alle 4h)."""
+    try:
+        from modules.mega_autonomy_orchestrator import run_mega_autonomy_cycle
+        result = await run_mega_autonomy_cycle()
+        return result.get("summary", f"MegaAutonomy: {result.get('imported', 0)} Imports")
+    except Exception as e:
+        return f"MegaAutonomy Fehler: {e}"
+
+
+async def task_gumroad_full_setup() -> str:
+    """Gumroad: Alle 9 Produkte einrichten + PDFs hochladen (täglich)."""
+    try:
+        from modules.mega_autonomy_orchestrator import run_gumroad_full_setup
+        result = await run_gumroad_full_setup()
+        return (f"Gumroad Setup: {result.get('created', 0)} erstellt, "
+                f"{result.get('updated', 0)} updated, {result.get('files_uploaded', 0)} PDFs")
+    except Exception as e:
+        return f"Gumroad Setup Fehler: {e}"
+
+
+async def task_stripe_catalog_sync() -> str:
+    """Stripe: Produkt-Katalog synchronisieren (täglich)."""
+    try:
+        from modules.mega_autonomy_orchestrator import run_stripe_full_sync
+        result = await run_stripe_full_sync()
+        return (f"Stripe Sync: {result.get('created', 0)} angelegt, "
+                f"{result.get('updated', 0)} updated")
+    except Exception as e:
+        return f"Stripe Sync Fehler: {e}"
+
+
 async def task_ds24_auto_approve() -> str:
     """DS24 Auto-Approve: Inaktive Produkte automatisch aktivieren (alle 6h)."""
     try:
@@ -9108,6 +9140,12 @@ TASKS = [
     ("shopify_manager_cycle",  task_shopify_manager_cycle,  86400, 6200), # täglich — vollständiger Shopify-Manager-Zyklus
     # ── DS24 Auto-Approve — Inaktive Produkte automatisch aktivieren ──────────
     ("ds24_auto_approve",      task_ds24_auto_approve,      21600, 6300), # 6h — DS24 inaktive Produkte aktivieren
+    # ── MegaAutonomy — Alle Plattformen vollautonOM ───────────────────────────
+    ("mega_autonomy_cycle",    task_mega_autonomy_cycle,    14400,  300), # 4h — eBay+Amazon+AliExpress+Klaviyo+DS24
+    # ── Gumroad Setup — Alle Produkte + PDFs hochladen ───────────────────────
+    ("gumroad_full_setup",     task_gumroad_full_setup,     86400,  600), # täglich — 9 Produkte + PDFs
+    # ── Stripe Sync — Produkt-Katalog vollständig ────────────────────────────
+    ("stripe_catalog_sync",    task_stripe_catalog_sync,    86400,  900), # täglich — Stripe Produkte + Preise
 ]
 
 

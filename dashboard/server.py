@@ -15644,6 +15644,50 @@ async def create_app():
     except Exception as _e:
         log.warning(f"Telegram Master Dashboard startup failed: {_e}")
 
+    # ── MegaAutonomy Orchestrator Routen ────────────────────────────────────
+    try:
+        async def handle_mega_autonomy_status(request: web.Request) -> web.Response:
+            from modules.mega_autonomy_orchestrator import get_mega_autonomy_status
+            return web.Response(text=json.dumps(get_mega_autonomy_status()),
+                                content_type="application/json")
+
+        async def handle_mega_autonomy_run(request: web.Request) -> web.Response:
+            from modules.mega_autonomy_orchestrator import run_mega_autonomy_cycle
+            result = await run_mega_autonomy_cycle()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_gumroad_setup(request: web.Request) -> web.Response:
+            from modules.mega_autonomy_orchestrator import run_gumroad_full_setup
+            result = await run_gumroad_full_setup()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_stripe_sync(request: web.Request) -> web.Response:
+            from modules.mega_autonomy_orchestrator import run_stripe_full_sync
+            result = await run_stripe_full_sync()
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_ebay_import(request: web.Request) -> web.Response:
+            count = int(request.rel_url.query.get("count", 5))
+            from modules.mega_autonomy_orchestrator import run_ebay_import
+            result = await run_ebay_import(count=count)
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        async def handle_aliexpress_import(request: web.Request) -> web.Response:
+            count = int(request.rel_url.query.get("count", 5))
+            from modules.mega_autonomy_orchestrator import run_aliexpress_import
+            result = await run_aliexpress_import(count=count)
+            return web.Response(text=json.dumps(result), content_type="application/json")
+
+        app.router.add_get( "/api/mega-autonomy/status",     handle_mega_autonomy_status)
+        app.router.add_post("/api/mega-autonomy/run",         handle_mega_autonomy_run)
+        app.router.add_post("/api/gumroad/setup",             handle_gumroad_setup)
+        app.router.add_post("/api/stripe/catalog-sync",       handle_stripe_sync)
+        app.router.add_post("/api/ebay/import",               handle_ebay_import)
+        app.router.add_post("/api/aliexpress/import",         handle_aliexpress_import)
+        log.info("MegaAutonomy routes registered (6 routes)")
+    except Exception as _mega_e:
+        log.warning("MegaAutonomy routes failed: %s", _mega_e)
+
     # ── Automation Scheduler starten (131 Tasks) ─────────────────────────────
     try:
         from core.automation_scheduler import get_scheduler as _get_sched
