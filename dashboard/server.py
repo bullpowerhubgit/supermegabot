@@ -7298,8 +7298,48 @@ async def cors_middleware(request, handler):
 
 
 # ---------------------------------------------------------------------------
-# Auth Middleware — X-API-Key Validierung für alle /api/* Routen
+# Auth Middleware — X-API-Key + Rate-Limit + Brute-Force-Schutz
 # ---------------------------------------------------------------------------
+import collections
+
+_RATE_WINDOW  = 60        # Sekunden pro Fenster
+_RATE_LIMIT   = 120       # Max Requests/IP/Fenster (legitime Nutzung)
+_BAN_LIMIT    = 10        # Fehlgeschlagene Auth-Versuche bis IP-Ban
+_BAN_DURATION = 900       # Ban-Dauer: 15 Minuten
+
+_rate_counts: dict[str, list[float]] = collections.defaultdict(list)
+_auth_failures: dict[str, list[float]] = collections.defaultdict(list)
+_ip_banned_until: dict[str, float] = {}
+
+def _get_client_ip(request) -> str:
+    forwarded = request.headers.get("X-Forwarded-For", "")
+    return (forwarded.split(",")[0].strip() or request.remote or "unknown")
+
+def _is_rate_limited(ip: str) -> bool:
+    now = time.time()
+    window = now - _RATE_WINDOW
+    counts = _rate_counts[ip]
+    _rate_counts[ip] = [t for t in counts if t > window]
+    _rate_counts[ip].append(now)
+    return len(_rate_counts[ip]) > _RATE_LIMIT
+
+def _check_brute_force(ip: str, failed: bool) -> bool:
+    """Returns True if IP is banned. failed=True records a new failure."""
+    now = time.time()
+    banned_until = _ip_banned_until.get(ip, 0)
+    if now < banned_until:
+        return True
+    if failed:
+        window = now - _RATE_WINDOW
+        _auth_failures[ip] = [t for t in _auth_failures.get(ip, []) if t > window]
+        _auth_failures[ip].append(now)
+        if len(_auth_failures[ip]) >= _BAN_LIMIT:
+            _ip_banned_until[ip] = now + _BAN_DURATION
+            log.warning("🔒 IP %s gebannt für %ds — %d fehlgeschlagene Auth-Versuche",
+                        ip, _BAN_DURATION, len(_auth_failures[ip]))
+            return True
+    return False
+
 _AUTH_EXEMPT_EXACT = {
     "/health",
     "/api/digistore24/ipn",
@@ -7322,11 +7362,10 @@ if not os.getenv("DASHBOARD_SECRET"):
 
 @web.middleware
 async def auth_middleware(request, handler):
-    """Prüft X-API-Key für alle /api/-Routen.
-    Ausnahmen: /health, Webhook-Endpunkte, Feed-Routen.
-    Wird nur aktiv wenn DASHBOARD_SECRET gesetzt ist.
-    """
+    """X-API-Key Auth + Rate-Limit + Brute-Force-Schutz für alle /api/* Routen."""
+    ip = _get_client_ip(request)
     secret = os.getenv("DASHBOARD_SECRET", "")
+
     if secret and request.path.startswith("/api/"):
         path = request.path
         exempt = (
@@ -7339,22 +7378,35 @@ async def auth_middleware(request, handler):
             or path.startswith("/api/digistore24/")
             or path.startswith("/api/webhooks/")
             or path.startswith("/api/shopify/order-webhook")
-            # Sofia Voice — Twilio sendet keinen API-Key
             or path.startswith("/api/voice/incoming")
             or path.startswith("/api/voice/respond")
             or path.startswith("/api/voice/status")
             or path.startswith("/api/voice/outbound-twiml")
             or path.startswith("/api/voice/sms")
             or path.startswith("/api/voice/amd")
-            # Sofia Phone (Max) — ebenfalls Twilio-Callbacks
             or path.startswith("/api/phone/incoming")
             or path.startswith("/api/phone/status")
-            # Sofia SMS — Twilio sendet keinen API-Key
             or path.startswith("/api/sms/incoming")
         )
         if not exempt:
+            # 1. IP gebannt?
+            if _check_brute_force(ip, failed=False):
+                return web.json_response(
+                    {"ok": False, "error": "Too many failed attempts — IP temporarily blocked"},
+                    status=429,
+                )
+            # 2. Rate-Limit
+            if _is_rate_limited(ip):
+                log.warning("Rate-Limit [%s] %s", ip, path)
+                return web.json_response(
+                    {"ok": False, "error": f"Rate limit exceeded — max {_RATE_LIMIT} requests/{_RATE_WINDOW}s"},
+                    status=429,
+                )
+            # 3. API-Key prüfen
             api_key = request.headers.get("X-API-Key", "")
             if api_key != secret:
+                _check_brute_force(ip, failed=True)
+                log.warning("Auth FAIL [%s] %s", ip, path)
                 return web.json_response(
                     {"ok": False, "error": "Unauthorized — X-API-Key header required"},
                     status=401,
