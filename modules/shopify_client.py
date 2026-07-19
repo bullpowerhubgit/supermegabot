@@ -107,6 +107,27 @@ try:
 except ImportError:
     HAS_AIOHTTP = False
 
+# ─── Globaler Rate-Limiter (Shopify: max 2 REST-Calls/Sek, Bucket 40) ────────
+_shopify_lock: Optional[asyncio.Lock] = None
+_shopify_last_ts: float = 0.0
+_SHOPIFY_MIN_GAP: float = float(os.getenv("SHOPIFY_API_MIN_GAP", "0.55"))  # ~1.8 req/s
+
+def _get_shopify_lock() -> asyncio.Lock:
+    global _shopify_lock
+    if _shopify_lock is None:
+        _shopify_lock = asyncio.Lock()
+    return _shopify_lock
+
+async def _shopify_throttle() -> None:
+    """Leaky-Bucket: max 1 Shopify-API-Call alle 0.55s (~1.8/s) — verhindert 429 proaktiv."""
+    global _shopify_last_ts
+    async with _get_shopify_lock():
+        now = asyncio.get_event_loop().time()
+        gap = _SHOPIFY_MIN_GAP - (now - _shopify_last_ts)
+        if gap > 0:
+            await asyncio.sleep(gap)
+        _shopify_last_ts = asyncio.get_event_loop().time()
+
 
 def _client_session(total_timeout: int = 15):
     """Use threaded DNS resolution to avoid broken async DNS providers."""
@@ -244,10 +265,11 @@ async def _get_best_token() -> Dict[str, str]:
 
 
 async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
-    """Admin GraphQL Anfrage mit Auto-Auth und 429-Retry (max 3 Versuche, exp. Backoff)"""
+    """Admin GraphQL Anfrage mit Auto-Auth, Throttle und 429-Retry (max 3 Versuche, exp. Backoff)"""
     if not HAS_AIOHTTP:
         return {"errors": "aiohttp not installed"}
 
+    await _shopify_throttle()
     auth = await _get_best_token()
     headers = {"Content-Type": "application/json", **auth}
     payload = {"query": query}
@@ -255,7 +277,7 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
         payload["variables"] = variables
 
     url = f"{_store_url()}/admin/api/{_api_version()}/graphql.json"
-    _backoff = [4, 8, 16]
+    _backoff = [5, 10, 20]
 
     for attempt in range(3):
         try:
@@ -264,10 +286,10 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
                     if resp.status == 429:
                         wait = int(resp.headers.get("Retry-After", _backoff[attempt]))
                         logger.warning(
-                            "Shopify GraphQL rate-limited (429), Versuch %d/3, warte %ds",
-                            attempt + 1, wait,
+                            "Shopify GraphQL 429, Versuch %d/3, warte %ds", attempt + 1, wait,
                         )
                         await asyncio.sleep(wait)
+                        await _shopify_throttle()
                         continue
                     return await resp.json()
         except Exception as e:
@@ -282,13 +304,14 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
 
 
 async def rest_get(endpoint: str) -> Dict:
-    """REST GET: endpoint z.B. 'products/count.json' — mit 429-Retry (max 3 Versuche, exp. Backoff)"""
+    """REST GET mit Throttle und 429-Retry (max 3 Versuche, exp. Backoff)"""
     if not HAS_AIOHTTP:
         return {"error": "aiohttp not installed"}
 
+    await _shopify_throttle()
     auth = await _get_best_token()
     url = f"{_store_url()}/admin/api/{_api_version()}/{endpoint}"
-    _backoff = [4, 8, 16]
+    _backoff = [5, 10, 20]
 
     for attempt in range(3):
         try:
@@ -297,10 +320,10 @@ async def rest_get(endpoint: str) -> Dict:
                     if resp.status == 429:
                         wait = int(resp.headers.get("Retry-After", _backoff[attempt]))
                         logger.warning(
-                            "Shopify REST rate-limited (429), Versuch %d/3, warte %ds",
-                            attempt + 1, wait,
+                            "Shopify REST 429, Versuch %d/3, warte %ds", attempt + 1, wait,
                         )
                         await asyncio.sleep(wait)
+                        await _shopify_throttle()
                         continue
                     return await resp.json()
         except Exception as e:
