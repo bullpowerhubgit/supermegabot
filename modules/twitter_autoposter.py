@@ -165,16 +165,22 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
         log.error("NeverTwice fail-closed: %s", e)
         return {"ok": False, "blocked": True, "errors": [f"NeverTwice fail-closed: {e}"]}
     try:
-        from modules.post_guardian import validate_post as _gcheck
-        ok, errs = _gcheck(text, platform="twitter")
-        if not ok:
-            try:
-                from modules.post_never_twice import remember_block
-                remember_block(text, "twitter", errs, source_module="twitter_autoposter")
-            except Exception:
-                pass
-            log.warning("Tweet blockiert: %s | Preview: %s", errs, text[:80])
-            return {"ok": False, "blocked": True, "errors": errs}
+        from modules.post_guardian import check_post as _gcheck, auto_repair_post as _repair
+        _res = await _gcheck(text, platform="twitter", check_urls=True)
+        if not _res["ok"]:
+            # Automatische Reparatur versuchen
+            _rep = await _repair(text, "twitter")
+            if _rep.get("ok"):
+                text = _rep["repaired_text"]
+                log.info("Tweet auto-repariert: %s", _rep.get("changes"))
+            else:
+                try:
+                    from modules.post_never_twice import remember_block
+                    remember_block(text, "twitter", _res["errors"], source_module="twitter_autoposter")
+                except Exception:
+                    pass
+                log.warning("Tweet blockiert (auch nach Reparatur): %s | Preview: %s", _res["errors"], text[:80])
+                return {"ok": False, "blocked": True, "errors": _res["errors"]}
     except Exception as _e:
         log.error("PostGuardian fail-closed: %s", _e)
         return {"ok": False, "blocked": True, "errors": [f"PostGuardian fail-closed: {_e}"]}

@@ -394,12 +394,36 @@ def _full_post_text(content: dict, platform: str, include_hashtags: bool = True)
 
 # ── Platform Posters ──────────────────────────────────────────────────────────
 
+async def _guardian_check_and_repair(text: str, platform: str, image_url: str = "") -> tuple[bool, str]:
+    """Prüft Text via PostGuardian. Versucht automatische Reparatur bei Fehlern.
+    Returns (ok, final_text) — bei ok=False NICHT posten!"""
+    try:
+        from modules.post_guardian import check_post, auto_repair_post
+        result = await check_post(platform, text, image_url or None)
+        if result["ok"]:
+            return True, text
+        # Automatisch reparieren
+        repair = await auto_repair_post(text, platform, image_url or None)
+        if repair.get("ok"):
+            log.info("BrutalAds: Post repariert [%s]: %s", platform, repair.get("changes"))
+            return True, repair["repaired_text"]
+        log.warning("BrutalAds: Post BLOCKIERT [%s]: %s", platform, result.get("errors"))
+        return False, text
+    except Exception as e:
+        log.debug("BrutalAds: Guardian check Fehler %s — allow", e)
+        return True, text  # Bei technischem Fehler: durchlassen (Guardian selbst defekt)
+
+
 async def _post_instagram(content: dict) -> bool:
     try:
         from modules.social_connectors import InstagramConnector
         ic = InstagramConnector()
         text = _full_post_text(content, "instagram")
-        r = await ic.post(caption=text, image_url=content.get("image_url", ""))
+        img  = content.get("image_url", "")
+        ok, text = await _guardian_check_and_repair(text, "instagram", img)
+        if not ok:
+            return False
+        r = await ic.post(caption=text, image_url=img)
         return bool(r and (r.get("id") or r.get("ok")))
     except Exception as e:
         log.debug("Instagram: %s", e)
@@ -411,6 +435,9 @@ async def _post_facebook(content: dict) -> bool:
         from modules.social_connectors import FacebookConnector
         fc = FacebookConnector()
         text = _full_post_text(content, "facebook", include_hashtags=False)
+        ok, text = await _guardian_check_and_repair(text, "facebook")
+        if not ok:
+            return False
         r = await fc.post(message=text, link=content.get("url", ""))
         return bool(r and (r.get("id") or r.get("ok")))
     except Exception as e:
@@ -426,10 +453,14 @@ async def _post_pinterest(content: dict, niche: str) -> bool:
                  or os.getenv("PINTEREST_BOARD_ID", ""))
         if not board:
             return False
+        desc = _full_post_text(content, "pinterest")
+        ok, desc = await _guardian_check_and_repair(desc, "pinterest", content.get("image_url", ""))
+        if not ok:
+            return False
         r = await pc.create_pin(
             board_id=board,
             title=content.get("hook", content.get("product", "")),
-            description=_full_post_text(content, "pinterest"),
+            description=desc,
             link=content.get("url", ""),
             image_url=content.get("image_url", ""),
         )
@@ -444,6 +475,9 @@ async def _post_twitter(content: dict) -> bool:
         from modules.social_connectors import TwitterConnector
         tc = TwitterConnector()
         text = _full_post_text(content, "twitter")
+        ok, text = await _guardian_check_and_repair(text, "twitter")
+        if not ok:
+            return False
         r = await tc.tweet(text=text)
         return bool(r and (r.get("id") or r.get("ok") or r.get("data")))
     except Exception as e:
@@ -457,6 +491,9 @@ async def _post_reddit(content: dict, subreddit: str) -> bool:
         rc = RedditConnector()
         title = f"{content.get('hook', content.get('product', '')[:60])}"
         text  = _full_post_text(content, "reddit")
+        ok, text = await _guardian_check_and_repair(text, "reddit")
+        if not ok:
+            return False
         r = await rc.submit_post(subreddit=subreddit, title=title, text=text)
         return bool(r and (r.get("id") or r.get("ok")))
     except Exception as e:
@@ -469,6 +506,9 @@ async def _post_linkedin(content: dict) -> bool:
         return False
     try:
         text = _full_post_text(content, "linkedin")
+        ok, text = await _guardian_check_and_repair(text, "linkedin")
+        if not ok:
+            return False
         async with aiohttp.ClientSession() as s:
             r = await s.post(
                 "https://api.linkedin.com/v2/ugcPosts",
