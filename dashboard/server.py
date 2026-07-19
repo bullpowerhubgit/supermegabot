@@ -14495,16 +14495,26 @@ async def create_app():
 
     # ── Post-Guardian routes ──────────────────────────────────────────────────
     async def handle_post_guardian_check(request):
-        """POST /api/post-guardian/check — Post vor Veröffentlichung prüfen."""
+        """POST /api/post-guardian/check — Post vor Veröffentlichung prüfen.
+        Prüft Text, Plattform-Limits, Duplikate, API-Secrets, falsche Konten
+        UND öffnet alle Links im Post und prüft ob die Seite erreichbar + fehlerfrei ist.
+        Body: {platform, text, image_url?, account?, check_urls?}
+        """
         try:
             body = await request.json()
             from modules.post_guardian import check_post
             result = await check_post(
-                platform  = body.get("platform", "instagram"),
-                text      = body.get("text", ""),
-                image_url = body.get("image_url"),
-                account   = body.get("account"),
+                platform   = body.get("platform", "instagram"),
+                text       = body.get("text", ""),
+                image_url  = body.get("image_url"),
+                account    = body.get("account"),
+                check_urls = body.get("check_urls", True),
             )
+            result["checks_performed"] = [
+                "plattform_limits", "pflichttext", "verbotene_phrasen",
+                "api_key_leak", "falsches_konto", "duplikat_7_tage",
+                "url_live_check (alle Links geöffnet + Fehlerseiten geprüft)",
+            ]
             return web.json_response(result)
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)

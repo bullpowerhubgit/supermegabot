@@ -23,6 +23,7 @@ Integration: wird von allen Posting-Modulen aufgerufen via validate_post()
 """
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 import re
@@ -393,11 +394,93 @@ _SECRET_PATTERNS = [
 ]
 
 
+_ERROR_PAGE_MARKERS = [
+    # HTTP-Statuscodes im Seiteninhalt
+    "404 not found", "404 error", "error 404", "http 404",
+    "500 internal server error", "error 500", "http 500",
+    "403 forbidden", "access denied", "403 error",
+    "401 unauthorized", "410 gone", "503 service unavailable",
+    # Englische Standard-Fehlermeldungen
+    "page not found", "this page doesn't exist", "page does not exist",
+    "the page you requested", "could not be found", "no longer exists",
+    "we can't find", "we couldn't find", "not be found",
+    "oops! something went wrong", "something went wrong",
+    "internal server error", "service unavailable",
+    "bad gateway", "gateway timeout",
+    "coming soon", "under construction", "maintenance mode",
+    # Deutsche Fehlermeldungen
+    "seite nicht gefunden", "fehler 404", "diese seite existiert nicht",
+    "seite existiert nicht", "nicht gefunden", "zugriff verweigert",
+    "server fehler", "interner server-fehler",
+    # Shopify / E-Commerce spezifisch
+    "sorry, this page is not available",
+    "the page you were looking for does not exist",
+    "link you followed may be broken",
+]
+
+# Inhalte die OK sind — nicht als Fehler werten
+_FALSE_POSITIVE_WHITELIST = [
+    # Seiten die "404" im normalen Inhalt haben könnten
+    "error code:", "status code: 200",
+]
+
+
+async def _check_url_live(url: str) -> tuple[bool, str]:
+    """Öffnet URL, prüft HTTP-Status UND Seiteninhalt auf Fehlerseiten.
+    Returns (ok, error_msg)."""
+    try:
+        loop = asyncio.get_event_loop()
+
+        def _fetch():
+            req = urllib.request.Request(
+                url, method="GET",
+                headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                    "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+                    "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+                }
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                status = resp.status
+                # 8KB lesen für gründlichen Inhalts-Check (Title, H1, Meta, erste Absätze)
+                body = resp.read(8192).decode("utf-8", errors="ignore").lower()
+                return status, body
+
+        status, body = await loop.run_in_executor(None, _fetch)
+
+        if status >= 400:
+            return False, f"URL antwortet mit HTTP {status}: {url[:80]}"
+
+        # Titel-Tag extrahieren (genauester Fehlerindikator)
+        title_match = re.search(r"<title[^>]*>(.*?)</title>", body, re.DOTALL)
+        title = title_match.group(1).strip() if title_match else ""
+
+        # Im Titel und ersten 2KB auf Fehlermarker prüfen
+        check_zone = title + " " + body[:2000]
+        for marker in _ERROR_PAGE_MARKERS:
+            if marker in check_zone:
+                # False-Positive-Filter
+                if not any(wp in check_zone for wp in _FALSE_POSITIVE_WHITELIST):
+                    return False, f"Fehlerseite erkannt ('{marker}' im Inhalt): {url[:80]}"
+
+        return True, ""
+    except Exception as e:
+        err = str(e)
+        if "urlopen error" in err or "timed out" in err.lower():
+            return False, f"URL nicht erreichbar (Timeout/DNS): {url[:80]}"
+        if "connection refused" in err.lower():
+            return False, f"URL nicht erreichbar (Connection refused): {url[:80]}"
+        if "ssl" in err.lower():
+            return False, f"URL SSL-Fehler: {url[:80]}"
+        return False, f"URL-Prüfung fehlgeschlagen: {url[:80]} ({err[:50]})"
+
+
 async def check_post(platform: str, text: str,
                      image_url: Optional[str] = None,
-                     account: Optional[str] = None) -> Dict:
+                     account: Optional[str] = None,
+                     check_urls: bool = True) -> Dict:
     """
-    Vollständige async Prüfung — kombiniert validate_post + erweiterte Checks.
+    Vollständige async Prüfung — kombiniert validate_post + URL-Live-Check + erweiterte Checks.
     Returns: {ok, errors, warnings, can_post}
     """
     ok, base_errors = validate_post(text, platform, image_url or "")
@@ -415,6 +498,20 @@ async def check_post(platform: str, text: str,
         if pat.search(text):
             extra_errors.append("Möglicher API-Key/Passwort im Post! Niemals secrets posten!")
             break
+
+    # URL Live-Check: alle Links im Post öffnen und auf Fehlerseiten prüfen
+    if check_urls:
+        urls_in_text = re.findall(r'https?://[^\s<>"\']+', text)
+        if image_url and image_url.startswith("http"):
+            urls_in_text.append(image_url)
+        # Max 5 URLs prüfen (Performance)
+        for url in list(dict.fromkeys(urls_in_text))[:5]:
+            url = url.rstrip(".,;)!?")
+            if any(skip in url for skip in ("localhost", "127.0.0.1", "telegram.org/bot")):
+                continue
+            url_ok, url_err = await _check_url_live(url)
+            if not url_ok:
+                extra_errors.append(f"Link-Fehler: {url_err}")
 
     # Nacht-Posting Warnung
     hour = datetime.now().hour
