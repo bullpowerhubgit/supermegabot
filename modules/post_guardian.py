@@ -408,14 +408,45 @@ _ERROR_PAGE_MARKERS = [
     "internal server error", "service unavailable",
     "bad gateway", "gateway timeout",
     "coming soon", "under construction", "maintenance mode",
-    # Deutsche Fehlermeldungen
+    # Deutsche Fehlermeldungen allgemein
     "seite nicht gefunden", "fehler 404", "diese seite existiert nicht",
     "seite existiert nicht", "nicht gefunden", "zugriff verweigert",
     "server fehler", "interner server-fehler",
-    # Shopify / E-Commerce spezifisch
+    # ═══ SHOPIFY PRODUKT-FEHLER (KRITISCH — Grund für gemeldeten Vorfall!) ═══
+    # Produkt nicht genehmigt / nicht verfügbar
+    "produkt wurde noch nicht genehmigt",
+    "das produkt wurde noch nicht genehmigt",
+    "nicht genehmigt",
+    "produkt ist nicht verfügbar",
+    "das produkt ist nicht verfügbar",
+    "produkt ist aus folgendem grund nicht verfügbar",
+    "nicht verfügbar",
+    "derzeit nicht verfügbar",
+    "nicht im handel erhältlich",
+    "derzeit nicht im handel erhältlich",
+    "nicht erhältlich",
+    # Shopify-spezifische englische Produktfehler
+    "product is not available",
+    "this product is unavailable",
+    "product has been removed",
+    "product is no longer available",
+    "not approved",
+    "product not approved",
+    "currently unavailable",
+    "not available for sale",
+    "not available in your country",
+    # Shopify Seiten-Fehler
     "sorry, this page is not available",
     "the page you were looking for does not exist",
     "link you followed may be broken",
+    # WooCommerce / andere Shops
+    "dieses produkt ist leider nicht mehr erhältlich",
+    "artikel nicht gefunden",
+    "produkt existiert nicht",
+    # Allgemeine Verfügbarkeitsprobleme
+    "zur wunschliste hinzufügen",  # Shopify-Pattern wenn nur in Wunschliste, nicht kaufbar
+    "sold out", "ausverkauft",
+    "not in stock", "nicht auf lager",
 ]
 
 # Inhalte die OK sind — nicht als Fehler werten
