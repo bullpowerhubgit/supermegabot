@@ -449,15 +449,12 @@ async def _guardian_check_and_repair(text: str, platform: str, image_url: str = 
 
 async def _post_instagram(content: dict) -> bool:
     try:
-        from modules.social_connectors import InstagramConnector
-        ic = InstagramConnector()
         text = _full_post_text(content, "instagram")
         img  = content.get("image_url", "")
-        ok, text = await _guardian_check_and_repair(text, "instagram", img)
-        if not ok:
-            return False
-        r = await ic.post(caption=text, image_url=img)
-        return bool(r and (r.get("id") or r.get("ok")))
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="instagram", text=text, image_url=img,
+                            source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("Instagram: %s", e)
         return False
@@ -465,14 +462,12 @@ async def _post_instagram(content: dict) -> bool:
 
 async def _post_facebook(content: dict) -> bool:
     try:
-        from modules.social_connectors import FacebookConnector
-        fc = FacebookConnector()
         text = _full_post_text(content, "facebook", include_hashtags=False)
-        ok, text = await _guardian_check_and_repair(text, "facebook")
-        if not ok:
-            return False
-        r = await fc.post(message=text, link=content.get("url", ""))
-        return bool(r and (r.get("id") or r.get("ok")))
+        img  = content.get("image_url", "")
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="facebook", text=text, image_url=img,
+                            source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("Facebook: %s", e)
         return False
@@ -480,24 +475,15 @@ async def _post_facebook(content: dict) -> bool:
 
 async def _post_pinterest(content: dict, niche: str) -> bool:
     try:
-        from modules.social_connectors import PinterestConnector
-        pc = PinterestConnector()
-        board = (os.getenv(f"PINTEREST_BOARD_{niche.upper()}", "")
-                 or os.getenv("PINTEREST_BOARD_ID", ""))
-        if not board:
-            return False
-        desc = _full_post_text(content, "pinterest")
-        ok, desc = await _guardian_check_and_repair(desc, "pinterest", content.get("image_url", ""))
-        if not ok:
-            return False
-        r = await pc.create_pin(
-            board_id=board,
-            title=content.get("hook", content.get("product", "")),
-            description=desc,
-            link=content.get("url", ""),
-            image_url=content.get("image_url", ""),
-        )
-        return bool(r and (r.get("id") or r.get("ok")))
+        desc  = _full_post_text(content, "pinterest")
+        title = content.get("hook", content.get("product", ""))
+        img   = content.get("image_url", "")
+        url   = content.get("url", "")
+        post_text = f"{title}\n\n{desc}\n\n{url}".strip()
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="pinterest", text=post_text, image_url=img,
+                            source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("Pinterest: %s", e)
         return False
@@ -505,14 +491,10 @@ async def _post_pinterest(content: dict, niche: str) -> bool:
 
 async def _post_twitter(content: dict) -> bool:
     try:
-        from modules.social_connectors import TwitterConnector
-        tc = TwitterConnector()
         text = _full_post_text(content, "twitter")
-        ok, text = await _guardian_check_and_repair(text, "twitter")
-        if not ok:
-            return False
-        r = await tc.tweet(text=text)
-        return bool(r and (r.get("id") or r.get("ok") or r.get("data")))
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="twitter", text=text, source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("Twitter: %s", e)
         return False
@@ -520,15 +502,12 @@ async def _post_twitter(content: dict) -> bool:
 
 async def _post_reddit(content: dict, subreddit: str) -> bool:
     try:
-        from modules.social_connectors import RedditConnector
-        rc = RedditConnector()
-        title = f"{content.get('hook', content.get('product', '')[:60])}"
+        title = content.get("hook", content.get("product", ""))[:300]
         text  = _full_post_text(content, "reddit")
-        ok, text = await _guardian_check_and_repair(text, "reddit")
-        if not ok:
-            return False
-        r = await rc.submit_post(subreddit=subreddit, title=title, text=text)
-        return bool(r and (r.get("id") or r.get("ok")))
+        post_content = f"{title}\n\n{text}".strip()
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="reddit", text=post_content, source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("Reddit: %s", e)
         return False
@@ -573,18 +552,10 @@ async def _post_shopify_blog(product_name: str, body: str, url: str, tags: list)
 
 
 async def _post_telegram_channel(text: str) -> bool:
-    chat = TG_CHANNEL or TG_ALERT
-    if not TG_TOKEN or not chat:
-        return False
     try:
-        async with aiohttp.ClientSession() as s:
-            r = await s.post(
-                f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-                json={"chat_id": chat, "text": text, "parse_mode": "HTML",
-                      "disable_web_page_preview": False},
-                timeout=aiohttp.ClientTimeout(total=10),
-            )
-            return r.status == 200
+        from modules.post_gateway import safe_post
+        r = await safe_post(platform="telegram", text=text, source_module="brutal_ads_engine")
+        return bool(r.get("ok"))
     except Exception as e:
         log.debug("Telegram: %s", e)
         return False
