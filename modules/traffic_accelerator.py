@@ -37,6 +37,7 @@ log = logging.getLogger("TrafficAccelerator")
 
 _BASE = Path(__file__).parent.parent
 _DB   = _BASE / "data" / "traffic_accelerator.db"
+_DASH_SECRET = os.getenv("DASHBOARD_SECRET", "")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -265,6 +266,7 @@ async def _outreach_batch(batch_size: int = 300) -> Dict:
             async with s.post(
                 "http://localhost:8888/api/mass-outreach/send",
                 json={"limit": batch_size, "smart": True},
+                headers={"X-API-Key": _DASH_SECRET},
                 timeout=aiohttp.ClientTimeout(total=12),
             ) as r:
                 result = await r.json(content_type=None)
@@ -282,6 +284,7 @@ async def _google_feed_sync() -> Dict:
             async with s.post(
                 "http://localhost:8888/api/scheduler/trigger",
                 json={"task": "shopify_sync"},
+                headers={"X-API-Key": _DASH_SECRET},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 result = await r.json(content_type=None)

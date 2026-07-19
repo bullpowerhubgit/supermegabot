@@ -49,6 +49,7 @@ TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT        = _TG_CHANNEL or ""
 DS24_KEY       = os.getenv("DIGISTORE24_API_KEY", "")
+_DASH_SECRET   = os.getenv("DASHBOARD_SECRET", "")
 SMB_URL        = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
 
 # ── Datenbank ────────────────────────────────────────────────────────────────
@@ -316,6 +317,7 @@ async def _scan_own_revenue() -> list[dict]:
         import aiohttp
         async with aiohttp.ClientSession() as s:
             async with s.get(f"{SMB_URL}/api/revenue/summary",
+                             headers={"X-API-Key": _DASH_SECRET},
                              timeout=aiohttp.ClientTimeout(total=10)) as r:
                 if r.status == 200:
                     data = await r.json()
