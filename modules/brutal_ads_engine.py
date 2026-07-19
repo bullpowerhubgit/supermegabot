@@ -194,10 +194,23 @@ def _mark_posted(product_name: str, platform: str) -> None:
 
 # ── Safety Gates ──────────────────────────────────────────────────────────────
 
+_URL_ERROR_BODY_MARKERS = [
+    "produkt wurde noch nicht genehmigt",
+    "das produkt wurde noch nicht genehmigt",
+    "nicht genehmigt",
+    "product not approved",
+    "not approved yet",
+    "page not found", "404", "seite nicht gefunden",
+    "this page isn't available", "seite nicht verfügbar",
+    "product is not available", "produkt nicht verfügbar",
+    "out of stock", "ausverkauft",
+    "access denied", "zugriff verweigert",
+]
+
 async def _check_url_live(url: str) -> tuple[bool, int]:
     """
-    KERN-FIX: Prüft ob URL erreichbar ist (HTTP < 400).
-    Kein Post wird gesendet wenn URL nicht erreichbar → kein "Seite nicht erreichbar" mehr.
+    Prüft ob URL erreichbar ist UND ob der Seiteninhalt eine Fehlerseite zeigt.
+    Erkennt auch HTTP-200-Fehlerseiten wie "nicht genehmigt" (Shopify Draft-Produkte).
     """
     if not url or not url.startswith("http"):
         return False, 0
@@ -207,12 +220,21 @@ async def _check_url_live(url: str) -> tuple[bool, int]:
                 url,
                 timeout=aiohttp.ClientTimeout(total=12),
                 allow_redirects=True,
-                headers={"User-Agent": "BrutalAds-PreFlight/1.0"},
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"},
             ) as r:
-                ok = r.status < 400
-                if not ok:
+                if r.status >= 400:
                     log.warning("PRE-FLIGHT FAIL: %s → HTTP %d", url, r.status)
-                return ok, r.status
+                    return False, r.status
+                # Seiteninhalt auf Fehler-Marker prüfen (HTTP 200 kann trotzdem Fehlerseite sein!)
+                try:
+                    body = (await r.content.read(65536)).decode("utf-8", errors="ignore").lower()
+                    for marker in _URL_ERROR_BODY_MARKERS:
+                        if marker in body:
+                            log.warning("PRE-FLIGHT BODY-BLOCK: %s → '%s' im Inhalt", url, marker)
+                            return False, 200
+                except Exception:
+                    pass  # body-Fehler → trotzdem ok (HTTP-Status war 200)
+                return True, r.status
     except Exception as e:
         log.warning("PRE-FLIGHT ERROR: %s → %s", url, e)
         return False, 0
