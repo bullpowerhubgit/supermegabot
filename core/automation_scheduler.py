@@ -7954,6 +7954,20 @@ async def task_omega_revenue_brain() -> str:
         return f"OMEGA Brain Fehler: {e}"
 
 
+async def task_organic_traffic_post() -> str:
+    """Organischer Traffic: PostGuard-geprüfte Posts auf 7 Plattformen (alle 6h, 4x täglich)."""
+    try:
+        from modules.organic_traffic_manager import run_posting_session
+        result = await run_posting_session()
+        posted  = result.get("posted", [])
+        blocked = result.get("blocked", [])
+        skipped = result.get("skipped", [])
+        return (f"OrganicTraffic: {len(posted)} gepostet ({', '.join(posted) or '—'}) | "
+                f"{len(blocked)} blockiert | {len(skipped)} übersprungen")
+    except Exception as e:
+        return f"OrganicTraffic Fehler: {e}"
+
+
 async def task_ebay_amazon_marketing() -> str:
     """eBay/Amazon Marketing: Amazon-Trends + Affiliate-Links + Import-Kandidaten (alle 12h)."""
     try:
@@ -9064,6 +9078,8 @@ TASKS = [
     ("shopify_categorizer", task_shopify_categorizer,  43200,  5400), # 12h — Produkte ohne Kategorie automatisch zuordnen
     # ── eBay / Amazon Marketing ────────────────────────────────────────────────
     ("ebay_amazon_marketing", task_ebay_amazon_marketing, 43200, 6000), # 12h — Trends + Affiliate-Links + Import-Kandidaten
+    # ── Organischer Traffic Manager — 7 Plattformen, PostGuard-geprüft ────────
+    ("organic_traffic_post",  task_organic_traffic_post,  21600, 6100), # 6h — 4x täglich organische Posts (IG, FB, TW, LI, PN, Reddit, TT)
 ]
 
 
