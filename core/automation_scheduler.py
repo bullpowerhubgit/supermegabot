@@ -9336,6 +9336,9 @@ class AutomationScheduler:
         "mass_outreach_research", "mass_outreach_morning", "mass_outreach_batch",
         "mass_outreach_evening", "mass_outreach_night", "mass_outreach",
         "email_outreach_bulk", "email_outreach", "outreach_bulk",
+        # Outreach Blast Morgen/Abend — UMGEHT Blocklist via outreach_blast_* Namen!
+        "outreach_blast_morning", "outreach_blast_evening", "outreach_blast",
+        "rotating_buyer_prospector",  # sucht Firmen + sendet Kalt-Emails
 
         # Affiliate-Recruiter (30% Provision Cold Emails)
         "affiliate_recruiter", "affiliate_recruiter_run", "affiliate_recruit",
