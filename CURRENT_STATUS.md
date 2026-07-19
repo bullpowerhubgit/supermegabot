@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-19 v43 — MegaAutonomy + alle Plattformen vollautonOM**
+**Stand: 2026-07-19 v44 — GMC-Misrepresentation vollständig behoben, PostGuard-Bug gefixt**
 
 ## System
 | Check | Status |
@@ -11,6 +11,20 @@
 | Scheduler | **253/400 Tasks aktiv** — dict-Bug behoben, 147 warten auf erstes Intervall |
 | PR #48 | gemergt (fix/session-2026-07-17-v2) — Railway auto-deployed |
 | GitHub Pages vsl-pages | 11/11 VSL-Seiten live |
+
+## Session v44 — GMC-Misrepresentation + PostGuard-Bug (2026-07-19)
+| Was | Status | Details |
+|-----|--------|---------|
+| PostGuard Bug: body[:3000] | ✅ GEFIXT | Liest jetzt 64KB, prüft vollständigen Body — "nicht genehmigt" wurde abgeschnitten |
+| Shopify: Impressum | ✅ FERTIG | +49 176 22890860 eingetragen — GMC braucht Telefonnummer |
+| Shopify: Organization Schema | ✅ NEU | JSON-LD im theme.liquid — Google liest Adresse/Telefon/E-Mail maschinenlesbar |
+| Shopify: Zahlung & Checkout | ✅ GEFIXT | PayPal/Klarna/Apple Pay/Google Pay entfernt — nur Stripe/Kreditkarte |
+| Shopify: Rückgabe & Rückerstattung | ✅ GEFIXT | 30 Tage → 14 Tage Widerrufsrecht |
+| Shopify: Versand & Lieferung | ✅ GEFIXT | 3-7 WT → 5-14 WT (realistisch für Dropshipping, konsistent) |
+| Shopify: FAQ | ✅ GEFIXT | "weitere Optionen" → explizit NUR Kreditkarte/Debitkarte; Versandzeiten vereinheitlicht |
+| Shopify: 3 weitere Duplikate | ✅ GEFIXT | AGB-Duplikat + Widerrufsbelehrung-Duplikat + "Your Privacy Choices" (Englisch) unpublished |
+| GMC: Review läuft | ⏳ WARTE | Angefordert 15.07.2026 — Google braucht 5-7 WT — Rudolf lädt gerade Ausweis hoch |
+| GMC: Business Info | 🔴 MANUEL | Rudolf: merchants.google.com → Einstellungen → Tel/Datenschutz-URL/AGB-URL eintragen |
 
 ## Session v43 — MegaAutonomy + alle Plattformen (2026-07-19)
 | Was | Status | Details |
