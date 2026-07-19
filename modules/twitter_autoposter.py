@@ -127,15 +127,29 @@ async def _get_twikit_client():
     global _twikit_client
     if _twikit_client:
         return _twikit_client
-    if not TWITTER_PASSWORD:
+    cookies_env = os.getenv("TWITTER_COOKIES_JSON", "")
+    if not cookies_env and not TWITTER_PASSWORD:
         return None
     try:
         from twikit import Client as TwikitClient
         c = TwikitClient("de-DE")
+        # Priorität 1: TWITTER_COOKIES_JSON Env-Var (Railway hat kein persistentes Storage)
+        if cookies_env:
+            try:
+                TWIKIT_COOKIES_FILE.parent.mkdir(parents=True, exist_ok=True)
+                TWIKIT_COOKIES_FILE.write_text(cookies_env)
+                c.load_cookies(str(TWIKIT_COOKIES_FILE))
+                log.info("twikit: cookies aus TWITTER_COOKIES_JSON geladen")
+                _twikit_client = c
+                return c
+            except Exception as e:
+                log.warning("twikit: TWITTER_COOKIES_JSON parse fehler: %s", e)
+        # Priorität 2: Cookie-Datei auf Disk
         if TWIKIT_COOKIES_FILE.exists():
             c.load_cookies(str(TWIKIT_COOKIES_FILE))
-            log.info("twikit: cookies geladen")
-        else:
+            log.info("twikit: cookies aus Datei geladen")
+        elif TWITTER_PASSWORD:
+            # Priorität 3: Login mit Username + Password
             await c.login(
                 auth_info_1=TWITTER_USERNAME,
                 auth_info_2=TWITTER_EMAIL,
@@ -143,6 +157,8 @@ async def _get_twikit_client():
             )
             c.save_cookies(str(TWIKIT_COOKIES_FILE))
             log.info("twikit: login erfolgreich, cookies gespeichert")
+        else:
+            return None
         _twikit_client = c
         return c
     except Exception as e:
