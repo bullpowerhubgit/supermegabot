@@ -9375,6 +9375,50 @@ class AutomationScheduler:
 
         # Streetwear Email Blast
         "streetwear_email", "streetwear_email_blast",
+
+        # ── ERWEITERTE SPERRE 2026-07-19 ──────────────────────────────────────
+        # 896 Cold Emails HEUTE (19.07) trotz erster Sperre — Task-Namen stimmten nicht!
+        # Alle Outreach-Tasks mit echten registrierten Namen gesperrt.
+
+        # SMB / Industrie / B2B Outreach (senden "KI automatisiert X" Cold Emails)
+        "outreach_auto", "outreach_batch", "outreach_morning", "outreach_evening",
+        "smb_outreach_daily", "smb_outreach", "industrie_outreach",
+        "aiitec_b2b_outreach", "multi_product_outreach",
+        "bpi_sys10_bulk_outreach", "bpi_delivery_pending",
+        "rotating_prospector",
+
+        # Acquisition (mega/ultra — sendet Massen-Emails)
+        "mega_acq_send", "mega_acq_discovery",
+        "ultra_acq_morning", "ultra_acq_research",
+
+        # Compliance Cold-Outreach (AI Act / GPSR / EU Compliance an fremde Firmen)
+        "ai_act", "gpsr_scan",
+        "bpi_compliance_cycle", "bpi_sys01_ki_leasing",
+        "bpi_sys05_insolvenz", "eu_compliance_lead_scan",
+        "aiact_compliance_check", "ai_act_art50_cycle",
+        "hs_code_cycle", "vat_oss_cycle",
+
+        # Backlink + Linkedin + Influencer Outreach
+        "backlink_outreach", "linkedin_dm", "influencer_pipeline",
+
+        # B2B Pipeline / Lead Nurture
+        "b2b_pipeline", "lead_nurture", "lead_capture", "sales_funnel",
+
+        # KI Sales Outreach
+        "ki_sales", "income_master",
+
+        # ERE Lead Blast
+        "ere_lead_blast", "ere_welcome_sequence",
+
+        # Mailchimp — ALLE KONTEN GESPERRT seit 2026-07-12
+        "mailchimp_mass", "mailchimp_autonomy", "mailchimp_dragon",
+        "mailchimp_sync", "mailchimp_auto_campaign",
+
+        # Email AI Inbox (verarbeitet Cold-Outreach-Replies → sendet Auto-Responses)
+        "email_ai_inbox",
+
+        # Push-Notify Broadcast (sendet an fremde Adressen)
+        "push_notify_broadcast",
     })
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
