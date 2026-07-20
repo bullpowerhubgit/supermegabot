@@ -105,6 +105,70 @@ def _db_init():
         """)
 
 
+async def _sync_existing_links_from_stripe():
+    """Lädt vorhandene Payment Links aus Stripe → DB, verhindert Duplikate nach Railway-Redeploy."""
+    if not STRIPE_SECRET_KEY:
+        return
+    _db_init()
+    with _db_connect() as conn:
+        existing_count = conn.execute("SELECT COUNT(*) FROM payment_links").fetchone()[0]
+    if existing_count > 0:
+        return  # DB ist bereits befüllt
+    log.info("stripe_revenue_activator: DB leer nach Redeploy — sync vorhandene Links aus Stripe")
+    try:
+        async with aiohttp.ClientSession() as session:
+            # Alle aktiven Payment Links laden
+            after = None
+            synced = 0
+            while True:
+                params = {"limit": 100, "active": "true"}
+                if after:
+                    params["starting_after"] = after
+                auth = base64.b64encode(f"{STRIPE_SECRET_KEY}:".encode()).decode()
+                async with session.get(
+                    f"{STRIPE_API_BASE}/payment_links",
+                    params=params,
+                    headers={"Authorization": f"Basic {auth}"},
+                ) as resp:
+                    body = await resp.json()
+                if resp.status != 200 or "data" not in body:
+                    break
+                links = body["data"]
+                if not links:
+                    break
+                for link in links:
+                    link_id = link.get("id", "")
+                    link_url = link.get("url", "")
+                    if not link_id or not link_url:
+                        continue
+                    # Line items holen um price_id zu ermitteln
+                    async with session.get(
+                        f"{STRIPE_API_BASE}/payment_links/{link_id}/line_items",
+                        params={"limit": 5},
+                        headers={"Authorization": f"Basic {auth}"},
+                    ) as ri:
+                        items = await ri.json()
+                    for item in items.get("data", []):
+                        price_id = item.get("price", {}).get("id") if isinstance(item.get("price"), dict) else item.get("price")
+                        if not price_id:
+                            continue
+                        with _db_connect() as conn:
+                            conn.execute(
+                                "INSERT OR IGNORE INTO payment_links "
+                                "(price_id, product_name, amount_eur, currency, billing_type, link_id, link_url, created_at) "
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                                (price_id, item.get("description", "Produkt"), 0, "eur", "one_time",
+                                 link_id, link_url, "synced"),
+                            )
+                        synced += 1
+                if not body.get("has_more"):
+                    break
+                after = links[-1]["id"]
+        log.info("stripe_revenue_activator: %d vorhandene Links aus Stripe in DB geladen", synced)
+    except Exception as e:
+        log.warning("stripe_revenue_activator: Sync-Fehler (nicht kritisch): %s", e)
+
+
 # ── Stripe HTTP helpers ─────────────────────────────────────────────────────────
 
 def _auth_header() -> dict:
@@ -187,6 +251,8 @@ async def create_all_payment_links() -> list:
         return []
 
     _db_init()
+    # Nach Railway-Redeploy: vorhandene Links aus Stripe laden bevor wir neue erstellen
+    await _sync_existing_links_from_stripe()
 
     # Load price_ids we already have stored
     with _db_connect() as conn:
