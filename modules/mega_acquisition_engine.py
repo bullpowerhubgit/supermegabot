@@ -119,27 +119,15 @@ def _build_smtp_pool() -> List[Dict]:
             "sent_today": 0,
             "last_reset": "",
         })
-    # Account 5: dragonadnp@gmail.com (500/day)
-    if _e("GMAIL_APP_PASSWORD_1"):
-        accounts.append({
-            "name":     "Dragon",
-            "user":     _e("GMAIL_USER_1", "dragonadnp@gmail.com"),
-            "password": _e("GMAIL_APP_PASSWORD_1",""),
-            "host":     "smtp.gmail.com",
-            "port":     587,
-            "daily_limit": 500,
-            "sent_today": 0,
-            "last_reset": "",
-        })
-    # Account 7: rudolf.sarkany.aiitec@gmail.com (500/day)
-    if _e("GMAIL_APP_PASSWORD_7"):
+    # dragonadnp + rudolf.sarkany.aiitec: Reputation beschädigt — dauerhaft gesperrt 2026-07-20
+    if False:
         accounts.append({
             "name":     "AiiteCGmail",
-            "user":     _e("GMAIL_USER_7", "rudolf.sarkany.aiitec@gmail.com"),
-            "password": _e("GMAIL_APP_PASSWORD_7",""),
+            "user":     "",
+            "password": "",
             "host":     "smtp.gmail.com",
             "port":     587,
-            "daily_limit": 500,
+            "daily_limit": 0,
             "sent_today": 0,
             "last_reset": "",
         })
