@@ -500,6 +500,17 @@ async def safe_post(
                 api_result = await _post_linkedin(text)
             elif p == "telegram":
                 api_result = await _post_telegram(text, chat_id)
+            elif p in ("twitter", "x"):
+                from modules.twitter_autoposter import post_tweet
+                api_result = await post_tweet(text)
+            elif p == "pinterest":
+                from modules.pinterest_autonomy import create_pin
+                api_result = await create_pin(
+                    title=text[:100],
+                    desc=text,
+                    image_url=image_url,
+                    link="",
+                )
             else:
                 api_result = {"ok": False, "error": f"Unbekannte Plattform: {platform}"}
         except Exception as e:
