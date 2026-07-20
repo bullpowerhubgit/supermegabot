@@ -219,8 +219,10 @@ async def bing_indexnow(urls: list[str]) -> dict:
     """
     try:
         import aiohttp
+        import os
+        shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
         payload = {
-            "host": "bullpower-hub-portal.netlify.app",
+            "host": shop_domain,
             "key": INDEXNOW_KEY,
             "urlList": urls[:100],  # max 100 URLs per request
         }

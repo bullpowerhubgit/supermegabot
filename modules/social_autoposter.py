@@ -65,8 +65,15 @@ async def _fetch_pexels_image(query: str = "") -> str:
     Gibt leeren String zurück wenn kein Key gesetzt oder Fehler.
     """
     if not PEXELS_KEY:
-        log.warning("PEXELS_API_KEY nicht gesetzt — kein Auto-Bild für Instagram")
-        return ""
+        import random
+        _FALLBACK_IMAGES = [
+            "https://images.pexels.com/photos/4050315/pexels-photo-4050315.jpeg",  # Smart home
+            "https://images.pexels.com/photos/3183153/pexels-photo-3183153.jpeg",  # Tech devices
+            "https://images.pexels.com/photos/4050302/pexels-photo-4050302.jpeg",  # Smart speaker
+            "https://images.pexels.com/photos/267394/pexels-photo-267394.jpeg",   # Tech gadgets
+            "https://images.pexels.com/photos/3861969/pexels-photo-3861969.jpeg",  # Coding/tech
+        ]
+        return random.choice(_FALLBACK_IMAGES)
     import random
     q = query or random.choice(_PEXELS_QUERIES)
     try:
