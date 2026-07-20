@@ -9,6 +9,7 @@ import time
 import json
 import logging
 import asyncio
+import threading
 import urllib.request
 from typing import Optional, Dict, Any
 
@@ -109,24 +110,24 @@ except ImportError:
     HAS_AIOHTTP = False
 
 # ─── Globaler Rate-Limiter (Shopify: max 2 REST-Calls/Sek, Bucket 40) ────────
-_shopify_lock: Optional[asyncio.Lock] = None
+# threading.Lock statt asyncio.Lock — funktioniert in jedem Event-Loop (kein Binding-Problem)
+_shopify_thread_lock = threading.Lock()
 _shopify_last_ts: float = 0.0
 _SHOPIFY_MIN_GAP: float = float(os.getenv("SHOPIFY_API_MIN_GAP", "0.55"))  # ~1.8 req/s
 
-def _get_shopify_lock() -> asyncio.Lock:
-    global _shopify_lock
-    if _shopify_lock is None:
-        _shopify_lock = asyncio.Lock()
-    return _shopify_lock
 
 async def _shopify_throttle() -> None:
     """Leaky-Bucket: max 1 Shopify-API-Call alle 0.55s (~1.8/s) — verhindert 429 proaktiv."""
     global _shopify_last_ts
-    async with _get_shopify_lock():
-        now = asyncio.get_event_loop().time()
+    with _shopify_thread_lock:
+        now = time.monotonic()
         gap = _SHOPIFY_MIN_GAP - (now - _shopify_last_ts)
         if gap > 0:
-            await asyncio.sleep(gap)
+            _shopify_last_ts = now + gap
+        else:
+            _shopify_last_ts = now
+    if gap > 0:
+        await asyncio.sleep(gap)
         _shopify_last_ts = asyncio.get_event_loop().time()
 
 
