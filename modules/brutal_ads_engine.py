@@ -470,9 +470,11 @@ async def _post_instagram(content: dict) -> bool:
         from modules.post_gateway import safe_post
         r = await safe_post(platform="instagram", text=text, image_url=img,
                             source_module="brutal_ads_engine")
+        if not r.get("ok"):
+            log.warning("[Instagram] fail: %s", r.get("error", r))
         return bool(r.get("ok"))
     except Exception as e:
-        log.debug("Instagram: %s", e)
+        log.warning("[Instagram] exception: %s", e)
         return False
 
 
@@ -483,9 +485,11 @@ async def _post_facebook(content: dict) -> bool:
         from modules.post_gateway import safe_post
         r = await safe_post(platform="facebook", text=text, image_url=img,
                             source_module="brutal_ads_engine")
+        if not r.get("ok"):
+            log.warning("[Facebook] fail: %s", r.get("error", r))
         return bool(r.get("ok"))
     except Exception as e:
-        log.debug("Facebook: %s", e)
+        log.warning("[Facebook] exception: %s", e)
         return False
 
 
@@ -499,9 +503,11 @@ async def _post_pinterest(content: dict, niche: str) -> bool:
         from modules.post_gateway import safe_post
         r = await safe_post(platform="pinterest", text=post_text, image_url=img,
                             source_module="brutal_ads_engine")
+        if not r.get("ok"):
+            log.warning("[Pinterest] fail: %s", r.get("error", r))
         return bool(r.get("ok"))
     except Exception as e:
-        log.debug("Pinterest: %s", e)
+        log.warning("[Pinterest] exception: %s", e)
         return False
 
 
@@ -510,9 +516,11 @@ async def _post_twitter(content: dict) -> bool:
         text = _full_post_text(content, "twitter")
         from modules.post_gateway import safe_post
         r = await safe_post(platform="twitter", text=text, source_module="brutal_ads_engine")
+        if not r.get("ok"):
+            log.warning("[Twitter] fail: %s", r.get("error", r))
         return bool(r.get("ok"))
     except Exception as e:
-        log.debug("Twitter: %s", e)
+        log.warning("[Twitter] exception: %s", e)
         return False
 
 
