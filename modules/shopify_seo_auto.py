@@ -108,7 +108,13 @@ Gib NUR valides JSON zurück (kein anderer Text):
             return None
         start = raw.find("{")
         end = raw.rfind("}") + 1
-        return json.loads(raw[start:end])
+        if start < 0 or end <= start:
+            log.warning("SEO: AI antwortete ohne JSON für %s", product.get("title"))
+            return None
+        d = json.loads(raw[start:end])
+        if not d.get("seo_title") or not d.get("meta_description"):
+            return None
+        return d
     except Exception as e:
         log.warning("SEO gen error for %s: %s", product.get("title"), e)
         return None

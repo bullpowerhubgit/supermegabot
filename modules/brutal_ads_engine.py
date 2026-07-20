@@ -703,7 +703,7 @@ async def run_brutal_cycle(slot: str = "") -> dict:
             price = f"€{p['variants'][0]['price']}"
             product_niche = _niche(p)
             base_url = f"{SHOP_URL}/products/{p['handle']}"
-            image_url = p["images"][0]["src"] if p.get("images") else ""
+            image_url = p["images"][0]["src"] if p.get("images") else _GUMROAD_NICHE_IMAGES.get(product_niche, _GUMROAD_DEFAULT_IMAGE)
             source = "shopify"
 
     # ── PRE-FLIGHT: URL auf HTTP 200 prüfen ──────────────────────────────────
