@@ -383,8 +383,9 @@ async def _ai_content(product_name: str, price: str, url: str,
             start, end = raw.find("{"), raw.rfind("}") + 1
             if start >= 0 and end > start:
                 d = json.loads(raw[start:end])
-                d.update({"url": url, "product": product_name, "price": price, "slot": slot})
-                return d
+                if len(d.get("caption", "").strip()) >= 5:
+                    d.update({"url": url, "product": product_name, "price": price, "slot": slot})
+                    return d
     except Exception as e:
         log.warning("AI-Content-Gen Fehler: %s", e)
 
