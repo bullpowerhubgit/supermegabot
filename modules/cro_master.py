@@ -290,7 +290,7 @@ TRUST_JS = r"""
       '<div style="font-size:48px;margin-bottom:8px">🎁</div>',
       '<h2 style="margin:0 0 8px;color:#1a1a2e;font-size:22px">Warte! 10% Rabatt für dich</h2>',
       '<p style="color:#6b7280;margin:0 0 20px;font-size:14px">Nur heute: 10% auf deine erste Bestellung.<br>Code wird automatisch angewendet.</p>',
-      '<a href="/collections/all?discount=WELCOME10" onclick="document.cookie=\'bp_exit=1;max-age=86400;path=/\';window.bpDismissDiscountPopup&&window.bpDismissDiscountPopup()" ',
+      '<a href="/?discount=WELCOME10" onclick="document.cookie=\'bp_exit=1;max-age=86400;path=/\';window.bpDismissDiscountPopup&&window.bpDismissDiscountPopup()" ',
       'style="background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;',
       'text-decoration:none;font-weight:700;font-size:15px;display:inline-block;margin-bottom:12px">',
       '10% sparen — Jetzt shoppen →</a>',
