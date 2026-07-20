@@ -14818,10 +14818,20 @@ async def create_app():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
-    app.router.add_post("/api/trust/run",    handle_trust_run)
-    app.router.add_get( "/trust-badge.js",  handle_trust_badge_js)
-    app.router.add_post("/api/cro/run",      handle_cro_run)
-    log.info("Trust & Conversion routes registered (/api/trust/run, /trust-badge.js, /api/cro/run)")
+    async def handle_order_cleanup(req):
+        """POST /api/orders/cleanup — Archiviert alle Test-Bestellungen (Test Käufer €1)."""
+        try:
+            from modules.order_cleanup import run_order_cleanup
+            result = await run_order_cleanup()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/trust/run",      handle_trust_run)
+    app.router.add_get( "/trust-badge.js",     handle_trust_badge_js)
+    app.router.add_post("/api/cro/run",        handle_cro_run)
+    app.router.add_post("/api/orders/cleanup", handle_order_cleanup)
+    log.info("Trust & Conversion routes registered (/api/trust/run, /trust-badge.js, /api/cro/run, /api/orders/cleanup)")
 
     # ── AIACT-Pro Bridge routes ───────────────────────────────────────────────
     async def _handle_aiact_bridge_health(request):
