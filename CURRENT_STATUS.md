@@ -20,7 +20,6 @@
 - **Groq/OpenAI/Perplexity**: API-Keys ungültig — console.groq.com / platform.openai.com erneuern
 - **Anthropic Credits**: leer — console.anthropic.com aufladen
 - **Pinterest Token**: abgelaufen — developers.pinterest.com neu autorisieren
-- **Meta Ads Budget**: Kontostand begleichen (€408.76 ausstehend)
 - **Gumroad PDFs**: 9 Dateien manuell hochladen auf tecbuuss.gumroad.com
 
 
