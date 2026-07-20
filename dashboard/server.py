@@ -7303,9 +7303,15 @@ async def cors_middleware(request, handler):
 import collections
 
 _RATE_WINDOW  = 60        # Sekunden pro Fenster
-_RATE_LIMIT   = 300       # Max Requests/IP/Fenster (legitime Nutzung)
+_RATE_LIMIT   = 600       # Max Requests/IP/Fenster
 _BAN_LIMIT    = 10        # Fehlgeschlagene Auth-Versuche bis IP-Ban
 _BAN_DURATION = 900       # Ban-Dauer: 15 Minuten
+
+# IPs die niemals gebannt/rate-limited werden (Railway-interne + localhost)
+_RATE_WHITELIST = frozenset({
+    "127.0.0.1", "::1", "localhost",
+    "10.0.0.1", "::ffff:127.0.0.1",
+})
 
 _rate_counts: dict[str, list[float]] = collections.defaultdict(list)
 _auth_failures: dict[str, list[float]] = collections.defaultdict(list)
@@ -7316,6 +7322,8 @@ def _get_client_ip(request) -> str:
     return (forwarded.split(",")[0].strip() or request.remote or "unknown")
 
 def _is_rate_limited(ip: str) -> bool:
+    if ip in _RATE_WHITELIST:
+        return False
     now = time.time()
     window = now - _RATE_WINDOW
     counts = _rate_counts[ip]
