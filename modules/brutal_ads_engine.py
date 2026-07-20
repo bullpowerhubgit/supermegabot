@@ -369,9 +369,13 @@ async def _ai_content(product_name: str, price: str, url: str,
             f"Slot-Strategie: {_SLOT_STRATEGY.get(slot, 'Produkt zeigen')}\n"
             f"Plattform-Format: {platform} — {_PLATFORM_FORMAT.get(platform, 'kurz und klar')}\n"
             f"Nische: {niche}\n"
-            f"WICHTIG: Kein Platzhalter, kein Fehlertext, echter Inhalt.\n"
-            f"Antworte NUR mit JSON:\n"
-            f'{{"caption": "fertiger Post-Text", "hashtags": "{hashtags}", '
+            f"WICHTIG:\n"
+            f"- Kein Platzhalter, kein Fehlertext, echter Inhalt\n"
+            f"- KEIN HTML (keine Tags wie <b>, <em>, <br>)\n"
+            f"- KEINE Einkommensversprechen (kein 'verdiene €X', 'passives Einkommen', 'reich werden')\n"
+            f"- Nur echte Produktvorteile beschreiben\n"
+            f"Antworte NUR mit JSON (plain text, kein HTML):\n"
+            f'{{"caption": "fertiger Post-Text ohne HTML", "hashtags": "{hashtags}", '
             f'"hook": "Hook in 5 Wörtern", "cta": "Kurzer CTA"}}'
         )
         raw = await ai_complete(prompt, max_tokens=350)
@@ -405,11 +409,22 @@ async def _ai_content(product_name: str, price: str, url: str,
     }
 
 
+def _strip_html(text: str) -> str:
+    """Entfernt HTML-Tags aus Text (für Plattformen die kein HTML wollen)."""
+    import re
+    text = re.sub(r"<[^>]+>", "", text)          # Tags entfernen
+    text = text.replace("&amp;", "&").replace("&lt;", "<").replace("&gt;", ">").replace("&nbsp;", " ")
+    return " ".join(text.split())                  # Mehrfach-Leerzeichen bereinigen
+
+
 def _full_post_text(content: dict, platform: str, include_hashtags: bool = True) -> str:
     """Baut den fertigen Post-Text für eine Plattform zusammen."""
     caption = content.get("caption", "")
     url = content.get("url", "")
     hashtags = content.get("hashtags", "") if include_hashtags else ""
+    # Telegram unterstützt HTML (parse_mode=HTML) — alle anderen: plain text
+    if platform != "telegram":
+        caption = _strip_html(caption)
     if platform == "instagram":
         return f"{caption}\n\n{hashtags}\n\n{url}" if hashtags else f"{caption}\n\n{url}"
     if platform in ("twitter",):
