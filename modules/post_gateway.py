@@ -501,8 +501,21 @@ async def safe_post(
             elif p == "telegram":
                 api_result = await _post_telegram(text, chat_id)
             elif p in ("twitter", "x"):
-                from modules.twitter_autoposter import post_tweet
-                api_result = await post_tweet(text)
+                # safe_post hat bereits NeverTwice + PostGuardian geprüft.
+                # post_tweet() würde beides doppelt prüfen (URL-Check blockiert oft).
+                # Deshalb: twikit direkt nutzen ohne innere Wrapper-Checks.
+                try:
+                    from modules.twitter_autoposter import _get_twikit_client, TWITTER_USERNAME
+                    tc = await _get_twikit_client()
+                    if tc:
+                        tweet_obj = await tc.create_tweet(text=text[:280])
+                        api_result = {"ok": True, "post_id": str(tweet_obj.id),
+                                      "url": f"https://twitter.com/{TWITTER_USERNAME}/status/{tweet_obj.id}"}
+                    else:
+                        from modules.twitter_autoposter import post_tweet
+                        api_result = await post_tweet(text)
+                except Exception as _te:
+                    api_result = {"ok": False, "error": f"twikit: {_te}"}
             elif p == "pinterest":
                 from modules.pinterest_autonomy import create_pin
                 api_result = await create_pin(
