@@ -123,12 +123,11 @@ async def _shopify_throttle() -> None:
         now = time.monotonic()
         gap = _SHOPIFY_MIN_GAP - (now - _shopify_last_ts)
         if gap > 0:
-            _shopify_last_ts = now + gap
+            _shopify_last_ts = now + gap  # Slot reservieren — nicht nach sleep überschreiben!
         else:
             _shopify_last_ts = now
     if gap > 0:
         await asyncio.sleep(gap)
-        _shopify_last_ts = asyncio.get_event_loop().time()
 
 
 def _client_session(total_timeout: int = 15):
