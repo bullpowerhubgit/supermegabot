@@ -14824,23 +14824,33 @@ async def create_app():
             return web.json_response({"error": str(e)}, status=500)
 
     async def handle_trust_badge_js(req):
-        """GET /trust-badge.js — Inline Trust-Badge JS für Shopify ScriptTag."""
+        """GET /trust-badge.js — CRO Master JS v3 für Shopify ScriptTag."""
         try:
-            from modules.trust_and_conversion import TRUST_JS
+            from modules.cro_master import TRUST_JS
             return web.Response(
                 text=TRUST_JS,
                 content_type="application/javascript",
                 headers={
-                    "Cache-Control": "public, max-age=3600",
+                    "Cache-Control": "public, max-age=1800",
                     "Access-Control-Allow-Origin": "*",
                 },
             )
         except Exception as e:
             return web.Response(text=f"// error: {e}", content_type="application/javascript")
 
+    async def handle_cro_run(req):
+        """POST /api/cro/run — CRO Master Zyklus manuell auslösen."""
+        try:
+            from modules.cro_master import run_cro_cycle
+            result = await run_cro_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
     app.router.add_post("/api/trust/run",    handle_trust_run)
     app.router.add_get( "/trust-badge.js",  handle_trust_badge_js)
-    log.info("Trust & Conversion routes registered (/api/trust/run, /trust-badge.js)")
+    app.router.add_post("/api/cro/run",      handle_cro_run)
+    log.info("Trust & Conversion routes registered (/api/trust/run, /trust-badge.js, /api/cro/run)")
 
     # ── AIACT-Pro Bridge routes ───────────────────────────────────────────────
     async def _handle_aiact_bridge_health(request):
