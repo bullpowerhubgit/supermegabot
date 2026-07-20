@@ -149,15 +149,18 @@ async def fetch_shopify_products(limit: int = 500) -> list[dict]:
                 if remaining <= 0:
                     break
 
-                params: dict = {
-                    "limit": min(page_size, remaining),
-                    "fields": "id,title,handle,body_html,vendor,product_type,variants,images",
-                    "status": "active",
-                }
                 if page_info:
-                    params["page_info"] = page_info
-                    # When using page_info, limit/fields are ignored by Shopify
-                    # but we still send them (harmless)
+                    # Shopify: status cannot be passed when page_info is present
+                    params: dict = {
+                        "limit": min(page_size, remaining),
+                        "page_info": page_info,
+                    }
+                else:
+                    params = {
+                        "limit": min(page_size, remaining),
+                        "fields": "id,title,handle,body_html,vendor,product_type,variants,images",
+                        "status": "active",
+                    }
 
                 async with session.get(base_url, params=params, timeout=aiohttp.ClientTimeout(total=30)) as resp:
                     if resp.status != 200:

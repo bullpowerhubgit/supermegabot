@@ -47,9 +47,11 @@ class ShopifyImageOptimizer:
 
         async with aiohttp.ClientSession(headers=self._shopify_headers()) as session:
             while True:
-                url = f"{self.store_url}/admin/api/2024-01/products.json?limit={limit}&fields=id,title,images"
                 if page_info:
-                    url += f"&page_info={page_info}"
+                    # Shopify: only limit allowed when page_info is present
+                    url = f"{self.store_url}/admin/api/2024-01/products.json?limit={limit}&page_info={page_info}"
+                else:
+                    url = f"{self.store_url}/admin/api/2024-01/products.json?limit={limit}&fields=id,title,images"
 
                 async with session.get(url) as resp:
                     if resp.status != 200:
