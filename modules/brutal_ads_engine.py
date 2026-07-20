@@ -805,7 +805,7 @@ async def run_brutal_cycle(slot: str = "") -> dict:
                                     slot, "telegram", niche)
     tg_safe, _ = _content_safe(tg_content.get("caption", ""), tg_content.get("hook", ""))
     if tg_safe and _rate_ok("telegram"):
-        tg_text = (f"<b>{tg_content.get('hook', product_name)}</b>\n\n"
+        tg_text = (f"🔥 {tg_content.get('hook', product_name)}\n\n"
                    f"{tg_content.get('caption', '')}\n\n"
                    f"💰 {price} → {tg_content.get('url', base_url)}")
         ok = await _post_telegram_channel(tg_text)
