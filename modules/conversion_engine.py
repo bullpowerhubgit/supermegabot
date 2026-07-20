@@ -190,9 +190,10 @@ async def _get_all_active_products(
 
     while True:
         if page_info:
+            # Shopify: status cannot be passed when page_info is present
             url = (
                 f"{domain}/admin/api/{version}/products.json"
-                f"?status=active&limit={limit}&page_info={page_info}"
+                f"?limit={limit}&page_info={page_info}"
             )
         else:
             url = (
