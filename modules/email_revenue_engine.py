@@ -197,12 +197,7 @@ def _build_smtp_pool() -> List[Dict]:
         ("RudolfPersonal",_e("GMAIL_USER_8", "rudolfsarkany1984@gmail.com"),
                           _e("GMAIL_APP_PASSWORD_8"),
                           "smtp.gmail.com", 587),
-        ("Dragon",        _e("GMAIL_USER_1", "dragonadnp@gmail.com"),
-                          _e("GMAIL_APP_PASSWORD_1"),
-                          "smtp.gmail.com", 587),
-        ("AiiteCGmail",   _e("GMAIL_USER_7", "rudolf.sarkany.aiitec@gmail.com"),
-                          _e("GMAIL_APP_PASSWORD_7"),
-                          "smtp.gmail.com", 587),
+        # dragonadnp + rudolf.sarkany.aiitec: Reputation beschädigt — dauerhaft gesperrt 2026-07-20
     ]
     for name, user, pw, host, port in specs:
         if pw:
