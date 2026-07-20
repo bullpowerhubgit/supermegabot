@@ -604,9 +604,12 @@ async def _post_klaviyo_event(product_name: str, url: str) -> bool:
                 headers={"Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
                          "revision": "2024-02-15", "Content-Type": "application/json"},
                 json={"data": {"type": "event",
-                               "attributes": {"metric": {"data": {"type": "metric",
-                                                                   "attributes": {"name": "BrutalAds Product Promoted"}}},
-                                              "properties": {"product": product_name, "url": url}}}},
+                               "attributes": {
+                                   "profile": {"data": {"type": "profile",
+                                                        "attributes": {"anonymous_id": "brutal_ads_bot"}}},
+                                   "metric": {"data": {"type": "metric",
+                                                       "attributes": {"name": "BrutalAds Product Promoted"}}},
+                                   "properties": {"product": product_name, "url": url}}}},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
             return r.status in (200, 201, 202)
