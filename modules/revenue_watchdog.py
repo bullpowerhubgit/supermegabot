@@ -375,21 +375,7 @@ async def check_and_act(snapshot: dict[str, Any]) -> list[str]:
             await _telegram_alert(session, msg)
             triggered.append(f"{trigger}: Trust+Traffic reaktiviert")
 
-        # ------------------------------------------------------------------
-        # Rule 2 — Email-Pipeline lahm
-        # ------------------------------------------------------------------
-        hour_now = datetime.now(timezone.utc).hour
-        if snapshot["emails_sent_today"] < 50 and 8 <= hour_now <= 20:
-            trigger = "rule2_email_pipeline_slow"
-            log.warning("[%s] Aktiv: nur %d E-Mails heute", trigger,
-                        snapshot["emails_sent_today"])
-
-            r = await _post_action(session, trigger, "/api/mass-outreach/blast")
-            _log_action(trigger, "POST /api/mass-outreach/blast", r)
-
-            msg = "📧 Email-Pipeline lahm — Blast gestartet"
-            await _telegram_alert(session, msg)
-            triggered.append(f"{trigger}: Email-Blast gestartet")
+        # Rule 2 — DSGVO-Sperre 2026-07-20: Cold-Outreach-Blast dauerhaft deaktiviert
 
         # ------------------------------------------------------------------
         # Rule 3 — Abandoned Cart Recovery
@@ -409,20 +395,7 @@ async def check_and_act(snapshot: dict[str, Any]) -> list[str]:
             await _telegram_alert(session, msg)
             triggered.append(f"{trigger}: Cart-Recovery für {snapshot['carts_abandoned']} Carts")
 
-        # ------------------------------------------------------------------
-        # Rule 4 — Zu wenig Leads
-        # ------------------------------------------------------------------
-        if snapshot["leads_in_db"] < 100:
-            trigger = "rule4_low_leads"
-            log.warning("[%s] Aktiv: nur %d Leads in DB", trigger,
-                        snapshot["leads_in_db"])
-
-            r = await _post_action(session, trigger, "/api/mass-outreach/research")
-            _log_action(trigger, "POST /api/mass-outreach/research", r)
-
-            msg = f"🔍 Nur {snapshot['leads_in_db']} Leads — Recherche gestartet"
-            await _telegram_alert(session, msg)
-            triggered.append(f"{trigger}: Lead-Recherche gestartet ({snapshot['leads_in_db']} Leads)")
+        # Rule 4 — DSGVO-Sperre 2026-07-20: Lead-Recherche dauerhaft deaktiviert
 
         # ------------------------------------------------------------------
         # Rule 5 — Meta ROAS kritisch

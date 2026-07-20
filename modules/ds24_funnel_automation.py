@@ -60,18 +60,8 @@ async def _notify_telegram(buyer: dict, product: str, amount: str):
 
 
 async def _add_to_mailchimp(email: str, fname: str, lname: str, product: str):
-    if not MAILCHIMP_LIST_ID:
-        return
-    try:
-        from modules.mailchimp_automation import add_subscriber
-        await add_subscriber(
-            list_id=MAILCHIMP_LIST_ID,
-            email=email, fname=fname, lname=lname,
-            tags=["digistore24", "buyer", product[:50]],
-        )
-        log.info("Mailchimp: added %s", email)
-    except Exception as exc:
-        log.warning("Mailchimp add failed: %s", exc)
+    # MAILCHIMP GESPERRT seit 2026-07-12 — alle 3 Konten gebannt → nur Klaviyo!
+    log.debug("Mailchimp disabled (banned 2026-07-12) — skipping %s", email)
 
 
 async def _add_to_klaviyo(email: str, fname: str, lname: str, product: str, amount: str):
