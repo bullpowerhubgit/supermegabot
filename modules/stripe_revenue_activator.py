@@ -33,6 +33,7 @@ from modules.stripe_guards import (
 )
 
 log = logging.getLogger(__name__)
+_payment_links_lock = asyncio.Lock()  # Verhindert parallele create_all_payment_links() Aufrufe
 
 # ── Config ─────────────────────────────────────────────────────────────────────
 # FULL-Key hat Priorität — live-safe Key-Resolution
@@ -250,6 +251,18 @@ async def create_all_payment_links() -> list:
         log.error("STRIPE_SECRET_KEY not set — cannot create payment links")
         return []
 
+    if _payment_links_lock.locked():
+        log.info("create_all_payment_links: bereits ein Lauf aktiv — überspringe parallelen Aufruf")
+        return []
+    await _payment_links_lock.acquire()
+    try:
+        return await _create_all_payment_links_inner()
+    finally:
+        _payment_links_lock.release()
+
+
+async def _create_all_payment_links_inner() -> list:
+    """Innerer Kern von create_all_payment_links() — läuft unter Lock."""
     _db_init()
     # Nach Railway-Redeploy: vorhandene Links aus Stripe laden bevor wir neue erstellen
     await _sync_existing_links_from_stripe()
