@@ -6912,6 +6912,23 @@ async def task_cro_engine() -> str:
         return f"CRO Engine Fehler: {e}"
 
 
+async def task_cro_master() -> str:
+    """CRO Master: Discounts + Streichpreise + Trust-Script v3 (alle 4h)."""
+    try:
+        from modules.cro_master import run_cro_cycle
+        r = await run_cro_cycle()
+        disc = r.get("discounts", {})
+        streich = r.get("streichpreise", {})
+        script = r.get("script_tag", {})
+        updated = streich.get("updated", 0) if isinstance(streich, dict) else 0
+        return (
+            f"CRO Master: discounts={disc} | streichpreise={updated} aktualisiert"
+            f" | script={script.get('action') if isinstance(script, dict) else script}"
+        )
+    except Exception as e:
+        return f"CRO Master Fehler: {e}"
+
+
 async def task_geheimwaffe() -> str:
     """Geheimwaffe: competitive intelligence + full automation (tägl.)."""
     try:
@@ -8912,6 +8929,7 @@ TASKS = [
     ("freelance_cycle",         task_freelance_cycle,         14400,  420),  # 4h — Fiverr+Upwork (war 12h)
     # mega_auto_post duplicate removed (kept 6h/2860s version above)
     # ── CRO + Auto Funnel ────────────────────────────────────────────────
+    ("cro_master",              task_cro_master,             14400,    45),  # 4h   — Discounts + Streichpreise + Trust v3
     ("cro_run",                 task_cro_run,                 3600,   121),  # hourly — Klaviyo flows + urgency
     # auto_funnel duplicate removed (kept 24h/3300s version above)
     # ── Email Brain ──────────────────────────────────────────────────────
@@ -9438,6 +9456,7 @@ class AutomationScheduler:
         "mega_autonomy_cycle", "gumroad_full_setup", "stripe_catalog_sync",
         "ds24_auto_approve", "shopify_manager_cycle", "shopify_image_scan",
         "ebay_import_cycle", "amazon_affiliate_sync", "aliexpress_import_cycle",
+        "cro_master",
     })
 
     # Revenue-First: nur Tasks die direkt Umsatz bringen
@@ -9454,6 +9473,7 @@ class AutomationScheduler:
         "mega_autonomy_cycle", "gumroad_full_setup", "stripe_catalog_sync",
         "ds24_auto_approve", "organic_traffic_post", "shopify_manager_cycle",
         "ebay_import_cycle", "amazon_affiliate_sync", "aliexpress_import_cycle",
+        "cro_master", "dynamic_pricing",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
