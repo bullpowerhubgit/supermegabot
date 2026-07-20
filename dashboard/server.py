@@ -7303,7 +7303,7 @@ async def cors_middleware(request, handler):
 import collections
 
 _RATE_WINDOW  = 60        # Sekunden pro Fenster
-_RATE_LIMIT   = 120       # Max Requests/IP/Fenster (legitime Nutzung)
+_RATE_LIMIT   = 300       # Max Requests/IP/Fenster (legitime Nutzung)
 _BAN_LIMIT    = 10        # Fehlgeschlagene Auth-Versuche bis IP-Ban
 _BAN_DURATION = 900       # Ban-Dauer: 15 Minuten
 
