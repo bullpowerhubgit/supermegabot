@@ -182,7 +182,7 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
         return {"ok": False, "blocked": True, "errors": [f"NeverTwice fail-closed: {e}"]}
     try:
         from modules.post_guardian import check_post as _gcheck, auto_repair_post as _repair
-        _res = await _gcheck(text, platform="twitter", check_urls=True)
+        _res = await _gcheck("twitter", text, check_urls=True)
         if not _res["ok"]:
             # Automatische Reparatur versuchen
             _rep = await _repair(text, "twitter")
