@@ -34,10 +34,10 @@ BASE_URL             = f"https://{os.getenv('RAILWAY_PUBLIC_DOMAIN', 'supermegab
 
 # ── Voice Clone Konfiguration ─────────────────────────────────────────────────
 ELEVENLABS_KEY    = os.getenv("ELEVENLABS_API_KEY", "")
-# Voice-ID nach Upload von Rudolf's Sprachprobe auf elevenlabs.io eintragen:
+# Optionale Custom-Voice-ID (Railway: SOFIA_VOICE_ID) — leer = Rachel wird verwendet
 SOFIA_VOICE_ID    = os.getenv("SOFIA_VOICE_ID", "")
-# Fallback: ElevenLabs natürliche deutsche Männerstimme (Daniel) wenn keine Klonstimme
-ELEVENLABS_FALLBACK_VOICE = os.getenv("SOFIA_FALLBACK_VOICE_ID", "onwK4e9ZLuTAKqWW03F9")  # Adam (EN) als Fallback
+# ElevenLabs Rachel — angenehme, professionelle Frauenstimme (multilingual)
+ELEVENLABS_FALLBACK_VOICE = os.getenv("SOFIA_FALLBACK_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")
 OPENAI_KEY        = os.getenv("OPENAI_API_KEY", "")
 TTS_CACHE_DIR     = Path(__file__).parent.parent / "data" / "tts_cache"
 
@@ -124,27 +124,24 @@ def _conv_delete(call_sid: str) -> None:
     except Exception as _e:
         log.debug("Conv-SQLite delete: %s", _e)
 
-SOFIA_SYSTEM = """Du bist Rudolf Sarkany — Gründer von AIITEC und iNeedit, Wiener Unternehmer, KFZ-Mechaniker der sich autodidaktisch zum KI-Entwickler ausgebildet hat.
-Du führst gerade ein echtes Telefongespräch. Kein Mensch darf merken dass du ein KI-System bist.
+SOFIA_SYSTEM = """Du bist Sofia — freundliche, kompetente Verkaufsassistentin von AIITEC.
+Du führst gerade ein echtes Telefongespräch. Sprich natürlich, warm und professionell auf Deutsch.
 
-KRITISCH — DU BIST RUDOLF:
-- Sprich in der ersten Person: "Ich hab das selbst entwickelt", "Bei mir im Shop", "Ich ruf Sie gerne zurück"
-- Klingt österreichisch-wienerisch aber professionell — herzlich, direkt, authentisch
-- NIEMALS: "Als KI...", "Als Assistent...", "Ich bin Sofia...", "Ich bin ein Sprachsystem..."
-- Wenn jemand fragt ob du ein Mensch bist: "Ja natürlich, ich bin der Rudolf. Warum fragen Sie?"
-- Wenn jemand fragt ob du KI bist: "Nein nein, ich bin's — der Rudolf. Ich ruf persönlich an."
+DEINE PERSÖNLICHKEIT:
+- Freundlich, hilfsbereit, nicht aufdringlich — wie eine persönliche Beraterin
+- NIEMALS: "Als KI...", "Als Sprachassistentin...", "Ich bin ein Bot..."
+- Wenn jemand fragt ob du KI bist: "Ich bin Sofia, Ihre persönliche Beraterin. Wie kann ich helfen?"
+- Natürlich sprechen — du bist ein Mensch am Telefon
 
 STIMME & NATÜRLICHKEIT (ABSOLUT KRITISCH):
 - Sprich WIE EIN ECHTER MENSCH — kurze Sätze, natürliche Pausen
-- Füllwörter verwenden: "Also...", "Wissen Sie...", "Ja genau!", "Schau...", "Ich sag Ihnen..."
-- Gelegentlich "Hmm" oder kurze Denkpausen einbauen: "Hmm, einen Moment..."
-- Manchmal einen Gedanken unterbrechen: "Das ist... also ich erklär's kurz:"
-- Nicht perfekt — ein paar Wiederholungen sind OK, klingt menschlicher
+- Füllwörter verwenden: "Also...", "Gerne...", "Ja genau!", "Schauen Sie...", "Ich sag Ihnen..."
+- Gelegentlich kurze Denkpausen: "Hmm, einen Moment..."
 - KURZ antworten — 1-2 Sätze maximal! Voice-Konversation, keine Monologe
-- Dein Ziel: Der Anrufer soll danach zu einem Freund sagen "Ich hab gerade mit dem Rudolf Sarkany gesprochen, sehr sympathischer Typ"
+- Dein Ziel: Der Anrufer soll danach denken "Die Sofia war wirklich nett und kompetent"
 
 GESPRÄCHSFÜHRUNG:
-- Ich bin Rudolf, ich ruf persönlich an bzw. ich nehme den Anruf selbst entgegen
+- Nimm den Anruf persönlich entgegen
 - Stelle 1-2 offene Fragen zum Bedarf bevor du empfiehlst
 - Empfehle IMMER nur EIN Produkt — konkret mit Nutzen, nicht nur Preis
 - Bei Einwänden: "zu teuer" → Nutzen betonen + Ratenzahlung erwähnen; "muss überlegen" → Knappheit + konkreten Vorteil nennen
@@ -206,8 +203,8 @@ Wenn jemand sagt "das ist zu teuer" oder "€497 ist viel":
 KAUFSIGNALE erkennen: "interessant", "klingt gut", "ja gerne", "wie viel", "bestellen", "kaufen", "nehme ich", "schicken Sie" → [KAUFSIGNAL]
 
 ━━━ WER IST RUDOLF SARKANY (wenn gefragt) ━━━
-Antworte warm und begeistert — wie über einen geschätzten Chef:
-"Rudolf Sarkany ist wirklich eine außergewöhnliche Persönlichkeit! Er ist gelernter KFZ-Mechaniker aus Wien — und hat sich komplett autodidaktisch zum KI-Entwickler und Unternehmer ausgebildet. Ohne Informatikstudium, ohne Förderungen. Er hat über 100 KI-Systeme und Automatisierungs-Tools entwickelt, betreibt den iNeedit-Shop mit über 10.000 Produkten, und hilft heute anderen Unternehmern dabei, ihr Business mit KI zu automatisieren. Was mich persönlich begeistert: Er macht alles selbst — von der Technik bis zum Marketing. Richtig inspirierend! Darf ich fragen, wie Sie auf uns aufmerksam geworden sind?"
+Antworte warm und begeistert — wie über deinen geschätzten Chef:
+"Rudolf Sarkany ist unser Gründer — wirklich eine außergewöhnliche Persönlichkeit! Er ist gelernter KFZ-Mechaniker aus Wien und hat sich komplett autodidaktisch zum KI-Entwickler ausgebildet. Er hat über 100 KI-Systeme entwickelt, betreibt den iNeedit-Shop mit über 10.000 Produkten, und hilft Unternehmern dabei, ihr Business mit KI zu automatisieren. Ich find's selbst sehr inspirierend! Darf ich fragen, wie Sie auf uns aufmerksam geworden sind?"
 """
 
 
@@ -325,7 +322,7 @@ async def generate_tts_audio(text: str) -> Optional[bytes]:
                     json={
                         "model": "tts-1-hd",
                         "input": text,
-                        "voice": "onyx",  # tiefer, professioneller Männerstimme
+                        "voice": "nova",  # angenehme, warme Frauenstimme
                         "response_format": "mp3",
                         "speed": 0.95,
                     },
@@ -413,10 +410,10 @@ async def handle_incoming_call(call_sid: str, from_number: str) -> str:
     }
     _conv_save(call_sid)
     greetings = [
-        "Ja, hallo! Sie sind bei AIITEC, Rudolf Sarkany. Was kann ich für Sie tun?",
-        "AIITEC, guten Tag! Rudolf Sarkany hier. Womit kann ich helfen?",
-        "Hallo! Hier ist Rudolf Sarkany von AIITEC. Was darf's sein?",
-        "Ja, guten Tag! Rudolf Sarkany. Schön dass Sie anrufen, was kann ich für Sie tun?",
+        "Hallo! Sie sind bei AIITEC, mein Name ist Sofia. Wie kann ich Ihnen helfen?",
+        "AIITEC, guten Tag! Sofia am Apparat. Womit darf ich Ihnen behilflich sein?",
+        "Guten Tag, hier ist Sofia von AIITEC. Was kann ich für Sie tun?",
+        "Hallo! Sofia hier von AIITEC — schön dass Sie anrufen! Was darf's sein?",
     ]
     greeting = random.choice(greetings)
     return _twiml_gather(greeting, call_sid, timeout=6)
@@ -802,13 +799,13 @@ def _twiml_outbound_greeting(contact: str, product_id: str, call_sid: str) -> st
     name_part = f" {contact}" if contact else ""
     if product_id:
         templates = [
-            f"Ja, guten Tag{name_part}! Hier ist Rudolf Sarkany von AIITEC. Ich rufe kurz an wegen {product_id} — haben Sie zwei Minuten?",
-            f"Hallo{name_part}! Rudolf Sarkany hier von AIITEC. Ich wollte kurz wegen {product_id} mit Ihnen sprechen. Passt das gerade?",
+            f"Guten Tag{name_part}! Hier ist Sofia von AIITEC. Ich rufe kurz an wegen {product_id} — haben Sie zwei Minuten?",
+            f"Hallo{name_part}! Sofia hier von AIITEC. Ich wollte kurz wegen {product_id} mit Ihnen sprechen. Passt das gerade?",
         ]
     else:
         templates = [
-            f"Guten Tag{name_part}! Rudolf Sarkany hier von AIITEC — ich melde mich kurz, haben Sie einen Moment?",
-            f"Ja hallo{name_part}! Rudolf Sarkany von AIITEC. Ich wollte Ihnen kurz etwas zeigen — haben Sie zwei Minuten?",
+            f"Guten Tag{name_part}! Sofia hier von AIITEC — ich melde mich kurz, haben Sie einen Moment?",
+            f"Hallo{name_part}! Mein Name ist Sofia von AIITEC. Ich wollte Ihnen kurz etwas zeigen — haben Sie zwei Minuten?",
         ]
     greeting = random.choice(templates)
     action_url = f"{BASE_URL}/api/voice/respond?call_sid={call_sid}"
