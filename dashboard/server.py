@@ -13498,29 +13498,14 @@ async def create_app():
             return web.json_response({"error": str(e)}, status=500)
 
     async def handle_mass_outreach_research(req):
-        """POST /api/mass-outreach/research — Lead-Research anstoßen"""
-        try:
-            from modules.mass_outreach_1000 import run_research, init_db
-            init_db()
-            asyncio.create_task(run_research(session_limit=500))
-            return web.json_response({"status": "research_started"})
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
+        """DSGVO-Sperre 2026-07-20: Cold-Outreach-Research dauerhaft deaktiviert."""
+        return web.json_response({"ok": False, "disabled": True,
+                                  "reason": "cold_outreach_dsgvo_disabled"})
 
     async def handle_mass_outreach_send(req):
-        """POST /api/mass-outreach/send — Smart Batch: Research neue Firmen + Versand"""
-        try:
-            body = await req.json() if req.content_length else {}
-            limit = int(body.get("limit", 333))
-            smart = body.get("smart", True)
-            from modules.mass_outreach_1000 import run_smart_batch, run_batch_only, init_db
-            init_db()
-            fn = run_smart_batch if smart else run_batch_only
-            asyncio.create_task(fn(batch_size=limit))
-            return web.json_response({"status": "batch_started", "limit": limit,
-                                      "mode": "smart_research+send" if smart else "send_only"})
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
+        """DSGVO-Sperre 2026-07-20: Cold-Outreach-Send dauerhaft deaktiviert."""
+        return web.json_response({"ok": False, "disabled": True,
+                                  "reason": "cold_outreach_dsgvo_disabled"})
 
     async def handle_unsubscribe(req):
         """GET /api/unsubscribe?email=xxx — GDPR Abmeldung"""
@@ -13576,23 +13561,9 @@ async def create_app():
             return web.json_response({"error": str(e)}, status=500)
 
     async def handle_mass_outreach_blast(req):
-        """POST /api/mass-outreach/blast — Reset + sofort Research + Send (maximale Leistung)"""
-        try:
-            from modules.mass_outreach_1000 import _db, init_db, run_research, run_send_batch
-            init_db()
-            # 1. Reset
-            with _db() as conn:
-                conn.execute("DELETE FROM searched_combos")
-                conn.execute("UPDATE leads SET status='new' WHERE status='error'")
-            # 2. Research + Send async
-            async def _blast():
-                await run_research(session_limit=1000)
-                await run_send_batch(batch_limit=500)
-            asyncio.create_task(_blast())
-            return web.json_response({"ok": True, "status": "blast_started",
-                                      "message": "Reset + Research (1000) + Send (500) läuft"})
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
+        """DSGVO-Sperre 2026-07-20: Cold-Outreach dauerhaft deaktiviert."""
+        return web.json_response({"ok": False, "disabled": True,
+                                  "reason": "cold_outreach_dsgvo_disabled"})
 
     # Mass Outreach 1000/Tag
     app.router.add_get( "/api/mass-outreach/stats",          handle_mass_outreach_stats)
