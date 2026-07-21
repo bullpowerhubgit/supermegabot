@@ -1,5 +1,25 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-21 v47 — 8 BUGS GEFIXT · RAILWAY AUTO-DEPLOY LÄUFT**
+**Stand: 2026-07-21 v48 — MONETARISIERUNG STATUS-CHECK + SCRIPTS GEFIXT**
+
+## Session v48 — Monetarisierungs-Scripts (2026-07-21)
+| Stream | Status | Details |
+|--------|--------|---------|
+| Stripe High-Ticket | ✅ BEREITS DONE | Aus 2026-07-16: metadata.highticket=true, €97/€197/€497/mo aktiv |
+| Stripe Script | ✅ GEFIXT | Idempotent — überspringt bereits upgegradete Produkte |
+| Gumroad High-Ticket | ✅ 9/10 DONE | €97–€497 gesetzt; Viral Window Scanner PRO braucht manuelles Variant-Edit |
+| Gumroad Upload | ✅ PRODUKTE ERSTELLT | MacOBD Pro + Geldmaschine Bundle live; PDFs manuell hochladen |
+| Netlify VSL Deploy | ❌ TOKEN 405 | Netlify-Token ohne Deploy-Berechtigung → Manueller Fix nötig |
+
+## ❌ NETLIFY MANUELLER FIX (Rudolf)
+```
+1. netlify.com → User Settings → Applications
+2. → Personal Access Tokens → "New Access Token"
+3. Name: "deploy-token-2026", Scope: Full access (oder Sites > Write + Deploys > Write)
+4. Token kopieren → in ~/netlify_highticket_deploy.py eintragen:
+   TOKEN_1 = "neuer_token"   # bullpowerhubgit
+5. Dann ausführen: python3 ~/netlify_highticket_deploy.py
+```
+Problem: Token `nfp_9gCJdREeYhGmSm7AB3Djnof8gZWHASJN4763` → 405 Method Not Allowed auf alle POST-Deploys
 
 ## Session v47 — Bug-Fixes + Monetarisierung (2026-07-21)
 | Was | Status | Details |
@@ -15,24 +35,16 @@
 
 **Railway Auto-Deploy läuft — commit bec51191**
 
-## 🔥 SOFORT AUSFÜHREN (Rudolf — 4 Monetarisierungs-Scripts)
-```bash
-cd ~/supermegabot && set -a && source .env && set +a
-python3 ~/stripe_highticket_upgrade.py
-python3 ~/netlify_highticket_deploy.py
-python3 ~/gumroad_highticket_upgrade.py
-python3 ~/gumroad_upload.py
-```
-
 ## ⏳ MANUELLE AUFGABEN
 1. 🔴 **Groq API Key** erneuern (console.groq.com) — alle AI ausgefallen!
 2. 🔴 **DeepSeek** Credits/Key (402 Fehler) — platform.deepseek.com
 3. 🔴 **Anthropic Credits** aufladen — console.anthropic.com
-4. 🟡 **Pinterest Token** re-auth — developers.pinterest.com (401)
-5. 🟡 **Gmail rudolfsarkany1984** App-Passwort erneuern
-6. 🟡 **Gumroad PDFs** (9 Dateien) hochladen — tecbuuss.gumroad.com
-7. 🟡 **DS24 Produkt 704677** zur Freigabe einreichen
-8. 🟡 **GMC** Ausweis + Business Info — merchants.google.com
+4. 🟡 **Netlify Token neu** (Full Access) — netlify.com → User Settings → Applications
+5. 🟡 **Pinterest Token** re-auth — developers.pinterest.com (401)
+6. 🟡 **Gmail rudolfsarkany1984** App-Passwort erneuern
+7. 🟡 **Gumroad PDFs** (9 Dateien) hochladen — tecbuuss.gumroad.com
+8. 🟡 **DS24 Produkt 704677** zur Freigabe einreichen
+9. 🟡 **GMC** Ausweis + Business Info — merchants.google.com
 
 ---
 # PREVIOUS STATUS (2026-07-20 v46 — 7 kritische Bugfixes: Posting, Stripe-Duplikate, Shopify-Throttle**
