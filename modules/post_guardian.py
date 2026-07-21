@@ -262,8 +262,8 @@ def validate_post(content: str, platform: str = "default",
         if not _NICHE_KEYWORDS.search(text):
             errors.append("Kein Nischen-Keyword (E-Commerce/AI/Shopify/Marketing) — Post blockiert")
 
-    # 8. HTML-Müll in Plaintext
-    if re.search(r'<[a-z]+[^>]*>.*?</[a-z]+>', text, re.IGNORECASE | re.DOTALL):
+    # 8. HTML-Müll in Plaintext (Telegram erlaubt HTML via parse_mode=HTML)
+    if platform_key not in ("telegram",) and re.search(r'<[a-z]+[^>]*>.*?</[a-z]+>', text, re.IGNORECASE | re.DOTALL):
         errors.append("HTML-Tags im Post gefunden")
 
     # 9. Unersetztes Template
