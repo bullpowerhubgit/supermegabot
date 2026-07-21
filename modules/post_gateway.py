@@ -234,8 +234,9 @@ def _check_credential(platform: str) -> tuple[bool, str]:
         "facebook":  ("FACEBOOK_PAGE_TOKEN_AIITEC", "FACEBOOK_PAGE_ACCESS_TOKEN"),
         "instagram": ("FACEBOOK_PAGE_TOKEN_AIITEC", "FACEBOOK_PAGE_ACCESS_TOKEN"),
         "linkedin":  ("LINKEDIN_ACCESS_TOKEN",),
-        "twitter":   ("TWITTER_ACCESS_TOKEN", "TWITTER_BEARER_TOKEN"),
-        "x":         ("TWITTER_ACCESS_TOKEN", "TWITTER_BEARER_TOKEN"),
+        # Twitter/X nutzt twikit (Cookie-Auth) ODER OAuth-Token — beides ist gültig
+        "twitter":   ("TWITTER_COOKIES_JSON", "TWITTER_PASSWORD", "TWITTER_ACCESS_TOKEN", "TWITTER_BEARER_TOKEN"),
+        "x":         ("TWITTER_COOKIES_JSON", "TWITTER_PASSWORD", "TWITTER_ACCESS_TOKEN", "TWITTER_BEARER_TOKEN"),
         "telegram":  ("TELEGRAM_BOT_TOKEN",),
     }
     required = checks.get(platform.lower(), ())
@@ -296,20 +297,39 @@ async def _post_instagram(caption: str, image_url: str = "") -> dict:
                               data={"image_url": image_url, "caption": caption, "access_token": token},
                               timeout=aiohttp.ClientTimeout(total=30)) as r:
                 data = await r.json(content_type=None)
+                log.warning("[Instagram] Container-Response HTTP %s: %s", r.status, str(data)[:300])
                 if "id" not in data:
-                    return {"ok": False, "error": f"Container-Fehler: {data.get('error',{}).get('message', str(data))}"}
+                    err = data.get("error", {})
+                    return {"ok": False, "error": f"Container-Fehler code={err.get('code')} type={err.get('type')}: {err.get('message', str(data)[:200])}"}
                 container_id = data["id"]
 
-            await asyncio.sleep(3)  # warte auf Container-Verarbeitung
+            # Schritt 2: Container-Status pollen bis FINISHED (max 30s)
+            for attempt in range(6):
+                await asyncio.sleep(5)
+                async with s.get(f"{graph}/{container_id}",
+                                 params={"fields": "status_code,status", "access_token": token},
+                                 timeout=aiohttp.ClientTimeout(total=10)) as rs:
+                    st = await rs.json(content_type=None)
+                    status_code = st.get("status_code", "")
+                    log.warning("[Instagram] Container status attempt=%d: %s", attempt + 1, status_code)
+                    if status_code == "FINISHED":
+                        break
+                    if status_code == "ERROR":
+                        return {"ok": False, "error": f"Container-Verarbeitung fehlgeschlagen: {st}"}
+                    # IN_PROGRESS — weiter warten
+            else:
+                return {"ok": False, "error": "Container-Status-Timeout (max 30s warten)"}
 
-            # Schritt 2: Publizieren
+            # Schritt 3: Publizieren
             async with s.post(f"{graph}/{ig_id}/media_publish",
                               data={"creation_id": container_id, "access_token": token},
                               timeout=aiohttp.ClientTimeout(total=30)) as r2:
                 pub = await r2.json(content_type=None)
+                log.warning("[Instagram] Publish-Response HTTP %s: %s", r2.status, str(pub)[:200])
                 if "id" in pub:
                     return {"ok": True, "post_id": pub["id"]}
-                return {"ok": False, "error": pub.get("error", {}).get("message", str(pub))}
+                err = pub.get("error", {})
+                return {"ok": False, "error": f"Publish-Fehler code={err.get('code')}: {err.get('message', str(pub)[:200])}"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 

@@ -41,7 +41,7 @@ MILESTONES_EUR  = [100, 250, 500, 1000, 2500, 5000, 10000, 25000, 50000, 100000]
 async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
-        await notify(msg, level="info")
+        notify(msg)  # sync function — no await, no 'level' kwarg
     except Exception as _e:
         log.debug("skipped: %s", _e)
 

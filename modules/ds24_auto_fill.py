@@ -43,11 +43,14 @@ class DS24AutoFill:
         if params:
             url += "&" + "&".join(f"{k}={v}" for k, v in params.items())
         try:
-            async with self.session.get(url, headers={"X-DS-API-KEY": self.api_key}, timeout=aiohttp.ClientTimeout(total=15)) as r:
+            session = self.session
+            if session is None:
+                session = aiohttp.ClientSession()
+            async with session.get(url, headers={"X-DS-API-KEY": self.api_key}, timeout=aiohttp.ClientTimeout(total=15)) as r:
                 return await r.json()
         except Exception as e:
-            logger.error(f"DS24 API error {endpoint}: {e}")
-            return {"result": "error", "message": str(e)}
+            logger.error("DS24 API error %s: %s (%s)", endpoint, e or repr(e), type(e).__name__)
+            return {"result": "error", "message": str(e) or repr(e)}
 
     async def check_account_status(self) -> dict:
         """Prüft ob Account Produkte hat"""

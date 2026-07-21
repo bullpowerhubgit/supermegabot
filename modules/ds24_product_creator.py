@@ -350,12 +350,15 @@ async def create_product(
     affiliate_commission: str = "40",
 ) -> Optional[str]:
     """Legt ein neues Produkt auf Digistore24 an. Gibt product_id zurück."""
+    # DS24 verbietet < > & in Feldwerten — ersetzen statt encodieren
+    def _ds24_safe(s: str) -> str:
+        return s.replace("&", "und").replace("<", "").replace(">", "")
     data_payload: dict = {
-        "name_de": name_de[:100],
+        "name_de": _ds24_safe(name_de)[:100],
         "name_intern": re.sub(r"[^a-z0-9\-]", "", (name_intern or name_de[:40]).lower()
                               .replace(" ", "-").replace("ä", "ae").replace("ö", "oe")
                               .replace("ü", "ue").replace("&", "und").replace("+", "plus"))[:40],
-        "description_de": description_de[:2000],
+        "description_de": _ds24_safe(description_de)[:2000],
         "access_instructions_de": access_instructions_de or "Zugang wird nach Zahlungseingang per E-Mail zugeschickt.",
         "language": "de",
         "currency": "EUR",
@@ -599,7 +602,7 @@ async def auto_create_products(count: int = 2, fast: bool = False) -> dict:
                 lines.append(f"• {p['name'][:45]} (€{p['price']}, {p['commission']})")
             if len(created) > 10:
                 lines.append(f"... + {len(created)-10} weitere")
-            await notify("\n".join(lines), level="success")
+            notify("\n".join(lines))  # sync, no await, no level kwarg
         except Exception as e:
             log.warning("Ignored error: %s", e)
 

@@ -262,7 +262,7 @@ async def _ai(prompt: str, max_tokens: int = 500) -> str:
 async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
-        await notify(msg, level="info")
+        notify(msg)  # sync, no await, no level kwarg
     except Exception as _e:
         log.debug("skipped: %s", _e)
 
