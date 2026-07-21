@@ -1,5 +1,41 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-20 v46 — 7 kritische Bugfixes: Posting, Stripe-Duplikate, Shopify-Throttle**
+**Stand: 2026-07-21 v47 — 8 BUGS GEFIXT · RAILWAY AUTO-DEPLOY LÄUFT**
+
+## Session v47 — Bug-Fixes + Monetarisierung (2026-07-21)
+| Was | Status | Details |
+|-----|--------|---------|
+| Twitter Credential-Check | ✅ GEFIXT | TWITTER_COOKIES_JSON/PASSWORD jetzt erkannt |
+| Instagram Container-Status | ✅ GEFIXT | Polling 6×5s statt blind 3s warten |
+| Telegram HTML geblockt | ✅ GEFIXT | PostGuardian: Telegram exempt von HTML-Check |
+| DS24 & < > im Namen | ✅ GEFIXT | Automatisch ersetzt vor createProduct |
+| DS24AutoFill Session=None | ✅ GEFIXT | Guard + eigene Session wenn nötig |
+| DS24 Fehler-Log leer | ✅ GEFIXT | repr(e) + type(e).__name__ |
+| notify() falsches kwarg | ✅ GEFIXT | 5 Module: sync-call ohne level= |
+| Revenue-Tracker notify | ✅ GEFIXT | sync, kein await |
+
+**Railway Auto-Deploy läuft — commit bec51191**
+
+## 🔥 SOFORT AUSFÜHREN (Rudolf — 4 Monetarisierungs-Scripts)
+```bash
+cd ~/supermegabot && set -a && source .env && set +a
+python3 ~/stripe_highticket_upgrade.py
+python3 ~/netlify_highticket_deploy.py
+python3 ~/gumroad_highticket_upgrade.py
+python3 ~/gumroad_upload.py
+```
+
+## ⏳ MANUELLE AUFGABEN
+1. 🔴 **Groq API Key** erneuern (console.groq.com) — alle AI ausgefallen!
+2. 🔴 **DeepSeek** Credits/Key (402 Fehler) — platform.deepseek.com
+3. 🔴 **Anthropic Credits** aufladen — console.anthropic.com
+4. 🟡 **Pinterest Token** re-auth — developers.pinterest.com (401)
+5. 🟡 **Gmail rudolfsarkany1984** App-Passwort erneuern
+6. 🟡 **Gumroad PDFs** (9 Dateien) hochladen — tecbuuss.gumroad.com
+7. 🟡 **DS24 Produkt 704677** zur Freigabe einreichen
+8. 🟡 **GMC** Ausweis + Business Info — merchants.google.com
+
+---
+# PREVIOUS STATUS (2026-07-20 v46 — 7 kritische Bugfixes: Posting, Stripe-Duplikate, Shopify-Throttle**
 
 ## Session v46 — Geldverdienen Fixes (2026-07-20)
 | Was | Status | Details |
