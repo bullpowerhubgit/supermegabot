@@ -135,6 +135,12 @@ _last_provider: str = ""
 _monitor_running: bool = False
 _last_all_failed_log: float = 0.0
 
+# Alert-Throttling — verhindert Telegram-Spam bei häufigen Provider-Ausfällen
+_ALERT_COOLDOWN_PROVIDER = 1800   # 30 min pro Provider-Down-Alert
+_ALERT_COOLDOWN_ALL_FAILED = 3600  # 1h für "ALLE Provider ausgefallen"
+_last_provider_alert: dict[str, float] = {}
+_last_all_failed_alert: float = 0.0
+
 # Globales Semaphore: max. 8 gleichzeitige AI-Calls — pro Event-Loop (thread-safe)
 _AI_SEM: Optional[asyncio.Semaphore] = None
 _AI_SEM_LOOP: Optional[asyncio.AbstractEventLoop] = None
@@ -233,6 +239,12 @@ async def _tg_send(text: str) -> None:
 
 
 async def _alert_provider_down(provider: str, backoff: int) -> None:
+    global _last_provider_alert
+    now = time.time()
+    if now - _last_provider_alert.get(provider, 0) < _ALERT_COOLDOWN_PROVIDER:
+        log.debug("APIHunt: %s down-alert throttled", provider)
+        return
+    _last_provider_alert[provider] = now
     try:
         from modules.notify_hub import notify_async
         await notify_async(
@@ -249,22 +261,17 @@ async def _alert_provider_down(provider: str, backoff: int) -> None:
 
 
 async def _alert_provider_switch(old: str, new: str) -> None:
-    try:
-        from modules.notify_hub import notify_async
-        await notify_async(
-            "API Hunt: Provider-Wechsel",
-            f"{old} → {new}\nAutomatisch umgeschaltet.",
-            "warn",
-        )
-    except Exception:
-        await _tg_send(
-            f"🔄 API Hunt: Provider-Wechsel\n"
-            f"{old} → {new}\n"
-            f"Automatisch umgeschaltet."
-        )
+    # Provider-Wechsel nur loggen — kein Telegram, da zu häufig bei fluktuierenden APIs
+    log.info("APIHunt: Provider gewechselt %s → %s", old, new)
 
 
 async def _alert_all_failed() -> None:
+    global _last_all_failed_alert
+    now = time.time()
+    if now - _last_all_failed_alert < _ALERT_COOLDOWN_ALL_FAILED:
+        log.warning("APIHunt: ALLE Provider ausgefallen (alert throttled — max 1/h)")
+        return
+    _last_all_failed_alert = now
     try:
         from modules.notify_hub import notify_async
         await notify_async(
@@ -553,7 +560,7 @@ async def _ai_complete_inner(
     # Kurzer Timeout (5s default) damit Cloud-Fallback sofort greift wenn offline.
     global _openclaw_online, _openclaw_last_check
     _ollama_timeout = int(os.getenv("OLLAMA_TIMEOUT", "5"))
-    _ollama_first   = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
+    _ollama_first   = os.getenv("OLLAMA_FIRST", "false").lower() not in ("false", "0", "off")
 
     if _ollama_first:
         # Modell-Auswahl je nach Aufgabe:
