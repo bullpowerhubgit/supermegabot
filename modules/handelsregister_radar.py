@@ -72,8 +72,8 @@ LEAD_BUYERS = [
     # partner@lexware.de ENTFERNT — Bounce 2026-07-13
     {"name": "SevDesk Partnerteam",           "email": "partner@sevdesk.de",            "type": "Buchh-SaaS",      "preis": 12},
     # HDI/Allianz generische Adressen oft nicht zustellbar — deaktiviert
-    {"name": "Jimdo Geschäftskunden",         "email": "business@jimdo.com",            "type": "Website/SaaS",    "preis": 10},
-    {"name": "Wix Partner Deutschland",       "email": "partner@wix.com",               "type": "Website/SaaS",    "preis": 10},
+    # business@jimdo.com ENTFERNT 2026-07-27 — Jimdo ist ein Website-Builder-Dienst, KEIN Lead-Käufer (Bounce + Auto-Reply)
+    # partner@wix.com ENTFERNT 2026-07-27 — Wix ist ein Website-Builder-Dienst, KEIN Lead-Käufer
 ]
 
 
@@ -417,10 +417,22 @@ async def run_cycle() -> Dict:
     # An Lead-Käufer senden (max 3 Käufer pro Tag, jeder Buyer NUR 1x pro Tag)
     today_start = int(datetime.combine(date.today(), datetime.min.time()).timestamp())
     for buyer in LEAD_BUYERS[:3]:
-        # Tages-Dedup: buyer bereits heute kontaktiert?
+        # Tages-Dedup: buyer bereits heute kontaktiert? — Atomic check via INSERT OR IGNORE lock-row
         with sqlite3.connect(str(_DB_PATH)) as conn:
+            # Lock-Row: Wenn die Row existiert, wurde heute bereits gesendet
+            lock_uid = f"__DAILY_LOCK_{buyer['email']}_{date.today().isoformat()}"
+            try:
+                conn.execute(
+                    "INSERT INTO hr_outreach (lead_uid,buyer_name,buyer_email,status,sent_at,created_at) VALUES (?,?,?,?,?,?)",
+                    (lock_uid, buyer["name"], buyer["email"], "lock", int(time.time()), int(time.time()))
+                )
+                conn.commit()
+            except sqlite3.IntegrityError:
+                log.info("HR-Radar: %s heute bereits kontaktiert (lock) — überspringe", buyer["email"])
+                continue
+            # Zusätzlich: Prüfe ob heute bereits eine echte Sendung erfolgte
             already = conn.execute(
-                "SELECT 1 FROM hr_outreach WHERE buyer_email=? AND sent_at>=? LIMIT 1",
+                "SELECT 1 FROM hr_outreach WHERE buyer_email=? AND status='sent' AND sent_at>=? LIMIT 1",
                 (buyer["email"], today_start)
             ).fetchone()
         if already:

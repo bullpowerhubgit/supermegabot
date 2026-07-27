@@ -1054,10 +1054,11 @@ async def run_followups() -> Dict:
                   (datetime.now(timezone.utc) - timedelta(days=1)).isoformat(), max_f)
             ).fetchall()
         for row in candidates:
-            subject = f"Re: Kurze Rückfrage zu {row['company'] or 'Ihrer Anfrage'}"
+            subject = f"Nachfrage: KI-Automatisierung für {row['company'] or 'Ihr Unternehmen'}"
             body = (
-                f"Hallo,\n\nwir hatten uns letzte Woche kurz geschrieben.\n"
-                f"Darf ich fragen, ob es Interesse an einer kurzen Demo gibt?\n\n"
+                f"Hallo,\n\nvor einigen Tagen hatte ich Ihnen eine Nachricht geschickt\n"
+                f"zum Thema KI-Automatisierung für {row['company'] or 'Ihr Unternehmen'}.\n\n"
+                f"Darf ich fragen, ob Sie Interesse an einer kurzen Demo hätten?\n\n"
                 f"Es dauert nur 15 Minuten und Sie sehen konkret was die KI-Automatisierung\n"
                 f"für {row['company'] or 'Ihr Unternehmen'} bedeuten kann.\n\n"
                 f"Demo buchen: https://bullpower-hub.vercel.app\n\n"

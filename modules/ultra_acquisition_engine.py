@@ -502,7 +502,7 @@ aiitec.de · +49 [auf Anfrage]
         "subject_de": "Kurze Nachfrage — KI-Automatisierung für {company}",
         "body_de": """Hallo,
 
-letzte Woche hatte ich Ihnen geschrieben bezüglich KI-Automatisierung für {company}.
+vor einigen Tagen hatte ich Ihnen eine Nachricht geschickt bezüglich KI-Automatisierung für {company}.
 
 Ich wollte kurz nachfragen, ob Sie die Chance hatten, meine Nachricht zu lesen — oder ob Sie gerade einfach sehr beschäftigt sind (was ich gut verstehen kann).
 
