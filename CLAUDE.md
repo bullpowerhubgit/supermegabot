@@ -41,17 +41,6 @@ Owner: Rudolf Sarkany (@bullpowerhubgit, bullpowersrtkennels@gmail.com)
 
 ## Architecture — EIN REPO, MEHRERE SERVER
 
-```
-supermegabot/
-  modules/              ← EINZIGE MODUL-QUELLE für ALLE Server (373+ Module)
-  dashboard/server.py       → MegaDash     (Port 8888, Railway: supermegabot)
-  aiitec_server.py          → AIITEC SaaS  (Port 8091, Railway: aiitec-saas)
-  eu-compliance-saas/server.py → EU Compliance (Railway)
-  modules/tg_gate.py        → Globaler Telegram-Spam-Gatekeeper (aiohttp Monkey-Patch)
-  core/automation_scheduler.py → 400+ Tasks, SQLite State
-  core/mega_orchestrator.py    → 110 Bot-Commands
-```
-
 ⚠️ **KRITISCH — NIEMALS ein separates Modul-Repo anlegen!**
 - Alle neuen Module IMMER in `modules/` ablegen
 - `aiitec-saas` Repo ist ARCHIVIERT — dort nicht mehr arbeiten
@@ -78,87 +67,9 @@ curl http://localhost:8888/api/bot/commands
 for f in modules/*.py core/*.py dashboard/*.py; do python3 -m py_compile "$f" && echo "OK: $f"; done
 ```
 
-## Telegram-Spam-Schutz (PERMANENT — Stand 2026-07-18)
+## Telegram-Spam-Schutz → `.claude/rules/telegram-spam.md` (lädt automatisch bei tg_gate.py / automation_scheduler.py)
 
-### TgGate — Globaler Interceptor
-`modules/tg_gate.py` patcht `aiohttp.ClientSession.post` und `urllib.urlopen` beim Server-Start.
-ALLE sendMessage-Calls laufen durch:
-- **Pattern-Filter**: 17 Spam-Patterns (Viral Window Alert, 0 Chancen 0 Imports, MRR €0, etc.)
-- **Dedup**: 5-Minuten-Fenster (kein Doppel-Senden)
-- **Rate-Limit**: 50/Stunde (`TG_MAX_PER_HOUR` Railway-Env, default 50)
-
-Installiert in `dashboard/server.py` ganz oben in `create_app()`:
-```python
-from modules.tg_gate import install_global_intercept
-install_global_intercept()
-```
-
-Stats: `GET /api/tg-gate/stats`
-
-### Scheduler-Blocklist (`core/automation_scheduler.py`)
-Die folgenden Tasks sind in `_POSTING_BLOCKLIST` dauerhaft geblockt (NICHT in `_REVENUE_TASKS`!):
-- `viral_window_scanner` — 72x Garbage-Alerts
-- `ebay_arbitrage_scan` — 0-Result-Reports
-- `money_machine_run` — 0-Aktivität-Summaries
-- `insolvenz_radar_scan` — ungeprüfte B2B-Leads
-- `conversion_optimizer` — All-Zeros-Reports
-- `bpi_sys13_partner_channel` — DSGVO-kritisch (Cold-Emails!)
-- `lead_outreach` — Cold-Outreach verboten
-- `lead_delivery` — ditto
-- `buyer_traffic_engine` — Spam
-- `viral_score_tracker` / `viral_push` / `viraltrendpush` — Spam
-- `posting_engine_run` / `social_post_scheduler` — Spam
-- `tiktok_ads_engine` / `tiktok_content_push` — Spam
-- `vorsprung_scan` — Spam
-- `daily_summary` / `wochenbericht` — Zusammenfassungen ohne Wert
-- `rudiclone_daily_brief` — Spam
-- `boersenbot_run` — irrelevant
-- `lead_finder` / `lead_enricher` — keine Cold-Outreach
-- `seo_ranker` / `seo_audit` — kein Wert
-- `trend_push_scheduler` / `trendbot_run` — Spam
-- 10+ weitere (siehe Datei)
-
-### KRITISCHER UNTERSCHIED:
-- `_POSTING_BLOCKLIST` → Task wird geblockt ✓
-- `_REVENUE_TASKS` → Tasks die NUR im REVENUE_MODE laufen ≠ geblockt!
-
-### Modul-Level Guards
-- `viral_window_scanner.py`: `VIRAL_ADMIN_ALERTS=false` (Railway Env, default disabled)
-- `ebay_arbitrage.py`: 0-Result Filter → kein Telegram
-- `money_machine.py`: Activity-Check → nur senden wenn imports/alerts > 0
-- `partner_channel.py`: `PARTNER_ONBOARDING_ENABLED=false` (Railway Env, default disabled)
-
-## AI Credit-Schutz (KRITISCH — Stand 2026-07-18)
-
-### Limits in `modules/ai_budget_guard.py`
-```
-ANTHROPIC_DAILY_USD_LIMIT    = 0.30  (Railway: ANTHROPIC_DAILY_USD_LIMIT)
-ANTHROPIC_HOURLY_USD_LIMIT   = 0.05  (Railway: ANTHROPIC_HOURLY_USD_LIMIT)
-OPENAI_DAILY_USD_LIMIT       = 0.30  (Railway: OPENAI_DAILY_USD_LIMIT)
-OPENAI_HOURLY_USD_LIMIT      = 0.05  (Railway: OPENAI_HOURLY_USD_LIMIT)
-PERPLEXITY_DAILY_USD_LIMIT   = 0.10  (Railway: PERPLEXITY_DAILY_USD_LIMIT)
-PERPLEXITY_HOURLY_USD_LIMIT  = 0.03  (Railway: PERPLEXITY_HOURLY_USD_LIMIT)
-GLOBAL_AI_DAILY_USD_CAP      = 0.70  (Railway: GLOBAL_AI_DAILY_USD_CAP)
-```
-
-### PFLICHT-REGEL: NIEMALS ohne API-Zugang!
-Rudolf darf NIE in die Situation kommen dass alle Provider leer/ausgefallen sind.
-- **Alle neuen Module die KI nutzen → IMMER über `ai_client.ai_complete()`** — nie direkt Anthropic importieren
-- Bei jedem Railway-Deploy: GROQ_API_KEY + OPENROUTER_API_KEY prüfen
-- `free_api_hunter` läuft alle 12h, `api_hunt_watchdog` alle 1h
-
-## AI-Provider-Reihenfolge (`modules/ai_client.py`)
-1. OpenClaw (lokal / gratis)
-2. Groq (gratis-Tier)
-3. DeepSeek
-4. **OpenRouter** (Haupt-Fallback wenn Anthropic-Quota leer — Key in Railway gesetzt)
-5. Anthropic Claude
-
-→ Bei Anthropic-Quota-Limit übernimmt OpenRouter automatisch!
-
-### Budget-Whitelist (nur diese 17 Module dürfen KI nutzen)
-Shopify-Income-Module, Stripe-Billing, Digistore24, Gumroad, Klaviyo-Email, Meta-Ads, Revenue-Report.
-(Vollständige Liste in `ai_budget_guard.py` — `_AI_ALLOWED_WHITELIST`)
+## AI Credit-Schutz → `.claude/rules/ai-budget.md` (lädt automatisch bei ai_budget_guard.py / ai_client.py)
 
 ## Accounts — FIXE REGELN (Rudolf 6x beschwert!)
 
@@ -191,25 +102,12 @@ Shopify-Income-Module, Stripe-Billing, Digistore24, Gumroad, Klaviyo-Email, Meta
 6. **Meta Ads** — Page 1016738738178786 / @aaiitecc — Budget setzen! (ROAS=0.00 wegen €0 Budget)
 
 ## Database (Supabase)
-Projekt: `qyrjeckzacjaazkpvnjk`
-Tabellen: `scraped_products`, `import_results`, `trend_entries`, `trend_alerts`, `lead_events`, `ab_tests`, `clients`, `client_activity_log`, `agent_memory`, `agent_execution_log`, `agent_messages`
-RLS ist aktiv; Backend schreibt mit service_role Key.
+Projekt: `qyrjeckzacjaazkpvnjk` — RLS aktiv; Backend schreibt mit service_role Key.
 
 ## CI/CD
 - `.github/workflows/deploy.yml` — Syntax-Check bei jedem Push, Railway-Deploy auf main
 - `railway.toml` + `nixpacks.toml` — Railway-Build-Config
 - Health check: `GET /health` → `{"status": "ok"}`
-
-## Agent Teams
-- **RudiClone**: `modules/rudiclone.py` — autonomer Business-Stratege
-- **Geheimwaffe**: `modules/geheimwaffe.py` — Competitive Intelligence
-- **CopilotClient**: `modules/copilot_client.py` — GitHub Copilot v1.0.71 Integration
-- **MultiAgent**: `core/multi_agent_collaboration.js` — parallele Agent-Orchestrierung
-
-## MCP Integrations
-Konfiguriert in `.mcp.json`:
-- Supabase (project: `qyrjeckzacjaazkpvnjk`)
-- GitHub (repo: `bullpowerhubgit/supermegabot`)
 
 ## Shop-Qualitätsregeln (NIEMALS verletzen!)
 Vollständige Regeln in `config/shop_rules.json`.
