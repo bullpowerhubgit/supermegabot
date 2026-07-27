@@ -251,7 +251,7 @@ async def run_upwork_autonomy(max_jobs: int = 5) -> dict:
             f"✅ {random.randint(30,70)}+ erfolgreiche Projekte.\n"
             f"👉 Portfolio: {PORTFOLIO_URL}",
             link=PORTFOLIO_URL,
-            channels=["telegram", "linkedin", "slack", "discord"],
+            channels=["linkedin", "slack", "discord"],
         )
     except Exception as e:
         log.debug("run_upwork_autonomy brutus: %s", e)
