@@ -599,7 +599,19 @@ def _send_gmail(user: str, password: str, to: str, subject: str, body: str) -> T
         return False, str(e)[:100]
 
 
+_OWNER_EMAILS = {
+    "bullpowersrtkennels@gmail.com",
+    "rudolfsarkany1984@gmail.com",
+    "aiitecbuuss@gmail.com",
+}
+
 async def send_email_async(to: str, subject: str, body: str) -> Tuple[bool, str]:
+    if to.lower().strip() in _OWNER_EMAILS:
+        log.warning("OWNER-SCHUTZ: Kein Outreach an eigene Adresse %s", to)
+        return False, "owner_email_blocked"
+    if _is_unsubscribed(to):
+        log.info("Unsubscribed: %s übersprungen", to)
+        return False, "unsubscribed"
     sender = _get_next_sender()
     if not sender:
         return False, "no_smtp_accounts"

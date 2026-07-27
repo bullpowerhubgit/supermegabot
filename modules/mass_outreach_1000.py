@@ -927,8 +927,18 @@ def _send_via_gmail(user: str, password: str, to_email: str,
         log.error("Gmail error (%s): %s", user, e)
         return "error"
 
+_OWNER_EMAILS = {
+    "bullpowersrtkennels@gmail.com",
+    "rudolfsarkany1984@gmail.com",
+    "aiitecbuuss@gmail.com",
+}
+
 async def send_email(to_email: str, subject: str, body: str) -> Tuple[bool, str]:
     global _pool_index, _account_sends
+
+    if to_email.lower().strip() in _OWNER_EMAILS:
+        log.warning("OWNER-SCHUTZ: Kein Outreach an eigene Adresse %s", to_email)
+        return False, "owner_email_blocked"
 
     # Blocklist-Check: keine Emails an gebounced/blockierte Adressen
     try:
