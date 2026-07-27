@@ -27,24 +27,24 @@
       "message": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
       "data": {
         "vpn": "verbunden",
-        "vpn_location": "Disconnected\n    Visible location:       Germany, Neu-Ulm. IPv4: 176.2.32.240",
+        "vpn_location": "Disconnected\n    Visible location:       Germany, Weilheim. IPv4: 79.224.192.68",
         "missing_keys": [],
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-07-09 06:38:54"
+      "ts": "2026-07-27 21:18:41"
     },
     "micro_ping": {
       "status": "warning",
       "message": "3/6 Services UP",
       "data": {
         "down": [
-          "SuperMegaBot",
-          "Telegram Bot",
+          "API-Gateway",
+          "Password-Sync",
           "Autoheal"
         ]
       },
-      "ts": "2026-07-09 06:38:36"
+      "ts": "2026-07-27 21:18:43"
     },
     "optimizer": {
       "status": "ok",
@@ -80,15 +80,10 @@
       "ts": "2026-05-29 14:21:43"
     },
     "micro_revenue": {
-      "status": "ok",
-      "message": "Umsatz heute: EUR 0.00 (0 Orders)",
-      "data": {
-        "revenue": 0.0,
-        "orders": 0,
-        "currency": "EUR",
-        "date": "2026-07-09"
-      },
-      "ts": "2026-07-09 06:30:57"
+      "status": "warning",
+      "message": "Shopify API nicht erreichbar",
+      "data": {},
+      "ts": "2026-07-27 21:13:44"
     },
     "learner": {
       "status": "ok",
@@ -102,13 +97,13 @@
     },
     "micro_clean": {
       "status": "ok",
-      "message": "Disk: 13% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "message": "Disk: 7% | Rotiert: 0 Logs | Gespart: 0.0MB",
       "data": {
-        "disk_percent": 12.9,
+        "disk_percent": 7.2,
         "cleaned": 0,
         "saved_mb": 0.0
       },
-      "ts": "2026-07-09 06:30:58"
+      "ts": "2026-07-27 21:13:44"
     },
     "micro_backup": {
       "status": "ok",
@@ -130,76 +125,6 @@
     }
   },
   "events": [
-    {
-      "agent": "optimizer",
-      "msg": "CPU:44% RAM:81% Disk:57%",
-      "ts": "13:57:00"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:57:20"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:57:45"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:57:50"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:57:53"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:58:20"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:58:46"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:58:50"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:58:53"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:58:53"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:47% RAM:76% Disk:57%",
-      "ts": "13:59:02"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:59:20"
-    },
-    {
-      "agent": "social",
-      "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:59:41"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:59:46"
-    },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
@@ -1129,6 +1054,76 @@
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
       "ts": "06:38:54"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:13:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "21:13:43"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "21:13:44"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 7% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "21:13:44"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:14:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "21:14:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:15:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "21:15:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:16:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "21:16:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:17:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "21:17:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:18:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "21:18:43"
     }
   ],
   "fixes": [],
