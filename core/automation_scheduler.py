@@ -184,16 +184,7 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
             return text
     except Exception:
         pass
-    # Template-Fallback wenn ai_complete leer ist
-    templates = [
-        "Shopify- und DS24-Automation fuer schnellere Prozesse, sauberere Daten und bessere Conversion: https://ineedit.com.co",
-        "KI-gestuetzte E-Commerce-Workflows fuer Shop, Content und Follow-up: https://ineedit.com.co",
-        "Automatisierte Produkt-, Content- und Vertriebsprozesse fuer moderne Online-Shops: https://ineedit.com.co",
-        "Mehr Effizienz in Shopify, CRM und Kampagnen durch saubere Automation: https://ineedit.com.co",
-        "Digitale Verkaufsprozesse mit KI, klaren Workflows und messbarer Optimierung: https://ineedit.com.co",
-    ]
-    import random as _rnd
-    return _rnd.choice(templates)
+    return ""  # Kein Template-Fallback — lieber kein Post als generischer Dummy-Content
 
 
 def get_scheduler_audit(limit: int = 50) -> Dict:
@@ -231,15 +222,20 @@ def get_scheduler_audit(limit: int = 50) -> Dict:
 
 async def task_scheduler_audit() -> str:
     audit = get_scheduler_audit(limit=12)
-    if audit["never_run_count"] or audit["unregistered_implemented_count"]:
+    # Geblockte Tasks aus never_run-Zählung raus — sie schreiben nie in die DB
+    blocklist = getattr(AutomationScheduler, "_POSTING_BLOCKLIST", frozenset())
+    real_never_run = [n for n in audit["never_run_registered"] if n not in blocklist]
+    real_never_run_count = len(real_never_run)
+    # Nur warnen wenn >10 echte (nicht-geblockte) Tasks nie gelaufen sind
+    if real_never_run_count > 10:
         try:
             from modules.notify_hub import notify_async
             await notify_async(
                 "Scheduler Audit",
                 (
-                    f"never_run={audit['never_run_count']} | "
+                    f"never_run={real_never_run_count} (excl. blocklist) | "
                     f"unregistered={audit['unregistered_implemented_count']}\n"
-                    f"never_run_sample={', '.join(audit['never_run_registered'][:5]) or '-'}\n"
+                    f"never_run_sample={', '.join(real_never_run[:5]) or '-'}\n"
                     f"unregistered_sample={', '.join(audit['unregistered_implemented'][:5]) or '-'}"
                 ),
                 "warn",
@@ -249,7 +245,7 @@ async def task_scheduler_audit() -> str:
     return (
         f"SchedulerAudit: registered={audit['registered_task_count']} "
         f"implemented={audit['implemented_task_function_count']} "
-        f"never_run={audit['never_run_count']} "
+        f"never_run={real_never_run_count} (excl.blocklist) "
         f"unregistered={audit['unregistered_implemented_count']}"
     )
 
@@ -9188,6 +9184,9 @@ class AutomationScheduler:
         self._semaphore = asyncio.Semaphore(8)  # max 8 tasks concurrently — keeps event loop free for HTTP
 
     async def start(self):
+        if self._task_handles:  # Guard: verhindert Doppel-Start beim Server-Reload
+            log.warning("AutoScheduler: start() bereits gestartet — ignoriert")
+            return
         self._running = True
         log.info(f"AutoScheduler gestartet — {len(TASKS)} Tasks registriert")
         for name, fn, interval, delay in TASKS:
