@@ -112,11 +112,12 @@ Portfolio: {PORTFOLIO_URL}
             post = f"💼 Auf der Suche nach {job['title']} Expertise?\n✅ {random.randint(20,60)}+ abgeschlossene Projekte.\n👉 {PORTFOLIO_URL}"
 
         from modules.brutus_core import fire
+        # Upwork-Promo NUR auf LinkedIn/Slack — NICHT auf Telegram (Kanal-Follower erwarten Produkte, keine Freelancer-Werbung)
         await fire(
             f"Upwork Expertise: {job['title'][:50]}",
             post,
             link=PORTFOLIO_URL,
-            channels=["telegram", "linkedin", "slack"],
+            channels=["linkedin", "slack"],
         )
         return {"ok": True, "promoted_skill": job["title"], "portfolio": PORTFOLIO_URL}
     except Exception as e:
