@@ -32,7 +32,7 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-07-28 18:56:14"
+      "ts": "2026-07-28 20:50:16"
     },
     "micro_ping": {
       "status": "warning",
@@ -44,7 +44,7 @@
           "Autoheal"
         ]
       },
-      "ts": "2026-07-28 18:55:54"
+      "ts": "2026-07-28 20:50:10"
     },
     "optimizer": {
       "status": "ok",
@@ -83,7 +83,7 @@
       "status": "warning",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-07-28 18:14:08"
+      "ts": "2026-07-28 20:14:09"
     },
     "learner": {
       "status": "ok",
@@ -103,7 +103,7 @@
         "cleaned": 0,
         "saved_mb": 0.0
       },
-      "ts": "2026-07-28 18:13:45"
+      "ts": "2026-07-28 20:13:46"
     },
     "micro_backup": {
       "status": "ok",
@@ -128,1002 +128,1002 @@
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "17:17:46"
+      "ts": "19:12:55"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:18:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:18:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:19:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:19:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:20:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:20:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:21:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:21:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:22:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:22:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:23:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:23:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:24:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:24:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:25:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:25:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:26:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:26:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:27:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:27:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:28:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:28:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:29:11"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:29:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:30:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:30:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:31:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:31:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:32:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:32:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:33:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:33:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:34:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:34:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:35:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:35:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:36:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:36:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:37:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:37:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:38:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:38:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:39:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:39:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:40:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:40:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:41:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:41:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:42:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:42:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:43:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:43:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:44:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:44:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:45:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:45:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:46:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:46:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:47:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:47:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:48:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:48:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:49:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:49:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:50:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:50:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:51:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:51:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:52:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:52:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:53:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:53:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:54:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:54:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:55:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:55:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:56:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:56:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:57:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:57:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:58:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:58:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "17:59:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "17:59:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:00:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:00:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:01:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:01:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:02:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:02:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:03:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:03:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:04:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:04:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:05:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:05:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:06:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:06:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:07:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:07:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:08:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:08:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:09:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:09:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:10:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:10:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:11:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:11:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:12:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "18:12:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:13:13"
+      "ts": "19:13:14"
     },
     {
       "agent": "micro_clean",
       "msg": "Disk: 7% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "18:13:45"
+      "ts": "19:13:45"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:13:47"
+      "ts": "19:13:55"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "18:14:08"
+      "ts": "19:14:08"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:14:13"
+      "ts": "19:14:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:14:47"
+      "ts": "19:14:55"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:15:13"
+      "ts": "19:15:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:15:47"
+      "ts": "19:15:55"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:16:13"
+      "ts": "19:16:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:16:47"
+      "ts": "19:16:55"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:17:13"
+      "ts": "19:17:14"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "19:17:55"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "19:18:14"
     },
     {
       "agent": "micro_ping",
       "msg": "2/6 Services UP",
-      "ts": "18:17:52"
+      "ts": "19:19:00"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:18:13"
+      "ts": "19:19:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:18:54"
+      "ts": "19:20:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:19:13"
+      "ts": "19:20:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:19:54"
+      "ts": "19:21:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:20:13"
+      "ts": "19:21:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:20:54"
+      "ts": "19:22:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:21:13"
+      "ts": "19:22:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:21:54"
+      "ts": "19:23:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:22:13"
+      "ts": "19:23:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:22:54"
+      "ts": "19:24:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:23:13"
+      "ts": "19:24:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:23:54"
+      "ts": "19:25:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:24:13"
+      "ts": "19:25:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:24:54"
+      "ts": "19:26:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:25:13"
+      "ts": "19:26:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:25:54"
+      "ts": "19:27:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:26:13"
+      "ts": "19:27:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:26:54"
+      "ts": "19:28:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:27:13"
+      "ts": "19:28:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:27:54"
+      "ts": "19:29:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:28:13"
+      "ts": "19:29:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:28:54"
+      "ts": "19:30:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:29:13"
+      "ts": "19:30:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:29:54"
+      "ts": "19:31:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:30:13"
+      "ts": "19:31:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:30:54"
+      "ts": "19:32:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:31:13"
+      "ts": "19:32:14"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:31:54"
+      "ts": "19:33:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:32:13"
+      "ts": "19:33:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:32:54"
+      "ts": "19:34:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:33:13"
+      "ts": "19:34:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:33:54"
+      "ts": "19:35:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:34:13"
+      "ts": "19:35:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:34:54"
+      "ts": "19:36:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:35:13"
+      "ts": "19:36:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:35:54"
+      "ts": "19:37:01"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:36:13"
+      "ts": "19:37:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:36:54"
+      "ts": "19:38:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:37:13"
+      "ts": "19:38:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:37:54"
+      "ts": "19:39:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:38:13"
+      "ts": "19:39:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:38:54"
+      "ts": "19:40:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:39:13"
+      "ts": "19:40:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:39:54"
+      "ts": "19:41:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:40:13"
+      "ts": "19:41:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:40:54"
+      "ts": "19:42:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:41:13"
+      "ts": "19:42:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:41:54"
+      "ts": "19:43:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:42:13"
+      "ts": "19:43:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:42:54"
+      "ts": "19:44:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:43:13"
+      "ts": "19:44:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:43:54"
+      "ts": "19:45:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:44:13"
+      "ts": "19:45:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:44:54"
+      "ts": "19:46:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:45:13"
+      "ts": "19:46:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:45:54"
+      "ts": "19:47:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:46:13"
+      "ts": "19:47:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:46:54"
+      "ts": "19:48:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:47:13"
+      "ts": "19:48:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:47:54"
+      "ts": "19:49:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:48:13"
+      "ts": "19:49:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:48:54"
+      "ts": "19:50:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:49:13"
+      "ts": "19:50:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:49:54"
+      "ts": "19:51:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:50:13"
+      "ts": "19:51:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:50:54"
+      "ts": "19:52:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:51:13"
+      "ts": "19:52:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:51:54"
+      "ts": "19:53:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:52:13"
+      "ts": "19:53:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:52:54"
+      "ts": "19:54:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:53:13"
+      "ts": "19:54:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:53:54"
+      "ts": "19:55:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:54:14"
+      "ts": "19:55:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:54:54"
+      "ts": "19:56:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:55:14"
+      "ts": "19:56:15"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "18:55:54"
+      "ts": "19:57:02"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "18:56:14"
+      "ts": "19:57:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "19:58:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "19:58:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "19:59:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "19:59:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:00:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:00:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:01:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:01:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:02:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:02:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:03:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:03:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:04:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:04:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:05:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:05:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:06:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:06:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:07:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:07:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:08:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:08:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:09:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:09:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:10:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:10:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:11:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:11:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:12:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:12:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:13:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:13:15"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 7% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "20:13:46"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:14:02"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "20:14:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:14:15"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:15:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:15:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:16:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:16:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:17:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:17:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:18:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:18:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:19:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:19:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "20:20:08"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:20:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:21:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:21:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:22:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:22:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:23:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:23:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:24:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:24:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:25:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:25:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:26:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:26:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:27:09"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:27:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:28:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:28:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:29:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:29:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:30:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:30:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:31:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:31:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:32:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:32:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:33:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:33:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:34:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:34:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:35:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:35:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:36:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:36:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:37:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:37:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:38:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:38:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:39:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:39:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:40:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:40:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:41:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:41:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:42:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:42:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:43:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:43:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:44:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:44:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:45:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:45:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:46:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:46:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:47:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:47:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:48:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:48:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:49:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:49:16"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "20:50:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "20:50:16"
     }
   ],
   "fixes": [],
