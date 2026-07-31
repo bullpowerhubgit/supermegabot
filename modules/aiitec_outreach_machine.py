@@ -704,6 +704,37 @@ def _local_sent_add(email: str) -> None:
     except Exception:
         pass
 
+_SHARED_DB = Path(__file__).parent.parent / "data" / "mass_outreach.db"
+
+def _was_contacted_db(email: str, days: int = 14) -> bool:
+    """Cross-check gegen mass_outreach SQLite um Duplikate über Module hinweg zu verhindern."""
+    try:
+        import sqlite3 as _sqlite3
+        if not _SHARED_DB.exists():
+            return False
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+        with _sqlite3.connect(str(_SHARED_DB)) as conn:
+            r = conn.execute(
+                "SELECT 1 FROM sends WHERE email=? AND sent_at>?", (email.lower(), cutoff)
+            ).fetchone()
+        return r is not None
+    except Exception:
+        return False
+
+def _record_sent_db(email: str) -> None:
+    """Schreibt gesendete Email in shared SQLite-DB (crash-sicher, atomisch)."""
+    try:
+        import sqlite3 as _sqlite3
+        _SHARED_DB.parent.mkdir(exist_ok=True)
+        with _sqlite3.connect(str(_SHARED_DB)) as conn:
+            conn.execute(
+                "INSERT INTO sends (lead_id, email, stage, smtp_user) VALUES (0, ?, 1, 'aiitec_machine')",
+                (email.lower(),)
+            )
+            conn.commit()
+    except Exception as e:
+        log.debug("_record_sent_db failed: %s", e)
+
 async def _get_queue(limit: int = EMAILS_PER_DAY) -> List[dict]:
     # Primär: Supabase-Queue
     fetch = min(limit * 4, 600)
@@ -1264,6 +1295,9 @@ def _send_email(to: str, subject: str, body: str) -> bool:
     if not _is_valid_recipient(to):
         log.warning("Ungültige/Noreply-Adresse übersprungen: %s", to)
         return False
+    if _was_contacted_db(to, days=14):
+        log.info("Dedup (SQLite/14d): %s bereits kontaktiert — übersprungen", to)
+        return False
     try:
         from modules.email_guard import validate_email
         ok, errors = validate_email(subject=subject, body=body, to_email=to, skip_dedup=True)
@@ -1277,12 +1311,14 @@ def _send_email(to: str, subject: str, body: str) -> bool:
     # 1. SendGrid primary — beste Zustellrate bei Enterprise-Servern
     if _send_via_sendgrid(to, subject, body):
         _local_sent_add(to)
+        _record_sent_db(to)
         return True
 
     # 2. Gmail-Pool als Fallback
     log.debug("  ↪  SendGrid n.v. — Gmail-Pool Versuch")
     if _send_via_gmail_pool(to, subject, body):
         _local_sent_add(to)
+        _record_sent_db(to)
         return True
 
     log.error("  ✗  Alle Sender fehlgeschlagen → %s", to)
