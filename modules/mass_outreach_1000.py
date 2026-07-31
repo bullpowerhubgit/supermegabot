@@ -839,11 +839,15 @@ async def _ai_personalize(company: str, industry: str, city: str,
             "* product", "* value prop", "* industry", "* recipient", "* note:",
             "hier ist eine kurze", "b2b-kalt-email:", "b2b cold email",
             "personalisierte deutsche", "implies the", "(note:", "(b2b",
+            "[deiner firma", "[ihre stadt", "[firmenname", "[stadtname", "[branche",
+            "[dein", "[ihr unternehmen", "ansiedlung",
         )
         _de_openers = ("guten tag", "sehr geehrte", "hallo", "liebe ", "guten morgen")
         body_lower = body.lower() if body else ""
         has_opener = any(op in body_lower for op in _de_openers)
-        has_leak   = body_lower.startswith("* ") or any(m in body_lower for m in _leak_markers)
+        import re as _re
+        has_unfilled = bool(_re.search(r'\[[A-ZÄÖÜ][^\]]{3,40}\]', body))
+        has_leak   = body_lower.startswith("* ") or any(m in body_lower for m in _leak_markers) or has_unfilled
         if body and has_opener and not has_leak:
             body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
             return subject, body
