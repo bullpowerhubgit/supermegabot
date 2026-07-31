@@ -445,7 +445,7 @@ Rudolf Sarkany | AiiteC
 aiitecbuuss@gmail.com"""
         },
         2: {
-            "subject": "Re: KI-Lead-Agent — kurze Rückfrage für {name}",
+            "subject": "Nachfrage: KI-Lead-Agent für {name}",
             "body": """Sehr geehrte Damen und Herren,
 
 ich hatte Ihnen vor einigen Tagen geschrieben. Ich wollte kurz nachfragen, ob unser {product_name} für {name} relevant wäre.
@@ -496,7 +496,7 @@ Rudolf Sarkany | AiiteC Compliance GmbH
 aiitecbuuss@gmail.com"""
         },
         2: {
-            "subject": "Re: EU AI Act — 6 Wochen bis zur nächsten Prüfwelle",
+            "subject": "Nachfrage: EU AI Act — 6 Wochen bis zur nächsten Prüfwelle",
             "body": """Sehr geehrte Damen und Herren,
 
 der EU AI Act-Durchsetzungsplan sieht ab Q4 2026 erste behördliche Prüfungen vor — besonders im Finanz- und {branche}-Sektor.
@@ -543,7 +543,7 @@ Rudolf Sarkany | AiiteC Intelligence GmbH
 aiitecbuuss@gmail.com"""
         },
         2: {
-            "subject": "Re: B2B-Intelligence — Konkrete Zahlen für {branche}",
+            "subject": "Nachfrage: B2B-Intelligence — Konkrete Zahlen für {branche}",
             "body": """Sehr geehrte Damen und Herren,
 
 ich hatte Ihnen bereits geschrieben. Hier kurz konkrete Zahlen aus unserem System:

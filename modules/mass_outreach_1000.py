@@ -831,9 +831,13 @@ async def _ai_personalize(company: str, industry: str, city: str,
     try:
         from modules.ai_client import ai_complete
         body = (await ai_complete(prompt, model_hint="fast", max_tokens=300)).strip()
-        if body:
+        # Guard: KI-Prompt-Leak erkennen — wenn Body Metadaten enthält → Template nutzen
+        _leak_markers = ("* type:", "* target:", "* sender:", "* goal:", "hier ist eine kurze",
+                         "b2b-kalt-email:", "b2b cold email", "personalisierte deutsche")
+        if body and not any(m in body.lower() for m in _leak_markers):
             body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
             return subject, body
+        log.warning("ai_complete returned prompt-meta — falling back to template")
     except Exception as e:
         log.debug("ai_complete personalize: %s", e)
 
