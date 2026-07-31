@@ -831,13 +831,23 @@ async def _ai_personalize(company: str, industry: str, city: str,
     try:
         from modules.ai_client import ai_complete
         body = (await ai_complete(prompt, model_hint="fast", max_tokens=300)).strip()
-        # Guard: KI-Prompt-Leak erkennen — wenn Body Metadaten enthält → Template nutzen
-        _leak_markers = ("* type:", "* target:", "* sender:", "* goal:", "hier ist eine kurze",
-                         "b2b-kalt-email:", "b2b cold email", "personalisierte deutsche")
-        if body and not any(m in body.lower() for m in _leak_markers):
+        # Guard: KI-Prompt-Leak — Body muss mit deutschem Opener beginnen UND
+        # darf keine Metadaten-Marker enthalten (wird laufend erweitert)
+        _leak_markers = (
+            "* type:", "* target:", "* sender:", "* goal:", "* company", "* service:",
+            "* hook:", "* core value", "* offer:", "* cta:", "* price", "* location",
+            "* product", "* value prop", "* industry", "* recipient", "* note:",
+            "hier ist eine kurze", "b2b-kalt-email:", "b2b cold email",
+            "personalisierte deutsche", "implies the", "(note:", "(b2b",
+        )
+        _de_openers = ("guten tag", "sehr geehrte", "hallo", "liebe ", "guten morgen")
+        body_lower = body.lower() if body else ""
+        has_opener = any(op in body_lower for op in _de_openers)
+        has_leak   = body_lower.startswith("* ") or any(m in body_lower for m in _leak_markers)
+        if body and has_opener and not has_leak:
             body += f"\n\n---\nAbmelden: https://{UNSUBSCRIBE_BASE}/api/unsubscribe?email={{email}}"
             return subject, body
-        log.warning("ai_complete returned prompt-meta — falling back to template")
+        log.warning("ai_complete returned prompt-meta or no DE-opener — falling back to template")
     except Exception as e:
         log.debug("ai_complete personalize: %s", e)
 
