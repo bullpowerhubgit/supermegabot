@@ -168,7 +168,7 @@ Rudolf Sarkany | BullPower
 bullpowersrtkennels@gmail.com""",
         },
         2: {
-            "subject": "Re: KI-Agenten für {name} — kurze Rückfrage",
+            "subject": "Nachfrage: KI-Agenten für {name}",
             "body": """Sehr geehrte Damen und Herren,
 
 ich hatte Ihnen vor einigen Tagen geschrieben. Kurze Nachfrage: Hat das Thema KI-Automatisierung bei {name} gerade Priorität?
@@ -225,7 +225,7 @@ Rudolf Sarkany | BullPower
 bullpowersrtkennels@gmail.com""",
         },
         2: {
-            "subject": "Re: EU AI Act — Prüfwelle Q4/2026 für {branche}",
+            "subject": "Nachfrage: EU AI Act — Prüfwelle Q4/2026 für {branche}",
             "body": """Sehr geehrte Damen und Herren,
 
 kurze Nachfrage zu meiner letzten Email: Hat {name} das EU AI Act Compliance-Thema bereits intern addressiert?
@@ -279,7 +279,7 @@ Rudolf Sarkany | BullPower
 bullpowersrtkennels@gmail.com""",
         },
         2: {
-            "subject": "Re: Insolvenz-Leads — konkrete Zahlen für {branche}",
+            "subject": "Nachfrage: Insolvenz-Leads — konkrete Zahlen für {branche}",
             "body": """Sehr geehrte Damen und Herren,
 
 kurze Rückfrage: Ist das Thema Insolvenz-Früherkennung bei {name} aktuell relevant?
@@ -337,7 +337,7 @@ Rudolf Sarkany | BullPower
 bullpowersrtkennels@gmail.com""",
         },
         2: {
-            "subject": "Re: Viral-Produkte für {name} — Systembericht diese Woche",
+            "subject": "Nachfrage: Viral-Produkte für {name} — Systembericht diese Woche",
             "body": """Sehr geehrte Damen und Herren,
 
 kurze Rückfrage: Nutzt {name} bereits automatisierte Trend-Erkennung?
