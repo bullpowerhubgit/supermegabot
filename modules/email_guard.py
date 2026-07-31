@@ -49,6 +49,10 @@ _DEAD_EMAILS = {
     "test@test.com",
     "null@null.com",
     "nobody@nowhere.com",
+    # Owner-Adressen — NIEMALS Outreach-Mails an uns selbst senden
+    "bullpowersrtkennels@gmail.com",
+    "rudolfsarkany1984@gmail.com",
+    "aiitecbuuss@gmail.com",
 }
 
 def _init_db():
