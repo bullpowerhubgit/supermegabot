@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Optional
 
 import aiohttp
@@ -326,35 +327,66 @@ async def revenue_autopilot() -> dict:
         )
         actions_taken.append(f"churn_alerts:{len(high_risk)}")
 
-    # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs (immer Umsatz pushen)
+    # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs — max 1x pro Tag
     if not new_subs:
         try:
-            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "")
-            shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
-            promos = [
-                f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
-                f"🚀 Shopify-Shop vollautomatisch betreiben — so geht's: {ds24_link}",
-                f"📈 Affiliate-Marketing + Shopify = monatliche Einnahmen. Infos: {ds24_link}",
-                f"🤖 KI-Business in 2026: Shopify, DS24, Klaviyo — alles automatisch. Start: {ds24_link}",
-            ]
-            promo = random.choice(promos)
-            from modules.brutus_core import fire
-            await fire("💰 Revenue Push", promo, channels=["telegram"])
-            actions_taken.append("ds24_promo_blast")
+            from modules.ds24_link_guardian import get_ds24_link as _gdl
+            ds24_link = _gdl("social")
+            _rev_cooldown = Path(__file__).parent.parent / "data" / "rev_push_tg_today.txt"
+            _today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            _last_rev_day = ""
+            try:
+                _last_rev_day = _rev_cooldown.read_text().strip()
+            except Exception:
+                pass
+            if _last_rev_day != _today and ds24_link:
+                promos = [
+                    f"💰 KI-Automation für dein Business: Shopify + DS24 automatisiert → {ds24_link}",
+                    f"🚀 Shopify-Shop vollautomatisch betreiben — so geht's: {ds24_link}",
+                    f"📈 Affiliate-Marketing + Shopify = monatliche Einnahmen. Infos: {ds24_link}",
+                    f"🤖 KI-Business in 2026: Shopify, DS24, Klaviyo — alles automatisch. Start: {ds24_link}",
+                ]
+                promo = random.choice(promos)
+                from modules.brutus_core import fire
+                await fire("💰 Revenue Push", promo, channels=["telegram"])
+                try:
+                    _rev_cooldown.parent.mkdir(parents=True, exist_ok=True)
+                    _rev_cooldown.write_text(_today)
+                except Exception:
+                    pass
+                actions_taken.append("ds24_promo_blast")
+            else:
+                log.debug("Revenue Push: heute bereits gesendet — übersprungen")
         except Exception as _e:
             log.debug("suppressed: %s", _e)
 
-    # Proaktiv: Gumroad Digital Products bewerben
+    # Proaktiv: DS24 Digital Products bewerben — max 1x pro Tag
     try:
-        ds24_url = "https://www.checkout-ds24.com/product/669750"
-        ds24_promos = [
-            f"📦 Digitale Produkte — sofort downloadbar: {gumroad_url}",
-            f"💡 KI E-Commerce Autopilot 2026 — 50+ Templates: {gumroad_url}",
-        ]
-        ds24_promo = random.choice(ds24_promos)
-        from modules.brutus_core import fire
-        await fire("Gumroad Promo", gumroad_promo, channels=["telegram"])
-        actions_taken.append("gumroad_promo_blast")
+        from modules.ds24_link_guardian import get_ds24_link as _gdl2
+        _ds24_url = _gdl2("digital")
+        _gum_cooldown = Path(__file__).parent.parent / "data" / "gumroad_push_tg_today.txt"
+        _today2 = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        _last_gum_day = ""
+        try:
+            _last_gum_day = _gum_cooldown.read_text().strip()
+        except Exception:
+            pass
+        if _last_gum_day != _today2 and _ds24_url:
+            ds24_promos = [
+                f"📦 Digitale Produkte — sofort downloadbar: {_ds24_url}",
+                f"💡 KI E-Commerce Autopilot 2026 — 50+ Templates: {_ds24_url}",
+            ]
+            ds24_promo = random.choice(ds24_promos)
+            from modules.brutus_core import fire
+            await fire("DS24 Promo", ds24_promo, channels=["telegram"])
+            try:
+                _gum_cooldown.parent.mkdir(parents=True, exist_ok=True)
+                _gum_cooldown.write_text(_today2)
+            except Exception:
+                pass
+            actions_taken.append("ds24_promo_blast_digital")
+        else:
+            log.debug("DS24 Promo: heute bereits gesendet — übersprungen")
     except Exception as _e:
         log.debug("suppressed: %s", _e)
 
