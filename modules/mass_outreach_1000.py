@@ -241,7 +241,7 @@ def _is_unsubscribed(email: str) -> bool:
         r = conn.execute("SELECT 1 FROM unsubscribes WHERE email=?", (email,)).fetchone()
         return r is not None
 
-def _was_contacted(email: str, days: int = 3) -> bool:
+def _was_contacted(email: str, days: int = 14) -> bool:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
     with _db() as conn:
         r = conn.execute(
