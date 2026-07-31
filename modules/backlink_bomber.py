@@ -251,14 +251,28 @@ async def run_backlink_bomber(urls: list[str] = None) -> dict:
         state[url] = {"last_submitted": now}
     _save_submitted(state)
 
-    # Summary
+    # Summary — Telegram-Nachricht max 1x pro Tag senden (verhindert Duplikat-Loop)
     total_pings = results["rss_xmlrpc"]["total_pinged"]
-    await _tg(
-        f"💥 *BacklinkBomber Run*\n"
-        f"📡 IndexNow: {len(target_urls)} URLs → Bing+Yandex\n"
-        f"📻 RSS Ping: {total_pings} Dienste benachrichtigt\n"
-        f"🔗 URLs eingereicht: {', '.join(u[:40] for u in target_urls[:3])}"
-    )
+    _tg_cooldown_file = DATA_DIR / "tg_sent_today.txt"
+    import time as _time
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    last_tg_day = ""
+    try:
+        last_tg_day = _tg_cooldown_file.read_text().strip()
+    except Exception:
+        pass
+    if last_tg_day != today_str:
+        await _tg(
+            f"💥 BacklinkBomber Tages-Summary\n"
+            f"📡 IndexNow: {len(target_urls)} URLs → Bing+Yandex\n"
+            f"📻 RSS Ping: {total_pings} Dienste benachrichtigt"
+        )
+        try:
+            _tg_cooldown_file.write_text(today_str)
+        except Exception:
+            pass
+    else:
+        log.debug("BacklinkBomber TG-Nachricht heute bereits gesendet — übersprungen")
 
     log.info("BacklinkBomber done: %d URLs, %d RSS pings", len(target_urls), total_pings)
     return {"ok": True, "urls_processed": len(target_urls), "results": results}

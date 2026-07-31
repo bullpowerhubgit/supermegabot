@@ -24,11 +24,11 @@ _cache_ts: float = 0
 _cache_ttl: int = 3600  # 1 Stunde
 
 # Bekannte sichere Fallback-Produkte (in Prioritätsreihenfolge)
-SAFE_FALLBACK_IDS = ["704330", "704370", "704372", "704392"]
+SAFE_FALLBACK_IDS = ["704370", "704372", "704392"]  # 704330 blacklisted — "noch nicht genehmigt"
 CHECKOUT_BASE = "https://www.checkout-ds24.com/product/"
 
 # Produkte die NIEMALS verwendet werden dürfen
-BLACKLISTED_IDS = {"668035", "669750", "704677"}  # rejected/unapproved/unavailable
+BLACKLISTED_IDS = {"668035", "669750", "704677", "704330"}  # 704330 nicht genehmigt!
 
 
 def _fetch_products() -> list:

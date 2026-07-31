@@ -270,16 +270,16 @@ async def generate_daily_revenue_report(days: int = 1) -> dict:
     # Meilenstein-Check
     await check_milestones(grand_total)
 
-    # Telegram-Report
+    # Telegram-Report (HTML statt Markdown — vermeidet telegram_validation_failed)
     msg_lines = [
-        f"💰 *Revenue Report — {period}*",
+        f"💰 <b>Revenue Report — {period}</b>",
         f"📅 {date_str}\n",
         f"🛍️ Shopify:    €{shopify.get('total', 0):>9,.2f}",
         f"📦 DS24:       €{ds24.get('total', 0):>9,.2f}",
         f"💳 Stripe:     €{stripe.get('total', 0):>9,.2f}",
         f"🔗 Affiliate:  €{affiliate.get('total', 0):>9,.2f}",
         f"{'─'*30}",
-        f"💎 GESAMT:     €{grand_total:>9,.2f}",
+        f"💎 <b>GESAMT:     €{grand_total:>9,.2f}</b>",
     ]
 
     # Fehler-Hinweise
