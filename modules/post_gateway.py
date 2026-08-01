@@ -109,7 +109,15 @@ def _sent_today(platform: str) -> int:
         ).fetchone()[0]
 
 
+_PLATFORM_KNOWN_DOWN: dict[str, str] = {
+    # Pinterest App "rodibot" wurde 2026-07-07 von Pinterest abgelehnt — keine Posts möglich
+    "pinterest": "Pinterest API-Antrag abgelehnt (2026-07-07) — App muss neu beantragt werden",
+}
+
 def _should_alert(platform: str, reason: str, content: str, minutes: int = 60) -> bool:
+    # Bekannte dauerhaft-defekte Plattformen — kein Alert-Spam
+    if platform.lower() in _PLATFORM_KNOWN_DOWN:
+        return False
     normalized_reason = (reason or "").strip().lower()
     if any(marker in normalized_reason for marker in _QUIET_BLOCK_MARKERS):
         return False
