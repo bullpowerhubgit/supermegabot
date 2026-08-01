@@ -368,6 +368,23 @@ def _telegram_guard_decision(
     if pause_reason:
         return {"ok": False, "skipped": True, "blocked": True, "reason": f"posting_paused:{pause_reason}"}
 
+    # ── AUTO-REPAIR: Wurzel-Fix — reparieren oder liquidieren bevor alles andere ──
+    # Läuft auf JEDEM Marketing-Post (mit URL/Hashtag/Promo) egal von welchem Modul.
+    # System-Alerts (keine URLs, keine #) bleiben unberührt.
+    if should_validate_telegram_text(text):
+        try:
+            from modules.post_auto_repair import repair
+            repaired = repair(text, "telegram")
+            if repaired is None:
+                log.warning("[TGGuard] POST LIQUIDIERT (AutoRepair): %s…", text[:80])
+                return {"ok": False, "blocked": True, "reason": "auto_repair_liquidated:nicht_reparierbar"}
+            if repaired != text:
+                log.info("[TGGuard] POST REPARIERT: %d→%d Zeichen", len(text), len(repaired))
+            text = repaired
+        except Exception as _are:
+            log.debug("[TGGuard] AutoRepair nicht verfügbar (%s) — weiter", _are)
+    # ── Ende AUTO-REPAIR ───────────────────────────────────────────────────────
+
     hard_block_reason = block_reason_for_telegram_text(text)
     if hard_block_reason:
         return {"ok": False, "blocked": True, "reason": hard_block_reason}
