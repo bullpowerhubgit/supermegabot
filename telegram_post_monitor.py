@@ -539,7 +539,7 @@ async def _tg_alert(text: str) -> bool:
         return False
 
 
-# ── Auto-Fix ──────────────────────────────────────────────────────────────────
+# ── Auto-Fix & Auto-Repair ───────────────────────────────────────────────────
 
 def _auto_fix_cooldowns() -> list[str]:
     """Bereinigt abgelaufene Cooldowns aus send_guard.json."""
@@ -564,6 +564,85 @@ def _auto_fix_cooldowns() -> list[str]:
     except Exception as e:
         log.debug("Cooldown-Bereinigung: %s", e)
     return fixes
+
+
+def _auto_repair_send_guard() -> list[str]:
+    """
+    Repariert schlechte last_text-Einträge im send_guard.json aktiv.
+    Blacklisted DS24-IDs, verbotene Phrasen, Prompt-Leaks → sofort löschen.
+    """
+    fixes = []
+    _BLACKLISTED_DS24 = {"704330", "668035", "669750", "704677"}
+    _BAD_PATTERNS = [
+        re.compile(r"passiv.*einkommen", re.IGNORECASE),
+        re.compile(r"checkout-ds24\.com/product/(704330|668035|669750|704677)", re.IGNORECASE),
+        re.compile(r"\{[a-z_]+\}", re.IGNORECASE),
+        re.compile(r"als ki.sprachmodell|as an ai", re.IGNORECASE),
+        re.compile(r"\* (topic|product|format)\s*:", re.IGNORECASE),
+        re.compile(r"NoneType|Hallo None"),
+    ]
+    try:
+        guard = json.loads(SEND_GUARD_FILE.read_text())
+        changed = False
+        for key, val in guard.items():
+            if not isinstance(val, dict):
+                continue
+            last_text = val.get("last_text", "")
+            if not last_text:
+                continue
+            for pat in _BAD_PATTERNS:
+                if pat.search(last_text):
+                    guard[key]["last_text"] = ""
+                    guard[key]["last_error"] = f"auto_repaired: bad content cleared ({pat.pattern[:40]})"
+                    fixes.append(f"Send-Guard gecleaned: {key} — {pat.pattern[:40]}")
+                    changed = True
+                    break
+        if changed:
+            SEND_GUARD_FILE.write_text(json.dumps(guard, indent=2, ensure_ascii=False))
+    except Exception as e:
+        log.debug("send_guard repair: %s", e)
+    return fixes
+
+
+def _auto_stop_loops(stats: dict) -> list[str]:
+    """
+    Erkennt aktive Duplikat-Loops und setzt Tages-Cooldowns für betroffene Module.
+    Verhindert dass ein Loop weiterläuft bis zum nächsten Deploy.
+    """
+    actions = []
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    loops = stats.get("duplikat_loops", [])
+    if not loops:
+        return actions
+
+    # Modul-Cooldown-Dateien nach Quelle
+    module_cooldowns = {
+        "BacklinkBomber": DATA_DIR / "backlink_bomber" / "tg_sent_today.txt",
+        "Revenue Push":   DATA_DIR / "rev_push_tg_today.txt",
+        "Gumroad":        DATA_DIR / "gumroad_push_tg_today.txt",
+        "DS24 Promo":     DATA_DIR / "gumroad_push_tg_today.txt",
+        "DS24 Affiliate": DATA_DIR / "rev_push_tg_today.txt",
+    }
+
+    for loop_text, count in loops:
+        if count < 5:
+            continue
+        for module_name, cooldown_file in module_cooldowns.items():
+            if module_name.lower() in loop_text.lower():
+                try:
+                    cooldown_file.parent.mkdir(parents=True, exist_ok=True)
+                    current = ""
+                    try:
+                        current = cooldown_file.read_text().strip()
+                    except Exception:
+                        pass
+                    if current != today:
+                        cooldown_file.write_text(today)
+                        actions.append(f"Loop-Stopp: {module_name} Cooldown gesetzt ({count}x Loop)")
+                        log.warning("AUTO-STOP: %s Duplikat-Loop (%dx) — Cooldown gesetzt", module_name, count)
+                except Exception as e:
+                    log.debug("loop stop %s: %s", module_name, e)
+    return actions
 
 
 # ── Haupt-Analyse ─────────────────────────────────────────────────────────────
@@ -773,8 +852,9 @@ def _build_report(results: dict, state: dict) -> Optional[str]:
 async def main() -> None:
     state = _load_state()
 
-    # Auto-Fix
+    # Auto-Fix & Auto-Repair
     fixes = _auto_fix_cooldowns()
+    fixes += _auto_repair_send_guard()
     for fix in fixes:
         log.info("AUTO-FIX: %s", fix)
 
@@ -785,6 +865,12 @@ async def main() -> None:
     report = _build_report(results, state)
 
     stats  = results["stats"]
+
+    # Auto-Stop aktiver Loops SOFORT nach Analyse
+    loop_stops = _auto_stop_loops(stats)
+    for action in loop_stops:
+        log.warning("AUTO-STOP: %s", action)
+
     issues = (len(results["content_issues"]) + len(results["url_errors"]) +
               len(results["webhook_errors"]) +
               (0 if results["bot_status"].get("ok") else 1) +
