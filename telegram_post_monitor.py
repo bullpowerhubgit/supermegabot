@@ -832,5 +832,93 @@ async def main() -> None:
     log.info("=" * 60)
 
 
+async def send_daily_summary(stats_24h: dict) -> None:
+    """Täglicher Zusammenfassungs-Report um 8:00 Uhr."""
+    s = stats_24h
+    total   = s.get("total", 0)
+    sent    = s.get("sent", 0)
+    failed  = s.get("failed", 0)
+    blocked = s.get("blocked", 0)
+    rate    = s.get("fail_rate_pct", 0)
+    top     = s.get("top_errors", [])
+
+    lines = [
+        "📊 <b>TELEGRAM MONITOR — Tages-Report</b>",
+        f"🕗 {datetime.now().strftime('%Y-%m-%d 08:00')}",
+        "",
+        f"📨 Gesamt:    <b>{total}</b> Posts (24h)",
+        f"✅ Gesendet:  <b>{sent}</b>",
+        f"❌ Failed:    <b>{failed}</b>",
+        f"🚫 Blockiert: <b>{blocked}</b>",
+        f"📉 Fehlerrate: <b>{rate}%</b>",
+        "",
+    ]
+    if top:
+        lines.append("📋 <b>Häufigste Fehlerursachen:</b>")
+        for err, cnt in top[:5]:
+            lines.append(f"  • {cnt}x: {_safe(err, 70)}")
+        lines.append("")
+    lines.append("🔄 Monitor läuft weiter — nächste Prüfung in 5 Min")
+
+    await _tg_alert("\n".join(lines))
+    log.info("Tages-Report gesendet")
+
+
+async def daemon_loop() -> None:
+    """Dauerhafter 0–24 Monitoring-Loop. Niemals beenden."""
+    import signal
+
+    shutdown = asyncio.Event()
+
+    def _stop(*_):
+        log.info("SIGTERM empfangen — Monitor fährt sauber herunter")
+        shutdown.set()
+
+    loop = asyncio.get_event_loop()
+    loop.add_signal_handler(signal.SIGTERM, _stop)
+    loop.add_signal_handler(signal.SIGINT,  _stop)
+
+    log.info("=" * 60)
+    log.info("0-24 MONITORING DAEMON GESTARTET — läuft dauerhaft")
+    log.info("=" * 60)
+
+    await _tg_alert(
+        "🟢 <b>Telegram Monitor gestartet</b>\n"
+        f"🕐 {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+        "✅ 0–24 Überwachung aktiv — Prüfintervall: 5 Min"
+    )
+
+    last_daily_report_day = ""
+
+    while not shutdown.is_set():
+        try:
+            await main()
+        except Exception as e:
+            log.error("Monitor-Iteration Fehler: %s", e, exc_info=True)
+
+        # Tages-Report um 08:00 Uhr (einmal pro Tag)
+        now = datetime.now()
+        today_str = now.strftime("%Y-%m-%d")
+        if now.hour == 8 and today_str != last_daily_report_day:
+            try:
+                state = _load_state()
+                gateway_posts   = _read_gateway_posts(hours=24)
+                gateway_blocked = _read_gateway_blocked(hours=24)
+                stats_24h = _compute_stats(gateway_posts, gateway_blocked)
+                await send_daily_summary(stats_24h)
+                last_daily_report_day = today_str
+            except Exception as e:
+                log.error("Tages-Report Fehler: %s", e)
+
+        # 5 Minuten warten (unterbrechbar via Shutdown-Event)
+        try:
+            await asyncio.wait_for(shutdown.wait(), timeout=300)
+            break  # Shutdown angefordert
+        except asyncio.TimeoutError:
+            pass  # Normaler 5-Min-Tick
+
+    log.info("Monitor-Daemon sauber beendet")
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(daemon_loop())
