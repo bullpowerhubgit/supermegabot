@@ -391,11 +391,11 @@ async def _ai_content(product_name: str, price: str, url: str,
 
     # Fallback-Templates — immer sauber, nie Platzhalter
     fallbacks = {
-        "morning_drop":  f"{product_name} — jetzt für {price} verfügbar. Smart Home auf neuem Level.",
-        "flash_deal":    f"HEUTE: {product_name} für {price}. Nicht verpassen!",
-        "educational":   f"3 Gründe warum {product_name} deinen Alltag vereinfacht. Ab {price}.",
-        "social_proof":  f"Kunden lieben {product_name}: Smarter, schneller, einfacher. Ab {price}.",
-        "community":     f"Hat jemand {product_name} ausprobiert? Würde mich über Erfahrungen freuen.",
+        "morning_drop":  f"✅ {product_name} — jetzt ab {price}. Smart Home auf professionellem Niveau. 👉 Jetzt im Shop.",
+        "flash_deal":    f"⚡ Heute verfügbar: {product_name} für {price}. Smarte Technologie, sofort lieferbar. 🛒 Jetzt kaufen.",
+        "educational":   f"💡 {product_name}: Energiesparen, Komfort & Kontrolle — komplett vernetzt. Ab {price}. 👉 Zum Produkt.",
+        "social_proof":  f"⭐⭐⭐⭐⭐ {product_name} — top bewertet von tausenden Käufern. Jetzt ab {price}. 🛒 Direkt bestellen.",
+        "community":     f"🔒 {product_name} — professionelle Smart-Home-Lösung ab {price}. Sofort verfügbar. 👉 Jetzt kaufen.",
     }
     caption = fallbacks.get(slot, f"{product_name} — {price}")
     return {

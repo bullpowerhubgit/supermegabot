@@ -177,6 +177,7 @@ _QUIET_BLOCK_MARKERS = (
     "rate limit",
     "rate_limited",
     "429",
+    "reddit_not_configured",
 )
 
 def _validate_content(text: str, platform: str) -> list[str]:
@@ -539,9 +540,8 @@ async def safe_post(
             elif p == "telegram":
                 api_result = await _post_telegram(text, chat_id)
             elif p in ("twitter", "x"):
-                # safe_post hat bereits NeverTwice + PostGuardian geprüft.
-                # post_tweet() würde beides doppelt prüfen (URL-Check blockiert oft).
-                # Deshalb: twikit direkt nutzen ohne innere Wrapper-Checks.
+                # Weg 1: twikit (kostenlos, web-basiert). Bei Fehler → OAuth-Fallback.
+                _tw_ok = False
                 try:
                     from modules.twitter_autoposter import _get_twikit_client, TWITTER_USERNAME
                     tc = await _get_twikit_client()
@@ -549,11 +549,15 @@ async def safe_post(
                         tweet_obj = await tc.create_tweet(text=text[:280])
                         api_result = {"ok": True, "post_id": str(tweet_obj.id),
                                       "url": f"https://twitter.com/{TWITTER_USERNAME}/status/{tweet_obj.id}"}
-                    else:
-                        from modules.twitter_autoposter import post_tweet
-                        api_result = await post_tweet(text)
+                        _tw_ok = True
                 except Exception as _te:
-                    api_result = {"ok": False, "error": f"twikit: {_te}"}
+                    log.warning("twikit fehlgeschlagen (%s) — versuche OAuth-Fallback", _te)
+                if not _tw_ok:
+                    try:
+                        from modules.twitter_auto_poster import post_tweet as _oauth_tweet
+                        api_result = await _oauth_tweet(text, skip_guard=True)
+                    except Exception as _te2:
+                        api_result = {"ok": False, "error": f"twitter: twikit+oauth fehlgeschlagen: {_te2}"}
             elif p == "pinterest":
                 from modules.pinterest_autonomy import create_pin
                 api_result = await create_pin(
@@ -562,6 +566,10 @@ async def safe_post(
                     image_url=image_url,
                     link="",
                 )
+            elif p == "reddit":
+                # Reddit nicht vollständig implementiert — still überspringen, kein Alert
+                api_result = {"ok": False, "error": "reddit_not_configured", "skipped": True}
+                log.debug("Reddit-Post übersprungen — kein API-Setup")
             else:
                 api_result = {"ok": False, "error": f"Unbekannte Plattform: {platform}"}
         except Exception as e:

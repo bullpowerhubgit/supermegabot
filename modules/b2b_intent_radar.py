@@ -52,6 +52,12 @@ REDDIT_UA       = "B2BIntentRadar/1.0 by SuperMegaBot"
 TELEGRAM_TOKEN  = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT   = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 
+# ── Eigene Accounts — NIEMALS als Leads klassifizieren ───────────────────────
+_OWN_LOGINS: frozenset[str] = frozenset({
+    "bullpowerhubgit", "bullpowerhub", "rudolfsarkany", "rudolfsarkany1984",
+    "aiitecbuuss", "aaiitecc", "supermegabot", "ineedit",
+})
+
 # ── Target profile: what signals indicate a fit for SuperMegaBot SaaS ─────────
 # Companies that match this profile are HIGH-VALUE leads
 TARGET_KEYWORDS = [
@@ -585,6 +591,11 @@ def _keyword_classify(signals: list[dict]) -> list[dict]:
     """Keyword-based B2B signal classification — no API needed."""
     results = []
     for i, s in enumerate(signals[:MAX_SIGNALS_PER_RUN]):
+        # Eigene Accounts ausschließen
+        company_raw = (s.get("company") or "").strip().lower()
+        if company_raw in {n.lower() for n in _OWN_LOGINS}:
+            log.debug("B2B Radar: eigenen Account übersprungen: %s", company_raw)
+            continue
         text = (s.get("signal_text", "") + " " + s.get("title", "")).lower()
 
         # Detect buy category
