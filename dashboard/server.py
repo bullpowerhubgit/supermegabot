@@ -4874,6 +4874,165 @@ a { color: #e60023; }
     return web.Response(content_type="text/html", charset="utf-8", text=html)
 
 
+async def handle_instagram_oauth_start(req: web.Request) -> web.Response:
+    """GET /api/instagram/oauth/start — Startet Instagram OAuth mit instagram_content_publish."""
+    app_id = os.getenv("FACEBOOK_APP_ID", "1535442684079797")
+    redirect_uri = "https://supermegabot-production.up.railway.app/api/instagram/oauth/callback"
+    scopes = "instagram_content_publish,pages_manage_posts,pages_read_engagement,pages_show_list,public_profile"
+    import urllib.parse
+    oauth_url = (
+        f"https://www.facebook.com/v21.0/dialog/oauth"
+        f"?client_id={app_id}"
+        f"&redirect_uri={urllib.parse.quote(redirect_uri, safe='')}"
+        f"&scope={urllib.parse.quote(scopes, safe='')}"
+        f"&response_type=code"
+    )
+    raise web.HTTPFound(location=oauth_url)
+
+
+async def handle_instagram_oauth_callback(req: web.Request) -> web.Response:
+    """GET /api/instagram/oauth/callback — Tauscht Code gegen langlebigen Token + speichert in .env."""
+    code = req.rel_url.query.get("code")
+    error = req.rel_url.query.get("error_description")
+    if error or not code:
+        return web.Response(content_type="text/html", text=f"<h2>❌ OAuth Fehler</h2><p>{error or 'Kein Code'}</p>")
+    app_id = os.getenv("FACEBOOK_APP_ID", "1535442684079797")
+    app_secret = os.getenv("FACEBOOK_APP_SECRET", "b613acc6d413eee849cf7d4814b68376")
+    redirect_uri = "https://supermegabot-production.up.railway.app/api/instagram/oauth/callback"
+    import aiohttp as _aiohttp, urllib.parse
+    try:
+        async with _aiohttp.ClientSession() as s:
+            # Kurzlebigen Code gegen Token tauschen
+            async with s.get(
+                "https://graph.facebook.com/v21.0/oauth/access_token",
+                params={"client_id": app_id, "client_secret": app_secret,
+                        "redirect_uri": redirect_uri, "code": code},
+                timeout=_aiohttp.ClientTimeout(total=15)
+            ) as r:
+                data = await r.json(content_type=None)
+            if "error" in data:
+                return web.Response(content_type="text/html", text=f"<h2>❌ Token-Fehler</h2><pre>{data}</pre>")
+            short_token = data.get("access_token", "")
+            # Kurzlebigen in langlebigen Token umwandeln
+            async with s.get(
+                "https://graph.facebook.com/v21.0/oauth/access_token",
+                params={"grant_type": "fb_exchange_token", "client_id": app_id,
+                        "client_secret": app_secret, "fb_exchange_token": short_token},
+                timeout=_aiohttp.ClientTimeout(total=15)
+            ) as r2:
+                long_data = await r2.json(content_type=None)
+            long_token = long_data.get("access_token", short_token)
+            # Page Access Token holen
+            async with s.get(
+                "https://graph.facebook.com/v21.0/me/accounts",
+                params={"access_token": long_token},
+                timeout=_aiohttp.ClientTimeout(total=15)
+            ) as r3:
+                pages = await r3.json(content_type=None)
+            page_token = ""
+            for page in (pages.get("data") or []):
+                if page.get("id") == os.getenv("FACEBOOK_PAGE_ID", "1016738738178786"):
+                    page_token = page.get("access_token", "")
+                    break
+        # Token in .env speichern
+        env_path = Path(__file__).parent.parent / ".env"
+        if env_path.exists():
+            lines = env_path.read_text().splitlines()
+            updated = []
+            replaced_fb = replaced_page = False
+            for line in lines:
+                if line.startswith("FACEBOOK_PAGE_ACCESS_TOKEN=") or line.startswith("FACEBOOK_PAGE_TOKEN_AIITEC="):
+                    updated.append(f"FACEBOOK_PAGE_ACCESS_TOKEN={page_token or long_token}")
+                    if not replaced_page:
+                        replaced_page = True
+                elif line.startswith("META_ACCESS_TOKEN=") or line.startswith("FACEBOOK_USER_TOKEN=") or line.startswith("FB_LONG_LIVED_TOKEN="):
+                    if not replaced_fb:
+                        updated.append(f"META_ACCESS_TOKEN={long_token}")
+                        replaced_fb = True
+                else:
+                    updated.append(line)
+            env_path.write_text("\n".join(updated) + "\n")
+        log.info("[IG-OAUTH] Neuer Token gespeichert — Länge: %d", len(page_token or long_token))
+        return web.Response(content_type="text/html", text=f"""
+<html><body style="font-family:sans-serif;background:#0B1120;color:#e2e8f0;padding:40px">
+<h2 style="color:#22C55E">✅ Instagram Token erneuert!</h2>
+<p>Langlebiger User-Token: <code style="color:#06B6D4">{long_token[:30]}...</code></p>
+<p>Page-Token: <code style="color:#06B6D4">{(page_token or 'nicht gefunden')[:30]}...</code></p>
+<p>In .env gespeichert. <strong>Bitte Railway-Deploy starten!</strong></p>
+<p><a href="https://supermegabot-production.up.railway.app/dashboard" style="color:#7C3AED">→ Dashboard</a></p>
+</body></html>""")
+    except Exception as e:
+        log.exception("[IG-OAUTH] Fehler")
+        return web.Response(content_type="text/html", text=f"<h2>❌ Fehler</h2><pre>{e}</pre>")
+
+
+async def handle_pinterest_oauth_start(req: web.Request) -> web.Response:
+    """GET /api/pinterest/oauth/start — Neue Pinterest-App OAuth (nach Genehmigung)."""
+    app_id = os.getenv("PINTEREST_APP_ID", "1582363")
+    redirect_uri = "https://supermegabot-production.up.railway.app/api/pinterest/oauth/callback"
+    import urllib.parse
+    oauth_url = (
+        f"https://www.pinterest.com/oauth/"
+        f"?client_id={app_id}"
+        f"&redirect_uri={urllib.parse.quote(redirect_uri, safe='')}"
+        f"&response_type=code"
+        f"&scope=pins:write,boards:read,boards:write,user_accounts:read"
+    )
+    raise web.HTTPFound(location=oauth_url)
+
+
+async def handle_pinterest_oauth_callback(req: web.Request) -> web.Response:
+    """GET /api/pinterest/oauth/callback — Pinterest Code → Access Token."""
+    code = req.rel_url.query.get("code")
+    if not code:
+        return web.Response(content_type="text/html", text="<h2>❌ Kein Code</h2>")
+    app_id = os.getenv("PINTEREST_APP_ID", "1582363")
+    app_secret = os.getenv("PINTEREST_APP_SECRET", "")
+    if not app_secret:
+        return web.Response(content_type="text/html",
+            text="<h2>❌ PINTEREST_APP_SECRET fehlt in .env</h2><p>Bitte in Railway setzen.</p>")
+    redirect_uri = "https://supermegabot-production.up.railway.app/api/pinterest/oauth/callback"
+    import aiohttp as _aiohttp, base64
+    credentials = base64.b64encode(f"{app_id}:{app_secret}".encode()).decode()
+    try:
+        async with _aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.pinterest.com/v5/oauth/token",
+                headers={"Authorization": f"Basic {credentials}", "Content-Type": "application/x-www-form-urlencoded"},
+                data=f"grant_type=authorization_code&code={code}&redirect_uri={redirect_uri}",
+                timeout=_aiohttp.ClientTimeout(total=15)
+            ) as r:
+                data = await r.json(content_type=None)
+        if "access_token" not in data:
+            return web.Response(content_type="text/html", text=f"<h2>❌ Pinterest Fehler</h2><pre>{data}</pre>")
+        new_token = data["access_token"]
+        refresh_token = data.get("refresh_token", "")
+        env_path = Path(__file__).parent.parent / ".env"
+        if env_path.exists():
+            lines = env_path.read_text().splitlines()
+            updated, done = [], False
+            for line in lines:
+                if line.startswith("PINTEREST_ACCESS_TOKEN=") and not done:
+                    updated.append(f"PINTEREST_ACCESS_TOKEN={new_token}")
+                    done = True
+                else:
+                    updated.append(line)
+            if not done:
+                updated.append(f"PINTEREST_ACCESS_TOKEN={new_token}")
+            if refresh_token:
+                updated.append(f"PINTEREST_REFRESH_TOKEN={refresh_token}")
+            env_path.write_text("\n".join(updated) + "\n")
+        log.info("[PINTEREST-OAUTH] Neuer Token gespeichert")
+        return web.Response(content_type="text/html", text=f"""
+<html><body style="font-family:sans-serif;background:#0B1120;color:#e2e8f0;padding:40px">
+<h2 style="color:#22C55E">✅ Pinterest Token erneuert!</h2>
+<p>Token: <code style="color:#06B6D4">{new_token[:20]}...</code></p>
+<p>In .env gespeichert. <strong>Railway-Deploy starten!</strong></p>
+</body></html>""")
+    except Exception as e:
+        return web.Response(content_type="text/html", text=f"<h2>❌ Fehler</h2><pre>{e}</pre>")
+
+
 async def handle_discord_oauth_callback(req: web.Request) -> web.Response:
     """Discord OAuth2 Callback — tauscht code gegen access_token."""
     code = req.rel_url.query.get("code")
@@ -13020,6 +13179,10 @@ async def create_app():
     app.router.add_post("/api/linkedin/run",             handle_linkedin_run)
     app.router.add_get( "/api/instagram/status",         handle_instagram_status)
     app.router.add_post("/api/instagram/run",            handle_instagram_run)
+    app.router.add_get( "/api/instagram/oauth/start",   handle_instagram_oauth_start)
+    app.router.add_get( "/api/instagram/oauth/callback", handle_instagram_oauth_callback)
+    app.router.add_get( "/api/pinterest/oauth/start",   handle_pinterest_oauth_start)
+    app.router.add_get( "/api/pinterest/oauth/callback", handle_pinterest_oauth_callback)
     # /api/pinterest/run bereits oben registriert — Duplikat entfernt
     app.router.add_post("/api/email/run",                handle_email_run)
     app.router.add_post("/api/email/daily-summary",      handle_email_daily_summary_run)
