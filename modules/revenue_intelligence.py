@@ -340,13 +340,16 @@ async def revenue_autopilot() -> dict:
             except Exception:
                 pass
             if _last_rev_day != _today and ds24_link:
-                promos = [
-                    f"💰 KI-Automation für dein Business: Shopify + DS24 automatisiert → {ds24_link}",
-                    f"🚀 Shopify-Shop vollautomatisch betreiben — so geht's: {ds24_link}",
-                    f"📈 Affiliate-Marketing + Shopify = monatliche Einnahmen. Infos: {ds24_link}",
-                    f"🤖 KI-Business in 2026: Shopify, DS24, Klaviyo — alles automatisch. Start: {ds24_link}",
-                ]
-                promo = random.choice(promos)
+                try:
+                    from modules.post_templates import get_post as _gpt
+                    promo = _gpt("ds24", "telegram", ds24_link=ds24_link)
+                except Exception:
+                    promo = (
+                        f"🤖 <b>E-Commerce auf Autopilot</b>\n\n"
+                        f"Shopify + DS24 + KI vollständig automatisiert.\n"
+                        f"✅ 500+ Nutzer · ⭐ 4.8/5\n\n"
+                        f"👉 <b>Jetzt kaufen:</b> {ds24_link}"
+                    )
                 from modules.brutus_core import fire
                 await fire("💰 Revenue Push", promo, channels=["telegram"])
                 try:
@@ -372,11 +375,16 @@ async def revenue_autopilot() -> dict:
         except Exception:
             pass
         if _last_gum_day != _today2 and _ds24_url:
-            ds24_promos = [
-                f"📦 Digitale Produkte — sofort downloadbar: {_ds24_url}",
-                f"💡 KI E-Commerce Autopilot 2026 — 50+ Templates: {_ds24_url}",
-            ]
-            ds24_promo = random.choice(ds24_promos)
+            try:
+                from modules.post_templates import get_post as _gpt2
+                ds24_promo = _gpt2("ds24", "telegram", ds24_link=_ds24_url)
+            except Exception:
+                ds24_promo = (
+                    f"💼 <b>Dein E-Commerce-Business auf Autopilot</b>\n\n"
+                    f"KI-gestützte Automatisierung für Shopify + DS24.\n"
+                    f"✅ Komplett eingerichtet in einem Nachmittag\n\n"
+                    f"🛒 <b>Jetzt kaufen:</b> {_ds24_url}"
+                )
             from modules.brutus_core import fire
             await fire("DS24 Promo", ds24_promo, channels=["telegram"])
             try:

@@ -1146,6 +1146,25 @@ _BENEFITS = {
     "Solar & Energie": ["Bis zu 80% Stromkosten sparen", "Unabhängig von steigenden Preisen", "In 3 Jahren amortisiert"],
 }
 
+# Professionelle Fallback-Templates aus zentraler Bibliothek
+def _get_pro_template(topic_cfg: dict, platform: str) -> str:
+    """Holt professionelles High-Ticket Template aus post_templates.py."""
+    try:
+        from modules.post_templates import get_post
+        topic = topic_cfg.get("topic", "")
+        cta   = topic_cfg.get("shop_cta", "")
+        cat_map = {
+            "Smart Home Gadget": "smart_home",
+            "Solar & Energie":   "solar",
+            "Tech-Deal der Woche": "tech",
+            "Shopify Automatisierung": "ds24",
+            "KI-Tools für Business":   "ds24",
+        }
+        cat = cat_map.get(topic, "tech")
+        return get_post(cat, platform, shop_url=cta)
+    except Exception:
+        return ""
+
 
 async def _generate_with_claude(topic_cfg: dict, platform: str) -> Optional[str]:
     """Generiert Content via ai_client (Groq → DeepSeek → OpenRouter → Anthropic Fallback)."""
@@ -1182,7 +1201,13 @@ async def _generate_with_claude(topic_cfg: dict, platform: str) -> Optional[str]
 
 
 def _generate_from_template(topic_cfg: dict, platform: str) -> str:
-    """Fallback: generiert Content aus Template."""
+    """Generiert professionellen Content — erst pro Template, dann Fallback."""
+    # Professionelle High-Ticket Templates bevorzugen
+    pro = _get_pro_template(topic_cfg, platform)
+    if pro and len(pro) > 50:
+        return pro
+
+    # Fallback: legacy Templates
     topic = topic_cfg["topic"]
     hashtags = " ".join(topic_cfg["hashtags"])
     cta = topic_cfg["shop_cta"]
