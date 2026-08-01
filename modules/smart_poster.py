@@ -918,13 +918,18 @@ def _is_clean(text: str) -> tuple[bool, str]:
 # Fehlerseite erkannt → Post wird BLOCKIERT, egal wie gut der Text aussieht.
 
 _BAD_PAGE_PATTERNS = [
+    # DS24 spezifisch
     "noch nicht genehmigt",
     "das produkt wurde noch nicht genehmigt",
     "nicht genehmigt",
+    "not yet approved",
     "produkt nicht verfügbar",
     "das produkt ist nicht mehr verfügbar",
-    "nicht verfügbar",
     "nicht im handel erhältlich",
+    "zur wunschliste hinzufügen",          # DS24 zeigt das wenn Produkt gesperrt
+    "dieses produkt ist derzeit nicht",
+    # Allgemeine Fehler
+    "nicht verfügbar",
     "seite nicht gefunden",
     "page not found",
     "404 not found",
@@ -941,6 +946,33 @@ _BAD_PAGE_PATTERNS = [
     "kein produkt gefunden",
     "item not found",
     "access denied",
+    "forbidden",
+    "service unavailable",
+    "bad gateway",
+    "gateway timeout",
+]
+
+# Für DS24-Checkout: Seite MUSS einen dieser Strings enthalten (echtes Produkt)
+_DS24_REQUIRED_PATTERNS = [
+    "jetzt kaufen",
+    "zum warenkorb",
+    "in den warenkorb",
+    "buy now",
+    "add to cart",
+    "checkout",
+    "zur kasse",
+    "bestellen",
+    "jetzt bestellen",
+    "sofort kaufen",
+]
+
+# Für Shopify-Produkte: Seite MUSS kaufbar sein
+_SHOPIFY_REQUIRED_PATTERNS = [
+    "in den warenkorb",
+    "add to cart",
+    "jetzt kaufen",
+    "buy it now",
+    "in den einkaufswagen",
 ]
 
 _URL_RE = re.compile(r"https?://[^\s\)\]\>\"\'<]+")
@@ -1013,6 +1045,18 @@ async def validate_links_async(text: str) -> tuple[bool, str]:
                                     "Link-Check: Fehlerseite erkannt (%r) — %s", pattern, url
                                 )
                                 return False, f"Fehlerseite ({pattern!r}): {url}"
+                        # Positiv-Check: DS24-Checkout muss echten Kaufbutton haben
+                        if "checkout-ds24.com/product/" in url.lower():
+                            has_buy = any(p in body_lower for p in _DS24_REQUIRED_PATTERNS)
+                            if not has_buy:
+                                log.warning("Link-Check: DS24-Seite hat keinen Kaufbutton — %s", url)
+                                return False, f"DS24-Produkt nicht kaufbar (kein Kaufbutton): {url}"
+                        # Positiv-Check: Shopify-Produkt muss in Warenkorb legbar sein
+                        if "ineedit.com.co/products/" in url.lower():
+                            has_cart = any(p in body_lower for p in _SHOPIFY_REQUIRED_PATTERNS)
+                            if not has_cart:
+                                log.warning("Link-Check: Shopify-Produkt nicht kaufbar — %s", url)
+                                return False, f"Shopify-Produkt nicht kaufbar: {url}"
                 except aiohttp.ClientConnectorError as e:
                     log.warning("Link-Check: Nicht erreichbar — %s — %s", url, e)
                     return False, f"Nicht erreichbar: {url}"
