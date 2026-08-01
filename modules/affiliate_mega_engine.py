@@ -61,8 +61,15 @@ async def _track_click(network: str, keyword: str, link: str):
         log.warning("Ignored error: %s", e)
 
 
+_BLEED_CHECK = re.compile(
+    r'(\*\s*(topic|format|style|language|link|product)\s*:)|(system\s*prompt|user\s*prompt)',
+    re.IGNORECASE,
+)
+
+
 async def generate_affiliate_content(product: str, network: str, link: str) -> str:
     """KI schreibt Affiliate-Post für spezifisches Netzwerk."""
+    import re as _re
     network_styles = {
         "amazon": "Deal-focused, kurz, Preis erwähnen, 'Amazon-Deal' Label",
         "ds24": "Informationsprodukt, Nutzen betonen, Provision erwähnen wenn Affiliate",
@@ -70,13 +77,19 @@ async def generate_affiliate_content(product: str, network: str, link: str) -> s
         "shopify": "Lifestyle, Produktvorteile, eigener Shop",
     }
     style = network_styles.get(network, "professionell, nutzenorientiert")
-    prompt = f"""Kurzer Deutsch-Post (3 Sätze + Link) für {network.upper()} Affiliate:
-Produkt/Thema: "{product}"
-Stil: {style}
-Link: {link}
-Endet mit dem Link. Emojis OK. Dringlichkeit erzeugen."""
+    prompt = (
+        f"Schreibe einen kurzen Deutsch-Post (3 Sätze + Link) für {network.upper()} Affiliate.\n"
+        f"Produkt/Thema: {product}\n"
+        f"Stil: {style}\n"
+        f"Link am Ende: {link}\n"
+        f"Nur den Post-Text ausgeben, keine Erklärungen, keine Anweisungen, kein JSON."
+    )
     content = await _ai(prompt, 120)
-    return content or f"🛒 {product} — Jetzt günstig!\n👉 {link}"
+    # Validierung: AI-Output darf keine Template-Marker enthalten
+    if content and not _BLEED_CHECK.search(content) and len(content.strip()) >= 20:
+        return content.strip()
+    log.warning("affiliate_content: AI-Output ungültig (Template-Bleed oder zu kurz) — Fallback")
+    return f"🛒 {product} — Jetzt verfügbar!\n👉 {link}"
 
 
 async def blast_amazon_affiliates(keywords: list = None, count: int = 3) -> dict:

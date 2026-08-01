@@ -112,6 +112,9 @@ def _sent_today(platform: str) -> int:
 _PLATFORM_KNOWN_DOWN: dict[str, str] = {
     # Pinterest App "rodibot" wurde 2026-07-07 von Pinterest abgelehnt — keine Posts möglich
     "pinterest": "Pinterest API-Antrag abgelehnt (2026-07-07) — App muss neu beantragt werden",
+    # twikit 2.3.3 Bug: ClientTransaction hat kein .key Attribut nach Twitter API-Änderung
+    "twitter": "twikit Bug (ClientTransaction.key) — Twitter-Posts pausiert bis twikit gepatcht",
+    "x": "twikit Bug (ClientTransaction.key) — Twitter/X-Posts pausiert bis twikit gepatcht",
 }
 
 def _should_alert(platform: str, reason: str, content: str, minutes: int = 60) -> bool:
@@ -130,6 +133,40 @@ def _should_alert(platform: str, reason: str, content: str, minutes: int = 60) -
             (platform, reason, preview, f"-{minutes} minutes"),
         ).fetchone()
     return row is None
+
+
+# ── Template-Bleed Detektor (Async AI-Repair) ────────────────────────────────
+_TEMPLATE_BLEED_RE = re.compile(
+    r'(\*\s*(topic|product|format|style|link|language|language:|constraints?|stil|platform)\s*:)'
+    r'|(system\s*prompt|user\s*prompt|assistant\s*:)'
+    r'|(format:\s*(short|long|3\s*sentences))'
+    r'|(translate\s+only\s+descriptive)'
+    r'|(keep\s+brand\s+names)',
+    re.IGNORECASE,
+)
+
+
+async def _ai_repair_template_bleed(text: str, platform: str) -> "Optional[str]":
+    """Versucht template-bleeding Content via AI zu reparieren."""
+    try:
+        from modules.ai_client import ai_complete
+        max_chars = {"twitter": 240, "x": 240, "instagram": 280, "telegram": 400}.get(platform.lower(), 300)
+        context = text[:400]
+        prompt = (
+            f"Dieser Social-Media-Post enthält fehlerhafte KI-Anweisungstext (Template-Bleed).\n"
+            f"Plattform: {platform} (max {max_chars} Zeichen)\n"
+            f"Fehlerhafter Inhalt:\n{context}\n\n"
+            f"Extrahiere das eigentliche Thema/Produkt und schreibe einen professionellen "
+            f"Deutsch-Post für {platform}. Keine Einkommensversprechen. Kein HTML.\n"
+            f"Antworte NUR mit dem fertigen Post-Text."
+        )
+        repaired = await ai_complete(prompt, max_tokens=200)
+        if (repaired and len(repaired.strip()) >= 20
+                and not _TEMPLATE_BLEED_RE.search(repaired)):
+            return repaired.strip()
+    except Exception as e:
+        log.warning("AI-Template-Repair fehlgeschlagen: %s", e)
+    return None
 
 
 # ── Schicht 1+2: Inhalts- und Duplikat-Prüfung ───────────────────────────────
@@ -414,7 +451,22 @@ async def safe_post(
         "errors": [], "blocked": False, "source": source_module,
     }
 
-    # Schicht 0: AUTO-REPAIR — repariert oder liquidiert VOR allem anderen
+    # Schicht 0a: Template-Bleed Check + Async AI-Repair (VOR sync repair_or_block)
+    if _TEMPLATE_BLEED_RE.search(text):
+        log.warning("Template-Bleed [%s] von %s — AI-Repair-Versuch | Preview: %s",
+                    platform, source_module, text[:80])
+        repaired = await _ai_repair_template_bleed(text, platform)
+        if repaired:
+            log.info("Template-Bleed REPARIERT [%s]: %d→%d Zeichen", platform, len(text), len(repaired))
+            text = repaired
+        else:
+            result["errors"] = ["template_bleed_liquidated: KI-Anweisungstext — AI-Repair fehlgeschlagen"]
+            result["blocked"] = True
+            _log_blocked(platform, "template_bleed_liquidated", text)
+            log.warning("Template-Bleed NICHT reparierbar [%s] von %s — liquidiert", platform, source_module)
+            return result
+
+    # Schicht 0b: AUTO-REPAIR — repariert oder liquidiert VOR allem anderen
     try:
         from modules.post_auto_repair import repair_or_block
         repaired_text, repair_errors = repair_or_block(text, platform)
