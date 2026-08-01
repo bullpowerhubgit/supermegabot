@@ -166,6 +166,24 @@ _token_cache: Dict[str, Any] = {
 _CC_BACKOFF_SECS   = 1800   # 30 min Pause nach client_credentials Fehler
 _ATKN_BACKOFF_SECS = 3600   # 60 min Pause nach invalid_grant (permanent bis Neustart)
 
+# 402 Unavailable Shop — Store-Subscription abgelaufen; alle API-Calls überspringen
+_store_paused_until: float = 0.0
+_STORE_PAUSED_BACKOFF = 3600  # 1h Backoff nach 402
+
+
+def _set_store_paused() -> None:
+    global _store_paused_until
+    if time.time() > _store_paused_until:  # nur einmal pro Backoff-Periode loggen
+        logger.warning(
+            "Shopify Store 402 (Unavailable Shop) — Subscription abgelaufen? "
+            "Alle API-Calls pausiert für %ds", _STORE_PAUSED_BACKOFF
+        )
+    _store_paused_until = time.time() + _STORE_PAUSED_BACKOFF
+
+
+def _is_store_paused() -> bool:
+    return time.time() < _store_paused_until
+
 
 async def _refresh_client_credentials() -> Optional[str]:
     """Holt frischen shpat_ via Client Credentials Grant (auto-refresh, 24h gültig)"""
@@ -288,6 +306,8 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
     """Admin GraphQL Anfrage mit Auto-Auth, Throttle und 429-Retry (max 3 Versuche, exp. Backoff)"""
     if not HAS_AIOHTTP:
         return {"errors": "aiohttp not installed"}
+    if _is_store_paused():
+        return {"errors": "shopify_store_paused"}
 
     await _shopify_throttle()
     auth = await _get_best_token()
@@ -303,6 +323,9 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
         try:
             async with _client_session(15) as session:
                 async with session.post(url, json=payload, headers=headers) as resp:
+                    if resp.status == 402:
+                        _set_store_paused()
+                        return {"errors": "shopify_store_paused"}
                     if resp.status == 429:
                         wait = int(float(resp.headers.get("Retry-After", _backoff[attempt])))
                         logger.warning(
@@ -327,6 +350,8 @@ async def rest_get(endpoint: str) -> Dict:
     """REST GET mit Throttle und 429-Retry (max 3 Versuche, exp. Backoff)"""
     if not HAS_AIOHTTP:
         return {"error": "aiohttp not installed"}
+    if _is_store_paused():
+        return {"error": "shopify_store_paused"}
 
     await _shopify_throttle()
     auth = await _get_best_token()
@@ -337,6 +362,9 @@ async def rest_get(endpoint: str) -> Dict:
         try:
             async with _client_session(15) as session:
                 async with session.get(url, headers=auth) as resp:
+                    if resp.status == 402:
+                        _set_store_paused()
+                        return {"error": "shopify_store_paused"}
                     if resp.status == 429:
                         wait = int(float(resp.headers.get("Retry-After", _backoff[attempt])))
                         logger.warning(
@@ -361,12 +389,17 @@ async def rest_post(endpoint: str, data: Dict) -> Dict:
     """REST POST — Ressource erstellen (z.B. products.json)"""
     if not HAS_AIOHTTP:
         return {"error": "aiohttp not installed"}
+    if _is_store_paused():
+        return {"error": "shopify_store_paused"}
     await _shopify_throttle()
     auth = await _get_best_token()
     url = f"{_store_url()}/admin/api/{_api_version()}/{endpoint}"
     try:
         async with _client_session(20) as session:
             async with session.post(url, headers=auth, json=data) as resp:
+                if resp.status == 402:
+                    _set_store_paused()
+                    return {"error": "shopify_store_paused"}
                 return await resp.json()
     except Exception as e:
         logger.warning("Shopify REST POST %s: %s", endpoint, e)
