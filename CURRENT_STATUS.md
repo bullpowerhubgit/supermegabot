@@ -43,8 +43,49 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-08-01 03:47 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-08-01 09:47 UTC
 - Health: ✅ OK
 - Umsatz heute: €0.00
 - Probleme:
   - keine
+
+## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
+
+### Instagram ✅ FIXED
+- Alter Token EAARagX8... (abgelaufen) → Neuer Token EAAV0ehvB7rU... gesetzt
+- 17 .env-Variablen + 5 Railway ENV-Vars aktualisiert
+- instagram_content_publish bestätigt (Error 9004, nicht mehr Error 10)
+
+### Pinterest ⚠️ MANUELL ERFORDERLICH
+Status: Token `pina_AMAR...` abgelaufen (code 2 - Authentication failed)
+Problem: `PINTEREST_APP_SECRET` fehlt in .env — OAuth-Callback kann Code nicht tauschen
+Problem 2: Redirect URI Mismatch (400) — `/api/pinterest/oauth/callback` nicht in App registriert
+
+**Was Rudolf manuell tun muss (5 Minuten):**
+1. Öffne: https://developers.pinterest.com/apps/1582363/
+2. Login mit bullpowersrtkennels@gmail.com (Google Button)
+3. Unter "Redirect URIs" → `https://supermegabot-production.up.railway.app/api/pinterest/oauth/callback` hinzufügen
+4. **App Secret kopieren** und in Railway ENV als `PINTEREST_APP_SECRET` setzen
+5. Dann: https://supermegabot-production.up.railway.app/api/pinterest/oauth/start aufrufen → Token wird automatisch gespeichert
+
+Pinterest Alerts: ✅ Bereits unterdrückt (post_gateway.py `_PLATFORM_KNOWN_DOWN`)
+
+## 🚨 SESSION v51 — 2026-08-01 SHOPIFY 402 + FIXES
+
+### Shopify Store PAUSIERT (HTTP 402) ⚠️ KRITISCH
+- **autopilot-store-suite-fmbka.myshopify.com** → HTTP 402 "Unavailable Shop"
+- **ineedit.com.co** → HTTP 402 (gleicher Store, beide Domains tot)
+- Ursache: Shopify-Subscription abgelaufen / nicht bezahlt
+- Folge: SEO Scaler 0 Produkte, Revenue Alert 0 Produkte, alle Shopify-Module stumm
+- **Was Rudolf tun muss:** Shopify-Abo bezahlen oder Store reaktivieren (shopify.com/admin)
+
+Fix: `modules/shopify_client.py` — 402-Handler mit 1h Backoff (kein Log-Spam mehr)
+
+### SMTP ✅ Korrekt konfiguriert
+- SMTP_USER, SMTP_PASS, BREVO_SMTP_* alle in Railway gesetzt
+- Kein Problem — Warning war wahrscheinlich transient
+
+### AI Act Scanner + Insolvenz Radar ✅ Laufen lokal
+- `run_cycle()` → `{'scanned': 0, 'emails_sent': 0, 'high_risk': 0}` (kein Crash)
+- Insolvenz Radar → 6 neue Leads gefunden, alerts_sent=0 (Blocklist)
+- Railway-Crash #1305 wahrscheinlich Netzwerk-Timeout während Store-Pause
