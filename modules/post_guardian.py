@@ -109,7 +109,8 @@ _OFFTOPIC_PATTERNS = re.compile(
 
 # Verbotene Store-URLs (nur Public-Domain ineedit.com.co)
 _BANNED_URLS = re.compile(
-    r'myshopify\.com|checkout-ds24\.com/product/668035|'
+    r'myshopify\.com|'
+    r'checkout-ds24\.com/product/(668035|669750|704330|704677)|'
     r'localhost|127\.0\.0\.1|yourstore|example\.com',
     re.IGNORECASE,
 )

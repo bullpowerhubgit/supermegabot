@@ -405,6 +405,24 @@ async def safe_post(
         "errors": [], "blocked": False, "source": source_module,
     }
 
+    # Schicht 0: AUTO-REPAIR — repariert oder liquidiert VOR allem anderen
+    try:
+        from modules.post_auto_repair import repair_or_block
+        repaired_text, repair_errors = repair_or_block(text, platform)
+        if repaired_text is None:
+            result["errors"] = repair_errors
+            result["blocked"] = True
+            _log_blocked(platform, " | ".join(repair_errors), text)
+            log.warning("Post LIQUIDIERT [%s] von %s: %s | Preview: %s",
+                        platform, source_module, repair_errors, text[:80])
+            return result
+        if repaired_text != text:
+            log.info("Post REPARIERT [%s] von %s (%d→%d Zeichen)",
+                     platform, source_module, len(text), len(repaired_text))
+        text = repaired_text
+    except Exception as _re:
+        log.warning("AutoRepair nicht verfügbar (%s) — weiter ohne Repair", _re)
+
     try:
         from modules.smart_poster import get_posting_pause_reason
         pause_reason = get_posting_pause_reason()
