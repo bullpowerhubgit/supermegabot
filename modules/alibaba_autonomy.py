@@ -17,7 +17,7 @@ import aiohttp
 log = logging.getLogger("AlibabaAutonomy")
 
 APP_KEY    = os.getenv("ALIEXPRESS_APP_KEY", "536860")
-APP_SECRET = os.getenv("ALIEXPRESS_APP_SECRET", "mmKF9pO8NZrEzdjpl6j0lXFoHhv213uN")
+APP_SECRET = os.getenv("ALIEXPRESS_APP_SECRET", "")
 SHOPIFY    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
@@ -26,15 +26,15 @@ TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 ALIBABA_NICHES = [
     "smart home gadgets",
-    "fitness equipment",
-    "pet accessories",
-    "kitchen tools",
-    "phone accessories",
-    "outdoor survival",
-    "beauty tools",
-    "office organizers",
-    "baby products",
-    "car accessories",
+    "solar power bank",
+    "wireless charging",
+    "smart led strip",
+    "portable power station",
+    "wifi smart plug",
+    "solar panel kit",
+    "smart security camera",
+    "robot vacuum cleaner",
+    "smart doorbell",
 ]
 
 

@@ -351,10 +351,12 @@ async def check_ai_quality(text: str, platform: str = "default", context: str = 
         r_upper = result.upper()
         if r_upper.startswith("OK"):
             return True, ""
-        if "FEHLER" in r_upper:
+        # Prompt-Echo Erkennung: KI gibt Prompt-Fragmente zurück → Malfunction
+        _PROMPT_ECHOES = ["CHECK STRICTLY", "OUTPUT FORMAT", "CONSTRAINT:", "SOCIAL MEDIA POST", "SPECIFIC CRITERIA"]
+        if "FEHLER" in r_upper and not any(echo in r_upper for echo in _PROMPT_ECHOES):
             reason = result.split(":", 1)[-1].strip() if ":" in result else result
             return False, f"KI: {reason[:120]}"
-        # Unklare Antwort → Keyword-Fallback statt hartem Block
+        # Unklare Antwort oder Prompt-Echo → Keyword-Fallback statt hartem Block
         tech_kw = ['smart', 'tech', 'e-commerce', 'ecommerce', 'shopify', 'amazon',
                    'ki ', 'ai ', 'automatisierung', 'automation', 'saas', 'solar',
                    'supermegabot', 'aiitec', 'ineedit', 'stripe', 'digistore',
