@@ -1040,6 +1040,13 @@ async def run_send_batch(batch_limit: int = BATCH_SIZE) -> Dict:
         company  = lead["company"] or "Ihr Unternehmen"
         industry = lead["industry"] or "Default"
         city     = lead["city"] or "Deutschland"
+        # Skip wenn company == industry (Branchenname statt Firmenname — Scraping-Fehler)
+        if company.strip().lower() == industry.strip().lower() or company.strip() == "Ihr Unternehmen":
+            log.warning("⚠️  SKIP Placeholder-Lead: company='%s' == industry='%s' → %s", company, industry, email)
+            with _db() as conn:
+                conn.execute("UPDATE leads SET status='skip_placeholder' WHERE id=?", (lead["id"],))
+            skip_count += 1
+            continue
         subject, body = await _ai_personalize(company, industry, city, lead["contact"] or "")
         ok, smtp_user = await send_email(email, subject, body)
         if ok:
@@ -1239,9 +1246,10 @@ async def run_mini_research(categories: List[str], cities: List[str],
                         h2 = await r2.text(errors="ignore")
                     for em in re.findall(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', h2)[:5]:
                         if _valid_email(em):
+                            em_domain = em.split("@")[-1].replace("www.", "").split(".")[0].title()
                             gathered.append({
                                 "email": em.lower(),
-                                "company": cat,
+                                "company": em_domain,
                                 "industry": cat,
                                 "city": city,
                                 "source": "11880_mini",
