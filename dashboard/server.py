@@ -12360,6 +12360,14 @@ async def create_app():
         log.warning("MegaOrchestrator start failed (non-fatal): %s", e)
         bot = None
 
+    # Init email outreach DB — erstellt bo_companies Tabelle auf Railway
+    try:
+        from modules.email_outreach_bulk import init_db as _eob_init
+        _eob_init()
+        log.info("email_outreach_bulk DB initialisiert")
+    except Exception as e:
+        log.warning("email_outreach_bulk init_db: %s", e)
+
     # Start Hermes Job Queue
     try:
         from core.job_queue import HermesQueue
