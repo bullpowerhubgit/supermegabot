@@ -1,0 +1,19 @@
+{
+  "plan": {
+    "summary": "Einbindung von Google Analytics und Tracking f\u00fcr MRR-Erhebung",
+    "code_changes": [
+      {
+        "file": "/src/analytics/index.ts",
+        "intent": "Einf\u00fcgen der GA-Tracking-Funktionen"
+      },
+      {
+        "file": "/src/utils/mrrTracker.ts",
+        "intent": "Implementierung des MRR-Trackers mit GA-Segmentierung"
+      }
+    ],
+    "deploy_safe": true,
+    "expected_revenue_impact": "Signifikante Verbesserung der MRR-Erhebung und genauere Umsatzprognosen"
+  },
+  "branch": "autonomous/loop-20260807-084716",
+  "created_at": "2026-08-07T08:47:16.745681+00:00"
+}
