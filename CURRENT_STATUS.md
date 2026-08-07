@@ -1,4 +1,39 @@
 # SuperMegaBot — CURRENT STATUS
+**Stand: 2026-08-07 v50 — EMAIL SYSTEM GEFIXT + 5-MIN-SCANNER AKTIV**
+
+## ✅ SESSION v50 (2026-08-07) — Email Automation Fix
+
+| Fix | Ergebnis |
+|-----|----------|
+| gmail_secrets.json — altes Passwort aiitecbuuss (Index 5) | ✅ gefixt |
+| email_blast_engine — Mailchimp-Call entfernt | ✅ nur Klaviyo |
+| email_engine — send_welcome_email Mailchimp-Call | ✅ nur Klaviyo |
+| email_health_checker — Mailchimp-Alert deaktiviert | ✅ gefixt |
+| automation_scheduler — email_account_scan Task (alle 5 Min) | ✅ live |
+
+### Gmail-Konten Status (2026-08-07)
+| Account | Index | Status |
+|---------|-------|--------|
+| dragonadnp@gmail.com | 1 | ✅ OK |
+| bullpowersrtkennels@gmail.com | 3 | ✅ OK |
+| aiitecbuuss@gmail.com | 5 | ✅ OK (Passwort in secrets.json korrigiert) |
+| rudolf.sarkany.aiitec@gmail.com | 7 | ✅ OK |
+| rudolfsarkany1984@gmail.com | 8 | ❌ Web-Login nötig — Google-Konto öffnen + Sicherheit bestätigen |
+| nikolestimi@gmail.com | 2 | ❌ Kein Passwort (deaktiviert) |
+| rudolf.sarkany@aitec.de | 6 | ❌ Kein Passwort (Strato) |
+
+### Email Services Status
+| Service | Status |
+|---------|--------|
+| Klaviyo | ✅ 5 Listen aktiv |
+| SendGrid | ⚠️ Free-Plan, 0 Credits |
+| Brevo | ❌ IP-Sperre — in Brevo-Dashboard IP whitelisten |
+| Mailchimp | ❌ DAUERHAFT GESPERRT (alle 3 Konten seit 2026-07-12) |
+
+### ⏳ MANUELLE FIXES NÖTIG
+1. **rudolfsarkany1984@gmail.com** → Google-Konto öffnen → Sicherheit → Neue App-Passwort erstellen
+2. **Brevo** → brevo.com → Settings → Authorized IPs → Railway-IP hinzufügen
+
 **Stand: 2026-07-27 v49 — GUMROAD VOLLSTÄNDIG + STRIPE CLEANUP PENDING**
 
 ## ✅ SESSION v49 — Abgeschlossen (2026-07-27)
@@ -43,7 +78,7 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-08-07 09:05 UTC
+## 🤖 WATCHDOG LETZTER CHECK: 2026-08-07 15:05 UTC
 - Health: ✅ OK
 - Umsatz heute: €0.00
 - Probleme:
