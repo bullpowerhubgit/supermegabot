@@ -150,10 +150,10 @@ async def add_to_klaviyo(email: str, plan: str) -> bool:
 
 
 async def send_welcome_email(email: str, plan: str) -> bool:
-    mc_ok = await add_to_mailchimp(email, plan, tags=["welcome"])
+    # Mailchimp DAUERHAFT GESPERRT (alle 3 Konten seit 2026-07-12) — nur Klaviyo
     kl_ok = await add_to_klaviyo(email, plan)
-    log.info("Welcome email: MC=%s KL=%s → %s plan=%s", mc_ok, kl_ok, email, plan)
-    return mc_ok or kl_ok
+    log.info("Welcome email: KL=%s → %s plan=%s", kl_ok, email, plan)
+    return kl_ok
 
 
 async def onboard_new_subscriber(email: str, plan: str):

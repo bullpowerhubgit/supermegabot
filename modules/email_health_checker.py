@@ -129,12 +129,8 @@ async def _test_klaviyo() -> Dict[str, Any]:
 # ── Mailchimp-Test ───────────────────────────────────────────────────────────
 
 async def _test_mailchimp() -> Dict[str, Any]:
-    try:
-        from modules.mailchimp_automation import ping as mc_ping
-        ok, detail = await mc_ping()
-        return {"ok": ok, "detail": str(detail)[:120]}
-    except Exception as exc:
-        return {"ok": False, "detail": str(exc)[:120]}
+    # DAUERHAFT GESPERRT — alle 3 Konten seit 2026-07-12
+    return {"ok": False, "detail": "BANNED seit 2026-07-12 — nur Klaviyo"}
 
 
 # ── Queue-Größen ─────────────────────────────────────────────────────────────
@@ -236,8 +232,7 @@ async def _alert_broken(
     if not klaviyo.get("ok"):
         problems.append(f"*Klaviyo:* ❌ {klaviyo.get('detail','?')[:80]}")
 
-    if not mailchimp.get("ok"):
-        problems.append(f"*Mailchimp:* ❌ {mailchimp.get('detail','?')[:80]}")
+    # Mailchimp DAUERHAFT GESPERRT — kein Alert erwünscht
 
     if not problems:
         return  # Alles OK → kein Alert nötig
@@ -292,7 +287,7 @@ async def run_email_health_check() -> Dict[str, Any]:
     summary_parts = [
         f"SMTP: {smtp_ok}/{smtp_total} OK",
         f"Klaviyo: {'OK' if klaviyo_res.get('ok') else 'FEHLER'}",
-        f"Mailchimp: {'OK' if mailchimp_res.get('ok') else 'FEHLER'}",
+        "Mailchimp: BANNED",
         f"Queue: {total_queue}",
         f"Kapazität: {daily_cap}/Tag",
     ]

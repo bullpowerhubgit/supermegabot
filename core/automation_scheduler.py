@@ -6483,6 +6483,29 @@ async def task_email_monitor() -> str:
         return f"Email Monitor Fehler: {e}"
 
 
+async def task_email_account_scan() -> str:
+    """Alle Gmail-SMTP-Konten alle 5 Minuten auf Fehler prüfen + Klaviyo testen."""
+    try:
+        from modules.gmail_accounts import test_all_accounts
+        from modules.email_health_checker import _test_klaviyo
+        results = test_all_accounts()
+        working = results["working"]
+        total = results["total"]
+        broken = [a for a in results["accounts"] if not a.get("ok")]
+        if broken:
+            msgs = [f"❌ {a['email']}: {a.get('error','?')[:60]}" for a in broken]
+            kl = await _test_klaviyo()
+            kl_status = "✅ OK" if kl.get("ok") else f"❌ {kl.get('detail','?')[:40]}"
+            summary = f"📧 Email-Scan: {working}/{total} SMTP OK | Klaviyo: {kl_status}\n" + "\n".join(msgs)
+            log.warning("Email-Account-Scan Fehler: %s", " | ".join(msgs))
+            return summary
+        kl = await _test_klaviyo()
+        kl_status = "✅ OK" if kl.get("ok") else f"❌ {kl.get('detail','?')[:40]}"
+        return f"📧 Email-Scan: {working}/{total} SMTP OK | Klaviyo: {kl_status}"
+    except Exception as e:
+        return f"Email-Account-Scan Fehler: {e}"
+
+
 async def task_api_key_health() -> str:
     """API-Key Health Check: OpenAI, Resend, Anthropic, OpenRouter (alle 12h)."""
     try:
@@ -8667,7 +8690,8 @@ TASKS = [
     # ── Marketplace Auto-Poster ───────────────────────────────────────────────
     ("marketplace_poster",   task_marketplace_poster,    10800, 200),  # 3h — eBay+Amazon+AliExpress+Shop
     # ── Email Marketing ───────────────────────────────────────────────────────
-    ("email_blast_daily",    task_email_blast_daily,    86400, 420),  # 24h — Klaviyo+Mailchimp Blast 1x täglich
+    ("email_account_scan",   task_email_account_scan,     300,   3),  # 5min — alle Gmail+Klaviyo Konten auf Fehler prüfen
+    ("email_blast_daily",    task_email_blast_daily,    86400, 420),  # 24h — Klaviyo Blast 1x täglich
     ("streetwear_email",     task_streetwear_email,    259200, 600),  # 3 Tage — Mailchimp+Klaviyo neue Produkte
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
     ("klaviyo_mass",         task_klaviyo_mass_daily,   86400, 500),  # täglich — Klaviyo Mass Campaigns

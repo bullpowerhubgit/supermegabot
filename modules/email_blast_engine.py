@@ -206,18 +206,13 @@ async def send_via_smtp(subject: str, html: str, to_email: str = "") -> dict:
 
 
 async def blast_all_lists(subject: str, html: str) -> dict:
-    """Gleichzeitig Klaviyo + Mailchimp + SMTP."""
-    results = await asyncio.gather(
-        send_via_klaviyo(subject, html),
-        send_via_mailchimp(subject, html),
-        return_exceptions=True,
-    )
-    klaviyo_ok = results[0].get("ok") if isinstance(results[0], dict) else False
-    mailchimp_ok = results[1].get("ok") if isinstance(results[1], dict) else False
+    """Klaviyo blast — Mailchimp DAUERHAFT GESPERRT (alle 3 Konten seit 2026-07-12)."""
+    result = await send_via_klaviyo(subject, html)
+    klaviyo_ok = result.get("ok") if isinstance(result, dict) else False
     return {
-        "ok": klaviyo_ok or mailchimp_ok,
-        "klaviyo": results[0] if isinstance(results[0], dict) else {"error": str(results[0])},
-        "mailchimp": results[1] if isinstance(results[1], dict) else {"error": str(results[1])},
+        "ok": klaviyo_ok,
+        "klaviyo": result if isinstance(result, dict) else {"error": str(result)},
+        "mailchimp": {"ok": False, "error": "BANNED — alle Konten gesperrt seit 2026-07-12"},
     }
 
 
@@ -248,8 +243,7 @@ async def run_daily_blast() -> dict:
         return {"ok": False, "error": f"guardian_error: {eg}"}
 
     blast = await blast_all_lists(subject, html)
-    log.info("Daily email blast: klaviyo=%s mailchimp=%s",
-             blast.get("klaviyo", {}).get("ok"), blast.get("mailchimp", {}).get("ok"))
+    log.info("Daily email blast: klaviyo=%s", blast.get("klaviyo", {}).get("ok"))
     return {"ok": True, "subject": subject, "blast": blast}
 
 
@@ -258,7 +252,7 @@ async def get_email_stats() -> dict:
     return {
         "ok": True,
         "klaviyo_configured": bool(KLAVIYO_KEY),
-        "mailchimp_configured": bool(MAILCHIMP_KEY and MAILCHIMP_LIST),
+        "mailchimp_configured": False,  # BANNED seit 2026-07-12
         "smtp_accounts": len(_smtp_accounts_list()),
         "from_email": FROM_EMAIL,
     }
