@@ -147,7 +147,7 @@ async def _send_telegram(msg: str) -> None:
         log.debug("Telegram send failed: %s", e)
 
 
-async def run_bounce_cleaner(full_scan: bool = False) -> Dict:
+async def run_bounce_cleaner(full_scan: bool = True) -> Dict:
     """
     Verbindet alle IMAP-Konten, löscht Bounce/DSN-Mails, trägt Bounces in DB ein.
 

@@ -1315,14 +1315,14 @@ async def _get_next_search_combos(n_cats: int = 3, n_cities: int = 5) -> Tuple[L
     return cats, cities
 
 
-async def run_smart_batch(batch_size: int = BATCH_SIZE) -> Dict:
-    """Research + Send in einem Lauf — jedes Mal andere Unternehmen.
+_OUTREACH_ENABLED = os.getenv("OUTREACH_ENABLED", "false").lower() == "true"
 
-    1. Wählt Kategorie/Stadt-Kombis die noch nicht gesucht wurden
-    2. Mini-Research → neue Leads in DB
-    3. Sofort senden an alle neuen Leads
-    4. Follow-Up-Emails für ältere Leads
-    """
+
+async def run_smart_batch(batch_size: int = BATCH_SIZE) -> Dict:
+    """Research + Send in einem Lauf — jedes Mal andere Unternehmen."""
+    if not _OUTREACH_ENABLED:
+        log.warning("mass_outreach_1000: GESPERRT (OUTREACH_ENABLED=false) — Cold-Outreach DSGVO-Verstoß")
+        return {"sent": 0, "new_leads": 0, "followups": 0, "blocked": True}
     init_db()
 
     # Step 1: Mini-Research mit frischen Kombis

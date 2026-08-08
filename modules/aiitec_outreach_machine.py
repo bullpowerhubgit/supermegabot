@@ -1356,8 +1356,13 @@ def _personalize(company: dict, stage: int) -> tuple[str, str]:
     return subject, body
 
 # ── Outreach Loop ─────────────────────────────────────────────────────────────
+# DAUERHAFT GESPERRT — Cold-Outreach DSGVO-Verstoß (CLAUDE.md Permanent-Verbot)
+_OUTREACH_ENABLED = os.getenv("OUTREACH_ENABLED", "false").lower() == "true"
 
 async def run_outreach() -> dict:
+    if not _OUTREACH_ENABLED:
+        log.warning("aiitec_outreach_machine: GESPERRT (OUTREACH_ENABLED=false) — Cold-Outreach DSGVO-Verstoß")
+        return {"sent": 0, "failed": 0, "followup": 0, "blocked": True}
     stats = {"sent": 0, "failed": 0, "followup": 0}
     log.info("=== AIITEC Outreach gestartet ===")
 
