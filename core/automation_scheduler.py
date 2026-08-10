@@ -8703,8 +8703,8 @@ TASKS = [
     # ── Marketplace Auto-Poster ───────────────────────────────────────────────
     ("marketplace_poster",   task_marketplace_poster,    10800, 200),  # 3h — eBay+Amazon+AliExpress+Shop
     # ── Email Marketing ───────────────────────────────────────────────────────
-    ("bounce_cleaner",       task_bounce_cleaner,         360,   2),  # 6min — IMAP Bounce/DSN-Mails auto-löschen
-    ("email_account_scan",   task_email_account_scan,     360,   3),  # 6min — alle Gmail+Klaviyo Konten auf Fehler prüfen
+    ("bounce_cleaner",       task_bounce_cleaner,         300,   2),  # 5min — IMAP Bounce/DSN-Mails auto-löschen
+    ("email_account_scan",   task_email_account_scan,     300,   3),  # 5min — alle Gmail+Klaviyo Konten auf Fehler prüfen
     ("email_blast_daily",    task_email_blast_daily,    86400, 420),  # 24h — Klaviyo Blast 1x täglich
     ("streetwear_email",     task_streetwear_email,    259200, 600),  # 3 Tage — Mailchimp+Klaviyo neue Produkte
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
