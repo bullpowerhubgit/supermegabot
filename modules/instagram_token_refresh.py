@@ -42,7 +42,7 @@ _load_env()
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")
 FB_APP_ID      = os.getenv("FACEBOOK_APP_ID", "1535442684079797")
-FB_APP_SECRET  = os.getenv("FACEBOOK_APP_SECRET", "b613acc6d413eee849cf7d4814b68376")
+FB_APP_SECRET  = os.getenv("FACEBOOK_APP_SECRET", "")
 
 
 async def _tg(msg: str):

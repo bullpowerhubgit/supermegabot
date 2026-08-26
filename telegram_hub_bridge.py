@@ -112,6 +112,9 @@ def dashboard_execute(command: str, session_id: str) -> str:
         headers: dict[str, str] = {"Content-Type": "application/json"}
         if DASHBOARD_SECRET:
             headers["X-API-Key"] = DASHBOARD_SECRET
+        _admin_key = os.getenv("ADMIN_API_KEY", "")
+        if _admin_key:
+            headers["X-Admin-Key"] = _admin_key
         req = urllib.request.Request(url, data=body, headers=headers, method="POST")
         with urllib.request.urlopen(req, timeout=60) as r:
             resp = json.loads(r.read().decode(errors="replace"))

@@ -485,3 +485,54 @@ async def get_all_revenue_stats() -> Dict:
             "social_posts_today":    pipeline.get("promo_logs_today", 0),
         },
     }
+
+
+# ── Bezahlte Bestellungen erfassen (orders/paid Webhook) ──────────────────────
+
+_PAID_ORDERS_DB = DATA_DIR / "paid_orders.db"
+
+
+def _paid_orders_conn() -> sqlite3.Connection:
+    _PAID_ORDERS_DB.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(_PAID_ORDERS_DB))
+    conn.execute(
+        """
+        CREATE TABLE IF NOT EXISTS paid_orders (
+            order_id    TEXT PRIMARY KEY,
+            amount      REAL NOT NULL DEFAULT 0,
+            currency    TEXT NOT NULL DEFAULT 'EUR',
+            source      TEXT NOT NULL DEFAULT 'shopify',
+            recorded_at INTEGER DEFAULT (strftime('%s','now'))
+        )
+        """
+    )
+    return conn
+
+
+async def record_paid_order(order_id: str, amount: float, currency: str = "EUR",
+                            source: str = "shopify") -> bool:
+    """Erfasst eine bezahlte Bestellung für das Revenue-Tracking (idempotent).
+
+    Schreibt in eine lokale SQLite-DB (data/paid_orders.db); ein zweiter Aufruf
+    mit derselben order_id ist ein No-op (INSERT OR IGNORE).
+    """
+    def _write() -> bool:
+        try:
+            conn = _paid_orders_conn()
+            with conn:
+                cur = conn.execute(
+                    "INSERT OR IGNORE INTO paid_orders(order_id, amount, currency, source) VALUES(?,?,?,?)",
+                    (str(order_id), float(amount or 0), str(currency or "EUR"), str(source or "shopify")),
+                )
+                inserted = cur.rowcount > 0
+            conn.close()
+            if inserted:
+                log.info("record_paid_order: %s %.2f %s (%s) erfasst", order_id, float(amount or 0), currency, source)
+            else:
+                log.debug("record_paid_order: %s bereits erfasst — übersprungen", order_id)
+            return inserted
+        except Exception as exc:
+            log.warning("record_paid_order fehlgeschlagen (%s): %s", order_id, exc)
+            return False
+
+    return await asyncio.to_thread(_write)

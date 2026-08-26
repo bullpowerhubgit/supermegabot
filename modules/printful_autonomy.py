@@ -15,7 +15,7 @@ import aiohttp
 
 log = logging.getLogger("PrintfulAutonomy")
 
-TOKEN = os.getenv("PRINTFUL_API_KEY", "gd3ZDHx6QkyaoDB7Vr95Wsey3CKZv1tGtOIBfbkh")
+TOKEN = os.getenv("PRINTFUL_API_KEY", "")
 BASE_V2 = "https://api.printful.com/v2"
 BASE_V1 = "https://api.printful.com"
 AUTH = lambda: {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json",

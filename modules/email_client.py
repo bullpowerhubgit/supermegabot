@@ -10,9 +10,9 @@ import aiohttp
 
 log = logging.getLogger("EmailClient")
 
-_RESEND_KEY1 = lambda: os.getenv("RESEND_API_KEY", "re_ibYr2F19_85RKMoBbv6yDcy1YAuuctkmd")
+_RESEND_KEY1 = lambda: os.getenv("RESEND_API_KEY", "")
 _RESEND_KEY2 = "re_QpJeXP4i_2893JyiExMazp9cxKLKkrSUn"
-_KLAVIYO_KEY = lambda: os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
+_KLAVIYO_KEY = lambda: os.getenv("KLAVIYO_API_KEY", "")
 
 FROM_DEFAULT = "AIITEC <onboarding@resend.dev>"
 REPLY_TO     = os.getenv("REPLY_TO_EMAIL", "aiitecbuuss@gmail.com")

@@ -17,7 +17,7 @@ from urllib.parse import urlencode
 logger = logging.getLogger(__name__)
 
 APP_KEY    = os.getenv('ALIEXPRESS_APP_KEY', '537346')
-APP_SECRET = os.getenv('ALIEXPRESS_APP_SECRET', 'cnTeBUGhazNSsBVwLBiXqz3s8XTmT1hI')
+APP_SECRET = os.getenv('ALIEXPRESS_APP_SECRET', '')
 ACCESS_TOKEN = os.getenv('ALIEXPRESS_ACCESS_TOKEN', '')
 API_BASE   = os.getenv('ALIEXPRESS_API_ENDPOINT', 'https://api-sg.aliexpress.com')
 

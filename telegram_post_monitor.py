@@ -61,7 +61,7 @@ DATA_DIR = BASE_DIR / "data"
 LOG_PATH = DATA_DIR / "telegram_monitor.log"
 MONITOR_STATE = DATA_DIR / "telegram_monitor_state.json"
 
-BOT_TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAHk_DEJa7O5HM6oajH8ArNtOmgW_5Jt0O8")
+BOT_TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "")
 ADMIN_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
 SHOP_URL      = f"https://{os.getenv('SHOPIFY_PUBLIC_DOMAIN', 'ineedit.com.co')}"
 

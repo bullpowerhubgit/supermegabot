@@ -117,9 +117,12 @@ async def trigger_on_service(service: str, command: str, params: Optional[Dict] 
         return {"ok": False, "error": f"Unbekannter Service: {service}. Erlaubt: {list(_SERVICE_URLS.keys())}"}
 
     payload = {"command": command, "params": params}
+    _admin_hdrs = {}
+    if os.getenv("ADMIN_API_KEY", ""):
+        _admin_hdrs["X-Admin-Key"] = os.getenv("ADMIN_API_KEY", "")
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-            async with s.post(f"{base_url}/api/bot/execute", json=payload) as r:
+            async with s.post(f"{base_url}/api/bot/execute", json=payload, headers=_admin_hdrs) as r:
                 try:
                     data = await r.json(content_type=None)
                 except Exception:

@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
 # Facebook / Instagram (Meta Graph API)
 FB_ACCESS_TOKEN = os.getenv("FACEBOOK_ACCESS_TOKEN", os.getenv("FACEBOOK_USER_TOKEN", os.getenv("FB_ACCESS_TOKEN", "")))

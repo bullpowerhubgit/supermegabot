@@ -65,7 +65,7 @@ def save_env_var(key: str, value: str):
 
 def reddit_connect():
     client_id     = os.getenv("REDDIT_CLIENT_ID", "hqgJAQe6Qiu5s5r1Vqc0Og")
-    client_secret = os.getenv("REDDIT_CLIENT_SECRET", "xsH99P7iCQAPeknbAXe5F9Nd9fV7aA")
+    client_secret = os.getenv("REDDIT_CLIENT_SECRET", "")
     state = secrets.token_urlsafe(16)
 
     auth_url = (
