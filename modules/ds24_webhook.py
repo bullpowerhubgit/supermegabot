@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 DS24 Dankeseite-Webhook — wird nach jedem Kauf von DS24 aufgerufen.
-Schlüssel: O5jqklqAcxTvkKHp0rvn (in DS24 → Produkt → Dankeseite eintragen)
+Schlüssel: <aus-Sicherheitsgruenden-entfernt> (in DS24 → Produkt → Dankeseite eintragen)
 
 Dankeseite-URL: https://supermegabot-production.up.railway.app/api/ds24/dankeseite
 
@@ -21,7 +21,7 @@ import aiohttp
 
 log = logging.getLogger("DS24Webhook")
 
-DS24_DANKESEITE_KEY = os.getenv("DS24_DANKESEITE_KEY", "O5jqklqAcxTvkKHp0rvn")
+DS24_DANKESEITE_KEY = os.getenv("DS24_DANKESEITE_KEY", "")
 DS24_KEY = os.getenv("DS24_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")

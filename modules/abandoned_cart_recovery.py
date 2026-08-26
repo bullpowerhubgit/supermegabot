@@ -837,6 +837,33 @@ async def handle_order_webhook(payload: Dict) -> Dict:
     return {"ok": True, "order": order_number}
 
 
+async def cancel_recovery_for_email(email: str) -> Dict:
+    """Bricht die Recovery-Sequenz für alle offenen Checkouts dieser E-Mail ab.
+
+    Wird vom orders/paid-Webhook aufgerufen: Kunde hat bezahlt → keine weiteren
+    Abandoned-Cart-Mails mehr an diese Adresse senden.
+    """
+    if not email:
+        return {"ok": True, "cancelled": 0, "msg": "no email"}
+    try:
+        conn = _get_db()
+        cur = conn.execute(
+            "UPDATE cart_recoveries SET is_completed=1 WHERE email=? AND is_completed=0",
+            (email,),
+        )
+        conn.commit()
+        cancelled = cur.rowcount if cur.rowcount and cur.rowcount > 0 else 0
+        conn.close()
+        if cancelled:
+            log.info("cancel_recovery_for_email: %d offene Recovery(s) für %s abgebrochen", cancelled, email)
+        else:
+            log.debug("cancel_recovery_for_email: keine offenen Recoveries für %s", email)
+        return {"ok": True, "cancelled": cancelled}
+    except Exception as exc:
+        log.error("cancel_recovery_for_email Fehler (%s): %s", email, exc)
+        return {"ok": False, "error": str(exc)}
+
+
 # ── Standalone-Test ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":

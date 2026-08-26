@@ -28,6 +28,7 @@ except Exception as _e:
 
 import asyncio
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -352,10 +353,31 @@ async def handle_assistant_clear(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+def _require_admin_key(req):
+    """Expliziter Admin-Key-Check für gefährliche Endpoints (fail-closed).
+
+    Rückgabe: None wenn autorisiert, sonst eine web.Response zum Zurückgeben.
+    Fehlt ADMIN_API_KEY in der Umgebung → 503 (Endpoint deaktiviert).
+    Header X-Admin-Key muss per hmac.compare_digest exakt matchen → sonst 401.
+    """
+    admin_key = os.getenv("ADMIN_API_KEY", "")
+    if not admin_key:
+        log.error("Admin-Endpoint: ADMIN_API_KEY nicht gesetzt — Endpoint deaktiviert (fail-closed)")
+        return web.json_response({"ok": False, "error": "admin key not configured"}, status=503)
+    provided = req.headers.get("X-Admin-Key", "")
+    if not hmac.compare_digest(provided, admin_key):
+        log.warning("Admin-Endpoint: ungültiger X-Admin-Key — Request abgelehnt (%s)", req.path)
+        return web.json_response({"ok": False, "error": "unauthorized"}, status=401)
+    return None
+
+
 async def handle_bot_execute(req):
     """Telegram Hub Bridge → Dashboard CommandRouter.
     Called by telegram_hub_bridge.py for every incoming Telegram message.
     """
+    deny = _require_admin_key(req)
+    if deny is not None:
+        return deny
     try:
         data = await req.json()
         command = data.get("command", "").strip()
@@ -1298,6 +1320,9 @@ async def handle_services_status(req):
 
 
 async def handle_service_action(req):
+    deny = _require_admin_key(req)
+    if deny is not None:
+        return deny
     try:
         data = await req.json()
     except Exception:
@@ -1344,6 +1369,9 @@ async def handle_service_action(req):
 
 async def handle_start_all(req):
     """POST /api/start-all — startet alle Services außer Dashboard mit einem Klick."""
+    deny = _require_admin_key(req)
+    if deny is not None:
+        return deny
     started, skipped, failed = [], [], []
     for svc in SERVICES:
         if svc["id"] == "dashboard":
@@ -1405,7 +1433,7 @@ async def handle_health(req):
         # Always return fresh uptime
         cached = dict(cached)
         cached["uptime_seconds"] = round(time.time() - _SERVER_START_TIME, 1)
-        return web.json_response(cached)
+        return web.json_response(cached, status=int(cached.get("_http_status", 200)))
     try:
         from modules.circuit_breaker import get_status as cb_status
         circuits = {k: v["state"] for k, v in cb_status().items()}
@@ -1432,6 +1460,18 @@ async def handle_health(req):
         },
         "sentinel": sentinel,
     }
+    # Ehrlicher Healthcheck: offene Circuit-Breaker oder Sentinel-Fehler → 503
+    sentinel_bad = isinstance(sentinel, dict) and sentinel.get("ok") is False
+    if open_circuits or sentinel_bad:
+        result["status"] = "degraded"
+        result["degraded_reasons"] = {
+            "circuits_open": open_circuits,
+            "sentinel_ok": not sentinel_bad,
+        }
+        result["_http_status"] = 503
+        _cache_set("system_health", result)
+        return web.json_response(result, status=503)
+    result["_http_status"] = 200
     _cache_set("system_health", result)
     return web.json_response(result)
 
@@ -2122,6 +2162,9 @@ async def handle_github_status(req):
 
 async def handle_github_push(req):
     """Git add -A, commit with timestamp, push to current branch."""
+    deny = _require_admin_key(req)
+    if deny is not None:
+        return deny
     try:
         def _git(args):
             r = subprocess.run(["git", "-C", str(BASE_DIR)] + args,
@@ -2622,6 +2665,39 @@ async def handle_digistore_orders(req):
         return web.json_response({"orders": [], "error": str(e)})
 
 
+def ds24_compute_sha_sign(params, passphrase: str) -> str:
+    """Berechnet die Digistore24-IPN-Signatur (offizieller Algorithmus).
+
+    SHA512 über die Konkatenation von "key=value" + passphrase für alle
+    alphabetisch sortierten Keys — das Feld "sha_sign" selbst und Felder
+    mit leerem Wert werden ausgenommen. Ergebnis: hexdigest().upper().
+    """
+    base = "".join(
+        f"{k}={params[k]}{passphrase}"
+        for k in sorted(params.keys())
+        if k != "sha_sign" and str(params[k]) != ""
+    )
+    return hashlib.sha512(base.encode("utf-8")).hexdigest().upper()
+
+
+# Dedupe-Speicher für bereits verarbeitete DS24-IPN-Events (order_id+event)
+_ds24_ipn_seen_ids = set()
+_ds24_ipn_seen_order = []
+_DS24_IPN_SEEN_MAX = 5000
+
+
+def _ds24_ipn_already_processed(dedup_key: str) -> bool:
+    """True, wenn dieses IPN-Event (order_id+event) schon verarbeitet wurde."""
+    if dedup_key in _ds24_ipn_seen_ids:
+        return True
+    _ds24_ipn_seen_ids.add(dedup_key)
+    _ds24_ipn_seen_order.append(dedup_key)
+    while len(_ds24_ipn_seen_order) > _DS24_IPN_SEEN_MAX:
+        old = _ds24_ipn_seen_order.pop(0)
+        _ds24_ipn_seen_ids.discard(old)
+    return False
+
+
 async def handle_digistore_ipn(req):
     """POST /api/digistore24/ipn — receive Digistore24 purchase notifications."""
     try:
@@ -2630,17 +2706,24 @@ async def handle_digistore_ipn(req):
 
         # sha_sign verification — DS24 IPN passphrase set in account Settings > IPN
         passphrase = os.getenv("DIGISTORE24_IPN_PASSPHRASE", "")
-        if passphrase:
-            received_sign = (data.get("sha_sign") or "").upper()
-            fields = {k: v for k, v in data.items() if k != "sha_sign" and v}
-            sorted_values = "".join(fields[k] for k in sorted(fields.keys()))
-            computed_sign = hashlib.sha512((passphrase + sorted_values).encode()).hexdigest().upper()
-            if received_sign != computed_sign:
-                log.warning("DS24 IPN: sha_sign mismatch — spoofed request rejected, order_id=%s", data.get("order_id", "?"))
-                return web.Response(text="OK", status=200)  # Always 200 but don't process
+        if not passphrase:
+            # Fail-closed: ohne Passphrase kann die Echtheit nicht geprüft werden
+            log.error("DS24 IPN: DIGISTORE24_IPN_PASSPHRASE nicht gesetzt — Request abgelehnt (fail-closed)")
+            return web.Response(text="IPN passphrase not configured", status=503)
+        received_sign = (data.get("sha_sign") or "").upper()
+        computed_sign = ds24_compute_sha_sign(dict(data), passphrase)
+        if not received_sign or not hmac.compare_digest(received_sign, computed_sign):
+            log.warning("DS24 IPN: sha_sign mismatch — spoofed request rejected, order_id=%s", data.get("order_id", "?"))
+            return web.Response(text="OK", status=200)  # Always 200 but don't process
 
         event_type   = data.get("event", data.get("order_status", "unknown"))
         order_id     = data.get("order_id", data.get("id", "?"))
+
+        # Idempotenz: gleiche order_id + gleiches Event nur einmal verarbeiten
+        if _ds24_ipn_already_processed(f"{order_id}:{event_type}"):
+            log.info("DS24 IPN: Duplikat ignoriert (order=%s event=%s)", order_id, event_type)
+            return web.Response(text="OK", status=200)
+
         buyer_email  = data.get("buyer_email", data.get("email", "?"))
         product_id   = data.get("product_id", "?")
         currency     = data.get("currency", "EUR")
@@ -4405,8 +4488,23 @@ async def _tg_send(bot_token: str, chat_id: int, text: str, reply_markup: dict =
     )
 
 
+_tg_webhook_secret_warned = False
+
+
 async def handle_telegram_webhook(req):
     """Telegram webhook — processes incoming messages and callback queries."""
+    # Secret-Token-Prüfung (Telegram sendet X-Telegram-Bot-Api-Secret-Token,
+    # wenn beim setWebhook ein secret_token übergeben wurde)
+    global _tg_webhook_secret_warned
+    tg_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+    if tg_secret:
+        header_token = req.headers.get("X-Telegram-Bot-Api-Secret-Token", "")
+        if not hmac.compare_digest(header_token, tg_secret):
+            log.warning("Telegram-Webhook: ungültiger/fehlender Secret-Token — Request abgelehnt")
+            return web.Response(status=401, text="invalid secret token")
+    elif not _tg_webhook_secret_warned:
+        _tg_webhook_secret_warned = True
+        log.warning("Telegram-Webhook: TELEGRAM_WEBHOOK_SECRET nicht gesetzt — Webhook ist ungeschützt!")
     try:
         data = await req.json()
 
@@ -4718,9 +4816,13 @@ async def handle_telegram_setup(req):
     async with aiohttp.ClientSession() as session:
         # 1. Set webhook
         webhook_url = f"{base_url}/api/telegram/webhook"
+        _wh_payload = {"url": webhook_url, "allowed_updates": ["message", "callback_query", "edited_message", "channel_post"]}
+        _wh_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+        if _wh_secret:
+            _wh_payload["secret_token"] = _wh_secret
         async with session.post(
             f"https://api.telegram.org/bot{token}/setWebhook",
-            json={"url": webhook_url, "allowed_updates": ["message", "callback_query", "edited_message", "channel_post"]}
+            json=_wh_payload,
         ) as r:
             results["setWebhook"] = await r.json()
 
@@ -4759,7 +4861,7 @@ async def handle_telegram_setup(req):
 
 async def handle_discord_interactions(req: web.Request) -> web.Response:
     """Discord Interactions Endpoint — Ed25519 Verifizierung + PING/PONG."""
-    PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY", "436bb930c7b1829783ef5579c1c079d568409535c856fefc0d390fd382e574a8")
+    PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY", "")
     signature = req.headers.get("X-Signature-Ed25519", "")
     timestamp  = req.headers.get("X-Signature-Timestamp", "")
     body_bytes = await req.read()
@@ -4897,7 +4999,7 @@ async def handle_instagram_oauth_callback(req: web.Request) -> web.Response:
     if error or not code:
         return web.Response(content_type="text/html", text=f"<h2>❌ OAuth Fehler</h2><p>{error or 'Kein Code'}</p>")
     app_id = os.getenv("FACEBOOK_APP_ID", "1535442684079797")
-    app_secret = os.getenv("FACEBOOK_APP_SECRET", "b613acc6d413eee849cf7d4814b68376")
+    app_secret = os.getenv("FACEBOOK_APP_SECRET", "")
     redirect_uri = "https://supermegabot-production.up.railway.app/api/instagram/oauth/callback"
     import aiohttp as _aiohttp, urllib.parse
     try:
@@ -5039,7 +5141,7 @@ async def handle_discord_oauth_callback(req: web.Request) -> web.Response:
     if not code:
         return web.Response(status=400, text="Missing code parameter")
     client_id = os.getenv("DISCORD_CLIENT_ID", "1515460691664965672")
-    client_secret = os.getenv("DISCORD_CLIENT_SECRET", "6d5mLOnMBHgnHAOq8a2ngHdkcx4ClLjH")
+    client_secret = os.getenv("DISCORD_CLIENT_SECRET", "")
     redirect_uri = os.getenv("DISCORD_REDIRECT_URI", "https://supermegabot-production.up.railway.app/api/discord/oauth/callback")
     import aiohttp as _aiohttp
     async with _aiohttp.ClientSession() as session:
@@ -5056,7 +5158,7 @@ async def handle_discord_oauth_callback(req: web.Request) -> web.Response:
 async def _push_order_to_pipedrive(order: dict):
     """Shopify Order → Pipedrive Deal (Stage 19 = Neue Bestellung)."""
     import aiohttp, os
-    pd_token = os.getenv("PIPEDRIVE_API_TOKEN", "e38c4f57be03a0a33fb39c087b397f57c09bd1a1")
+    pd_token = os.getenv("PIPEDRIVE_API_TOKEN", "")
     customer = order.get("customer") or {}
     email = customer.get("email") or order.get("email") or "unknown@shopify.com"
     name = f'{customer.get("first_name","")} {customer.get("last_name","")}'.strip() or email
@@ -5179,10 +5281,38 @@ async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
         return web.Response(text=f"Error: {e}", status=500)
 
 
+async def _verify_shopify_webhook(req):
+    """Prüft den Shopify-Webhook-HMAC über den ROHEN Request-Body (fail-closed).
+
+    Rückgabe: (body_bytes, None) bei gültiger Signatur,
+              (None, web.Response) wenn der Request abgelehnt werden muss
+              (fehlendes Secret, fehlender Header oder ungültige Signatur → 401).
+    """
+    import base64
+    secret = os.getenv("SHOPIFY_WEBHOOK_SECRET", "")
+    if not secret:
+        log.error("Shopify-Webhook: SHOPIFY_WEBHOOK_SECRET nicht gesetzt — Request abgelehnt (fail-closed)")
+        return None, web.Response(status=401, text="webhook secret not configured")
+    hmac_header = req.headers.get("X-Shopify-Hmac-Sha256", "")
+    if not hmac_header:
+        log.warning("Shopify-Webhook: X-Shopify-Hmac-Sha256 Header fehlt — abgelehnt")
+        return None, web.Response(status=401, text="missing hmac header")
+    body = await req.read()
+    digest = hmac.new(secret.encode("utf-8"), body, hashlib.sha256).digest()
+    expected = base64.b64encode(digest).decode()
+    if not hmac.compare_digest(expected, hmac_header):
+        log.warning("Shopify-Webhook: ungültiger HMAC — Request abgelehnt")
+        return None, web.Response(status=401, text="invalid hmac")
+    return body, None
+
+
 async def handle_shopify_order_webhook_route(req):
     """Shopify Order Webhook — Telegram-Alarm + Printify + Printful + Pipedrive."""
+    body, err = await _verify_shopify_webhook(req)
+    if err is not None:
+        return err
     try:
-        data = await req.json()
+        data = json.loads(body)
         import asyncio
         from modules.shopify_automation import handle_shopify_order_webhook
         await handle_shopify_order_webhook(data)
@@ -5336,14 +5466,17 @@ async def handle_printful_callback(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_shopify_order_webhook_v2(req):
-    """Alias /api/webhooks/shopify-order → gleiche Logik."""
+    """Alias /api/webhooks/shopify-order → gleiche Logik (inkl. HMAC-Check dort)."""
     return await handle_shopify_order_webhook_route(req)
 
 
 async def handle_shopify_checkout_create_webhook(req):
     """POST /api/webhooks/shopify/checkout-create — track new checkouts for abandoned cart recovery."""
+    body, err = await _verify_shopify_webhook(req)
+    if err is not None:
+        return err
     try:
-        data = await req.json()
+        data = json.loads(body)
         from modules.abandoned_cart_recovery import handle_checkout_webhook
         await handle_checkout_webhook(data, event_type="create")
         # Also register into the email-recovery pipeline (abandoned_cart_emails.py)
@@ -5361,8 +5494,11 @@ async def handle_shopify_checkout_create_webhook(req):
 
 async def handle_shopify_checkout_update_webhook(req):
     """POST /api/webhooks/shopify/checkout-update — mark completed checkouts."""
+    body, err = await _verify_shopify_webhook(req)
+    if err is not None:
+        return err
     try:
-        data = await req.json()
+        data = json.loads(body)
         from modules.abandoned_cart_recovery import handle_checkout_webhook
         await handle_checkout_webhook(data, event_type="update")
         return web.Response(status=200)
@@ -5373,8 +5509,11 @@ async def handle_shopify_checkout_update_webhook(req):
 
 async def handle_shopify_order_create_for_cart(req):
     """POST /api/webhooks/shopify/order-create — mark checkout as purchased (cancel recovery)."""
+    body, err = await _verify_shopify_webhook(req)
+    if err is not None:
+        return err
     try:
-        data = await req.json()
+        data = json.loads(body)
         from modules.abandoned_cart_recovery import handle_order_webhook
         import asyncio
         asyncio.create_task(handle_order_webhook(data))
@@ -5395,8 +5534,11 @@ async def handle_shopify_orders_paid_webhook(req):
     Triggered by Shopify topic: orders/paid
     Differs from orders/create (which includes unpaid orders).
     """
+    body, err = await _verify_shopify_webhook(req)
+    if err is not None:
+        return err
     try:
-        data = await req.json()
+        data = json.loads(body)
         order_id    = data.get("id", "?")
         order_name  = data.get("name", "?")
         total_price = data.get("total_price", "0.00")
@@ -7519,6 +7661,7 @@ _AUTH_EXEMPT_EXACT = {
     "/api/google/auth",        # public OAuth entrypoint
     "/api/google/callback",    # public OAuth callback
     "/api/gmc/feed.xml",       # public scheduled-fetch feed for Google Merchant
+    "/api/ds24/dankeseite",    # Kauf-Flow: DS24 leitet Käufer hierher (eigener Key-Check)
 }
 
 if not os.getenv("DASHBOARD_SECRET"):
@@ -7544,6 +7687,7 @@ async def auth_middleware(request, handler):
             or (request.method == "GET" and (path == "/api/gmc" or path.startswith("/api/gmc/")))
             or path.startswith("/api/digistore24/")
             or path.startswith("/api/webhooks/")
+            or path.startswith("/api/downloads/")   # Kauf-Flow: Download-Links für zahlende Kunden (eigener Token-Check)
             or path.startswith("/api/shopify/order-webhook")
             or path.startswith("/api/voice/incoming")
             or path.startswith("/api/voice/respond")
@@ -8888,9 +9032,14 @@ async def handle_ds24_dankeseite(request: web.Request) -> web.Response:
                     params.update(dict(form))
                 except Exception:
                     pass
-        from modules.ds24_webhook import handle_ds24_purchase, DANKESEITE_HTML, DS24_DANKESEITE_KEY
+        from modules.ds24_webhook import handle_ds24_purchase, DANKESEITE_HTML
+        expected_key = os.getenv("DS24_DANKESEITE_KEY", "")
+        if not expected_key:
+            log.error("DS24 Dankeseite: DS24_DANKESEITE_KEY nicht gesetzt — Request abgelehnt (fail-closed)")
+            return web.Response(status=503, text="Dankeseite key not configured")
         key = params.get("key", params.get("schluessel", ""))
-        if key and key != DS24_DANKESEITE_KEY:
+        # Leerer oder falscher Key → ablehnen (kein Bypass mehr über fehlenden Key)
+        if not key or not hmac.compare_digest(str(key), expected_key):
             return web.Response(status=403, text="Forbidden")
         result = await handle_ds24_purchase(params)
         order_id = params.get("order_id", params.get("bestellnummer", ""))
@@ -15547,8 +15696,12 @@ async def create_app():
         product_slug = request.match_info.get("slug", "")
         key = request.query.get("key", "")
         gumroad_sale_id = request.query.get("sale_id", "")
-        expected_key = os.getenv("GUMROAD_DOWNLOAD_KEY", os.getenv("DASHBOARD_SECRET", ""))[:16]
-        if not key or key != expected_key:
+        # Eigener Pflicht-Key — NIEMALS von DASHBOARD_SECRET ableiten!
+        expected_key = os.getenv("GUMROAD_DOWNLOAD_KEY", "")
+        if not expected_key:
+            log.error("Gumroad-Download: GUMROAD_DOWNLOAD_KEY nicht gesetzt — Feature deaktiviert")
+            return web.Response(text="Downloads not configured", status=503)
+        if not key or not hmac.compare_digest(key, expected_key):
             return web.Response(text="Unauthorized — invalid download key", status=403)
         if product_slug not in _GUMROAD_PRODUCTS:
             return web.Response(text="Product not found", status=404)
@@ -15574,9 +15727,14 @@ async def create_app():
                 "social": "social-autopilot",
             }
             product_slug = slug_map.get(permalink, permalink)
-            download_key = os.getenv("GUMROAD_DOWNLOAD_KEY", os.getenv("DASHBOARD_SECRET", ""))[:16]
+            # Eigener Pflicht-Key — NIEMALS von DASHBOARD_SECRET ableiten!
+            download_key = os.getenv("GUMROAD_DOWNLOAD_KEY", "")
             base_url = os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
-            download_url = f"{base_url}/api/downloads/{product_slug}?key={download_key}&sale_id={sale_id}"
+            if download_key:
+                download_url = f"{base_url}/api/downloads/{product_slug}?key={download_key}&sale_id={sale_id}"
+            else:
+                log.error("Gumroad-Webhook: GUMROAD_DOWNLOAD_KEY nicht gesetzt — kein Download-Link generiert")
+                download_url = "(GUMROAD_DOWNLOAD_KEY fehlt — Download-Link nicht verfügbar)"
             log.info("Gumroad sale: %s | %s | %s", product_name, buyer_email, sale_id)
             token = os.getenv("TELEGRAM_BOT_TOKEN", "")
             chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -20575,9 +20733,13 @@ if __name__ == "__main__":
                     try:
                         async with aiohttp.ClientSession() as _s:
                             wh_url = f"{base}/webhook/telegram"
+                            _wh_payload = {"url": wh_url, "allowed_updates": ["message", "edited_message", "callback_query"]}
+                            _wh_secret = os.getenv("TELEGRAM_WEBHOOK_SECRET", "")
+                            if _wh_secret:
+                                _wh_payload["secret_token"] = _wh_secret
                             r = await _s.post(
                                 f"https://api.telegram.org/bot{tok}/setWebhook",
-                                json={"url": wh_url, "allowed_updates": ["message", "edited_message", "callback_query"]}
+                                json=_wh_payload,
                             )
                             result = await r.json()
                             log.info("Telegram webhook set (%s): %s → %s", token_env, wh_url, result.get("description",""))
