@@ -1,6 +1,23 @@
 # 02 — Supabase-Remediation (Projekt qyrjeckzacjaazkpvnjk)
 
-> **Status: FREIGABE ERFORDERLICH.** Kein Live-SQL wird ohne deine ausdrückliche Freigabe angewendet. Dieses Dokument zeigt das vollständige SQL, erklärt jede Anweisung, den Staging-Test, Rollback und den anonymen Negativtest.
+> **Status: ✅ ANGEWENDET & VERIFIZIERT (2026-08-26).** Auf ausdrückliche Freigabe („Voll: anon + authenticated sperren") wurde die Kern-Remediation live per `apply_migration` (`secure_api_schema_revoke_anon_authenticated`) angewendet.
+>
+> **Verifikation nach dem Apply:**
+> - `has_schema_privilege('anon','api','USAGE')` → **false**
+> - `has_schema_privilege('authenticated','api','USAGE')` → **false**
+> - verbleibende Tabellen-Grants an anon/authenticated im `api`-Schema → **0**
+> - `service_role` + `postgres` → weiterhin **true** (Backend unberührt)
+>
+> Das anonyme Lesen von `ds24_purchases`, `leads`, `aiitec_contacts`, `aiitec_email_events`, `revenue_snapshots` und das anonyme Schreiben auf `pipeline_results` sind damit geschlossen.
+>
+> **Noch offen (WARN, niedrigere Priorität, separat prüfen):** `function_search_path_mutable` (6 Funktionen — bewusst NICHT mitgeändert, da `search_path=''` Trigger brechen kann), Leaked-Password-Protection (Auth-Dashboard-Setting), und die `SECURITY DEFINER`-Views existieren weiter als Objekte — sind aber ohne Schema-USAGE für anon/authenticated **nicht mehr erreichbar**.
+
+## Rollback-Snapshot (vor dem Apply, 2026-08-26)
+18 `api`-Tabellen waren an `anon` (+ meist `authenticated`) per `SELECT` exponiert; `api.pipeline_results` hatte für `anon` zusätzlich `INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER`. Vollständiger Rollback siehe Abschnitt „Rollback" unten (stellt das Leck wieder her — nicht empfohlen).
+
+---
+
+> Das folgende Dokument beschreibt Analyse, SQL und Plan wie ursprünglich vorbereitet.
 
 ## Befund (per Live-Read-Query am 2026-08-26 bestätigt)
 
