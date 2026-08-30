@@ -78,15 +78,15 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-08-30 11:02 CEST
-- Health: ✅ OK
-- Uptime: ~1.707.469s (~19.8 Tage)
-- Umsatz heute: €0.00
+## 🤖 WATCHDOG LETZTER CHECK: 2026-08-30 13:05 CEST
+- Health: ✅ OK (Uptime ~19.8 Tage)
 - Syntax-Check: ✅ Alle Module OK (modules/, core/, dashboard/)
 - Sentinel: ✅ Aktiv, keine Verstöße
 - Circuits open: keine
+- Umsatz heute: €0.00
 - Probleme:
-  - keine (Shopify 402 bleibt manuell; Pinterest OAuth bleibt manuell)
+  - Shopify 402 bleibt manuell (Abo-Zahlung nötig)
+  - Pinterest OAuth bleibt manuell (App Secret + Redirect URI)
 
 ## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
 
