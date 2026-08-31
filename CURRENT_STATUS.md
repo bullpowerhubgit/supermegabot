@@ -78,16 +78,12 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-08-31 16:46 CEST
-- Health: ✅ OK (Uptime ~21 Tage)
-- Syntax-Check: ✅ Alle Module fehlerfrei (modules/, core/, dashboard/)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-08-31 18:48 CEST
+- Health: ✅ OK
 - Umsatz heute: €0.00
+- Syntax-Check: ✅ Alle Module OK (keine Fehler)
 - Probleme:
-  - ⚠️ Shopify ineedit.com.co: HTTP 402 — Abo-Zahlung nötig (shopify.com/admin)
-  - ⚠️ Pinterest Token abgelaufen — PINTEREST_APP_SECRET in Railway fehlt (manuell)
-  - ⚠️ rudolfsarkany1984@gmail.com — neues App-Passwort bei Google nötig (manuell)
-  - ⚠️ Brevo IP gesperrt — Railway-IP in brevo.com whitelisten (manuell)
-  - ℹ️ Stripe Cleanup wartet auf "JA STRIPE CLEANUP" von Rudolf (~85 Duplikate)
+  - keine
 
 ## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
 
