@@ -78,12 +78,14 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-08-31 04:29 UTC
-- Health: ✅ OK
+## 🤖 WATCHDOG LETZTER CHECK: 2026-08-31 10:35 CEST
+- Health: ✅ OK (Uptime ~20 Tage)
 - Syntax-Check: ✅ Alle Module fehlerfrei
 - Umsatz heute: €0.00
+- Commit: 7ed3a318 lokal (Push ausstehend — gh + MCP beide ohne gültige Credentials)
 - Probleme:
-  - keine
+  - ⚠️ GitHub CLI Token abgelaufen → `gh auth login` in interaktiver Session nötig
+  - ⚠️ GitHub MCP: Bad credentials → PAT in MCP-Server erneuern nötig
 
 ## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
 
