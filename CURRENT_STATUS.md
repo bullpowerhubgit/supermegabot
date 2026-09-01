@@ -78,11 +78,11 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 12:19 CEST
-- Health: ✅ OK (uptime ~21.8 Tage, seit 2026-08-10 14:44 UTC)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 13:21 CEST
+- Health: ✅ OK (uptime ~21.9 Tage, seit 2026-08-10 14:44 UTC)
 - Syntax-Check: ✅ Alle Python-Module fehlerfrei (0 Fehler)
-- Commit: ✅ Lokal OK (5+ Commits lokal, nicht gepusht)
-- Push: ❌ GitHub-Token abgelaufen + SSH blockiert → **MANUELL: `gh auth login -h github.com`**
+- Commit: ✅ Lokal OK (10+ Commits lokal, nicht gepusht)
+- Push: ❌ GitHub-Token abgelaufen → **MANUELL: `gh auth login -h github.com`**
 - Umsatz heute: €0.00
 - Probleme:
   - **🚨 GitHub Auth (DRINGEND)**: `gh auth login -h github.com` im Terminal ausführen — Commits seit 2026-09-01 06:05 CEST nicht gepusht, Railway deployt alten Code!
