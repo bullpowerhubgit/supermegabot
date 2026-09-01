@@ -78,12 +78,16 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-08-31 23:55 UTC
-- Health: ✅ OK (uptime ~21 Tage)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 05:03 CEST
+- Health: ✅ OK (uptime ~21 Tage, seit 2026-08-10 14:44 UTC)
 - Syntax-Check: ✅ Alle Module fehlerfrei
 - Umsatz heute: €0.00
+- Commit: 1c7d02a0 (40 Dateien: config + netlify-deploy)
+- Push: ⚠️ GitHub HTTPS-Token abgelaufen → `gh auth login` nötig (Push via MCP versucht)
 - Probleme:
-  - keine
+  - GitHub gh-Token abgelaufen → Push blockiert (`gh auth login` ausführen)
+  - Shopify Store pausiert (HTTP 402) → Abo-Zahlung ausstehend
+  - Pinterest OAuth nicht eingerichtet (PINTEREST_APP_SECRET fehlt)
 
 ## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
 
