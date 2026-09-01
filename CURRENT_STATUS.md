@@ -78,14 +78,14 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 09:12 CEST
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 10:16 CEST
 - Health: ✅ OK (uptime ~22 Tage, seit 2026-08-10 14:44 UTC)
 - Syntax-Check: ✅ Alle Python-Module fehlerfrei (0 Fehler)
-- Commit: ✅ Lokal OK (28 Commits lokal, nicht gepusht)
+- Commit: ✅ Lokal OK (29 Commits lokal, nicht gepusht)
 - Push: ❌ GitHub-Token abgelaufen → gh CLI + SSH + HTTPS alle blockiert → **MANUELL: `gh auth login -h github.com`**
 - Umsatz heute: €0.00
 - Probleme:
-  - **🚨 GitHub Auth (DRINGEND)**: `gh auth login -h github.com` ausführen — 28 Commits nicht gepusht, Railway deployt alter Code!
+  - **🚨 GitHub Auth (DRINGEND)**: `gh auth login -h github.com` ausführen — 29 Commits nicht gepusht, Railway deployt alter Code!
   - Shopify Store pausiert (HTTP 402) → Abo-Zahlung ausstehend (Rudolf manuell)
   - Pinterest OAuth nicht eingerichtet (PINTEREST_APP_SECRET fehlt, Rudolf manuell)
   - rudolfsarkany1984@gmail.com → App-Passwort neu erstellen (Rudolf manuell)
