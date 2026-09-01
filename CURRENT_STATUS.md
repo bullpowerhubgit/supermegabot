@@ -78,17 +78,15 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 17:29 CEST
-- Health: ✅ OK (uptime ~22 Tage, seit 2026-08-10 14:44 UTC)
-- Syntax-Check: ✅ Alle Python-Module fehlerfrei (0 Fehler)
-- Commit: ✅ Keine neuen Änderungen
-- Push: ❌ GitHub-Token abgelaufen → **MANUELL: `gh auth login -h github.com`** (36 Commits warten!)
-- Umsatz heute: €0.00
-- Probleme:
-  - **🚨 GitHub Auth (DRINGEND)**: `gh auth login -h github.com` im Terminal ausführen — 36 Commits lokal nicht gepusht, Railway deployt alten Code!
-  - Shopify Store pausiert (HTTP 402) → Abo-Zahlung ausstehend (Rudolf manuell)
-  - Pinterest OAuth nicht eingerichtet (PINTEREST_APP_SECRET fehlt, Rudolf manuell)
-  - rudolfsarkany1984@gmail.com → App-Passwort neu erstellen (Rudolf manuell)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-01 18:31 CEST
+- Health: ✅ OK (Uptime 22 Tage)
+- Syntax-Check: ✅ Alle Python-Dateien OK
+- Sentinel: ✅ Aktiv, keine Violations
+- Offene manuelle Tasks:
+  - rudolfsarkany1984@gmail.com → Google App-Passwort erneuern
+  - Brevo → Railway-IP in Dashboard whitelisten
+  - Shopify → Abo reaktivieren (HTTP 402)
+  - Pinterest → App Secret + Redirect URI setzen
 
 ## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
 
