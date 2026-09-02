@@ -78,22 +78,16 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-09-02 05:48 CEST
-- Health: 🔴 KRITISCH — HTTP 404 "Application not found"
-- Railway Status: **Failed** (Deployment ID: b1f4102d)
-- Container stoppte: 2026-09-02 03:43 CEST (kein Code-Crash, clean stop)
-- Syntax-Check: ✅ Alle Module OK (modules/, core/, dashboard/)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-02 06:51 CEST
+- Health: ❌ DOWN (404 Application not found)
 - Umsatz heute: €0.00
 - Probleme:
-  - 🚨 supermegabot Railway-Service in FAILED STATUS — **RUDOLF MUSS MANUELL REDEPLOYEN!**
-  - ❌ Twitter API 402: Credits depleted (X API Guthaben aufgeladen?)
-  - ❌ DS24 concurrent API calls (Rate-Limit-Problem, selbst-heilend)
-  - ❌ rudolfsarkany1984@gmail.com: Invalid credentials (App-Passwort nötig)
+  - 🚨 Server DOWN — 47 lokale Commits nicht gepusht! Push wird Redeploy triggern.
+  - Syntax-Check: ✅ Alle Module OK
+  - Shopify: ⚠️ HTTP 402 (Abo abgelaufen — Manuelle Aktion nötig)
 
 ## 🚨 SOFORTMASSNAHME NÖTIG (Rudolf):
-**Railway Service FAILED seit 03:43 CEST (~2h)**
-→ railway.app → Project supermegabot → Service supermegabot → Redeploy klicken
-→ ODER: `cd /Users/rudolfsarkany/supermegabot && git commit --allow-empty -m "redeploy: trigger Railway restart" && git push origin main`
+**Shopify-Abo abgelaufen** → shopify.com/admin → Bezahlen/Reaktivieren
 
 ## ✅ SESSION v50 — 2026-08-01 INSTAGRAM + PINTEREST
 
