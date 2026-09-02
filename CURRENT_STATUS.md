@@ -101,14 +101,14 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-09-02 11:02 CEST
-- Health: ❌ Railway offline — 404 "Application not found" (GitHub Billing gesperrt!)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-02 10:04 UTC
+- Health: ❌ DOWN (Railway offline — GitHub Billing gesperrt → GitHub Actions blockiert)
 - Umsatz heute: €0.00
-- Aktionen durchgeführt:
-  - ✅ Syntax-Check: Alle Module OK (keine Fehler)
-  - ❌ Railway nicht erreichbar — GitHub Actions blockiert wegen Billing
-  - ⏳ Warte auf Rudolf: github.com/settings/billing → Zahlung korrigieren
-- Shopify: ⚠️ HTTP 402 (Abo abgelaufen — Manuelle Aktion nötig)
+- Module: ✅ Alle Python-Dateien ohne Syntax-Fehler
+- Probleme:
+  - 🚨 Railway DOWN: GitHub Actions gesperrt (Billing!) → kein Auto-Deploy
+  - 🚨 GitHub Billing: github.com/settings/billing → Rudolf muss bezahlen
+  - ⚠️ Shopify Store pausiert (HTTP 402) → bezahlen/reaktivieren
 
 ## 🚨 SOFORTMASSNAHME NÖTIG (Rudolf):
 **Shopify-Abo abgelaufen** → shopify.com/admin → Bezahlen/Reaktivieren
