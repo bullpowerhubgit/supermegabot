@@ -1,4 +1,27 @@
 # SuperMegaBot — CURRENT STATUS
+**Stand: 2026-09-02 v52 — 🚨 KRITISCH: GitHub Billing gesperrt → Railway offline**
+
+## 🚨 NEUE KRITISCHE PROBLEME (2026-09-02 — Agent-Check 08:56 CEST)
+
+### 1. GitHub Account GESPERRT (Billing) — SOFORTMASSNAHME!
+- **Status**: Alle GitHub Actions laufen auf `failure`
+- **Fehler**: "The job was not started because your account is locked due to a billing issue."
+- **Folge**: Kein Railway-Deploy via GitHub Actions möglich → App bleibt offline
+- **Fix**: Rudolf → https://github.com/settings/billing → Zahlung prüfen/korrigieren
+- **Account**: `bullpowerhubgit` (GitHub)
+
+### 2. Railway App offline (404 "Application not found")
+- **URL**: https://supermegabot-production.up.railway.app/health → 404
+- **Ursache**: GitHub Actions gesperrt → kein Redeploy → App crashed und nicht wieder hochgekommen
+- **Fix**: Nach GitHub Billing Fix → push zu main → GitHub Actions läuft → Railway deployt
+
+### Sofort-Aktionsplan:
+1. ✅ **Schritt 1**: github.com/settings/billing → Billing-Problem beheben
+2. ✅ **Schritt 2**: Nach Billing-Fix → git push zu main → Railway-Redeploy
+3. ⏳ **Schritt 3**: Shopify-Abo bezahlen (shopify.com/admin)
+
+---
+
 **Stand: 2026-08-07 v50 — EMAIL SYSTEM GEFIXT + 5-MIN-SCANNER AKTIV**
 
 ## ✅ SESSION v50 (2026-08-07) — Email Automation Fix
