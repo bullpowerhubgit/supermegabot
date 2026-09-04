@@ -105,20 +105,24 @@ def search_ebay_products(query: str, token: str, limit: int = 10) -> list:
     return items
 
 
-def generate_product_description(title: str, category: str, price: str, spec_hints: list = None) -> str:
-    features = spec_hints or []
-    de_desc = f"""<h2>🌟 {title}</h2>
-<p>Entdecke dieses <strong>premium {category}</strong> Produkt bei ineedit.com.co — dem Shop für smarte Gadgets und Technologie.</p>
-
-<h3>✅ Produktvorteile</h3>
-<ul>
-{"".join(f"<li>{f}</li>" for f in features) if features else """
+_DEFAULT_FEATURES_HTML = """
 <li>🔋 Hochwertige Qualität — für Langlebigkeit ausgelegt</li>
 <li>📦 Schnelle Lieferung innerhalb DE/AT/CH</li>
 <li>⭐ Tausende zufriedene Kunden</li>
 <li>🔧 Einfache Installation und Bedienung</li>
 <li>🌱 Energieeffizient und nachhaltig</li>
-"""}
+"""
+
+
+def generate_product_description(title: str, category: str, price: str, spec_hints: list = None) -> str:
+    features = spec_hints or []
+    features_html = "".join(f"<li>{f}</li>" for f in features) if features else _DEFAULT_FEATURES_HTML
+    de_desc = f"""<h2>🌟 {title}</h2>
+<p>Entdecke dieses <strong>premium {category}</strong> Produkt bei ineedit.com.co — dem Shop für smarte Gadgets und Technologie.</p>
+
+<h3>✅ Produktvorteile</h3>
+<ul>
+{features_html}
 </ul>
 
 <h3>💶 Warum bei ineedit.com.co kaufen?</h3>

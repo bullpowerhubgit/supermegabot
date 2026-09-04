@@ -19,7 +19,7 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # Klaviyo
-KLAVIYO_KEY  = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
+KLAVIYO_KEY  = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_LIST = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 
 # Mailchimp AIITEC (key in .env — alle hardcoded keys abgelaufen)
@@ -33,14 +33,14 @@ DRAGON_LIST   = os.getenv("MAILCHIMP_DRAGON_LIST_ID", "0e84a22a44")
 DRAGON_SERVER = os.getenv("MAILCHIMP_DRAGON_SERVER", "us18")
 
 # SendGrid
-SENDGRID_KEY  = os.getenv("SENDGRID_API_KEY", "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")
+SENDGRID_KEY  = os.getenv("SENDGRID_API_KEY", "")
 
 # Resend
-RESEND_KEY = os.getenv("RESEND_API_KEY", "re_ibYr2F19_85RKMoBbv6yDcy1YAuuctkmd")
+RESEND_KEY = os.getenv("RESEND_API_KEY", "")
 
 # Twilio
-TWILIO_SID   = os.getenv("TWILIO_ACCOUNT_SID", "AC2b92fc8e5af02a27604a964cb241b021")
-TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "54511038fba02a2dbac1a0ef28b704a5")
+TWILIO_SID   = os.getenv("TWILIO_ACCOUNT_SID", "")
+TWILIO_TOKEN = os.getenv("TWILIO_AUTH_TOKEN", "")
 
 
 async def _tg(msg: str) -> None:

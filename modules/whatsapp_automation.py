@@ -57,10 +57,14 @@ async def _route_to_command_router(sender: str, text: str) -> None:
             "source": "whatsapp",
             "sender": sender,
         }
+        _admin_hdrs = {}
+        if os.getenv("ADMIN_API_KEY", ""):
+            _admin_hdrs["X-Admin-Key"] = os.getenv("ADMIN_API_KEY", "")
         async with _aiohttp.ClientSession() as session:
             async with session.post(
                 f"{DASHBOARD_BASE_URL}/api/bot/execute",
                 json=payload,
+                headers=_admin_hdrs,
                 timeout=_aiohttp.ClientTimeout(total=10),
             ) as resp:
                 result = await resp.json(content_type=None)

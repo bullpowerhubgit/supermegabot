@@ -70,7 +70,7 @@ LI_PERSON_URN = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
 
 # ── Reddit ────────────────────────────────────────────────────────────────────
 REDDIT_CLIENT_ID  = os.getenv("REDDIT_CLIENT_ID", "hqgJAQe6Qiu5s5r1Vqc0Og")
-REDDIT_CLIENT_SEC = os.getenv("REDDIT_CLIENT_SECRET", "xsH99P7iCQAPeknbAXe5F9Nd9fV7aA")
+REDDIT_CLIENT_SEC = os.getenv("REDDIT_CLIENT_SECRET", "")
 REDDIT_USER       = os.getenv("REDDIT_USERNAME", "bullpowersrtkennels")
 REDDIT_PASS       = os.getenv("REDDIT_PASSWORD", "Upper-Competition505")
 REDDIT_REFRESH    = os.getenv("REDDIT_REFRESH_TOKEN", "")

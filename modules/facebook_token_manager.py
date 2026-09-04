@@ -8,7 +8,7 @@ from urllib.parse import quote
 log = logging.getLogger(__name__)
 
 APP_ID     = os.getenv("FACEBOOK_APP_ID", "1535442684079797")
-APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "b613acc6d413eee849cf7d4814b68376")
+APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "")
 TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 BASE       = "https://graph.facebook.com/v21.0"

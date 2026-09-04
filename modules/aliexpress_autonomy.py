@@ -19,9 +19,9 @@ import aiohttp
 log = logging.getLogger("AliExpressAutonomy")
 
 APP_KEY = os.getenv("ALIEXPRESS_APP_KEY", "536860")
-APP_SECRET = os.getenv("ALIEXPRESS_APP_SECRET", "mmKF9pO8NZrEzdjpl6j0lXFoHhv213uN")
+APP_SECRET = os.getenv("ALIEXPRESS_APP_SECRET", "")
 DROPSHIP_KEY = os.getenv("ALIEXPRESS_DROPSHIP_APP_KEY", "537346")
-DROPSHIP_SECRET = os.getenv("ALIEXPRESS_DROPSHIP_APP_SECRET", "cnTeBUGhazNSsBVwLBiXqz3s8XTmT1hI")
+DROPSHIP_SECRET = os.getenv("ALIEXPRESS_DROPSHIP_APP_SECRET", "")
 ALI_API_URL = "https://gw.api.taobao.com/router/rest"
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
