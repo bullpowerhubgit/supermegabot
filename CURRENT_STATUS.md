@@ -101,13 +101,11 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-09-03 08:31 CEST
-- Health: ❌ DOWN (Railway 404 — GitHub Billing gesperrt)
+## 🤖 WATCHDOG LETZTER CHECK: 2026-09-14 12:28 UTC
+- Health: ❌ DOWN
 - Umsatz heute: €0.00
-- Syntax-Check: ✅ Alle Python-Module OK (keine Fehler)
 - Probleme:
-  - 🚨 Server DOWN: GitHub Billing gesperrt → kein GitHub Actions Deploy möglich
-  - ⚠️ MANUELLE AKTION: github.com/settings/billing → Zahlung prüfen → dann git push → Railway deployt automatisch
+  - 🚨 Server DOWN: ?
 
 ## 🚨 SOFORTMASSNAHME NÖTIG (Rudolf):
 **Shopify-Abo abgelaufen** → shopify.com/admin → Bezahlen/Reaktivieren
