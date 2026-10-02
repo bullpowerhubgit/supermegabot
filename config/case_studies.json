@@ -1,18 +1,99 @@
 {
-  "updated": "2026-10-02T02:06:30.171277+00:00",
+  "updated": "2026-10-02T08:06:30.356275+00:00",
   "count": 51,
   "items": [
     {
-      "id": "c_bullpower-hub_0_2026-10-02-02",
+      "id": "c_bullpower-hub_0_2026-10-02-08",
       "folder": "bullpower-hub",
       "product": "BullPower Hub",
-      "client": "Performance Team",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. BullPower Hub entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
+      "client": "DTC Fashion Brand",
+      "result": "+84% Conversion in 12 Wochen",
+      "body": "DTC Fashion Brand skalierte mit BullPower Hub. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: +84% Conversion in 12 Wochen.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "12 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "+84% Conversion in 12 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−60%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351140+00:00"
+    },
+    {
+      "id": "c_bullpower-ai_1_2026-10-02-08",
+      "folder": "bullpower-ai",
+      "product": "BullPower AI",
+      "client": "Shopify Plus Operator",
+      "result": "+67% Conversion in 6 Wochen",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "6 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "+67% Conversion in 6 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351210+00:00"
+    },
+    {
+      "id": "c_steuercockpit_2_2026-10-02-08",
+      "folder": "steuercockpit",
+      "product": "SteuercockPit Pro",
+      "client": "Shopify Plus Operator",
+      "result": "ROAS 5.1× nach Optimierung",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. SteuercockPit Pro entlastete das Team um 22h/Woche — Kapazität ging in Sales.",
       "metrics": [
         {
           "label": "Zeitraum",
           "value": "10 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "ROAS 5.1× nach Optimierung"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351272+00:00"
+    },
+    {
+      "id": "c_shopify-brutal-tuning_3_2026-10-02-08",
+      "folder": "shopify-brutal-tuning",
+      "product": "Shopify Brutal Tuning",
+      "client": "Info-Product Vendor",
+      "result": "Pipeline 3× schneller qualifiziert",
+      "body": "Info-Product Vendor skalierte mit Shopify Brutal Tuning. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: Pipeline 3× schneller qualifiziert.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "12 Wochen"
         },
         {
           "label": "Ergebnis",
@@ -27,23 +108,50 @@
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.166163+00:00"
+      "created_at": "2026-10-02T08:06:30.351328+00:00"
     },
     {
-      "id": "c_bullpower-ai_1_2026-10-02-02",
-      "folder": "bullpower-ai",
-      "product": "BullPower AI",
-      "client": "DACH E-Commerce Agency",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. BullPower AI entlastete das Team um 8h/Woche — Kapazität ging in Sales.",
+      "id": "c_shopify-acquisition-engine_4_2026-10-02-08",
+      "folder": "shopify-acquisition-engine",
+      "product": "Shopify Acquisition Engine",
+      "client": "Performance Team",
+      "result": "MRR €18.400 in 4 Wochen",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Shopify Acquisition Engine liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "12 Wochen"
+          "value": "4 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
+          "value": "MRR €18.400 in 4 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351386+00:00"
+    },
+    {
+      "id": "c_shopify-suite_5_2026-10-02-08",
+      "folder": "shopify-suite",
+      "product": "Shopify Suite Pro",
+      "client": "Shopify Plus Operator",
+      "result": "MRR €18.400 in 8 Wochen",
+      "body": "Shopify Plus Operator skalierte mit Shopify Suite Pro. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: MRR €18.400 in 8 Wochen.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "8 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €18.400 in 8 Wochen"
         },
         {
           "label": "Ops-Last",
@@ -54,19 +162,73 @@
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.166231+00:00"
+      "created_at": "2026-10-02T08:06:30.351472+00:00"
     },
     {
-      "id": "c_steuercockpit_2_2026-10-02-02",
-      "folder": "steuercockpit",
-      "product": "SteuercockPit Pro",
-      "client": "DACH E-Commerce Agency",
-      "result": "€12k Zusatzumsatz / Monat",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von SteuercockPit Pro liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "id": "c_telegram-bot_6_2026-10-02-08",
+      "folder": "telegram-bot",
+      "product": "Telegram Marketing Bot",
+      "client": "DTC Fashion Brand",
+      "result": "+52% Conversion in 4 Wochen",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Telegram Marketing Bot liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "12 Wochen"
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "+52% Conversion in 4 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351529+00:00"
+    },
+    {
+      "id": "c_gumroad-discord_7_2026-10-02-08",
+      "folder": "gumroad-discord",
+      "product": "Gumroad Discord Automation",
+      "client": "Shopify Plus Operator",
+      "result": "Refunds −41% · LTV +27%",
+      "body": "Shopify Plus Operator skalierte mit Gumroad Discord Automation. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: Refunds −41% · LTV +27%.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "8 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Refunds −41%"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351600+00:00"
+    },
+    {
+      "id": "c_icomeauto_8_2026-10-02-08",
+      "folder": "icomeauto",
+      "product": "IcomeAuto",
+      "client": "DTC Fashion Brand",
+      "result": "€12k Zusatzumsatz / Monat",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. IcomeAuto entlastete das Team um 14h/Woche — Kapazität ging in Sales.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
         },
         {
           "label": "Ergebnis",
@@ -78,188 +240,80 @@
         },
         {
           "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166293+00:00"
-    },
-    {
-      "id": "c_shopify-brutal-tuning_3_2026-10-02-02",
-      "folder": "shopify-brutal-tuning",
-      "product": "Shopify Brutal Tuning",
-      "client": "Solo Founder",
-      "result": "€8k Zusatzumsatz / Monat",
-      "body": "Solo Founder skalierte mit Shopify Brutal Tuning. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 10 Wochen: €8k Zusatzumsatz / Monat.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "€8k Zusatzumsatz / Monat"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−45%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166353+00:00"
-    },
-    {
-      "id": "c_shopify-acquisition-engine_4_2026-10-02-02",
-      "folder": "shopify-acquisition-engine",
-      "product": "Shopify Acquisition Engine",
-      "client": "Performance Team",
-      "result": "€4k Zusatzumsatz / Monat",
-      "body": "Performance Team skalierte mit Shopify Acquisition Engine. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: €4k Zusatzumsatz / Monat.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "4 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "€4k Zusatzumsatz / Monat"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.166412+00:00"
+      "created_at": "2026-10-02T08:06:30.351659+00:00"
     },
     {
-      "id": "c_shopify-suite_5_2026-10-02-02",
-      "folder": "shopify-suite",
-      "product": "Shopify Suite Pro",
-      "client": "Info-Product Vendor",
-      "result": "+34% Conversion in 10 Wochen",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. Shopify Suite Pro entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "+34% Conversion in 10 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166504+00:00"
-    },
-    {
-      "id": "c_telegram-bot_6_2026-10-02-02",
-      "folder": "telegram-bot",
-      "product": "Telegram Marketing Bot",
-      "client": "Info-Product Vendor",
-      "result": "11h/Woche Zeitersparnis",
-      "body": "Info-Product Vendor skalierte mit Telegram Marketing Bot. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 10 Wochen: 11h/Woche Zeitersparnis.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "11h/Woche Zeitersparnis"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−45%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166561+00:00"
-    },
-    {
-      "id": "c_gumroad-discord_7_2026-10-02-02",
-      "folder": "gumroad-discord",
-      "product": "Gumroad Discord Automation",
-      "client": "Info-Product Vendor",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Gumroad Discord Automation wurde zum Operating System.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Pipeline 3× schneller qualif"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166619+00:00"
-    },
-    {
-      "id": "c_icomeauto_8_2026-10-02-02",
-      "folder": "icomeauto",
-      "product": "IcomeAuto",
-      "client": "Shopify Plus Operator",
-      "result": "€6k Zusatzumsatz / Monat",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. IcomeAuto entlastete das Team um 8h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "€6k Zusatzumsatz / Monat"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166676+00:00"
-    },
-    {
-      "id": "c_autoincome-ai_9_2026-10-02-02",
+      "id": "c_autoincome-ai_9_2026-10-02-08",
       "folder": "autoincome-ai",
       "product": "AutoIncome AI",
-      "client": "DACH E-Commerce Agency",
+      "client": "Shopify Plus Operator",
       "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "DACH E-Commerce Agency skalierte mit AutoIncome AI. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: Onboarding von 14 Tagen auf 48h.",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von AutoIncome AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "4 Wochen"
+          "value": "10 Wochen"
         },
         {
           "label": "Ergebnis",
           "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351727+00:00"
+    },
+    {
+      "id": "c_launcher_10_2026-10-02-08",
+      "folder": "launcher",
+      "product": "BullPower Launcher",
+      "client": "Info-Product Vendor",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. BullPower Launcher wurde zum Operating System.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "8 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351793+00:00"
+    },
+    {
+      "id": "c_lead-capture_11_2026-10-02-08",
+      "folder": "lead-capture",
+      "product": "Lead Capture Pro",
+      "client": "Shopify Plus Operator",
+      "result": "MRR €12.400 in 4 Wochen",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. Lead Capture Pro entlastete das Team um 11h/Woche — Kapazität ging in Sales.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €12.400 in 4 Wochen"
         },
         {
           "label": "Ops-Last",
@@ -270,15 +324,96 @@
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.166734+00:00"
+      "created_at": "2026-10-02T08:06:30.351863+00:00"
     },
     {
-      "id": "c_launcher_10_2026-10-02-02",
-      "folder": "launcher",
-      "product": "BullPower Launcher",
-      "client": "Performance Team",
+      "id": "c_master-dashboard_12_2026-10-02-08",
+      "folder": "master-dashboard",
+      "product": "Master Command Center",
+      "client": "Solo Founder",
+      "result": "Pipeline 3× schneller qualifiziert",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Master Command Center liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Pipeline 3× schneller qualif"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−60%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.351933+00:00"
+    },
+    {
+      "id": "c_creatorai-ultra_13_2026-10-02-08",
+      "folder": "creatorai-ultra",
+      "product": "CreatorAI Ultra",
+      "client": "DACH E-Commerce Agency",
+      "result": "MRR €28.400 in 12 Wochen",
+      "body": "DACH E-Commerce Agency skalierte mit CreatorAI Ultra. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: MRR €28.400 in 12 Wochen.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "12 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €28.400 in 12 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.352003+00:00"
+    },
+    {
+      "id": "c_creatorstudio-pro_14_2026-10-02-08",
+      "folder": "creatorstudio-pro",
+      "product": "CreatorStudio Pro",
+      "client": "Info-Product Vendor",
+      "result": "MRR €12.400 in 10 Wochen",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. CreatorStudio Pro wurde zum Operating System.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "10 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €12.400 in 10 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.352071+00:00"
+    },
+    {
+      "id": "c_digistore24-suite_15_2026-10-02-08",
+      "folder": "digistore24-suite",
+      "product": "Digistore24 Pro Suite",
+      "client": "DACH E-Commerce Agency",
       "result": "ROAS 6.3× nach Optimierung",
-      "body": "Performance Team skalierte mit BullPower Launcher. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: ROAS 6.3× nach Optimierung.",
+      "body": "DACH E-Commerce Agency skalierte mit Digistore24 Pro Suite. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: ROAS 6.3× nach Optimierung.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -294,45 +429,18 @@
         },
         {
           "label": "Empfehlung",
-          "value": "10/10"
+          "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.166790+00:00"
+      "created_at": "2026-10-02T08:06:30.352138+00:00"
     },
     {
-      "id": "c_lead-capture_11_2026-10-02-02",
-      "folder": "lead-capture",
-      "product": "Lead Capture Pro",
-      "client": "DACH E-Commerce Agency",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "DACH E-Commerce Agency skalierte mit Lead Capture Pro. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: Pipeline 3× schneller qualifiziert.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Pipeline 3× schneller qualif"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−60%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166861+00:00"
-    },
-    {
-      "id": "c_master-dashboard_12_2026-10-02-02",
-      "folder": "master-dashboard",
-      "product": "Master Command Center",
-      "client": "Solo Founder",
-      "result": "€6k Zusatzumsatz / Monat",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Master Command Center liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "id": "c_cognitive-symphony_16_2026-10-02-08",
+      "folder": "cognitive-symphony",
+      "product": "Cognitive Symphony",
+      "client": "Performance Team",
+      "result": "+28% Conversion in 6 Wochen",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. Cognitive Symphony entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -340,142 +448,7 @@
         },
         {
           "label": "Ergebnis",
-          "value": "€6k Zusatzumsatz / Monat"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−45%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166915+00:00"
-    },
-    {
-      "id": "c_creatorai-ultra_13_2026-10-02-02",
-      "folder": "creatorai-ultra",
-      "product": "CreatorAI Ultra",
-      "client": "DTC Fashion Brand",
-      "result": "MRR €7.800 in 4 Wochen",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von CreatorAI Ultra liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "4 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "MRR €7.800 in 4 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−45%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.166992+00:00"
-    },
-    {
-      "id": "c_creatorstudio-pro_14_2026-10-02-02",
-      "folder": "creatorstudio-pro",
-      "product": "CreatorStudio Pro",
-      "client": "DTC Fashion Brand",
-      "result": "+184% Conversion in 12 Wochen",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von CreatorStudio Pro liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "+184% Conversion in 12 Woche"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−60%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167048+00:00"
-    },
-    {
-      "id": "c_digistore24-suite_15_2026-10-02-02",
-      "folder": "digistore24-suite",
-      "product": "Digistore24 Pro Suite",
-      "client": "Performance Team",
-      "result": "MRR €12.400 in 4 Wochen",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. Digistore24 Pro Suite entlastete das Team um 11h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "4 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "MRR €12.400 in 4 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−45%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167105+00:00"
-    },
-    {
-      "id": "c_cognitive-symphony_16_2026-10-02-02",
-      "folder": "cognitive-symphony",
-      "product": "Cognitive Symphony",
-      "client": "Info-Product Vendor",
-      "result": "MRR €12.400 in 8 Wochen",
-      "body": "Info-Product Vendor skalierte mit Cognitive Symphony. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: MRR €12.400 in 8 Wochen.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "8 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "MRR €12.400 in 8 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167163+00:00"
-    },
-    {
-      "id": "c_bullpower-hub_17_2026-10-02-02",
-      "folder": "bullpower-hub",
-      "product": "BullPower Hub",
-      "client": "Info-Product Vendor",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Info-Product Vendor skalierte mit BullPower Hub. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: Pipeline 3× schneller qualifiziert.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "8 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Pipeline 3× schneller qualif"
+          "value": "+28% Conversion in 6 Wochen"
         },
         {
           "label": "Ops-Last",
@@ -483,180 +456,72 @@
         },
         {
           "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.352205+00:00"
+    },
+    {
+      "id": "c_bullpower-hub_17_2026-10-02-08",
+      "folder": "bullpower-hub",
+      "product": "BullPower Hub",
+      "client": "DTC Fashion Brand",
+      "result": "8h/Woche Zeitersparnis",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower Hub liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "8h/Woche Zeitersparnis"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.167219+00:00"
+      "created_at": "2026-10-02T08:06:30.352270+00:00"
     },
     {
-      "id": "c_bullpower-ai_18_2026-10-02-02",
+      "id": "c_bullpower-ai_18_2026-10-02-08",
       "folder": "bullpower-ai",
       "product": "BullPower AI",
       "client": "Solo Founder",
-      "result": "€8k Zusatzumsatz / Monat",
+      "result": "Pipeline 3× schneller qualifiziert",
       "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. BullPower AI wurde zum Operating System.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "€8k Zusatzumsatz / Monat"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167292+00:00"
-    },
-    {
-      "id": "c_steuercockpit_19_2026-10-02-02",
-      "folder": "steuercockpit",
-      "product": "SteuercockPit Pro",
-      "client": "DTC Fashion Brand",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. SteuercockPit Pro entlastete das Team um 22h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "6 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167350+00:00"
-    },
-    {
-      "id": "c_shopify-brutal-tuning_20_2026-10-02-02",
-      "folder": "shopify-brutal-tuning",
-      "product": "Shopify Brutal Tuning",
-      "client": "DTC Fashion Brand",
-      "result": "ROAS 4.2× nach Optimierung",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Shopify Brutal Tuning liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
           "value": "4 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "ROAS 4.2× nach Optimierung"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−60%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167407+00:00"
-    },
-    {
-      "id": "c_shopify-acquisition-engine_21_2026-10-02-02",
-      "folder": "shopify-acquisition-engine",
-      "product": "Shopify Acquisition Engine",
-      "client": "Info-Product Vendor",
-      "result": "+120% Conversion in 8 Wochen",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. Shopify Acquisition Engine entlastete das Team um 8h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "8 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "+120% Conversion in 8 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−60%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167506+00:00"
-    },
-    {
-      "id": "c_shopify-suite_22_2026-10-02-02",
-      "folder": "shopify-suite",
-      "product": "Shopify Suite Pro",
-      "client": "Shopify Plus Operator",
-      "result": "Refunds −41% · LTV +18%",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. Shopify Suite Pro entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Refunds −41%"
+          "value": "Pipeline 3× schneller qualif"
         },
         {
           "label": "Ops-Last",
           "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167564+00:00"
-    },
-    {
-      "id": "c_telegram-bot_23_2026-10-02-02",
-      "folder": "telegram-bot",
-      "product": "Telegram Marketing Bot",
-      "client": "DACH E-Commerce Agency",
-      "result": "+184% Conversion in 12 Wochen",
-      "body": "DACH E-Commerce Agency skalierte mit Telegram Marketing Bot. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: +184% Conversion in 12 Wochen.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "+184% Conversion in 12 Woche"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−45%"
         },
         {
           "label": "Empfehlung",
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.167642+00:00"
+      "created_at": "2026-10-02T08:06:30.352338+00:00"
     },
     {
-      "id": "c_gumroad-discord_24_2026-10-02-02",
-      "folder": "gumroad-discord",
-      "product": "Gumroad Discord Automation",
+      "id": "c_steuercockpit_19_2026-10-02-08",
+      "folder": "steuercockpit",
+      "product": "SteuercockPit Pro",
       "client": "Info-Product Vendor",
-      "result": "MRR €18.400 in 4 Wochen",
-      "body": "Info-Product Vendor skalierte mit Gumroad Discord Automation. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: MRR €18.400 in 4 Wochen.",
+      "result": "€42k Zusatzumsatz / Monat",
+      "body": "Info-Product Vendor skalierte mit SteuercockPit Pro. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: €42k Zusatzumsatz / Monat.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -664,57 +529,30 @@
         },
         {
           "label": "Ergebnis",
-          "value": "MRR €18.400 in 4 Wochen"
+          "value": "€42k Zusatzumsatz / Monat"
         },
         {
           "label": "Ops-Last",
-          "value": "−45%"
+          "value": "−85%"
         },
         {
           "label": "Empfehlung",
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.167700+00:00"
+      "created_at": "2026-10-02T08:06:30.352406+00:00"
     },
     {
-      "id": "c_icomeauto_25_2026-10-02-02",
-      "folder": "icomeauto",
-      "product": "IcomeAuto",
+      "id": "c_shopify-brutal-tuning_20_2026-10-02-08",
+      "folder": "shopify-brutal-tuning",
+      "product": "Shopify Brutal Tuning",
       "client": "Solo Founder",
-      "result": "MRR €4.200 in 10 Wochen",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. IcomeAuto entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
+      "result": "Refunds −84% · LTV +27%",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. Shopify Brutal Tuning entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "MRR €4.200 in 10 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167768+00:00"
-    },
-    {
-      "id": "c_autoincome-ai_26_2026-10-02-02",
-      "folder": "autoincome-ai",
-      "product": "AutoIncome AI",
-      "client": "Performance Team",
-      "result": "Refunds −84% · LTV +34%",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. AutoIncome AI entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
+          "value": "6 Wochen"
         },
         {
           "label": "Ergebnis",
@@ -729,23 +567,50 @@
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.167827+00:00"
+      "created_at": "2026-10-02T08:06:30.352466+00:00"
     },
     {
-      "id": "c_launcher_27_2026-10-02-02",
-      "folder": "launcher",
-      "product": "BullPower Launcher",
-      "client": "Solo Founder",
-      "result": "22h/Woche Zeitersparnis",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower Launcher liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "id": "c_shopify-acquisition-engine_21_2026-10-02-08",
+      "folder": "shopify-acquisition-engine",
+      "product": "Shopify Acquisition Engine",
+      "client": "DTC Fashion Brand",
+      "result": "ROAS 5.1× nach Optimierung",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Shopify Acquisition Engine wurde zum Operating System.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "6 Wochen"
+          "value": "12 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "22h/Woche Zeitersparnis"
+          "value": "ROAS 5.1× nach Optimierung"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.352524+00:00"
+    },
+    {
+      "id": "c_shopify-suite_22_2026-10-02-08",
+      "folder": "shopify-suite",
+      "product": "Shopify Suite Pro",
+      "client": "Shopify Plus Operator",
+      "result": "18h/Woche Zeitersparnis",
+      "body": "Shopify Plus Operator skalierte mit Shopify Suite Pro. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: 18h/Woche Zeitersparnis.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "12 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "18h/Woche Zeitersparnis"
         },
         {
           "label": "Ops-Last",
@@ -753,49 +618,22 @@
         },
         {
           "label": "Empfehlung",
-          "value": "10/10"
+          "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.167882+00:00"
+      "created_at": "2026-10-02T08:06:30.352581+00:00"
     },
     {
-      "id": "c_lead-capture_28_2026-10-02-02",
-      "folder": "lead-capture",
-      "product": "Lead Capture Pro",
-      "client": "Info-Product Vendor",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Lead Capture Pro wurde zum Operating System.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "6 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−60%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.167935+00:00"
-    },
-    {
-      "id": "c_master-dashboard_29_2026-10-02-02",
-      "folder": "master-dashboard",
-      "product": "Master Command Center",
-      "client": "Solo Founder",
+      "id": "c_telegram-bot_23_2026-10-02-08",
+      "folder": "telegram-bot",
+      "product": "Telegram Marketing Bot",
+      "client": "DTC Fashion Brand",
       "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Master Command Center wurde zum Operating System.",
+      "body": "DTC Fashion Brand skalierte mit Telegram Marketing Bot. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: Pipeline 3× schneller qualifiziert.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "4 Wochen"
+          "value": "8 Wochen"
         },
         {
           "label": "Ergebnis",
@@ -810,96 +648,15 @@
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.167988+00:00"
+      "created_at": "2026-10-02T08:06:30.352637+00:00"
     },
     {
-      "id": "c_creatorai-ultra_30_2026-10-02-02",
-      "folder": "creatorai-ultra",
-      "product": "CreatorAI Ultra",
-      "client": "DTC Fashion Brand",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. CreatorAI Ultra wurde zum Operating System.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "6 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Pipeline 3× schneller qualif"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168041+00:00"
-    },
-    {
-      "id": "c_creatorstudio-pro_31_2026-10-02-02",
-      "folder": "creatorstudio-pro",
-      "product": "CreatorStudio Pro",
-      "client": "Performance Team",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. CreatorStudio Pro wurde zum Operating System.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−60%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168110+00:00"
-    },
-    {
-      "id": "c_digistore24-suite_32_2026-10-02-02",
-      "folder": "digistore24-suite",
-      "product": "Digistore24 Pro Suite",
-      "client": "Performance Team",
-      "result": "Refunds −28% · LTV +18%",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Digistore24 Pro Suite wurde zum Operating System.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Refunds −28%"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168168+00:00"
-    },
-    {
-      "id": "c_cognitive-symphony_33_2026-10-02-02",
-      "folder": "cognitive-symphony",
-      "product": "Cognitive Symphony",
-      "client": "Performance Team",
+      "id": "c_gumroad-discord_24_2026-10-02-08",
+      "folder": "gumroad-discord",
+      "product": "Gumroad Discord Automation",
+      "client": "Shopify Plus Operator",
       "result": "MRR €4.200 in 4 Wochen",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. Cognitive Symphony entlastete das Team um 8h/Woche — Kapazität ging in Sales.",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. Gumroad Discord Automation entlastete das Team um 8h/Woche — Kapazität ging in Sales.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -911,49 +668,22 @@
         },
         {
           "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168226+00:00"
-    },
-    {
-      "id": "c_bullpower-hub_34_2026-10-02-02",
-      "folder": "bullpower-hub",
-      "product": "BullPower Hub",
-      "client": "Shopify Plus Operator",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. BullPower Hub wurde zum Operating System.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
+          "value": "−45%"
         },
         {
           "label": "Empfehlung",
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168282+00:00"
+      "created_at": "2026-10-02T08:06:30.352692+00:00"
     },
     {
-      "id": "c_bullpower-ai_35_2026-10-02-02",
-      "folder": "bullpower-ai",
-      "product": "BullPower AI",
+      "id": "c_icomeauto_25_2026-10-02-08",
+      "folder": "icomeauto",
+      "product": "IcomeAuto",
       "client": "Solo Founder",
-      "result": "8h/Woche Zeitersparnis",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. BullPower AI wurde zum Operating System.",
+      "result": "ROAS 4.2× nach Optimierung",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. IcomeAuto entlastete das Team um 14h/Woche — Kapazität ging in Sales.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -961,34 +691,7 @@
         },
         {
           "label": "Ergebnis",
-          "value": "8h/Woche Zeitersparnis"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "10/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168337+00:00"
-    },
-    {
-      "id": "c_steuercockpit_36_2026-10-02-02",
-      "folder": "steuercockpit",
-      "product": "SteuercockPit Pro",
-      "client": "DACH E-Commerce Agency",
-      "result": "€4k Zusatzumsatz / Monat",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von SteuercockPit Pro liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "€4k Zusatzumsatz / Monat"
+          "value": "ROAS 4.2× nach Optimierung"
         },
         {
           "label": "Ops-Last",
@@ -999,42 +702,42 @@
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168393+00:00"
+      "created_at": "2026-10-02T08:06:30.352751+00:00"
     },
     {
-      "id": "c_shopify-brutal-tuning_37_2026-10-02-02",
-      "folder": "shopify-brutal-tuning",
-      "product": "Shopify Brutal Tuning",
-      "client": "DTC Fashion Brand",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Shopify Brutal Tuning wurde zum Operating System.",
+      "id": "c_autoincome-ai_26_2026-10-02-08",
+      "folder": "autoincome-ai",
+      "product": "AutoIncome AI",
+      "client": "Solo Founder",
+      "result": "ROAS 5.1× nach Optimierung",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. AutoIncome AI wurde zum Operating System.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "10 Wochen"
+          "value": "8 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
+          "value": "ROAS 5.1× nach Optimierung"
         },
         {
           "label": "Ops-Last",
-          "value": "−85%"
+          "value": "−45%"
         },
         {
           "label": "Empfehlung",
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168448+00:00"
+      "created_at": "2026-10-02T08:06:30.352831+00:00"
     },
     {
-      "id": "c_shopify-acquisition-engine_38_2026-10-02-02",
-      "folder": "shopify-acquisition-engine",
-      "product": "Shopify Acquisition Engine",
-      "client": "Info-Product Vendor",
-      "result": "Onboarding von 14 Tagen auf 48h",
-      "body": "Info-Product Vendor skalierte mit Shopify Acquisition Engine. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: Onboarding von 14 Tagen auf 48h.",
+      "id": "c_launcher_27_2026-10-02-08",
+      "folder": "launcher",
+      "product": "BullPower Launcher",
+      "client": "Shopify Plus Operator",
+      "result": "MRR €12.400 in 12 Wochen",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower Launcher liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -1042,7 +745,7 @@
         },
         {
           "label": "Ergebnis",
-          "value": "Onboarding von 14 Tagen auf "
+          "value": "MRR €12.400 in 12 Wochen"
         },
         {
           "label": "Ops-Last",
@@ -1050,72 +753,45 @@
         },
         {
           "label": "Empfehlung",
-          "value": "9/10"
+          "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168530+00:00"
+      "created_at": "2026-10-02T08:06:30.352898+00:00"
     },
     {
-      "id": "c_shopify-suite_39_2026-10-02-02",
-      "folder": "shopify-suite",
-      "product": "Shopify Suite Pro",
-      "client": "DACH E-Commerce Agency",
-      "result": "Refunds −28% · LTV +22%",
-      "body": "Der Engpass war Content/Ops, nicht Traffic. Shopify Suite Pro entlastete das Team um 18h/Woche — Kapazität ging in Sales.",
+      "id": "c_lead-capture_28_2026-10-02-08",
+      "folder": "lead-capture",
+      "product": "Lead Capture Pro",
+      "client": "Shopify Plus Operator",
+      "result": "€18k Zusatzumsatz / Monat",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Lead Capture Pro wurde zum Operating System.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "6 Wochen"
+          "value": "4 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "Refunds −28%"
+          "value": "€18k Zusatzumsatz / Monat"
         },
         {
           "label": "Ops-Last",
-          "value": "−85%"
+          "value": "−60%"
         },
         {
           "label": "Empfehlung",
-          "value": "9/10"
+          "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168588+00:00"
+      "created_at": "2026-10-02T08:06:30.352978+00:00"
     },
     {
-      "id": "c_telegram-bot_40_2026-10-02-02",
-      "folder": "telegram-bot",
-      "product": "Telegram Marketing Bot",
-      "client": "Shopify Plus Operator",
-      "result": "MRR €7.800 in 12 Wochen",
-      "body": "Shopify Plus Operator skalierte mit Telegram Marketing Bot. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: MRR €7.800 in 12 Wochen.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "MRR €7.800 in 12 Wochen"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−85%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168646+00:00"
-    },
-    {
-      "id": "c_gumroad-discord_41_2026-10-02-02",
-      "folder": "gumroad-discord",
-      "product": "Gumroad Discord Automation",
-      "client": "Shopify Plus Operator",
-      "result": "+41% Conversion in 10 Wochen",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Gumroad Discord Automation wurde zum Operating System.",
+      "id": "c_master-dashboard_29_2026-10-02-08",
+      "folder": "master-dashboard",
+      "product": "Master Command Center",
+      "client": "Solo Founder",
+      "result": "ROAS 3.4× nach Optimierung",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Master Command Center liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -1123,7 +799,7 @@
         },
         {
           "label": "Ergebnis",
-          "value": "+41% Conversion in 10 Wochen"
+          "value": "ROAS 3.4× nach Optimierung"
         },
         {
           "label": "Ops-Last",
@@ -1134,50 +810,23 @@
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168702+00:00"
+      "created_at": "2026-10-02T08:06:30.353035+00:00"
     },
     {
-      "id": "c_icomeauto_42_2026-10-02-02",
-      "folder": "icomeauto",
-      "product": "IcomeAuto",
-      "client": "Info-Product Vendor",
-      "result": "Refunds −28% · LTV +27%",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von IcomeAuto liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "12 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Refunds −28%"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168758+00:00"
-    },
-    {
-      "id": "c_autoincome-ai_43_2026-10-02-02",
-      "folder": "autoincome-ai",
-      "product": "AutoIncome AI",
+      "id": "c_creatorai-ultra_30_2026-10-02-08",
+      "folder": "creatorai-ultra",
+      "product": "CreatorAI Ultra",
       "client": "Solo Founder",
-      "result": "Refunds −52% · LTV +18%",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von AutoIncome AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "result": "Refunds −34% · LTV +18%",
+      "body": "Solo Founder skalierte mit CreatorAI Ultra. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 10 Wochen: Refunds −34% · LTV +18%.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "12 Wochen"
+          "value": "10 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "Refunds −52%"
+          "value": "Refunds −34%"
         },
         {
           "label": "Ops-Last",
@@ -1188,23 +837,77 @@
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168813+00:00"
+      "created_at": "2026-10-02T08:06:30.353103+00:00"
     },
     {
-      "id": "c_launcher_44_2026-10-02-02",
-      "folder": "launcher",
-      "product": "BullPower Launcher",
+      "id": "c_creatorstudio-pro_31_2026-10-02-08",
+      "folder": "creatorstudio-pro",
+      "product": "CreatorStudio Pro",
       "client": "Performance Team",
-      "result": "MRR €12.400 in 6 Wochen",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. BullPower Launcher wurde zum Operating System.",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. CreatorStudio Pro wurde zum Operating System.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "6 Wochen"
+          "value": "12 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "MRR €12.400 in 6 Wochen"
+          "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353157+00:00"
+    },
+    {
+      "id": "c_digistore24-suite_32_2026-10-02-08",
+      "folder": "digistore24-suite",
+      "product": "Digistore24 Pro Suite",
+      "client": "DTC Fashion Brand",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. Digistore24 Pro Suite entlastete das Team um 14h/Woche — Kapazität ging in Sales.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "10 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353211+00:00"
+    },
+    {
+      "id": "c_cognitive-symphony_33_2026-10-02-08",
+      "folder": "cognitive-symphony",
+      "product": "Cognitive Symphony",
+      "client": "DACH E-Commerce Agency",
+      "result": "MRR €7.800 in 4 Wochen",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Cognitive Symphony wurde zum Operating System.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €7.800 in 4 Wochen"
         },
         {
           "label": "Ops-Last",
@@ -1215,15 +918,177 @@
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168867+00:00"
+      "created_at": "2026-10-02T08:06:30.353265+00:00"
     },
     {
-      "id": "c_lead-capture_45_2026-10-02-02",
-      "folder": "lead-capture",
-      "product": "Lead Capture Pro",
+      "id": "c_bullpower-hub_34_2026-10-02-08",
+      "folder": "bullpower-hub",
+      "product": "BullPower Hub",
+      "client": "Info-Product Vendor",
+      "result": "11h/Woche Zeitersparnis",
+      "body": "Info-Product Vendor skalierte mit BullPower Hub. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: 11h/Woche Zeitersparnis.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "11h/Woche Zeitersparnis"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−60%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353331+00:00"
+    },
+    {
+      "id": "c_bullpower-ai_35_2026-10-02-08",
+      "folder": "bullpower-ai",
+      "product": "BullPower AI",
+      "client": "DTC Fashion Brand",
+      "result": "€18k Zusatzumsatz / Monat",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von BullPower AI liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "10 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "€18k Zusatzumsatz / Monat"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353395+00:00"
+    },
+    {
+      "id": "c_steuercockpit_36_2026-10-02-08",
+      "folder": "steuercockpit",
+      "product": "SteuercockPit Pro",
+      "client": "Solo Founder",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Solo Founder skalierte mit SteuercockPit Pro. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: Onboarding von 14 Tagen auf 48h.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353461+00:00"
+    },
+    {
+      "id": "c_shopify-brutal-tuning_37_2026-10-02-08",
+      "folder": "shopify-brutal-tuning",
+      "product": "Shopify Brutal Tuning",
+      "client": "DACH E-Commerce Agency",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Shopify Brutal Tuning liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "6 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353522+00:00"
+    },
+    {
+      "id": "c_shopify-acquisition-engine_38_2026-10-02-08",
+      "folder": "shopify-acquisition-engine",
+      "product": "Shopify Acquisition Engine",
+      "client": "Shopify Plus Operator",
+      "result": "11h/Woche Zeitersparnis",
+      "body": "Shopify Plus Operator skalierte mit Shopify Acquisition Engine. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: 11h/Woche Zeitersparnis.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "12 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "11h/Woche Zeitersparnis"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−85%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353576+00:00"
+    },
+    {
+      "id": "c_shopify-suite_39_2026-10-02-08",
+      "folder": "shopify-suite",
+      "product": "Shopify Suite Pro",
+      "client": "DACH E-Commerce Agency",
+      "result": "€42k Zusatzumsatz / Monat",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Shopify Suite Pro wurde zum Operating System.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "8 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "€42k Zusatzumsatz / Monat"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−60%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353639+00:00"
+    },
+    {
+      "id": "c_telegram-bot_40_2026-10-02-08",
+      "folder": "telegram-bot",
+      "product": "Telegram Marketing Bot",
       "client": "Solo Founder",
       "result": "+84% Conversion in 6 Wochen",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Lead Capture Pro wurde zum Operating System.",
+      "body": "Solo Founder skalierte mit Telegram Marketing Bot. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 6 Wochen: +84% Conversion in 6 Wochen.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -1235,57 +1100,30 @@
         },
         {
           "label": "Ops-Last",
-          "value": "−45%"
+          "value": "−60%"
         },
         {
           "label": "Empfehlung",
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.168922+00:00"
+      "created_at": "2026-10-02T08:06:30.353708+00:00"
     },
     {
-      "id": "c_master-dashboard_46_2026-10-02-02",
-      "folder": "master-dashboard",
-      "product": "Master Command Center",
-      "client": "DTC Fashion Brand",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Master Command Center liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
-      "metrics": [
-        {
-          "label": "Zeitraum",
-          "value": "10 Wochen"
-        },
-        {
-          "label": "Ergebnis",
-          "value": "Pipeline 3× schneller qualif"
-        },
-        {
-          "label": "Ops-Last",
-          "value": "−72%"
-        },
-        {
-          "label": "Empfehlung",
-          "value": "9/10"
-        }
-      ],
-      "created_at": "2026-10-02T02:06:30.168976+00:00"
-    },
-    {
-      "id": "c_creatorai-ultra_47_2026-10-02-02",
-      "folder": "creatorai-ultra",
-      "product": "CreatorAI Ultra",
+      "id": "c_gumroad-discord_41_2026-10-02-08",
+      "folder": "gumroad-discord",
+      "product": "Gumroad Discord Automation",
       "client": "Performance Team",
-      "result": "+28% Conversion in 12 Wochen",
-      "body": "Performance Team skalierte mit CreatorAI Ultra. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: +28% Conversion in 12 Wochen.",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Gumroad Discord Automation liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "12 Wochen"
+          "value": "8 Wochen"
         },
         {
           "label": "Ergebnis",
-          "value": "+28% Conversion in 12 Wochen"
+          "value": "Onboarding von 14 Tagen auf "
         },
         {
           "label": "Ops-Last",
@@ -1293,22 +1131,22 @@
         },
         {
           "label": "Empfehlung",
-          "value": "10/10"
+          "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.169032+00:00"
+      "created_at": "2026-10-02T08:06:30.353777+00:00"
     },
     {
-      "id": "c_creatorstudio-pro_48_2026-10-02-02",
-      "folder": "creatorstudio-pro",
-      "product": "CreatorStudio Pro",
-      "client": "DTC Fashion Brand",
+      "id": "c_icomeauto_42_2026-10-02-08",
+      "folder": "icomeauto",
+      "product": "IcomeAuto",
+      "client": "Shopify Plus Operator",
       "result": "ROAS 4.2× nach Optimierung",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. CreatorStudio Pro wurde zum Operating System.",
+      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. IcomeAuto wurde zum Operating System.",
       "metrics": [
         {
           "label": "Zeitraum",
-          "value": "8 Wochen"
+          "value": "10 Wochen"
         },
         {
           "label": "Ergebnis",
@@ -1320,18 +1158,45 @@
         },
         {
           "label": "Empfehlung",
-          "value": "10/10"
+          "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.169086+00:00"
+      "created_at": "2026-10-02T08:06:30.353833+00:00"
     },
     {
-      "id": "c_digistore24-suite_49_2026-10-02-02",
-      "folder": "digistore24-suite",
-      "product": "Digistore24 Pro Suite",
-      "client": "DACH E-Commerce Agency",
-      "result": "11h/Woche Zeitersparnis",
-      "body": "DACH E-Commerce Agency skalierte mit Digistore24 Pro Suite. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: 11h/Woche Zeitersparnis.",
+      "id": "c_autoincome-ai_43_2026-10-02-08",
+      "folder": "autoincome-ai",
+      "product": "AutoIncome AI",
+      "client": "Performance Team",
+      "result": "MRR €7.800 in 10 Wochen",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. AutoIncome AI entlastete das Team um 22h/Woche — Kapazität ging in Sales.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "10 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €7.800 in 10 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353888+00:00"
+    },
+    {
+      "id": "c_launcher_44_2026-10-02-08",
+      "folder": "launcher",
+      "product": "BullPower Launcher",
+      "client": "Solo Founder",
+      "result": "8h/Woche Zeitersparnis",
+      "body": "Solo Founder skalierte mit BullPower Launcher. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 8 Wochen: 8h/Woche Zeitersparnis.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -1339,7 +1204,61 @@
         },
         {
           "label": "Ergebnis",
-          "value": "11h/Woche Zeitersparnis"
+          "value": "8h/Woche Zeitersparnis"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−45%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.353944+00:00"
+    },
+    {
+      "id": "c_lead-capture_45_2026-10-02-08",
+      "folder": "lead-capture",
+      "product": "Lead Capture Pro",
+      "client": "DACH E-Commerce Agency",
+      "result": "Pipeline 3× schneller qualifiziert",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. Lead Capture Pro entlastete das Team um 14h/Woche — Kapazität ging in Sales.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "8 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Pipeline 3× schneller qualif"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−60%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.354001+00:00"
+    },
+    {
+      "id": "c_master-dashboard_46_2026-10-02-08",
+      "folder": "master-dashboard",
+      "product": "Master Command Center",
+      "client": "DTC Fashion Brand",
+      "result": "Refunds −120% · LTV +22%",
+      "body": "DTC Fashion Brand skalierte mit Master Command Center. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: Refunds −120% · LTV +22%.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "4 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Refunds −120%"
         },
         {
           "label": "Ops-Last",
@@ -1350,15 +1269,42 @@
           "value": "9/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.169174+00:00"
+      "created_at": "2026-10-02T08:06:30.354067+00:00"
     },
     {
-      "id": "c_cognitive-symphony_50_2026-10-02-02",
-      "folder": "cognitive-symphony",
-      "product": "Cognitive Symphony",
-      "client": "DACH E-Commerce Agency",
-      "result": "Pipeline 3× schneller qualifiziert",
-      "body": "Vorher: Excel + Bauchgefühl. Nachher: Live-Dashboards, automatisierte Sequenz und Stripe-Billing. Cognitive Symphony wurde zum Operating System.",
+      "id": "c_creatorai-ultra_47_2026-10-02-08",
+      "folder": "creatorai-ultra",
+      "product": "CreatorAI Ultra",
+      "client": "DTC Fashion Brand",
+      "result": "Onboarding von 14 Tagen auf 48h",
+      "body": "Der Engpass war Content/Ops, nicht Traffic. CreatorAI Ultra entlastete das Team um 11h/Woche — Kapazität ging in Sales.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "10 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "Onboarding von 14 Tagen auf "
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.354121+00:00"
+    },
+    {
+      "id": "c_creatorstudio-pro_48_2026-10-02-08",
+      "folder": "creatorstudio-pro",
+      "product": "CreatorStudio Pro",
+      "client": "Performance Team",
+      "result": "22h/Woche Zeitersparnis",
+      "body": "Performance Team skalierte mit CreatorStudio Pro. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 4 Wochen: 22h/Woche Zeitersparnis.",
       "metrics": [
         {
           "label": "Zeitraum",
@@ -1366,18 +1312,72 @@
         },
         {
           "label": "Ergebnis",
-          "value": "Pipeline 3× schneller qualif"
+          "value": "22h/Woche Zeitersparnis"
         },
         {
           "label": "Ops-Last",
-          "value": "−45%"
+          "value": "−72%"
         },
         {
           "label": "Empfehlung",
           "value": "10/10"
         }
       ],
-      "created_at": "2026-10-02T02:06:30.169228+00:00"
+      "created_at": "2026-10-02T08:06:30.354186+00:00"
+    },
+    {
+      "id": "c_digistore24-suite_49_2026-10-02-08",
+      "folder": "digistore24-suite",
+      "product": "Digistore24 Pro Suite",
+      "client": "DTC Fashion Brand",
+      "result": "MRR €4.200 in 6 Wochen",
+      "body": "Ausgangslage: fragmentierte Tools, manuelle Ops, unklare KPIs. Nach Rollout von Digistore24 Pro Suite liefen Kernprozesse automatisiert. Team fokussiert Closing statt Firefighting.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "6 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "MRR €4.200 in 6 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−60%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "10/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.354251+00:00"
+    },
+    {
+      "id": "c_cognitive-symphony_50_2026-10-02-08",
+      "folder": "cognitive-symphony",
+      "product": "Cognitive Symphony",
+      "client": "DACH E-Commerce Agency",
+      "result": "+28% Conversion in 12 Wochen",
+      "body": "DACH E-Commerce Agency skalierte mit Cognitive Symphony. Entscheidend: klare Demo, messbare KPIs und High-Ticket Support. Ergebnis nach 12 Wochen: +28% Conversion in 12 Wochen.",
+      "metrics": [
+        {
+          "label": "Zeitraum",
+          "value": "12 Wochen"
+        },
+        {
+          "label": "Ergebnis",
+          "value": "+28% Conversion in 12 Wochen"
+        },
+        {
+          "label": "Ops-Last",
+          "value": "−72%"
+        },
+        {
+          "label": "Empfehlung",
+          "value": "9/10"
+        }
+      ],
+      "created_at": "2026-10-02T08:06:30.354307+00:00"
     }
   ]
 }
