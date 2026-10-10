@@ -224,7 +224,7 @@ async def check_meta_tokens() -> dict:
 
 async def validate_klaviyo() -> dict:
     """Prüft Klaviyo API-Key."""
-    api_key = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
+    api_key = os.getenv("KLAVIYO_API_KEY", "")
     if not api_key:
         return {"ok": False, "platform": "klaviyo", "reason": "no key"}
     try:

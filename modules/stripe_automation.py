@@ -261,10 +261,11 @@ def verify_webhook_signature(payload: bytes, sig_header: str, secret: str) -> bo
 
     Stripe sends: t=<timestamp>,v1=<signature>
     We compute HMAC(secret, f"{timestamp}.{payload}") and compare.
-    Returns False if secret is not configured (allows passthrough in dev).
+    Returns False if secret is not configured (fail-closed).
     """
     if not secret:
-        return True  # dev mode — no secret configured
+        log.error("Stripe-Webhook: STRIPE_WEBHOOK_SECRET nicht gesetzt — Signatur nicht prüfbar, Request abgelehnt (fail-closed)")
+        return False
     try:
         parts = {k: v for k, v in (p.split("=", 1) for p in sig_header.split(","))}
         ts = parts.get("t", "")
@@ -338,9 +339,35 @@ async def _trello_card_for_event(etype: str, event_data: dict) -> None:
         log.debug("Trello card skipped (token not set?): %s", exc)
 
 
+# ── Idempotenz: bereits verarbeitete Stripe-Event-IDs (Stripe liefert u.U. doppelt) ──
+_processed_event_ids: set = set()
+_processed_event_order: list = []
+_PROCESSED_EVENTS_MAX = 5000
+
+
+def _event_already_processed(event_id: str) -> bool:
+    """True, wenn diese Stripe-Event-ID schon verarbeitet wurde (Dedupe)."""
+    if not event_id:
+        return False
+    if event_id in _processed_event_ids:
+        return True
+    _processed_event_ids.add(event_id)
+    _processed_event_order.append(event_id)
+    while len(_processed_event_order) > _PROCESSED_EVENTS_MAX:
+        old = _processed_event_order.pop(0)
+        _processed_event_ids.discard(old)
+    return False
+
+
 async def handle_webhook_event(event: Dict) -> str:
     etype = event.get("type", "")
     data  = event.get("data", {}).get("object", {})
+
+    event_id = event.get("id", "")
+    if _event_already_processed(event_id):
+        log.info("Stripe-Webhook: Duplikat ignoriert (event=%s type=%s)", event_id, etype)
+        return f"duplicate event {event_id} ignored"
+
     asyncio.create_task(_trello_card_for_event(etype, event.get("data", {})))
 
     if etype == "payment_intent.succeeded":

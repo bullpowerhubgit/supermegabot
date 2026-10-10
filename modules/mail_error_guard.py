@@ -267,9 +267,13 @@ async def _auto_fix(action: str, category: str, session: aiohttp.ClientSession) 
                 return f"Health-Ping: HTTP {r.status}"
 
         elif action == "syntax_check":
+            _admin_hdrs = {}
+            if os.getenv("ADMIN_API_KEY", ""):
+                _admin_hdrs["X-Admin-Key"] = os.getenv("ADMIN_API_KEY", "")
             async with session.post(
                 f"{base}/api/bot/execute",
                 json={"command": "/syntax_check"},
+                headers=_admin_hdrs,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 return f"Syntax-Check: HTTP {r.status}"

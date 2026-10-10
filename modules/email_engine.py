@@ -11,7 +11,7 @@ log = logging.getLogger("EmailEngine")
 MAILCHIMP_API_KEY = os.getenv("MAILCHIMP_API_KEY", "1d35dd606aad1a9f1bbd10d2dd2e2ea7-us7")
 MAILCHIMP_SERVER  = "us7"
 MAILCHIMP_LIST_ID = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
-KLAVIYO_API_KEY   = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
+KLAVIYO_API_KEY   = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_LIST_ID   = os.getenv("KLAVIYO_AIITEC_LIST_ID", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
 BASE_URL          = os.getenv("RAILWAY_STATIC_URL", "https://aiitec-saas-production.up.railway.app")
 
