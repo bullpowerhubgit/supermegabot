@@ -101,16 +101,19 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-10-10 15:58 CEST
+## 🤖 WATCHDOG LETZTER CHECK: 2026-10-10 20:04 CEST
 - Health: ❌ DOWN (404 Application not found)
 - Umsatz heute: €0.00
-- Railway-Status: Service `supermegabot` → latestDeployment FAILED (2026-08-07), staged patch vorhanden
+- Railway-Status: Service `supermegabot` → latestDeployment FAILED (2026-08-07, BUILD_IMAGE stage), staged patch vorhanden
 - Syntax-Check: ✅ ALLE Module OK (modules/, core/, dashboard/)
+- Build-Config: ✅ nixpacks.toml + railway.toml korrekt, requirements.txt OK
+- Git: ✅ Netlify Content-Rotation committed (505e2674) — Push blocked (GitHub Auth fehlt)
 - Probleme:
-  - 🚨 GitHub Billing gesperrt → GitHub Actions failure → kein Auto-Deploy
-  - 🚨 Railway Service FAILED — Redeploy nötig (braucht Rudolf-Erlaubnis)
+  - 🚨 GitHub Billing gesperrt → GitHub Actions failure → kein Auto-Deploy → Push nicht möglich
+  - 🚨 Railway Service FAILED (2026-08-07) — Redeploy nötig (braucht Rudolf-Erlaubnis)
   - 🚨 Shopify Store 402 (Abo abgelaufen)
-- Staged Railway Patch: `889d1fd5` wartet → nach Billing-Fix accepten oder manuell redeployen
+- Staged Railway Patch: `889d1fd5` wartet (non-destructive: fügt nur Repo-Verbindung hinzu) → nach Billing-Fix accepten oder manuell redeployen
+- Build-Logs zu alt (von Railway gelöscht) — Ursache des Build-Fehlers unbekannt, aber Code+Config OK
 
 ## 🚨 SOFORTMASSNAHME NÖTIG (Rudolf):
 **Shopify-Abo abgelaufen** → shopify.com/admin → Bezahlen/Reaktivieren
