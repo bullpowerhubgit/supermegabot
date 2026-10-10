@@ -101,11 +101,16 @@ Archivieren: 21 ELITE-Duplikate, 10 GROWTH EMPIRE, 8 KI-Business, ~46 weitere
 ## Gumroad Preise empfohlen (noch zu setzen):
 KI-Automation MASTERY €197 | Social Media AUTOPILOT €147 | E-Commerce PRO €247 | KI-Starter €97 | POD AUTOPILOT €127 | POD QUICKSTART €47
 
-## 🤖 WATCHDOG LETZTER CHECK: 2026-10-10 06:56 UTC
-- Health: ❌ DOWN
+## 🤖 WATCHDOG LETZTER CHECK: 2026-10-10 15:58 CEST
+- Health: ❌ DOWN (404 Application not found)
 - Umsatz heute: €0.00
+- Railway-Status: Service `supermegabot` → latestDeployment FAILED (2026-08-07), staged patch vorhanden
+- Syntax-Check: ✅ ALLE Module OK (modules/, core/, dashboard/)
 - Probleme:
-  - 🚨 Server DOWN: ?
+  - 🚨 GitHub Billing gesperrt → GitHub Actions failure → kein Auto-Deploy
+  - 🚨 Railway Service FAILED — Redeploy nötig (braucht Rudolf-Erlaubnis)
+  - 🚨 Shopify Store 402 (Abo abgelaufen)
+- Staged Railway Patch: `889d1fd5` wartet → nach Billing-Fix accepten oder manuell redeployen
 
 ## 🚨 SOFORTMASSNAHME NÖTIG (Rudolf):
 **Shopify-Abo abgelaufen** → shopify.com/admin → Bezahlen/Reaktivieren
